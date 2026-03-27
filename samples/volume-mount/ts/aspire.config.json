@@ -1,4 +1,13 @@
 {
+  "appHost": {
+    "path": "apphost.ts",
+    "language": "typescript/nodejs"
+  },
+  "packages": {
+    "Aspire.Hosting.JavaScript": "13.2.0",
+    "Aspire.Hosting.SqlServer": "13.2.0",
+    "Aspire.Hosting.Azure.Storage": "13.2.0"
+  },
   "profiles": {
     "https": {
       "applicationUrl": "https://localhost:19627;http://localhost:29714",

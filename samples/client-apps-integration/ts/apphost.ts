@@ -16,7 +16,7 @@ if (os.platform() === "win32") {
       "../ClientAppsIntegration.WinForms/ClientAppsIntegration.WinForms.csproj",
       "ClientAppsIntegration.WinForms"
     )
-    .withServiceReference(apiService)
+    .withReference(apiService)
     .waitFor(apiService)
     .withExplicitStart()
     .excludeFromManifest();
@@ -27,7 +27,7 @@ if (os.platform() === "win32") {
       "../ClientAppsIntegration.WPF/ClientAppsIntegration.WPF.csproj",
       "ClientAppsIntegration.WPF"
     )
-    .withServiceReference(apiService)
+    .withReference(apiService)
     .waitFor(apiService)
     .withExplicitStart()
     .excludeFromManifest();

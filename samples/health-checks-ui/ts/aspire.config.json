@@ -1,4 +1,13 @@
 {
+  "appHost": {
+    "path": "apphost.ts",
+    "language": "typescript/nodejs"
+  },
+  "packages": {
+    "Aspire.Hosting.JavaScript": "13.2.0",
+    "Aspire.Hosting.Redis": "13.2.0",
+    "Aspire.Hosting.Docker": "13.2.0"
+  },
   "profiles": {
     "https": {
       "applicationUrl": "https://localhost:55469;http://localhost:44473",

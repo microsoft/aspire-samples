@@ -8,6 +8,8 @@ import {
     AspireClient as AspireClientRpc,
     Handle,
     MarshalledHandle,
+    AppHostUsageError,
+    CancellationToken,
     CapabilityError,
     registerCallback,
     wrapIfHandle,
@@ -25,6 +27,15 @@ import {
 // ============================================================================
 // Handle Type Aliases (Internal - not exported to users)
 // ============================================================================
+
+/** Handle to JavaScriptAppResource */
+type JavaScriptAppResourceHandle = Handle<'Aspire.Hosting.JavaScript/Aspire.Hosting.JavaScript.JavaScriptAppResource'>;
+
+/** Handle to NodeAppResource */
+type NodeAppResourceHandle = Handle<'Aspire.Hosting.JavaScript/Aspire.Hosting.JavaScript.NodeAppResource'>;
+
+/** Handle to ViteAppResource */
+type ViteAppResourceHandle = Handle<'Aspire.Hosting.JavaScript/Aspire.Hosting.JavaScript.ViteAppResource'>;
 
 /** Handle to MySqlDatabaseResource */
 type MySqlDatabaseResourceHandle = Handle<'Aspire.Hosting.MySql/Aspire.Hosting.ApplicationModel.MySqlDatabaseResource'>;
@@ -56,8 +67,20 @@ type SqlServerDatabaseResourceHandle = Handle<'Aspire.Hosting.SqlServer/Aspire.H
 /** Handle to SqlServerServerResource */
 type SqlServerServerResourceHandle = Handle<'Aspire.Hosting.SqlServer/Aspire.Hosting.ApplicationModel.SqlServerServerResource'>;
 
+/** Handle to AfterResourcesCreatedEvent */
+type AfterResourcesCreatedEventHandle = Handle<'Aspire.Hosting/Aspire.Hosting.ApplicationModel.AfterResourcesCreatedEvent'>;
+
+/** Handle to BeforeResourceStartedEvent */
+type BeforeResourceStartedEventHandle = Handle<'Aspire.Hosting/Aspire.Hosting.ApplicationModel.BeforeResourceStartedEvent'>;
+
+/** Handle to BeforeStartEvent */
+type BeforeStartEventHandle = Handle<'Aspire.Hosting/Aspire.Hosting.ApplicationModel.BeforeStartEvent'>;
+
 /** Handle to CommandLineArgsCallbackContext */
 type CommandLineArgsCallbackContextHandle = Handle<'Aspire.Hosting/Aspire.Hosting.ApplicationModel.CommandLineArgsCallbackContext'>;
+
+/** Handle to ConnectionStringAvailableEvent */
+type ConnectionStringAvailableEventHandle = Handle<'Aspire.Hosting/Aspire.Hosting.ApplicationModel.ConnectionStringAvailableEvent'>;
 
 /** Handle to ContainerRegistryResource */
 type ContainerRegistryResourceHandle = Handle<'Aspire.Hosting/Aspire.Hosting.ApplicationModel.ContainerRegistryResource'>;
@@ -67,6 +90,9 @@ type ContainerResourceHandle = Handle<'Aspire.Hosting/Aspire.Hosting.Application
 
 /** Handle to CSharpAppResource */
 type CSharpAppResourceHandle = Handle<'Aspire.Hosting/Aspire.Hosting.ApplicationModel.CSharpAppResource'>;
+
+/** Handle to DistributedApplicationModel */
+type DistributedApplicationModelHandle = Handle<'Aspire.Hosting/Aspire.Hosting.ApplicationModel.DistributedApplicationModel'>;
 
 /** Handle to DotnetToolResource */
 type DotnetToolResourceHandle = Handle<'Aspire.Hosting/Aspire.Hosting.ApplicationModel.DotnetToolResource'>;
@@ -86,8 +112,14 @@ type ExecutableResourceHandle = Handle<'Aspire.Hosting/Aspire.Hosting.Applicatio
 /** Handle to ExecuteCommandContext */
 type ExecuteCommandContextHandle = Handle<'Aspire.Hosting/Aspire.Hosting.ApplicationModel.ExecuteCommandContext'>;
 
+/** Handle to IComputeResource */
+type IComputeResourceHandle = Handle<'Aspire.Hosting/Aspire.Hosting.ApplicationModel.IComputeResource'>;
+
 /** Handle to IContainerFilesDestinationResource */
 type IContainerFilesDestinationResourceHandle = Handle<'Aspire.Hosting/Aspire.Hosting.ApplicationModel.IContainerFilesDestinationResource'>;
+
+/** Handle to InitializeResourceEvent */
+type InitializeResourceEventHandle = Handle<'Aspire.Hosting/Aspire.Hosting.ApplicationModel.InitializeResourceEvent'>;
 
 /** Handle to IResource */
 type IResourceHandle = Handle<'Aspire.Hosting/Aspire.Hosting.ApplicationModel.IResource'>;
@@ -119,14 +151,26 @@ type ReferenceExpressionHandle = Handle<'Aspire.Hosting/Aspire.Hosting.Applicati
 /** Handle to ReferenceExpressionBuilder */
 type ReferenceExpressionBuilderHandle = Handle<'Aspire.Hosting/Aspire.Hosting.ApplicationModel.ReferenceExpressionBuilder'>;
 
+/** Handle to ResourceEndpointsAllocatedEvent */
+type ResourceEndpointsAllocatedEventHandle = Handle<'Aspire.Hosting/Aspire.Hosting.ApplicationModel.ResourceEndpointsAllocatedEvent'>;
+
 /** Handle to ResourceLoggerService */
 type ResourceLoggerServiceHandle = Handle<'Aspire.Hosting/Aspire.Hosting.ApplicationModel.ResourceLoggerService'>;
 
 /** Handle to ResourceNotificationService */
 type ResourceNotificationServiceHandle = Handle<'Aspire.Hosting/Aspire.Hosting.ApplicationModel.ResourceNotificationService'>;
 
+/** Handle to ResourceReadyEvent */
+type ResourceReadyEventHandle = Handle<'Aspire.Hosting/Aspire.Hosting.ApplicationModel.ResourceReadyEvent'>;
+
+/** Handle to ResourceStoppedEvent */
+type ResourceStoppedEventHandle = Handle<'Aspire.Hosting/Aspire.Hosting.ApplicationModel.ResourceStoppedEvent'>;
+
 /** Handle to ResourceUrlsCallbackContext */
 type ResourceUrlsCallbackContextHandle = Handle<'Aspire.Hosting/Aspire.Hosting.ApplicationModel.ResourceUrlsCallbackContext'>;
+
+/** Handle to UpdateCommandStateContext */
+type UpdateCommandStateContextHandle = Handle<'Aspire.Hosting/Aspire.Hosting.ApplicationModel.UpdateCommandStateContext'>;
 
 /** Handle to ConnectionStringResource */
 type ConnectionStringResourceHandle = Handle<'Aspire.Hosting/Aspire.Hosting.ConnectionStringResource'>;
@@ -152,17 +196,32 @@ type IDistributedApplicationBuilderHandle = Handle<'Aspire.Hosting/Aspire.Hostin
 /** Handle to IResourceWithContainerFiles */
 type IResourceWithContainerFilesHandle = Handle<'Aspire.Hosting/Aspire.Hosting.IResourceWithContainerFiles'>;
 
-/** Handle to IResourceWithServiceDiscovery */
-type IResourceWithServiceDiscoveryHandle = Handle<'Aspire.Hosting/Aspire.Hosting.IResourceWithServiceDiscovery'>;
+/** Handle to IUserSecretsManager */
+type IUserSecretsManagerHandle = Handle<'Aspire.Hosting/Aspire.Hosting.IUserSecretsManager'>;
+
+/** Handle to IReportingStep */
+type IReportingStepHandle = Handle<'Aspire.Hosting/Aspire.Hosting.Pipelines.IReportingStep'>;
+
+/** Handle to IReportingTask */
+type IReportingTaskHandle = Handle<'Aspire.Hosting/Aspire.Hosting.Pipelines.IReportingTask'>;
 
 /** Handle to PipelineConfigurationContext */
 type PipelineConfigurationContextHandle = Handle<'Aspire.Hosting/Aspire.Hosting.Pipelines.PipelineConfigurationContext'>;
+
+/** Handle to PipelineContext */
+type PipelineContextHandle = Handle<'Aspire.Hosting/Aspire.Hosting.Pipelines.PipelineContext'>;
 
 /** Handle to PipelineStep */
 type PipelineStepHandle = Handle<'Aspire.Hosting/Aspire.Hosting.Pipelines.PipelineStep'>;
 
 /** Handle to PipelineStepContext */
 type PipelineStepContextHandle = Handle<'Aspire.Hosting/Aspire.Hosting.Pipelines.PipelineStepContext'>;
+
+/** Handle to PipelineStepFactoryContext */
+type PipelineStepFactoryContextHandle = Handle<'Aspire.Hosting/Aspire.Hosting.Pipelines.PipelineStepFactoryContext'>;
+
+/** Handle to PipelineSummary */
+type PipelineSummaryHandle = Handle<'Aspire.Hosting/Aspire.Hosting.Pipelines.PipelineSummary'>;
 
 /** Handle to ProjectResourceOptions */
 type ProjectResourceOptionsHandle = Handle<'Aspire.Hosting/Aspire.Hosting.ProjectResourceOptions'>;
@@ -176,11 +235,17 @@ type ListanyHandle = Handle<'Aspire.Hosting/List<any>'>;
 /** Handle to IConfiguration */
 type IConfigurationHandle = Handle<'Microsoft.Extensions.Configuration.Abstractions/Microsoft.Extensions.Configuration.IConfiguration'>;
 
+/** Handle to IConfigurationSection */
+type IConfigurationSectionHandle = Handle<'Microsoft.Extensions.Configuration.Abstractions/Microsoft.Extensions.Configuration.IConfigurationSection'>;
+
 /** Handle to IHostEnvironment */
 type IHostEnvironmentHandle = Handle<'Microsoft.Extensions.Hosting.Abstractions/Microsoft.Extensions.Hosting.IHostEnvironment'>;
 
 /** Handle to ILogger */
 type ILoggerHandle = Handle<'Microsoft.Extensions.Logging.Abstractions/Microsoft.Extensions.Logging.ILogger'>;
+
+/** Handle to ILoggerFactory */
+type ILoggerFactoryHandle = Handle<'Microsoft.Extensions.Logging.Abstractions/Microsoft.Extensions.Logging.ILoggerFactory'>;
 
 /** Handle to string[] */
 type stringArrayHandle = Handle<'string[]'>;
@@ -221,6 +286,7 @@ export enum EndpointProperty {
     Scheme = "Scheme",
     TargetPort = "TargetPort",
     HostAndPort = "HostAndPort",
+    TlsEnabled = "TlsEnabled",
 }
 
 /** Enum type for IconVariant */
@@ -352,6 +418,10 @@ export interface AddConnectionStringOptions {
     environmentVariableName?: string;
 }
 
+export interface AddContainerRegistryFromStringOptions {
+    repository?: string;
+}
+
 export interface AddContainerRegistryOptions {
     repository?: ParameterResource;
 }
@@ -363,6 +433,10 @@ export interface AddDatabaseOptions {
 export interface AddDockerfileOptions {
     dockerfilePath?: string;
     stage?: string;
+}
+
+export interface AddJavaScriptAppOptions {
+    runScriptName?: string;
 }
 
 export interface AddMySqlOptions {
@@ -378,6 +452,11 @@ export interface AddParameterOptions {
     secret?: boolean;
 }
 
+export interface AddParameterWithValueOptions {
+    publishValueAsDefault?: boolean;
+    secret?: boolean;
+}
+
 export interface AddPostgresOptions {
     userName?: ParameterResource;
     password?: ParameterResource;
@@ -389,6 +468,10 @@ export interface AddSqlServerOptions {
     port?: number;
 }
 
+export interface AddViteAppOptions {
+    runScriptName?: string;
+}
+
 export interface AppendFormattedOptions {
     format?: string;
 }
@@ -397,20 +480,87 @@ export interface AppendValueProviderOptions {
     format?: string;
 }
 
+export interface CompleteStepMarkdownOptions {
+    completionState?: string;
+    cancellationToken?: AbortSignal | CancellationToken;
+}
+
+export interface CompleteStepOptions {
+    completionState?: string;
+    cancellationToken?: AbortSignal | CancellationToken;
+}
+
+export interface CompleteTaskMarkdownOptions {
+    completionState?: string;
+    cancellationToken?: AbortSignal | CancellationToken;
+}
+
+export interface CompleteTaskOptions {
+    completionMessage?: string;
+    completionState?: string;
+    cancellationToken?: AbortSignal | CancellationToken;
+}
+
+export interface CreateMarkdownTaskOptions {
+    cancellationToken?: AbortSignal | CancellationToken;
+}
+
+export interface CreateTaskOptions {
+    cancellationToken?: AbortSignal | CancellationToken;
+}
+
 export interface GetValueAsyncOptions {
-    cancellationToken?: AbortSignal;
+    cancellationToken?: AbortSignal | CancellationToken;
+}
+
+export interface PublishAsDockerFileOptions {
+    configure?: (obj: ContainerResource) => Promise<void>;
+}
+
+export interface PublishResourceUpdateOptions {
+    state?: string;
+    stateStyle?: string;
 }
 
 export interface RunOptions {
-    cancellationToken?: AbortSignal;
+    cancellationToken?: AbortSignal | CancellationToken;
+}
+
+export interface SaveStateJsonOptions {
+    cancellationToken?: AbortSignal | CancellationToken;
+}
+
+export interface UpdateTaskMarkdownOptions {
+    cancellationToken?: AbortSignal | CancellationToken;
+}
+
+export interface UpdateTaskOptions {
+    cancellationToken?: AbortSignal | CancellationToken;
 }
 
 export interface WaitForCompletionOptions {
     exitCode?: number;
 }
 
+export interface WaitForResourceStateOptions {
+    targetState?: string;
+}
+
 export interface WithBindMountOptions {
     isReadOnly?: boolean;
+}
+
+export interface WithBrowserDebuggerOptions {
+    browser?: string;
+}
+
+export interface WithBuildScriptOptions {
+    args?: string[];
+}
+
+export interface WithBunOptions {
+    install?: boolean;
+    installArgs?: string[];
 }
 
 export interface WithCommandOptions {
@@ -509,6 +659,12 @@ export interface WithMcpServerOptions {
     endpointName?: string;
 }
 
+export interface WithNpmOptions {
+    install?: boolean;
+    installCommand?: string;
+    installArgs?: string[];
+}
+
 export interface WithPgAdminOptions {
     configureContainer?: (obj: PgAdminContainerResource) => Promise<void>;
     containerName?: string;
@@ -531,6 +687,11 @@ export interface WithPipelineStepFactoryOptions {
     description?: string;
 }
 
+export interface WithPnpmOptions {
+    install?: boolean;
+    installArgs?: string[];
+}
+
 export interface WithPostgresMcpOptions {
     configureContainer?: (obj: PostgresMcpContainerResource) => Promise<void>;
     containerName?: string;
@@ -539,10 +700,15 @@ export interface WithPostgresMcpOptions {
 export interface WithReferenceOptions {
     connectionName?: string;
     optional?: boolean;
+    name?: string;
 }
 
 export interface WithRequiredCommandOptions {
     helpLink?: string;
+}
+
+export interface WithRunScriptOptions {
+    args?: string[];
 }
 
 export interface WithUrlExpressionOptions {
@@ -556,6 +722,122 @@ export interface WithUrlOptions {
 export interface WithVolumeOptions {
     name?: string;
     isReadOnly?: boolean;
+}
+
+export interface WithYarnOptions {
+    install?: boolean;
+    installArgs?: string[];
+}
+
+// ============================================================================
+// AfterResourcesCreatedEvent
+// ============================================================================
+
+/**
+ * Type class for AfterResourcesCreatedEvent.
+ */
+export class AfterResourcesCreatedEvent {
+    constructor(private _handle: AfterResourcesCreatedEventHandle, private _client: AspireClientRpc) {}
+
+    /** Serialize for JSON-RPC transport */
+    toJSON(): MarshalledHandle { return this._handle.toJSON(); }
+
+    /** Gets the Services property */
+    services = {
+        get: async (): Promise<ServiceProvider> => {
+            const handle = await this._client.invokeCapability<IServiceProviderHandle>(
+                'Aspire.Hosting.ApplicationModel/AfterResourcesCreatedEvent.services',
+                { context: this._handle }
+            );
+            return new ServiceProvider(handle, this._client);
+        },
+    };
+
+    /** Gets the Model property */
+    model = {
+        get: async (): Promise<DistributedApplicationModel> => {
+            const handle = await this._client.invokeCapability<DistributedApplicationModelHandle>(
+                'Aspire.Hosting.ApplicationModel/AfterResourcesCreatedEvent.model',
+                { context: this._handle }
+            );
+            return new DistributedApplicationModel(handle, this._client);
+        },
+    };
+
+}
+
+// ============================================================================
+// BeforeResourceStartedEvent
+// ============================================================================
+
+/**
+ * Type class for BeforeResourceStartedEvent.
+ */
+export class BeforeResourceStartedEvent {
+    constructor(private _handle: BeforeResourceStartedEventHandle, private _client: AspireClientRpc) {}
+
+    /** Serialize for JSON-RPC transport */
+    toJSON(): MarshalledHandle { return this._handle.toJSON(); }
+
+    /** Gets the Resource property */
+    resource = {
+        get: async (): Promise<Resource> => {
+            const handle = await this._client.invokeCapability<IResourceHandle>(
+                'Aspire.Hosting.ApplicationModel/BeforeResourceStartedEvent.resource',
+                { context: this._handle }
+            );
+            return new Resource(handle, this._client);
+        },
+    };
+
+    /** Gets the Services property */
+    services = {
+        get: async (): Promise<ServiceProvider> => {
+            const handle = await this._client.invokeCapability<IServiceProviderHandle>(
+                'Aspire.Hosting.ApplicationModel/BeforeResourceStartedEvent.services',
+                { context: this._handle }
+            );
+            return new ServiceProvider(handle, this._client);
+        },
+    };
+
+}
+
+// ============================================================================
+// BeforeStartEvent
+// ============================================================================
+
+/**
+ * Type class for BeforeStartEvent.
+ */
+export class BeforeStartEvent {
+    constructor(private _handle: BeforeStartEventHandle, private _client: AspireClientRpc) {}
+
+    /** Serialize for JSON-RPC transport */
+    toJSON(): MarshalledHandle { return this._handle.toJSON(); }
+
+    /** Gets the Services property */
+    services = {
+        get: async (): Promise<ServiceProvider> => {
+            const handle = await this._client.invokeCapability<IServiceProviderHandle>(
+                'Aspire.Hosting.ApplicationModel/BeforeStartEvent.services',
+                { context: this._handle }
+            );
+            return new ServiceProvider(handle, this._client);
+        },
+    };
+
+    /** Gets the Model property */
+    model = {
+        get: async (): Promise<DistributedApplicationModel> => {
+            const handle = await this._client.invokeCapability<DistributedApplicationModelHandle>(
+                'Aspire.Hosting.ApplicationModel/BeforeStartEvent.model',
+                { context: this._handle }
+            );
+            return new DistributedApplicationModel(handle, this._client);
+        },
+    };
+
 }
 
 // ============================================================================
@@ -587,11 +869,12 @@ export class CommandLineArgsCallbackContext {
 
     /** Gets the CancellationToken property */
     cancellationToken = {
-        get: async (): Promise<AbortSignal> => {
-            return await this._client.invokeCapability<AbortSignal>(
+        get: async (): Promise<CancellationToken> => {
+            const result = await this._client.invokeCapability<string | null>(
                 'Aspire.Hosting.ApplicationModel/CommandLineArgsCallbackContext.cancellationToken',
                 { context: this._handle }
             );
+            return CancellationToken.fromValue(result);
         },
     };
 
@@ -603,6 +886,65 @@ export class CommandLineArgsCallbackContext {
                 { context: this._handle }
             );
             return new DistributedApplicationExecutionContext(handle, this._client);
+        },
+    };
+
+    /** Gets the Logger property */
+    logger = {
+        get: async (): Promise<Logger> => {
+            const handle = await this._client.invokeCapability<ILoggerHandle>(
+                'Aspire.Hosting.ApplicationModel/CommandLineArgsCallbackContext.logger',
+                { context: this._handle }
+            );
+            return new Logger(handle, this._client);
+        },
+    };
+
+    /** Gets the Resource property */
+    resource = {
+        get: async (): Promise<Resource> => {
+            const handle = await this._client.invokeCapability<IResourceHandle>(
+                'Aspire.Hosting.ApplicationModel/CommandLineArgsCallbackContext.resource',
+                { context: this._handle }
+            );
+            return new Resource(handle, this._client);
+        },
+    };
+
+}
+
+// ============================================================================
+// ConnectionStringAvailableEvent
+// ============================================================================
+
+/**
+ * Type class for ConnectionStringAvailableEvent.
+ */
+export class ConnectionStringAvailableEvent {
+    constructor(private _handle: ConnectionStringAvailableEventHandle, private _client: AspireClientRpc) {}
+
+    /** Serialize for JSON-RPC transport */
+    toJSON(): MarshalledHandle { return this._handle.toJSON(); }
+
+    /** Gets the Resource property */
+    resource = {
+        get: async (): Promise<Resource> => {
+            const handle = await this._client.invokeCapability<IResourceHandle>(
+                'Aspire.Hosting.ApplicationModel/ConnectionStringAvailableEvent.resource',
+                { context: this._handle }
+            );
+            return new Resource(handle, this._client);
+        },
+    };
+
+    /** Gets the Services property */
+    services = {
+        get: async (): Promise<ServiceProvider> => {
+            const handle = await this._client.invokeCapability<IServiceProviderHandle>(
+                'Aspire.Hosting.ApplicationModel/ConnectionStringAvailableEvent.services',
+                { context: this._handle }
+            );
+            return new ServiceProvider(handle, this._client);
         },
     };
 
@@ -623,9 +965,9 @@ export class DistributedApplication {
 
     /** Runs the distributed application */
     /** @internal */
-    async _runInternal(cancellationToken?: AbortSignal): Promise<DistributedApplication> {
+    async _runInternal(cancellationToken?: AbortSignal | CancellationToken): Promise<DistributedApplication> {
         const rpcArgs: Record<string, unknown> = { context: this._handle };
-        if (cancellationToken !== undefined) rpcArgs.cancellationToken = cancellationToken;
+        if (cancellationToken !== undefined) rpcArgs.cancellationToken = CancellationToken.fromValue(cancellationToken);
         await this._client.invokeCapability<void>(
             'Aspire.Hosting/run',
             rpcArgs
@@ -699,6 +1041,17 @@ export class DistributedApplicationExecutionContext {
         },
     };
 
+    /** Gets the ServiceProvider property */
+    serviceProvider = {
+        get: async (): Promise<ServiceProvider> => {
+            const handle = await this._client.invokeCapability<IServiceProviderHandle>(
+                'Aspire.Hosting/DistributedApplicationExecutionContext.serviceProvider',
+                { context: this._handle }
+            );
+            return new ServiceProvider(handle, this._client);
+        },
+    };
+
     /** Gets the IsPublishMode property */
     isPublishMode = {
         get: async (): Promise<boolean> => {
@@ -722,6 +1075,70 @@ export class DistributedApplicationExecutionContext {
 }
 
 // ============================================================================
+// DistributedApplicationModel
+// ============================================================================
+
+/**
+ * Type class for DistributedApplicationModel.
+ */
+export class DistributedApplicationModel {
+    constructor(private _handle: DistributedApplicationModelHandle, private _client: AspireClientRpc) {}
+
+    /** Serialize for JSON-RPC transport */
+    toJSON(): MarshalledHandle { return this._handle.toJSON(); }
+
+    /** Gets resources from the distributed application model */
+    async getResources(): Promise<Resource[]> {
+        const rpcArgs: Record<string, unknown> = { model: this._handle };
+        return await this._client.invokeCapability<Resource[]>(
+            'Aspire.Hosting/getResources',
+            rpcArgs
+        );
+    }
+
+    /** Finds a resource by name */
+    /** @internal */
+    async _findResourceByNameInternal(name: string): Promise<Resource> {
+        const rpcArgs: Record<string, unknown> = { model: this._handle, name };
+        const result = await this._client.invokeCapability<IResourceHandle>(
+            'Aspire.Hosting/findResourceByName',
+            rpcArgs
+        );
+        return new Resource(result, this._client);
+    }
+
+    findResourceByName(name: string): ResourcePromise {
+        return new ResourcePromise(this._findResourceByNameInternal(name));
+    }
+
+}
+
+/**
+ * Thenable wrapper for DistributedApplicationModel that enables fluent chaining.
+ */
+export class DistributedApplicationModelPromise implements PromiseLike<DistributedApplicationModel> {
+    constructor(private _promise: Promise<DistributedApplicationModel>) {}
+
+    then<TResult1 = DistributedApplicationModel, TResult2 = never>(
+        onfulfilled?: ((value: DistributedApplicationModel) => TResult1 | PromiseLike<TResult1>) | null,
+        onrejected?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null
+    ): PromiseLike<TResult1 | TResult2> {
+        return this._promise.then(onfulfilled, onrejected);
+    }
+
+    /** Gets resources from the distributed application model */
+    getResources(): Promise<Resource[]> {
+        return this._promise.then(obj => obj.getResources());
+    }
+
+    /** Finds a resource by name */
+    findResourceByName(name: string): ResourcePromise {
+        return new ResourcePromise(this._promise.then(obj => obj.findResourceByName(name)));
+    }
+
+}
+
+// ============================================================================
 // EndpointReference
 // ============================================================================
 
@@ -733,6 +1150,17 @@ export class EndpointReference {
 
     /** Serialize for JSON-RPC transport */
     toJSON(): MarshalledHandle { return this._handle.toJSON(); }
+
+    /** Gets the Resource property */
+    resource = {
+        get: async (): Promise<ResourceWithEndpoints> => {
+            const handle = await this._client.invokeCapability<IResourceWithEndpointsHandle>(
+                'Aspire.Hosting.ApplicationModel/EndpointReference.resource',
+                { context: this._handle }
+            );
+            return new ResourceWithEndpoints(handle, this._client);
+        },
+    };
 
     /** Gets the EndpointName property */
     endpointName = {
@@ -800,6 +1228,16 @@ export class EndpointReference {
         },
     };
 
+    /** Gets the TlsEnabled property */
+    tlsEnabled = {
+        get: async (): Promise<boolean> => {
+            return await this._client.invokeCapability<boolean>(
+                'Aspire.Hosting.ApplicationModel/EndpointReference.tlsEnabled',
+                { context: this._handle }
+            );
+        },
+    };
+
     /** Gets the Port property */
     port = {
         get: async (): Promise<number> => {
@@ -854,9 +1292,18 @@ export class EndpointReference {
     async getValueAsync(options?: GetValueAsyncOptions): Promise<string> {
         const cancellationToken = options?.cancellationToken;
         const rpcArgs: Record<string, unknown> = { context: this._handle };
-        if (cancellationToken !== undefined) rpcArgs.cancellationToken = cancellationToken;
+        if (cancellationToken !== undefined) rpcArgs.cancellationToken = CancellationToken.fromValue(cancellationToken);
         return await this._client.invokeCapability<string>(
             'Aspire.Hosting.ApplicationModel/getValueAsync',
+            rpcArgs
+        );
+    }
+
+    /** Gets a conditional expression that resolves to the enabledValue when TLS is enabled on the endpoint, or to the disabledValue otherwise. */
+    async getTlsValue(enabledValue: ReferenceExpression, disabledValue: ReferenceExpression): Promise<ReferenceExpression> {
+        const rpcArgs: Record<string, unknown> = { context: this._handle, enabledValue, disabledValue };
+        return await this._client.invokeCapability<ReferenceExpression>(
+            'Aspire.Hosting.ApplicationModel/EndpointReference.getTlsValue',
             rpcArgs
         );
     }
@@ -879,6 +1326,11 @@ export class EndpointReferencePromise implements PromiseLike<EndpointReference> 
     /** Gets the URL of the endpoint asynchronously */
     getValueAsync(options?: GetValueAsyncOptions): Promise<string> {
         return this._promise.then(obj => obj.getValueAsync(options));
+    }
+
+    /** Gets a conditional expression that resolves to the enabledValue when TLS is enabled on the endpoint, or to the disabledValue otherwise. */
+    getTlsValue(enabledValue: ReferenceExpression, disabledValue: ReferenceExpression): Promise<ReferenceExpression> {
+        return this._promise.then(obj => obj.getTlsValue(enabledValue, disabledValue));
     }
 
 }
@@ -958,11 +1410,34 @@ export class EnvironmentCallbackContext {
 
     /** Gets the CancellationToken property */
     cancellationToken = {
-        get: async (): Promise<AbortSignal> => {
-            return await this._client.invokeCapability<AbortSignal>(
+        get: async (): Promise<CancellationToken> => {
+            const result = await this._client.invokeCapability<string | null>(
                 'Aspire.Hosting.ApplicationModel/EnvironmentCallbackContext.cancellationToken',
                 { context: this._handle }
             );
+            return CancellationToken.fromValue(result);
+        },
+    };
+
+    /** Gets the Logger property */
+    logger = {
+        get: async (): Promise<Logger> => {
+            const handle = await this._client.invokeCapability<ILoggerHandle>(
+                'Aspire.Hosting.ApplicationModel/EnvironmentCallbackContext.logger',
+                { context: this._handle }
+            );
+            return new Logger(handle, this._client);
+        },
+    };
+
+    /** Gets the Resource property */
+    resource = {
+        get: async (): Promise<Resource> => {
+            const handle = await this._client.invokeCapability<IResourceHandle>(
+                'Aspire.Hosting.ApplicationModel/EnvironmentCallbackContext.resource',
+                { context: this._handle }
+            );
+            return new Resource(handle, this._client);
         },
     };
 
@@ -992,6 +1467,17 @@ export class ExecuteCommandContext {
     /** Serialize for JSON-RPC transport */
     toJSON(): MarshalledHandle { return this._handle.toJSON(); }
 
+    /** Gets the ServiceProvider property */
+    serviceProvider = {
+        get: async (): Promise<ServiceProvider> => {
+            const handle = await this._client.invokeCapability<IServiceProviderHandle>(
+                'Aspire.Hosting.ApplicationModel/ExecuteCommandContext.serviceProvider',
+                { context: this._handle }
+            );
+            return new ServiceProvider(handle, this._client);
+        },
+    };
+
     /** Gets the ResourceName property */
     resourceName = {
         get: async (): Promise<string> => {
@@ -1010,18 +1496,89 @@ export class ExecuteCommandContext {
 
     /** Gets the CancellationToken property */
     cancellationToken = {
-        get: async (): Promise<AbortSignal> => {
-            return await this._client.invokeCapability<AbortSignal>(
+        get: async (): Promise<CancellationToken> => {
+            const result = await this._client.invokeCapability<string | null>(
                 'Aspire.Hosting.ApplicationModel/ExecuteCommandContext.cancellationToken',
                 { context: this._handle }
             );
+            return CancellationToken.fromValue(result);
         },
-        set: async (value: AbortSignal): Promise<void> => {
+        set: async (value: AbortSignal | CancellationToken): Promise<void> => {
             await this._client.invokeCapability<void>(
                 'Aspire.Hosting.ApplicationModel/ExecuteCommandContext.setCancellationToken',
-                { context: this._handle, value }
+                { context: this._handle, value: CancellationToken.fromValue(value) }
             );
         }
+    };
+
+}
+
+// ============================================================================
+// InitializeResourceEvent
+// ============================================================================
+
+/**
+ * Type class for InitializeResourceEvent.
+ */
+export class InitializeResourceEvent {
+    constructor(private _handle: InitializeResourceEventHandle, private _client: AspireClientRpc) {}
+
+    /** Serialize for JSON-RPC transport */
+    toJSON(): MarshalledHandle { return this._handle.toJSON(); }
+
+    /** Gets the Resource property */
+    resource = {
+        get: async (): Promise<Resource> => {
+            const handle = await this._client.invokeCapability<IResourceHandle>(
+                'Aspire.Hosting.ApplicationModel/InitializeResourceEvent.resource',
+                { context: this._handle }
+            );
+            return new Resource(handle, this._client);
+        },
+    };
+
+    /** Gets the Eventing property */
+    eventing = {
+        get: async (): Promise<DistributedApplicationEventing> => {
+            const handle = await this._client.invokeCapability<IDistributedApplicationEventingHandle>(
+                'Aspire.Hosting.ApplicationModel/InitializeResourceEvent.eventing',
+                { context: this._handle }
+            );
+            return new DistributedApplicationEventing(handle, this._client);
+        },
+    };
+
+    /** Gets the Logger property */
+    logger = {
+        get: async (): Promise<Logger> => {
+            const handle = await this._client.invokeCapability<ILoggerHandle>(
+                'Aspire.Hosting.ApplicationModel/InitializeResourceEvent.logger',
+                { context: this._handle }
+            );
+            return new Logger(handle, this._client);
+        },
+    };
+
+    /** Gets the Notifications property */
+    notifications = {
+        get: async (): Promise<ResourceNotificationService> => {
+            const handle = await this._client.invokeCapability<ResourceNotificationServiceHandle>(
+                'Aspire.Hosting.ApplicationModel/InitializeResourceEvent.notifications',
+                { context: this._handle }
+            );
+            return new ResourceNotificationService(handle, this._client);
+        },
+    };
+
+    /** Gets the Services property */
+    services = {
+        get: async (): Promise<ServiceProvider> => {
+            const handle = await this._client.invokeCapability<IServiceProviderHandle>(
+                'Aspire.Hosting.ApplicationModel/InitializeResourceEvent.services',
+                { context: this._handle }
+            );
+            return new ServiceProvider(handle, this._client);
+        },
     };
 
 }
@@ -1039,6 +1596,17 @@ export class PipelineConfigurationContext {
     /** Serialize for JSON-RPC transport */
     toJSON(): MarshalledHandle { return this._handle.toJSON(); }
 
+    /** Gets the Services property */
+    services = {
+        get: async (): Promise<ServiceProvider> => {
+            const handle = await this._client.invokeCapability<IServiceProviderHandle>(
+                'Aspire.Hosting.Pipelines/PipelineConfigurationContext.services',
+                { context: this._handle }
+            );
+            return new ServiceProvider(handle, this._client);
+        },
+    };
+
     /** Gets the Steps property */
     steps = {
         get: async (): Promise<PipelineStep[]> => {
@@ -1053,6 +1621,17 @@ export class PipelineConfigurationContext {
                 { context: this._handle, value }
             );
         }
+    };
+
+    /** Gets the Model property */
+    model = {
+        get: async (): Promise<DistributedApplicationModel> => {
+            const handle = await this._client.invokeCapability<DistributedApplicationModelHandle>(
+                'Aspire.Hosting.Pipelines/PipelineConfigurationContext.model',
+                { context: this._handle }
+            );
+            return new DistributedApplicationModel(handle, this._client);
+        },
     };
 
     /** Gets pipeline steps with the specified tag */
@@ -1083,6 +1662,93 @@ export class PipelineConfigurationContextPromise implements PromiseLike<Pipeline
     getStepsByTag(tag: string): Promise<PipelineStep[]> {
         return this._promise.then(obj => obj.getStepsByTag(tag));
     }
+
+}
+
+// ============================================================================
+// PipelineContext
+// ============================================================================
+
+/**
+ * Type class for PipelineContext.
+ */
+export class PipelineContext {
+    constructor(private _handle: PipelineContextHandle, private _client: AspireClientRpc) {}
+
+    /** Serialize for JSON-RPC transport */
+    toJSON(): MarshalledHandle { return this._handle.toJSON(); }
+
+    /** Gets the Model property */
+    model = {
+        get: async (): Promise<DistributedApplicationModel> => {
+            const handle = await this._client.invokeCapability<DistributedApplicationModelHandle>(
+                'Aspire.Hosting.Pipelines/PipelineContext.model',
+                { context: this._handle }
+            );
+            return new DistributedApplicationModel(handle, this._client);
+        },
+    };
+
+    /** Gets the ExecutionContext property */
+    executionContext = {
+        get: async (): Promise<DistributedApplicationExecutionContext> => {
+            const handle = await this._client.invokeCapability<DistributedApplicationExecutionContextHandle>(
+                'Aspire.Hosting.Pipelines/PipelineContext.executionContext',
+                { context: this._handle }
+            );
+            return new DistributedApplicationExecutionContext(handle, this._client);
+        },
+    };
+
+    /** Gets the Services property */
+    services = {
+        get: async (): Promise<ServiceProvider> => {
+            const handle = await this._client.invokeCapability<IServiceProviderHandle>(
+                'Aspire.Hosting.Pipelines/PipelineContext.services',
+                { context: this._handle }
+            );
+            return new ServiceProvider(handle, this._client);
+        },
+    };
+
+    /** Gets the Logger property */
+    logger = {
+        get: async (): Promise<Logger> => {
+            const handle = await this._client.invokeCapability<ILoggerHandle>(
+                'Aspire.Hosting.Pipelines/PipelineContext.logger',
+                { context: this._handle }
+            );
+            return new Logger(handle, this._client);
+        },
+    };
+
+    /** Gets the CancellationToken property */
+    cancellationToken = {
+        get: async (): Promise<CancellationToken> => {
+            const result = await this._client.invokeCapability<string | null>(
+                'Aspire.Hosting.Pipelines/PipelineContext.cancellationToken',
+                { context: this._handle }
+            );
+            return CancellationToken.fromValue(result);
+        },
+        set: async (value: AbortSignal | CancellationToken): Promise<void> => {
+            await this._client.invokeCapability<void>(
+                'Aspire.Hosting.Pipelines/PipelineContext.setCancellationToken',
+                { context: this._handle, value: CancellationToken.fromValue(value) }
+            );
+        }
+    };
+
+    /** Gets the Summary property */
+    summary = {
+        get: async (): Promise<PipelineSummary> => {
+            const handle = await this._client.invokeCapability<PipelineSummaryHandle>(
+                'Aspire.Hosting.Pipelines/PipelineContext.summary',
+                { context: this._handle }
+            );
+            return new PipelineSummary(handle, this._client);
+        },
+    };
 
 }
 
@@ -1173,6 +1839,17 @@ export class PipelineStep {
         return this._tags;
     }
 
+    /** Gets the Resource property */
+    resource = {
+        get: async (): Promise<Resource> => {
+            const handle = await this._client.invokeCapability<IResourceHandle>(
+                'Aspire.Hosting.Pipelines/PipelineStep.resource',
+                { context: this._handle }
+            );
+            return new Resource(handle, this._client);
+        },
+    };
+
     /** Adds a dependency on another step by name */
     /** @internal */
     async _dependsOnInternal(stepName: string): Promise<PipelineStep> {
@@ -1243,6 +1920,39 @@ export class PipelineStepContext {
     /** Serialize for JSON-RPC transport */
     toJSON(): MarshalledHandle { return this._handle.toJSON(); }
 
+    /** Gets the PipelineContext property */
+    pipelineContext = {
+        get: async (): Promise<PipelineContext> => {
+            const handle = await this._client.invokeCapability<PipelineContextHandle>(
+                'Aspire.Hosting.Pipelines/PipelineStepContext.pipelineContext',
+                { context: this._handle }
+            );
+            return new PipelineContext(handle, this._client);
+        },
+    };
+
+    /** Gets the ReportingStep property */
+    reportingStep = {
+        get: async (): Promise<ReportingStep> => {
+            const handle = await this._client.invokeCapability<IReportingStepHandle>(
+                'Aspire.Hosting.Pipelines/PipelineStepContext.reportingStep',
+                { context: this._handle }
+            );
+            return new ReportingStep(handle, this._client);
+        },
+    };
+
+    /** Gets the Model property */
+    model = {
+        get: async (): Promise<DistributedApplicationModel> => {
+            const handle = await this._client.invokeCapability<DistributedApplicationModelHandle>(
+                'Aspire.Hosting.Pipelines/PipelineStepContext.model',
+                { context: this._handle }
+            );
+            return new DistributedApplicationModel(handle, this._client);
+        },
+    };
+
     /** Gets the ExecutionContext property */
     executionContext = {
         get: async (): Promise<DistributedApplicationExecutionContext> => {
@@ -1254,15 +1964,156 @@ export class PipelineStepContext {
         },
     };
 
+    /** Gets the Services property */
+    services = {
+        get: async (): Promise<ServiceProvider> => {
+            const handle = await this._client.invokeCapability<IServiceProviderHandle>(
+                'Aspire.Hosting.Pipelines/PipelineStepContext.services',
+                { context: this._handle }
+            );
+            return new ServiceProvider(handle, this._client);
+        },
+    };
+
+    /** Gets the Logger property */
+    logger = {
+        get: async (): Promise<Logger> => {
+            const handle = await this._client.invokeCapability<ILoggerHandle>(
+                'Aspire.Hosting.Pipelines/PipelineStepContext.logger',
+                { context: this._handle }
+            );
+            return new Logger(handle, this._client);
+        },
+    };
+
     /** Gets the CancellationToken property */
     cancellationToken = {
-        get: async (): Promise<AbortSignal> => {
-            return await this._client.invokeCapability<AbortSignal>(
+        get: async (): Promise<CancellationToken> => {
+            const result = await this._client.invokeCapability<string | null>(
                 'Aspire.Hosting.Pipelines/PipelineStepContext.cancellationToken',
                 { context: this._handle }
             );
+            return CancellationToken.fromValue(result);
         },
     };
+
+    /** Gets the Summary property */
+    summary = {
+        get: async (): Promise<PipelineSummary> => {
+            const handle = await this._client.invokeCapability<PipelineSummaryHandle>(
+                'Aspire.Hosting.Pipelines/PipelineStepContext.summary',
+                { context: this._handle }
+            );
+            return new PipelineSummary(handle, this._client);
+        },
+    };
+
+}
+
+// ============================================================================
+// PipelineStepFactoryContext
+// ============================================================================
+
+/**
+ * Type class for PipelineStepFactoryContext.
+ */
+export class PipelineStepFactoryContext {
+    constructor(private _handle: PipelineStepFactoryContextHandle, private _client: AspireClientRpc) {}
+
+    /** Serialize for JSON-RPC transport */
+    toJSON(): MarshalledHandle { return this._handle.toJSON(); }
+
+    /** Gets the PipelineContext property */
+    pipelineContext = {
+        get: async (): Promise<PipelineContext> => {
+            const handle = await this._client.invokeCapability<PipelineContextHandle>(
+                'Aspire.Hosting.Pipelines/PipelineStepFactoryContext.pipelineContext',
+                { context: this._handle }
+            );
+            return new PipelineContext(handle, this._client);
+        },
+    };
+
+    /** Gets the Resource property */
+    resource = {
+        get: async (): Promise<Resource> => {
+            const handle = await this._client.invokeCapability<IResourceHandle>(
+                'Aspire.Hosting.Pipelines/PipelineStepFactoryContext.resource',
+                { context: this._handle }
+            );
+            return new Resource(handle, this._client);
+        },
+    };
+
+}
+
+// ============================================================================
+// PipelineSummary
+// ============================================================================
+
+/**
+ * Type class for PipelineSummary.
+ */
+export class PipelineSummary {
+    constructor(private _handle: PipelineSummaryHandle, private _client: AspireClientRpc) {}
+
+    /** Serialize for JSON-RPC transport */
+    toJSON(): MarshalledHandle { return this._handle.toJSON(); }
+
+    /** Invokes the Add method */
+    /** @internal */
+    async _addInternal(key: string, value: string): Promise<PipelineSummary> {
+        const rpcArgs: Record<string, unknown> = { context: this._handle, key, value };
+        await this._client.invokeCapability<void>(
+            'Aspire.Hosting.Pipelines/PipelineSummary.add',
+            rpcArgs
+        );
+        return this;
+    }
+
+    add(key: string, value: string): PipelineSummaryPromise {
+        return new PipelineSummaryPromise(this._addInternal(key, value));
+    }
+
+    /** Adds a Markdown-formatted value to the pipeline summary */
+    /** @internal */
+    async _addMarkdownInternal(key: string, markdownString: string): Promise<PipelineSummary> {
+        const rpcArgs: Record<string, unknown> = { summary: this._handle, key, markdownString };
+        await this._client.invokeCapability<void>(
+            'Aspire.Hosting/addMarkdown',
+            rpcArgs
+        );
+        return this;
+    }
+
+    addMarkdown(key: string, markdownString: string): PipelineSummaryPromise {
+        return new PipelineSummaryPromise(this._addMarkdownInternal(key, markdownString));
+    }
+
+}
+
+/**
+ * Thenable wrapper for PipelineSummary that enables fluent chaining.
+ */
+export class PipelineSummaryPromise implements PromiseLike<PipelineSummary> {
+    constructor(private _promise: Promise<PipelineSummary>) {}
+
+    then<TResult1 = PipelineSummary, TResult2 = never>(
+        onfulfilled?: ((value: PipelineSummary) => TResult1 | PromiseLike<TResult1>) | null,
+        onrejected?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null
+    ): PromiseLike<TResult1 | TResult2> {
+        return this._promise.then(onfulfilled, onrejected);
+    }
+
+    /** Invokes the Add method */
+    add(key: string, value: string): PipelineSummaryPromise {
+        return new PipelineSummaryPromise(this._promise.then(obj => obj.add(key, value)));
+    }
+
+    /** Adds a Markdown-formatted value to the pipeline summary */
+    addMarkdown(key: string, markdownString: string): PipelineSummaryPromise {
+        return new PipelineSummaryPromise(this._promise.then(obj => obj.addMarkdown(key, markdownString)));
+    }
 
 }
 
@@ -1448,6 +2299,325 @@ export class ReferenceExpressionBuilderPromise implements PromiseLike<ReferenceE
 }
 
 // ============================================================================
+// ResourceEndpointsAllocatedEvent
+// ============================================================================
+
+/**
+ * Type class for ResourceEndpointsAllocatedEvent.
+ */
+export class ResourceEndpointsAllocatedEvent {
+    constructor(private _handle: ResourceEndpointsAllocatedEventHandle, private _client: AspireClientRpc) {}
+
+    /** Serialize for JSON-RPC transport */
+    toJSON(): MarshalledHandle { return this._handle.toJSON(); }
+
+    /** Gets the Resource property */
+    resource = {
+        get: async (): Promise<Resource> => {
+            const handle = await this._client.invokeCapability<IResourceHandle>(
+                'Aspire.Hosting.ApplicationModel/ResourceEndpointsAllocatedEvent.resource',
+                { context: this._handle }
+            );
+            return new Resource(handle, this._client);
+        },
+    };
+
+    /** Gets the Services property */
+    services = {
+        get: async (): Promise<ServiceProvider> => {
+            const handle = await this._client.invokeCapability<IServiceProviderHandle>(
+                'Aspire.Hosting.ApplicationModel/ResourceEndpointsAllocatedEvent.services',
+                { context: this._handle }
+            );
+            return new ServiceProvider(handle, this._client);
+        },
+    };
+
+}
+
+// ============================================================================
+// ResourceLoggerService
+// ============================================================================
+
+/**
+ * Type class for ResourceLoggerService.
+ */
+export class ResourceLoggerService {
+    constructor(private _handle: ResourceLoggerServiceHandle, private _client: AspireClientRpc) {}
+
+    /** Serialize for JSON-RPC transport */
+    toJSON(): MarshalledHandle { return this._handle.toJSON(); }
+
+    /** Completes the log stream for a resource */
+    /** @internal */
+    async _completeLogInternal(resource: ResourceBuilderBase): Promise<ResourceLoggerService> {
+        const rpcArgs: Record<string, unknown> = { loggerService: this._handle, resource };
+        await this._client.invokeCapability<void>(
+            'Aspire.Hosting/completeLog',
+            rpcArgs
+        );
+        return this;
+    }
+
+    completeLog(resource: ResourceBuilderBase): ResourceLoggerServicePromise {
+        return new ResourceLoggerServicePromise(this._completeLogInternal(resource));
+    }
+
+    /** Completes the log stream by resource name */
+    /** @internal */
+    async _completeLogByNameInternal(resourceName: string): Promise<ResourceLoggerService> {
+        const rpcArgs: Record<string, unknown> = { loggerService: this._handle, resourceName };
+        await this._client.invokeCapability<void>(
+            'Aspire.Hosting/completeLogByName',
+            rpcArgs
+        );
+        return this;
+    }
+
+    completeLogByName(resourceName: string): ResourceLoggerServicePromise {
+        return new ResourceLoggerServicePromise(this._completeLogByNameInternal(resourceName));
+    }
+
+}
+
+/**
+ * Thenable wrapper for ResourceLoggerService that enables fluent chaining.
+ */
+export class ResourceLoggerServicePromise implements PromiseLike<ResourceLoggerService> {
+    constructor(private _promise: Promise<ResourceLoggerService>) {}
+
+    then<TResult1 = ResourceLoggerService, TResult2 = never>(
+        onfulfilled?: ((value: ResourceLoggerService) => TResult1 | PromiseLike<TResult1>) | null,
+        onrejected?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null
+    ): PromiseLike<TResult1 | TResult2> {
+        return this._promise.then(onfulfilled, onrejected);
+    }
+
+    /** Completes the log stream for a resource */
+    completeLog(resource: ResourceBuilderBase): ResourceLoggerServicePromise {
+        return new ResourceLoggerServicePromise(this._promise.then(obj => obj.completeLog(resource)));
+    }
+
+    /** Completes the log stream by resource name */
+    completeLogByName(resourceName: string): ResourceLoggerServicePromise {
+        return new ResourceLoggerServicePromise(this._promise.then(obj => obj.completeLogByName(resourceName)));
+    }
+
+}
+
+// ============================================================================
+// ResourceNotificationService
+// ============================================================================
+
+/**
+ * Type class for ResourceNotificationService.
+ */
+export class ResourceNotificationService {
+    constructor(private _handle: ResourceNotificationServiceHandle, private _client: AspireClientRpc) {}
+
+    /** Serialize for JSON-RPC transport */
+    toJSON(): MarshalledHandle { return this._handle.toJSON(); }
+
+    /** Waits for a resource to reach a specified state */
+    /** @internal */
+    async _waitForResourceStateInternal(resourceName: string, targetState?: string): Promise<ResourceNotificationService> {
+        const rpcArgs: Record<string, unknown> = { notificationService: this._handle, resourceName };
+        if (targetState !== undefined) rpcArgs.targetState = targetState;
+        await this._client.invokeCapability<void>(
+            'Aspire.Hosting/waitForResourceState',
+            rpcArgs
+        );
+        return this;
+    }
+
+    waitForResourceState(resourceName: string, options?: WaitForResourceStateOptions): ResourceNotificationServicePromise {
+        const targetState = options?.targetState;
+        return new ResourceNotificationServicePromise(this._waitForResourceStateInternal(resourceName, targetState));
+    }
+
+    /** Waits for a resource to reach one of the specified states */
+    async waitForResourceStates(resourceName: string, targetStates: string[]): Promise<string> {
+        const rpcArgs: Record<string, unknown> = { notificationService: this._handle, resourceName, targetStates };
+        return await this._client.invokeCapability<string>(
+            'Aspire.Hosting/waitForResourceStates',
+            rpcArgs
+        );
+    }
+
+    /** Waits for a resource to become healthy */
+    async waitForResourceHealthy(resourceName: string): Promise<ResourceEventDto> {
+        const rpcArgs: Record<string, unknown> = { notificationService: this._handle, resourceName };
+        return await this._client.invokeCapability<ResourceEventDto>(
+            'Aspire.Hosting/waitForResourceHealthy',
+            rpcArgs
+        );
+    }
+
+    /** Waits for all dependencies of a resource to be ready */
+    /** @internal */
+    async _waitForDependenciesInternal(resource: ResourceBuilderBase): Promise<ResourceNotificationService> {
+        const rpcArgs: Record<string, unknown> = { notificationService: this._handle, resource };
+        await this._client.invokeCapability<void>(
+            'Aspire.Hosting/waitForDependencies',
+            rpcArgs
+        );
+        return this;
+    }
+
+    waitForDependencies(resource: ResourceBuilderBase): ResourceNotificationServicePromise {
+        return new ResourceNotificationServicePromise(this._waitForDependenciesInternal(resource));
+    }
+
+    /** Tries to get the current state of a resource */
+    async tryGetResourceState(resourceName: string): Promise<ResourceEventDto> {
+        const rpcArgs: Record<string, unknown> = { notificationService: this._handle, resourceName };
+        return await this._client.invokeCapability<ResourceEventDto>(
+            'Aspire.Hosting/tryGetResourceState',
+            rpcArgs
+        );
+    }
+
+    /** Publishes an update for a resource's state */
+    /** @internal */
+    async _publishResourceUpdateInternal(resource: ResourceBuilderBase, state?: string, stateStyle?: string): Promise<ResourceNotificationService> {
+        const rpcArgs: Record<string, unknown> = { notificationService: this._handle, resource };
+        if (state !== undefined) rpcArgs.state = state;
+        if (stateStyle !== undefined) rpcArgs.stateStyle = stateStyle;
+        await this._client.invokeCapability<void>(
+            'Aspire.Hosting/publishResourceUpdate',
+            rpcArgs
+        );
+        return this;
+    }
+
+    publishResourceUpdate(resource: ResourceBuilderBase, options?: PublishResourceUpdateOptions): ResourceNotificationServicePromise {
+        const state = options?.state;
+        const stateStyle = options?.stateStyle;
+        return new ResourceNotificationServicePromise(this._publishResourceUpdateInternal(resource, state, stateStyle));
+    }
+
+}
+
+/**
+ * Thenable wrapper for ResourceNotificationService that enables fluent chaining.
+ */
+export class ResourceNotificationServicePromise implements PromiseLike<ResourceNotificationService> {
+    constructor(private _promise: Promise<ResourceNotificationService>) {}
+
+    then<TResult1 = ResourceNotificationService, TResult2 = never>(
+        onfulfilled?: ((value: ResourceNotificationService) => TResult1 | PromiseLike<TResult1>) | null,
+        onrejected?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null
+    ): PromiseLike<TResult1 | TResult2> {
+        return this._promise.then(onfulfilled, onrejected);
+    }
+
+    /** Waits for a resource to reach a specified state */
+    waitForResourceState(resourceName: string, options?: WaitForResourceStateOptions): ResourceNotificationServicePromise {
+        return new ResourceNotificationServicePromise(this._promise.then(obj => obj.waitForResourceState(resourceName, options)));
+    }
+
+    /** Waits for a resource to reach one of the specified states */
+    waitForResourceStates(resourceName: string, targetStates: string[]): Promise<string> {
+        return this._promise.then(obj => obj.waitForResourceStates(resourceName, targetStates));
+    }
+
+    /** Waits for a resource to become healthy */
+    waitForResourceHealthy(resourceName: string): Promise<ResourceEventDto> {
+        return this._promise.then(obj => obj.waitForResourceHealthy(resourceName));
+    }
+
+    /** Waits for all dependencies of a resource to be ready */
+    waitForDependencies(resource: ResourceBuilderBase): ResourceNotificationServicePromise {
+        return new ResourceNotificationServicePromise(this._promise.then(obj => obj.waitForDependencies(resource)));
+    }
+
+    /** Tries to get the current state of a resource */
+    tryGetResourceState(resourceName: string): Promise<ResourceEventDto> {
+        return this._promise.then(obj => obj.tryGetResourceState(resourceName));
+    }
+
+    /** Publishes an update for a resource's state */
+    publishResourceUpdate(resource: ResourceBuilderBase, options?: PublishResourceUpdateOptions): ResourceNotificationServicePromise {
+        return new ResourceNotificationServicePromise(this._promise.then(obj => obj.publishResourceUpdate(resource, options)));
+    }
+
+}
+
+// ============================================================================
+// ResourceReadyEvent
+// ============================================================================
+
+/**
+ * Type class for ResourceReadyEvent.
+ */
+export class ResourceReadyEvent {
+    constructor(private _handle: ResourceReadyEventHandle, private _client: AspireClientRpc) {}
+
+    /** Serialize for JSON-RPC transport */
+    toJSON(): MarshalledHandle { return this._handle.toJSON(); }
+
+    /** Gets the Resource property */
+    resource = {
+        get: async (): Promise<Resource> => {
+            const handle = await this._client.invokeCapability<IResourceHandle>(
+                'Aspire.Hosting.ApplicationModel/ResourceReadyEvent.resource',
+                { context: this._handle }
+            );
+            return new Resource(handle, this._client);
+        },
+    };
+
+    /** Gets the Services property */
+    services = {
+        get: async (): Promise<ServiceProvider> => {
+            const handle = await this._client.invokeCapability<IServiceProviderHandle>(
+                'Aspire.Hosting.ApplicationModel/ResourceReadyEvent.services',
+                { context: this._handle }
+            );
+            return new ServiceProvider(handle, this._client);
+        },
+    };
+
+}
+
+// ============================================================================
+// ResourceStoppedEvent
+// ============================================================================
+
+/**
+ * Type class for ResourceStoppedEvent.
+ */
+export class ResourceStoppedEvent {
+    constructor(private _handle: ResourceStoppedEventHandle, private _client: AspireClientRpc) {}
+
+    /** Serialize for JSON-RPC transport */
+    toJSON(): MarshalledHandle { return this._handle.toJSON(); }
+
+    /** Gets the Resource property */
+    resource = {
+        get: async (): Promise<Resource> => {
+            const handle = await this._client.invokeCapability<IResourceHandle>(
+                'Aspire.Hosting.ApplicationModel/ResourceStoppedEvent.resource',
+                { context: this._handle }
+            );
+            return new Resource(handle, this._client);
+        },
+    };
+
+    /** Gets the Services property */
+    services = {
+        get: async (): Promise<ServiceProvider> => {
+            const handle = await this._client.invokeCapability<IServiceProviderHandle>(
+                'Aspire.Hosting.ApplicationModel/ResourceStoppedEvent.services',
+                { context: this._handle }
+            );
+            return new ServiceProvider(handle, this._client);
+        },
+    };
+
+}
+
+// ============================================================================
 // ResourceUrlsCallbackContext
 // ============================================================================
 
@@ -1459,6 +2629,17 @@ export class ResourceUrlsCallbackContext {
 
     /** Serialize for JSON-RPC transport */
     toJSON(): MarshalledHandle { return this._handle.toJSON(); }
+
+    /** Gets the Resource property */
+    resource = {
+        get: async (): Promise<Resource> => {
+            const handle = await this._client.invokeCapability<IResourceHandle>(
+                'Aspire.Hosting.ApplicationModel/ResourceUrlsCallbackContext.resource',
+                { context: this._handle }
+            );
+            return new Resource(handle, this._client);
+        },
+    };
 
     /** Gets the Urls property */
     private _urls?: AspireList<ResourceUrlAnnotation>;
@@ -1476,11 +2657,23 @@ export class ResourceUrlsCallbackContext {
 
     /** Gets the CancellationToken property */
     cancellationToken = {
-        get: async (): Promise<AbortSignal> => {
-            return await this._client.invokeCapability<AbortSignal>(
+        get: async (): Promise<CancellationToken> => {
+            const result = await this._client.invokeCapability<string | null>(
                 'Aspire.Hosting.ApplicationModel/ResourceUrlsCallbackContext.cancellationToken',
                 { context: this._handle }
             );
+            return CancellationToken.fromValue(result);
+        },
+    };
+
+    /** Gets the Logger property */
+    logger = {
+        get: async (): Promise<Logger> => {
+            const handle = await this._client.invokeCapability<ILoggerHandle>(
+                'Aspire.Hosting.ApplicationModel/ResourceUrlsCallbackContext.logger',
+                { context: this._handle }
+            );
+            return new Logger(handle, this._client);
         },
     };
 
@@ -1494,6 +2687,132 @@ export class ResourceUrlsCallbackContext {
             return new DistributedApplicationExecutionContext(handle, this._client);
         },
     };
+
+}
+
+// ============================================================================
+// UpdateCommandStateContext
+// ============================================================================
+
+/**
+ * Type class for UpdateCommandStateContext.
+ */
+export class UpdateCommandStateContext {
+    constructor(private _handle: UpdateCommandStateContextHandle, private _client: AspireClientRpc) {}
+
+    /** Serialize for JSON-RPC transport */
+    toJSON(): MarshalledHandle { return this._handle.toJSON(); }
+
+    /** Gets the ServiceProvider property */
+    serviceProvider = {
+        get: async (): Promise<ServiceProvider> => {
+            const handle = await this._client.invokeCapability<IServiceProviderHandle>(
+                'Aspire.Hosting.ApplicationModel/UpdateCommandStateContext.serviceProvider',
+                { context: this._handle }
+            );
+            return new ServiceProvider(handle, this._client);
+        },
+    };
+
+}
+
+// ============================================================================
+// Configuration
+// ============================================================================
+
+/**
+ * Type class for Configuration.
+ */
+export class Configuration {
+    constructor(private _handle: IConfigurationHandle, private _client: AspireClientRpc) {}
+
+    /** Serialize for JSON-RPC transport */
+    toJSON(): MarshalledHandle { return this._handle.toJSON(); }
+
+    /** Gets a configuration value by key */
+    async getConfigValue(key: string): Promise<string> {
+        const rpcArgs: Record<string, unknown> = { configuration: this._handle, key };
+        return await this._client.invokeCapability<string>(
+            'Aspire.Hosting/getConfigValue',
+            rpcArgs
+        );
+    }
+
+    /** Gets a connection string by name */
+    async getConnectionString(name: string): Promise<string> {
+        const rpcArgs: Record<string, unknown> = { configuration: this._handle, name };
+        return await this._client.invokeCapability<string>(
+            'Aspire.Hosting/getConnectionString',
+            rpcArgs
+        );
+    }
+
+    /** Gets a configuration section by key */
+    async getSection(key: string): Promise<IConfigurationSectionHandle> {
+        const rpcArgs: Record<string, unknown> = { configuration: this._handle, key };
+        return await this._client.invokeCapability<IConfigurationSectionHandle>(
+            'Aspire.Hosting/getSection',
+            rpcArgs
+        );
+    }
+
+    /** Gets child configuration sections */
+    async getChildren(): Promise<IConfigurationSectionHandle[]> {
+        const rpcArgs: Record<string, unknown> = { configuration: this._handle };
+        return await this._client.invokeCapability<IConfigurationSectionHandle[]>(
+            'Aspire.Hosting/getChildren',
+            rpcArgs
+        );
+    }
+
+    /** Checks whether a configuration section exists */
+    async exists(key: string): Promise<boolean> {
+        const rpcArgs: Record<string, unknown> = { configuration: this._handle, key };
+        return await this._client.invokeCapability<boolean>(
+            'Aspire.Hosting/exists',
+            rpcArgs
+        );
+    }
+
+}
+
+/**
+ * Thenable wrapper for Configuration that enables fluent chaining.
+ */
+export class ConfigurationPromise implements PromiseLike<Configuration> {
+    constructor(private _promise: Promise<Configuration>) {}
+
+    then<TResult1 = Configuration, TResult2 = never>(
+        onfulfilled?: ((value: Configuration) => TResult1 | PromiseLike<TResult1>) | null,
+        onrejected?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null
+    ): PromiseLike<TResult1 | TResult2> {
+        return this._promise.then(onfulfilled, onrejected);
+    }
+
+    /** Gets a configuration value by key */
+    getConfigValue(key: string): Promise<string> {
+        return this._promise.then(obj => obj.getConfigValue(key));
+    }
+
+    /** Gets a connection string by name */
+    getConnectionString(name: string): Promise<string> {
+        return this._promise.then(obj => obj.getConnectionString(name));
+    }
+
+    /** Gets a configuration section by key */
+    getSection(key: string): Promise<IConfigurationSectionHandle> {
+        return this._promise.then(obj => obj.getSection(key));
+    }
+
+    /** Gets child configuration sections */
+    getChildren(): Promise<IConfigurationSectionHandle[]> {
+        return this._promise.then(obj => obj.getChildren());
+    }
+
+    /** Checks whether a configuration section exists */
+    exists(key: string): Promise<boolean> {
+        return this._promise.then(obj => obj.exists(key));
+    }
 
 }
 
@@ -1520,6 +2839,17 @@ export class DistributedApplicationBuilder {
         },
     };
 
+    /** Gets the Environment property */
+    environment = {
+        get: async (): Promise<HostEnvironment> => {
+            const handle = await this._client.invokeCapability<IHostEnvironmentHandle>(
+                'Aspire.Hosting/IDistributedApplicationBuilder.environment',
+                { context: this._handle }
+            );
+            return new HostEnvironment(handle, this._client);
+        },
+    };
+
     /** Gets the Eventing property */
     eventing = {
         get: async (): Promise<DistributedApplicationEventing> => {
@@ -1542,6 +2872,17 @@ export class DistributedApplicationBuilder {
         },
     };
 
+    /** Gets the UserSecretsManager property */
+    userSecretsManager = {
+        get: async (): Promise<UserSecretsManager> => {
+            const handle = await this._client.invokeCapability<IUserSecretsManagerHandle>(
+                'Aspire.Hosting/IDistributedApplicationBuilder.userSecretsManager',
+                { context: this._handle }
+            );
+            return new UserSecretsManager(handle, this._client);
+        },
+    };
+
     /** Builds the distributed application */
     /** @internal */
     async _buildInternal(): Promise<DistributedApplication> {
@@ -1555,6 +2896,21 @@ export class DistributedApplicationBuilder {
 
     build(): DistributedApplicationPromise {
         return new DistributedApplicationPromise(this._buildInternal());
+    }
+
+    /** Adds a connection string with a reference expression */
+    /** @internal */
+    async _addConnectionStringExpressionInternal(name: string, connectionStringExpression: ReferenceExpression): Promise<ConnectionStringResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, name, connectionStringExpression };
+        const result = await this._client.invokeCapability<ConnectionStringResourceHandle>(
+            'Aspire.Hosting/addConnectionStringExpression',
+            rpcArgs
+        );
+        return new ConnectionStringResource(result, this._client);
+    }
+
+    addConnectionStringExpression(name: string, connectionStringExpression: ReferenceExpression): ConnectionStringResourcePromise {
+        return new ConnectionStringResourcePromise(this._addConnectionStringExpressionInternal(name, connectionStringExpression));
     }
 
     /** Adds a connection string with a builder callback */
@@ -1592,6 +2948,23 @@ export class DistributedApplicationBuilder {
     addContainerRegistry(name: string, endpoint: ParameterResource, options?: AddContainerRegistryOptions): ContainerRegistryResourcePromise {
         const repository = options?.repository;
         return new ContainerRegistryResourcePromise(this._addContainerRegistryInternal(name, endpoint, repository));
+    }
+
+    /** Adds a container registry with string endpoint */
+    /** @internal */
+    async _addContainerRegistryFromStringInternal(name: string, endpoint: string, repository?: string): Promise<ContainerRegistryResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, name, endpoint };
+        if (repository !== undefined) rpcArgs.repository = repository;
+        const result = await this._client.invokeCapability<ContainerRegistryResourceHandle>(
+            'Aspire.Hosting/addContainerRegistryFromString',
+            rpcArgs
+        );
+        return new ContainerRegistryResource(result, this._client);
+    }
+
+    addContainerRegistryFromString(name: string, endpoint: string, options?: AddContainerRegistryFromStringOptions): ContainerRegistryResourcePromise {
+        const repository = options?.repository;
+        return new ContainerRegistryResourcePromise(this._addContainerRegistryFromStringInternal(name, endpoint, repository));
     }
 
     /** Adds a container resource */
@@ -1673,6 +3046,36 @@ export class DistributedApplicationBuilder {
         return new ExternalServiceResourcePromise(this._addExternalServiceInternal(name, url));
     }
 
+    /** Adds an external service with a URI */
+    /** @internal */
+    async _addExternalServiceUriInternal(name: string, uri: string): Promise<ExternalServiceResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, name, uri };
+        const result = await this._client.invokeCapability<ExternalServiceResourceHandle>(
+            'Aspire.Hosting/addExternalServiceUri',
+            rpcArgs
+        );
+        return new ExternalServiceResource(result, this._client);
+    }
+
+    addExternalServiceUri(name: string, uri: string): ExternalServiceResourcePromise {
+        return new ExternalServiceResourcePromise(this._addExternalServiceUriInternal(name, uri));
+    }
+
+    /** Adds an external service with a parameter URL */
+    /** @internal */
+    async _addExternalServiceParameterInternal(name: string, urlParameter: ParameterResource): Promise<ExternalServiceResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, name, urlParameter };
+        const result = await this._client.invokeCapability<ExternalServiceResourceHandle>(
+            'Aspire.Hosting/addExternalServiceParameter',
+            rpcArgs
+        );
+        return new ExternalServiceResource(result, this._client);
+    }
+
+    addExternalServiceParameter(name: string, urlParameter: ParameterResource): ExternalServiceResourcePromise {
+        return new ExternalServiceResourcePromise(this._addExternalServiceParameterInternal(name, urlParameter));
+    }
+
     /** Adds a parameter resource */
     /** @internal */
     async _addParameterInternal(name: string, secret?: boolean): Promise<ParameterResource> {
@@ -1688,6 +3091,25 @@ export class DistributedApplicationBuilder {
     addParameter(name: string, options?: AddParameterOptions): ParameterResourcePromise {
         const secret = options?.secret;
         return new ParameterResourcePromise(this._addParameterInternal(name, secret));
+    }
+
+    /** Adds a parameter with a default value */
+    /** @internal */
+    async _addParameterWithValueInternal(name: string, value: string, publishValueAsDefault?: boolean, secret?: boolean): Promise<ParameterResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, name, value };
+        if (publishValueAsDefault !== undefined) rpcArgs.publishValueAsDefault = publishValueAsDefault;
+        if (secret !== undefined) rpcArgs.secret = secret;
+        const result = await this._client.invokeCapability<ParameterResourceHandle>(
+            'Aspire.Hosting/addParameterWithValue',
+            rpcArgs
+        );
+        return new ParameterResource(result, this._client);
+    }
+
+    addParameterWithValue(name: string, value: string, options?: AddParameterWithValueOptions): ParameterResourcePromise {
+        const publishValueAsDefault = options?.publishValueAsDefault;
+        const secret = options?.secret;
+        return new ParameterResourcePromise(this._addParameterWithValueInternal(name, value, publishValueAsDefault, secret));
     }
 
     /** Adds a parameter sourced from configuration */
@@ -1794,6 +3216,98 @@ export class DistributedApplicationBuilder {
         return new CSharpAppResourcePromise(this._addCSharpAppWithOptionsInternal(name, path, configure));
     }
 
+    /** Gets the application configuration */
+    /** @internal */
+    async _getConfigurationInternal(): Promise<Configuration> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle };
+        const result = await this._client.invokeCapability<IConfigurationHandle>(
+            'Aspire.Hosting/getConfiguration',
+            rpcArgs
+        );
+        return new Configuration(result, this._client);
+    }
+
+    getConfiguration(): ConfigurationPromise {
+        return new ConfigurationPromise(this._getConfigurationInternal());
+    }
+
+    /** Subscribes to the BeforeStart event */
+    async subscribeBeforeStart(callback: (arg: BeforeStartEvent) => Promise<void>): Promise<DistributedApplicationEventSubscriptionHandle> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as BeforeStartEventHandle;
+            const arg = new BeforeStartEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        return await this._client.invokeCapability<DistributedApplicationEventSubscriptionHandle>(
+            'Aspire.Hosting/subscribeBeforeStart',
+            rpcArgs
+        );
+    }
+
+    /** Subscribes to the AfterResourcesCreated event */
+    async subscribeAfterResourcesCreated(callback: (arg: AfterResourcesCreatedEvent) => Promise<void>): Promise<DistributedApplicationEventSubscriptionHandle> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as AfterResourcesCreatedEventHandle;
+            const arg = new AfterResourcesCreatedEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        return await this._client.invokeCapability<DistributedApplicationEventSubscriptionHandle>(
+            'Aspire.Hosting/subscribeAfterResourcesCreated',
+            rpcArgs
+        );
+    }
+
+    /** Adds a Node.js application resource */
+    /** @internal */
+    async _addNodeAppInternal(name: string, appDirectory: string, scriptPath: string): Promise<NodeAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, name, appDirectory, scriptPath };
+        const result = await this._client.invokeCapability<NodeAppResourceHandle>(
+            'Aspire.Hosting.JavaScript/addNodeApp',
+            rpcArgs
+        );
+        return new NodeAppResource(result, this._client);
+    }
+
+    addNodeApp(name: string, appDirectory: string, scriptPath: string): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._addNodeAppInternal(name, appDirectory, scriptPath));
+    }
+
+    /** Adds a JavaScript application resource */
+    /** @internal */
+    async _addJavaScriptAppInternal(name: string, appDirectory: string, runScriptName?: string): Promise<JavaScriptAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, name, appDirectory };
+        if (runScriptName !== undefined) rpcArgs.runScriptName = runScriptName;
+        const result = await this._client.invokeCapability<JavaScriptAppResourceHandle>(
+            'Aspire.Hosting.JavaScript/addJavaScriptApp',
+            rpcArgs
+        );
+        return new JavaScriptAppResource(result, this._client);
+    }
+
+    addJavaScriptApp(name: string, appDirectory: string, options?: AddJavaScriptAppOptions): JavaScriptAppResourcePromise {
+        const runScriptName = options?.runScriptName;
+        return new JavaScriptAppResourcePromise(this._addJavaScriptAppInternal(name, appDirectory, runScriptName));
+    }
+
+    /** Adds a Vite application resource */
+    /** @internal */
+    async _addViteAppInternal(name: string, appDirectory: string, runScriptName?: string): Promise<ViteAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, name, appDirectory };
+        if (runScriptName !== undefined) rpcArgs.runScriptName = runScriptName;
+        const result = await this._client.invokeCapability<ViteAppResourceHandle>(
+            'Aspire.Hosting.JavaScript/addViteApp',
+            rpcArgs
+        );
+        return new ViteAppResource(result, this._client);
+    }
+
+    addViteApp(name: string, appDirectory: string, options?: AddViteAppOptions): ViteAppResourcePromise {
+        const runScriptName = options?.runScriptName;
+        return new ViteAppResourcePromise(this._addViteAppInternal(name, appDirectory, runScriptName));
+    }
+
     /** Adds a MySQL server resource */
     /** @internal */
     async _addMySqlInternal(name: string, password?: ParameterResource, port?: number): Promise<MySqlServerResource> {
@@ -1873,6 +3387,11 @@ export class DistributedApplicationBuilderPromise implements PromiseLike<Distrib
         return new DistributedApplicationPromise(this._promise.then(obj => obj.build()));
     }
 
+    /** Adds a connection string with a reference expression */
+    addConnectionStringExpression(name: string, connectionStringExpression: ReferenceExpression): ConnectionStringResourcePromise {
+        return new ConnectionStringResourcePromise(this._promise.then(obj => obj.addConnectionStringExpression(name, connectionStringExpression)));
+    }
+
     /** Adds a connection string with a builder callback */
     addConnectionStringBuilder(name: string, connectionStringBuilder: (obj: ReferenceExpressionBuilder) => Promise<void>): ConnectionStringResourcePromise {
         return new ConnectionStringResourcePromise(this._promise.then(obj => obj.addConnectionStringBuilder(name, connectionStringBuilder)));
@@ -1881,6 +3400,11 @@ export class DistributedApplicationBuilderPromise implements PromiseLike<Distrib
     /** Adds a container registry resource */
     addContainerRegistry(name: string, endpoint: ParameterResource, options?: AddContainerRegistryOptions): ContainerRegistryResourcePromise {
         return new ContainerRegistryResourcePromise(this._promise.then(obj => obj.addContainerRegistry(name, endpoint, options)));
+    }
+
+    /** Adds a container registry with string endpoint */
+    addContainerRegistryFromString(name: string, endpoint: string, options?: AddContainerRegistryFromStringOptions): ContainerRegistryResourcePromise {
+        return new ContainerRegistryResourcePromise(this._promise.then(obj => obj.addContainerRegistryFromString(name, endpoint, options)));
     }
 
     /** Adds a container resource */
@@ -1908,9 +3432,24 @@ export class DistributedApplicationBuilderPromise implements PromiseLike<Distrib
         return new ExternalServiceResourcePromise(this._promise.then(obj => obj.addExternalService(name, url)));
     }
 
+    /** Adds an external service with a URI */
+    addExternalServiceUri(name: string, uri: string): ExternalServiceResourcePromise {
+        return new ExternalServiceResourcePromise(this._promise.then(obj => obj.addExternalServiceUri(name, uri)));
+    }
+
+    /** Adds an external service with a parameter URL */
+    addExternalServiceParameter(name: string, urlParameter: ParameterResource): ExternalServiceResourcePromise {
+        return new ExternalServiceResourcePromise(this._promise.then(obj => obj.addExternalServiceParameter(name, urlParameter)));
+    }
+
     /** Adds a parameter resource */
     addParameter(name: string, options?: AddParameterOptions): ParameterResourcePromise {
         return new ParameterResourcePromise(this._promise.then(obj => obj.addParameter(name, options)));
+    }
+
+    /** Adds a parameter with a default value */
+    addParameterWithValue(name: string, value: string, options?: AddParameterWithValueOptions): ParameterResourcePromise {
+        return new ParameterResourcePromise(this._promise.then(obj => obj.addParameterWithValue(name, value, options)));
     }
 
     /** Adds a parameter sourced from configuration */
@@ -1941,6 +3480,36 @@ export class DistributedApplicationBuilderPromise implements PromiseLike<Distrib
     /** Adds a C# application resource with configuration options */
     addCSharpAppWithOptions(name: string, path: string, configure: (obj: ProjectResourceOptions) => Promise<void>): CSharpAppResourcePromise {
         return new CSharpAppResourcePromise(this._promise.then(obj => obj.addCSharpAppWithOptions(name, path, configure)));
+    }
+
+    /** Gets the application configuration */
+    getConfiguration(): ConfigurationPromise {
+        return new ConfigurationPromise(this._promise.then(obj => obj.getConfiguration()));
+    }
+
+    /** Subscribes to the BeforeStart event */
+    subscribeBeforeStart(callback: (arg: BeforeStartEvent) => Promise<void>): Promise<DistributedApplicationEventSubscriptionHandle> {
+        return this._promise.then(obj => obj.subscribeBeforeStart(callback));
+    }
+
+    /** Subscribes to the AfterResourcesCreated event */
+    subscribeAfterResourcesCreated(callback: (arg: AfterResourcesCreatedEvent) => Promise<void>): Promise<DistributedApplicationEventSubscriptionHandle> {
+        return this._promise.then(obj => obj.subscribeAfterResourcesCreated(callback));
+    }
+
+    /** Adds a Node.js application resource */
+    addNodeApp(name: string, appDirectory: string, scriptPath: string): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._promise.then(obj => obj.addNodeApp(name, appDirectory, scriptPath)));
+    }
+
+    /** Adds a JavaScript application resource */
+    addJavaScriptApp(name: string, appDirectory: string, options?: AddJavaScriptAppOptions): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._promise.then(obj => obj.addJavaScriptApp(name, appDirectory, options)));
+    }
+
+    /** Adds a Vite application resource */
+    addViteApp(name: string, appDirectory: string, options?: AddViteAppOptions): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._promise.then(obj => obj.addViteApp(name, appDirectory, options)));
     }
 
     /** Adds a MySQL server resource */
@@ -2006,6 +3575,814 @@ export class DistributedApplicationEventingPromise implements PromiseLike<Distri
     /** Invokes the Unsubscribe method */
     unsubscribe(subscription: DistributedApplicationEventSubscriptionHandle): DistributedApplicationEventingPromise {
         return new DistributedApplicationEventingPromise(this._promise.then(obj => obj.unsubscribe(subscription)));
+    }
+
+}
+
+// ============================================================================
+// HostEnvironment
+// ============================================================================
+
+/**
+ * Type class for HostEnvironment.
+ */
+export class HostEnvironment {
+    constructor(private _handle: IHostEnvironmentHandle, private _client: AspireClientRpc) {}
+
+    /** Serialize for JSON-RPC transport */
+    toJSON(): MarshalledHandle { return this._handle.toJSON(); }
+
+    /** Checks if running in Development environment */
+    async isDevelopment(): Promise<boolean> {
+        const rpcArgs: Record<string, unknown> = { environment: this._handle };
+        return await this._client.invokeCapability<boolean>(
+            'Aspire.Hosting/isDevelopment',
+            rpcArgs
+        );
+    }
+
+    /** Checks if running in Production environment */
+    async isProduction(): Promise<boolean> {
+        const rpcArgs: Record<string, unknown> = { environment: this._handle };
+        return await this._client.invokeCapability<boolean>(
+            'Aspire.Hosting/isProduction',
+            rpcArgs
+        );
+    }
+
+    /** Checks if running in Staging environment */
+    async isStaging(): Promise<boolean> {
+        const rpcArgs: Record<string, unknown> = { environment: this._handle };
+        return await this._client.invokeCapability<boolean>(
+            'Aspire.Hosting/isStaging',
+            rpcArgs
+        );
+    }
+
+    /** Checks if the environment matches the specified name */
+    async isEnvironment(environmentName: string): Promise<boolean> {
+        const rpcArgs: Record<string, unknown> = { environment: this._handle, environmentName };
+        return await this._client.invokeCapability<boolean>(
+            'Aspire.Hosting/isEnvironment',
+            rpcArgs
+        );
+    }
+
+}
+
+/**
+ * Thenable wrapper for HostEnvironment that enables fluent chaining.
+ */
+export class HostEnvironmentPromise implements PromiseLike<HostEnvironment> {
+    constructor(private _promise: Promise<HostEnvironment>) {}
+
+    then<TResult1 = HostEnvironment, TResult2 = never>(
+        onfulfilled?: ((value: HostEnvironment) => TResult1 | PromiseLike<TResult1>) | null,
+        onrejected?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null
+    ): PromiseLike<TResult1 | TResult2> {
+        return this._promise.then(onfulfilled, onrejected);
+    }
+
+    /** Checks if running in Development environment */
+    isDevelopment(): Promise<boolean> {
+        return this._promise.then(obj => obj.isDevelopment());
+    }
+
+    /** Checks if running in Production environment */
+    isProduction(): Promise<boolean> {
+        return this._promise.then(obj => obj.isProduction());
+    }
+
+    /** Checks if running in Staging environment */
+    isStaging(): Promise<boolean> {
+        return this._promise.then(obj => obj.isStaging());
+    }
+
+    /** Checks if the environment matches the specified name */
+    isEnvironment(environmentName: string): Promise<boolean> {
+        return this._promise.then(obj => obj.isEnvironment(environmentName));
+    }
+
+}
+
+// ============================================================================
+// Logger
+// ============================================================================
+
+/**
+ * Type class for Logger.
+ */
+export class Logger {
+    constructor(private _handle: ILoggerHandle, private _client: AspireClientRpc) {}
+
+    /** Serialize for JSON-RPC transport */
+    toJSON(): MarshalledHandle { return this._handle.toJSON(); }
+
+    /** Logs an information message */
+    /** @internal */
+    async _logInformationInternal(message: string): Promise<Logger> {
+        const rpcArgs: Record<string, unknown> = { logger: this._handle, message };
+        await this._client.invokeCapability<void>(
+            'Aspire.Hosting/logInformation',
+            rpcArgs
+        );
+        return this;
+    }
+
+    logInformation(message: string): LoggerPromise {
+        return new LoggerPromise(this._logInformationInternal(message));
+    }
+
+    /** Logs a warning message */
+    /** @internal */
+    async _logWarningInternal(message: string): Promise<Logger> {
+        const rpcArgs: Record<string, unknown> = { logger: this._handle, message };
+        await this._client.invokeCapability<void>(
+            'Aspire.Hosting/logWarning',
+            rpcArgs
+        );
+        return this;
+    }
+
+    logWarning(message: string): LoggerPromise {
+        return new LoggerPromise(this._logWarningInternal(message));
+    }
+
+    /** Logs an error message */
+    /** @internal */
+    async _logErrorInternal(message: string): Promise<Logger> {
+        const rpcArgs: Record<string, unknown> = { logger: this._handle, message };
+        await this._client.invokeCapability<void>(
+            'Aspire.Hosting/logError',
+            rpcArgs
+        );
+        return this;
+    }
+
+    logError(message: string): LoggerPromise {
+        return new LoggerPromise(this._logErrorInternal(message));
+    }
+
+    /** Logs a debug message */
+    /** @internal */
+    async _logDebugInternal(message: string): Promise<Logger> {
+        const rpcArgs: Record<string, unknown> = { logger: this._handle, message };
+        await this._client.invokeCapability<void>(
+            'Aspire.Hosting/logDebug',
+            rpcArgs
+        );
+        return this;
+    }
+
+    logDebug(message: string): LoggerPromise {
+        return new LoggerPromise(this._logDebugInternal(message));
+    }
+
+    /** Logs a message with specified level */
+    /** @internal */
+    async _logInternal(level: string, message: string): Promise<Logger> {
+        const rpcArgs: Record<string, unknown> = { logger: this._handle, level, message };
+        await this._client.invokeCapability<void>(
+            'Aspire.Hosting/log',
+            rpcArgs
+        );
+        return this;
+    }
+
+    log(level: string, message: string): LoggerPromise {
+        return new LoggerPromise(this._logInternal(level, message));
+    }
+
+}
+
+/**
+ * Thenable wrapper for Logger that enables fluent chaining.
+ */
+export class LoggerPromise implements PromiseLike<Logger> {
+    constructor(private _promise: Promise<Logger>) {}
+
+    then<TResult1 = Logger, TResult2 = never>(
+        onfulfilled?: ((value: Logger) => TResult1 | PromiseLike<TResult1>) | null,
+        onrejected?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null
+    ): PromiseLike<TResult1 | TResult2> {
+        return this._promise.then(onfulfilled, onrejected);
+    }
+
+    /** Logs an information message */
+    logInformation(message: string): LoggerPromise {
+        return new LoggerPromise(this._promise.then(obj => obj.logInformation(message)));
+    }
+
+    /** Logs a warning message */
+    logWarning(message: string): LoggerPromise {
+        return new LoggerPromise(this._promise.then(obj => obj.logWarning(message)));
+    }
+
+    /** Logs an error message */
+    logError(message: string): LoggerPromise {
+        return new LoggerPromise(this._promise.then(obj => obj.logError(message)));
+    }
+
+    /** Logs a debug message */
+    logDebug(message: string): LoggerPromise {
+        return new LoggerPromise(this._promise.then(obj => obj.logDebug(message)));
+    }
+
+    /** Logs a message with specified level */
+    log(level: string, message: string): LoggerPromise {
+        return new LoggerPromise(this._promise.then(obj => obj.log(level, message)));
+    }
+
+}
+
+// ============================================================================
+// LoggerFactory
+// ============================================================================
+
+/**
+ * Type class for LoggerFactory.
+ */
+export class LoggerFactory {
+    constructor(private _handle: ILoggerFactoryHandle, private _client: AspireClientRpc) {}
+
+    /** Serialize for JSON-RPC transport */
+    toJSON(): MarshalledHandle { return this._handle.toJSON(); }
+
+    /** Creates a logger for a category */
+    /** @internal */
+    async _createLoggerInternal(categoryName: string): Promise<Logger> {
+        const rpcArgs: Record<string, unknown> = { loggerFactory: this._handle, categoryName };
+        const result = await this._client.invokeCapability<ILoggerHandle>(
+            'Aspire.Hosting/createLogger',
+            rpcArgs
+        );
+        return new Logger(result, this._client);
+    }
+
+    createLogger(categoryName: string): LoggerPromise {
+        return new LoggerPromise(this._createLoggerInternal(categoryName));
+    }
+
+}
+
+/**
+ * Thenable wrapper for LoggerFactory that enables fluent chaining.
+ */
+export class LoggerFactoryPromise implements PromiseLike<LoggerFactory> {
+    constructor(private _promise: Promise<LoggerFactory>) {}
+
+    then<TResult1 = LoggerFactory, TResult2 = never>(
+        onfulfilled?: ((value: LoggerFactory) => TResult1 | PromiseLike<TResult1>) | null,
+        onrejected?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null
+    ): PromiseLike<TResult1 | TResult2> {
+        return this._promise.then(onfulfilled, onrejected);
+    }
+
+    /** Creates a logger for a category */
+    createLogger(categoryName: string): LoggerPromise {
+        return new LoggerPromise(this._promise.then(obj => obj.createLogger(categoryName)));
+    }
+
+}
+
+// ============================================================================
+// ReportingStep
+// ============================================================================
+
+/**
+ * Type class for ReportingStep.
+ */
+export class ReportingStep {
+    constructor(private _handle: IReportingStepHandle, private _client: AspireClientRpc) {}
+
+    /** Serialize for JSON-RPC transport */
+    toJSON(): MarshalledHandle { return this._handle.toJSON(); }
+
+    /** Creates a reporting task with plain-text status text */
+    /** @internal */
+    async _createTaskInternal(statusText: string, cancellationToken?: AbortSignal | CancellationToken): Promise<ReportingTask> {
+        const rpcArgs: Record<string, unknown> = { reportingStep: this._handle, statusText };
+        if (cancellationToken !== undefined) rpcArgs.cancellationToken = CancellationToken.fromValue(cancellationToken);
+        const result = await this._client.invokeCapability<IReportingTaskHandle>(
+            'Aspire.Hosting/createTask',
+            rpcArgs
+        );
+        return new ReportingTask(result, this._client);
+    }
+
+    createTask(statusText: string, options?: CreateTaskOptions): ReportingTaskPromise {
+        const cancellationToken = options?.cancellationToken;
+        return new ReportingTaskPromise(this._createTaskInternal(statusText, cancellationToken));
+    }
+
+    /** Creates a reporting task with Markdown-formatted status text */
+    /** @internal */
+    async _createMarkdownTaskInternal(markdownString: string, cancellationToken?: AbortSignal | CancellationToken): Promise<ReportingTask> {
+        const rpcArgs: Record<string, unknown> = { reportingStep: this._handle, markdownString };
+        if (cancellationToken !== undefined) rpcArgs.cancellationToken = CancellationToken.fromValue(cancellationToken);
+        const result = await this._client.invokeCapability<IReportingTaskHandle>(
+            'Aspire.Hosting/createMarkdownTask',
+            rpcArgs
+        );
+        return new ReportingTask(result, this._client);
+    }
+
+    createMarkdownTask(markdownString: string, options?: CreateMarkdownTaskOptions): ReportingTaskPromise {
+        const cancellationToken = options?.cancellationToken;
+        return new ReportingTaskPromise(this._createMarkdownTaskInternal(markdownString, cancellationToken));
+    }
+
+    /** Logs a plain-text message for the reporting step */
+    /** @internal */
+    async _logStepInternal(level: string, message: string): Promise<ReportingStep> {
+        const rpcArgs: Record<string, unknown> = { reportingStep: this._handle, level, message };
+        await this._client.invokeCapability<void>(
+            'Aspire.Hosting/logStep',
+            rpcArgs
+        );
+        return this;
+    }
+
+    logStep(level: string, message: string): ReportingStepPromise {
+        return new ReportingStepPromise(this._logStepInternal(level, message));
+    }
+
+    /** Logs a Markdown-formatted message for the reporting step */
+    /** @internal */
+    async _logStepMarkdownInternal(level: string, markdownString: string): Promise<ReportingStep> {
+        const rpcArgs: Record<string, unknown> = { reportingStep: this._handle, level, markdownString };
+        await this._client.invokeCapability<void>(
+            'Aspire.Hosting/logStepMarkdown',
+            rpcArgs
+        );
+        return this;
+    }
+
+    logStepMarkdown(level: string, markdownString: string): ReportingStepPromise {
+        return new ReportingStepPromise(this._logStepMarkdownInternal(level, markdownString));
+    }
+
+    /** Completes the reporting step with plain-text completion text */
+    /** @internal */
+    async _completeStepInternal(completionText: string, completionState?: string, cancellationToken?: AbortSignal | CancellationToken): Promise<ReportingStep> {
+        const rpcArgs: Record<string, unknown> = { reportingStep: this._handle, completionText };
+        if (completionState !== undefined) rpcArgs.completionState = completionState;
+        if (cancellationToken !== undefined) rpcArgs.cancellationToken = CancellationToken.fromValue(cancellationToken);
+        await this._client.invokeCapability<void>(
+            'Aspire.Hosting/completeStep',
+            rpcArgs
+        );
+        return this;
+    }
+
+    completeStep(completionText: string, options?: CompleteStepOptions): ReportingStepPromise {
+        const completionState = options?.completionState;
+        const cancellationToken = options?.cancellationToken;
+        return new ReportingStepPromise(this._completeStepInternal(completionText, completionState, cancellationToken));
+    }
+
+    /** Completes the reporting step with Markdown-formatted completion text */
+    /** @internal */
+    async _completeStepMarkdownInternal(markdownString: string, completionState?: string, cancellationToken?: AbortSignal | CancellationToken): Promise<ReportingStep> {
+        const rpcArgs: Record<string, unknown> = { reportingStep: this._handle, markdownString };
+        if (completionState !== undefined) rpcArgs.completionState = completionState;
+        if (cancellationToken !== undefined) rpcArgs.cancellationToken = CancellationToken.fromValue(cancellationToken);
+        await this._client.invokeCapability<void>(
+            'Aspire.Hosting/completeStepMarkdown',
+            rpcArgs
+        );
+        return this;
+    }
+
+    completeStepMarkdown(markdownString: string, options?: CompleteStepMarkdownOptions): ReportingStepPromise {
+        const completionState = options?.completionState;
+        const cancellationToken = options?.cancellationToken;
+        return new ReportingStepPromise(this._completeStepMarkdownInternal(markdownString, completionState, cancellationToken));
+    }
+
+}
+
+/**
+ * Thenable wrapper for ReportingStep that enables fluent chaining.
+ */
+export class ReportingStepPromise implements PromiseLike<ReportingStep> {
+    constructor(private _promise: Promise<ReportingStep>) {}
+
+    then<TResult1 = ReportingStep, TResult2 = never>(
+        onfulfilled?: ((value: ReportingStep) => TResult1 | PromiseLike<TResult1>) | null,
+        onrejected?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null
+    ): PromiseLike<TResult1 | TResult2> {
+        return this._promise.then(onfulfilled, onrejected);
+    }
+
+    /** Creates a reporting task with plain-text status text */
+    createTask(statusText: string, options?: CreateTaskOptions): ReportingTaskPromise {
+        return new ReportingTaskPromise(this._promise.then(obj => obj.createTask(statusText, options)));
+    }
+
+    /** Creates a reporting task with Markdown-formatted status text */
+    createMarkdownTask(markdownString: string, options?: CreateMarkdownTaskOptions): ReportingTaskPromise {
+        return new ReportingTaskPromise(this._promise.then(obj => obj.createMarkdownTask(markdownString, options)));
+    }
+
+    /** Logs a plain-text message for the reporting step */
+    logStep(level: string, message: string): ReportingStepPromise {
+        return new ReportingStepPromise(this._promise.then(obj => obj.logStep(level, message)));
+    }
+
+    /** Logs a Markdown-formatted message for the reporting step */
+    logStepMarkdown(level: string, markdownString: string): ReportingStepPromise {
+        return new ReportingStepPromise(this._promise.then(obj => obj.logStepMarkdown(level, markdownString)));
+    }
+
+    /** Completes the reporting step with plain-text completion text */
+    completeStep(completionText: string, options?: CompleteStepOptions): ReportingStepPromise {
+        return new ReportingStepPromise(this._promise.then(obj => obj.completeStep(completionText, options)));
+    }
+
+    /** Completes the reporting step with Markdown-formatted completion text */
+    completeStepMarkdown(markdownString: string, options?: CompleteStepMarkdownOptions): ReportingStepPromise {
+        return new ReportingStepPromise(this._promise.then(obj => obj.completeStepMarkdown(markdownString, options)));
+    }
+
+}
+
+// ============================================================================
+// ReportingTask
+// ============================================================================
+
+/**
+ * Type class for ReportingTask.
+ */
+export class ReportingTask {
+    constructor(private _handle: IReportingTaskHandle, private _client: AspireClientRpc) {}
+
+    /** Serialize for JSON-RPC transport */
+    toJSON(): MarshalledHandle { return this._handle.toJSON(); }
+
+    /** Updates the reporting task with plain-text status text */
+    /** @internal */
+    async _updateTaskInternal(statusText: string, cancellationToken?: AbortSignal | CancellationToken): Promise<ReportingTask> {
+        const rpcArgs: Record<string, unknown> = { reportingTask: this._handle, statusText };
+        if (cancellationToken !== undefined) rpcArgs.cancellationToken = CancellationToken.fromValue(cancellationToken);
+        await this._client.invokeCapability<void>(
+            'Aspire.Hosting/updateTask',
+            rpcArgs
+        );
+        return this;
+    }
+
+    updateTask(statusText: string, options?: UpdateTaskOptions): ReportingTaskPromise {
+        const cancellationToken = options?.cancellationToken;
+        return new ReportingTaskPromise(this._updateTaskInternal(statusText, cancellationToken));
+    }
+
+    /** Updates the reporting task with Markdown-formatted status text */
+    /** @internal */
+    async _updateTaskMarkdownInternal(markdownString: string, cancellationToken?: AbortSignal | CancellationToken): Promise<ReportingTask> {
+        const rpcArgs: Record<string, unknown> = { reportingTask: this._handle, markdownString };
+        if (cancellationToken !== undefined) rpcArgs.cancellationToken = CancellationToken.fromValue(cancellationToken);
+        await this._client.invokeCapability<void>(
+            'Aspire.Hosting/updateTaskMarkdown',
+            rpcArgs
+        );
+        return this;
+    }
+
+    updateTaskMarkdown(markdownString: string, options?: UpdateTaskMarkdownOptions): ReportingTaskPromise {
+        const cancellationToken = options?.cancellationToken;
+        return new ReportingTaskPromise(this._updateTaskMarkdownInternal(markdownString, cancellationToken));
+    }
+
+    /** Completes the reporting task with plain-text completion text */
+    /** @internal */
+    async _completeTaskInternal(completionMessage?: string, completionState?: string, cancellationToken?: AbortSignal | CancellationToken): Promise<ReportingTask> {
+        const rpcArgs: Record<string, unknown> = { reportingTask: this._handle };
+        if (completionMessage !== undefined) rpcArgs.completionMessage = completionMessage;
+        if (completionState !== undefined) rpcArgs.completionState = completionState;
+        if (cancellationToken !== undefined) rpcArgs.cancellationToken = CancellationToken.fromValue(cancellationToken);
+        await this._client.invokeCapability<void>(
+            'Aspire.Hosting/completeTask',
+            rpcArgs
+        );
+        return this;
+    }
+
+    completeTask(options?: CompleteTaskOptions): ReportingTaskPromise {
+        const completionMessage = options?.completionMessage;
+        const completionState = options?.completionState;
+        const cancellationToken = options?.cancellationToken;
+        return new ReportingTaskPromise(this._completeTaskInternal(completionMessage, completionState, cancellationToken));
+    }
+
+    /** Completes the reporting task with Markdown-formatted completion text */
+    /** @internal */
+    async _completeTaskMarkdownInternal(markdownString: string, completionState?: string, cancellationToken?: AbortSignal | CancellationToken): Promise<ReportingTask> {
+        const rpcArgs: Record<string, unknown> = { reportingTask: this._handle, markdownString };
+        if (completionState !== undefined) rpcArgs.completionState = completionState;
+        if (cancellationToken !== undefined) rpcArgs.cancellationToken = CancellationToken.fromValue(cancellationToken);
+        await this._client.invokeCapability<void>(
+            'Aspire.Hosting/completeTaskMarkdown',
+            rpcArgs
+        );
+        return this;
+    }
+
+    completeTaskMarkdown(markdownString: string, options?: CompleteTaskMarkdownOptions): ReportingTaskPromise {
+        const completionState = options?.completionState;
+        const cancellationToken = options?.cancellationToken;
+        return new ReportingTaskPromise(this._completeTaskMarkdownInternal(markdownString, completionState, cancellationToken));
+    }
+
+}
+
+/**
+ * Thenable wrapper for ReportingTask that enables fluent chaining.
+ */
+export class ReportingTaskPromise implements PromiseLike<ReportingTask> {
+    constructor(private _promise: Promise<ReportingTask>) {}
+
+    then<TResult1 = ReportingTask, TResult2 = never>(
+        onfulfilled?: ((value: ReportingTask) => TResult1 | PromiseLike<TResult1>) | null,
+        onrejected?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null
+    ): PromiseLike<TResult1 | TResult2> {
+        return this._promise.then(onfulfilled, onrejected);
+    }
+
+    /** Updates the reporting task with plain-text status text */
+    updateTask(statusText: string, options?: UpdateTaskOptions): ReportingTaskPromise {
+        return new ReportingTaskPromise(this._promise.then(obj => obj.updateTask(statusText, options)));
+    }
+
+    /** Updates the reporting task with Markdown-formatted status text */
+    updateTaskMarkdown(markdownString: string, options?: UpdateTaskMarkdownOptions): ReportingTaskPromise {
+        return new ReportingTaskPromise(this._promise.then(obj => obj.updateTaskMarkdown(markdownString, options)));
+    }
+
+    /** Completes the reporting task with plain-text completion text */
+    completeTask(options?: CompleteTaskOptions): ReportingTaskPromise {
+        return new ReportingTaskPromise(this._promise.then(obj => obj.completeTask(options)));
+    }
+
+    /** Completes the reporting task with Markdown-formatted completion text */
+    completeTaskMarkdown(markdownString: string, options?: CompleteTaskMarkdownOptions): ReportingTaskPromise {
+        return new ReportingTaskPromise(this._promise.then(obj => obj.completeTaskMarkdown(markdownString, options)));
+    }
+
+}
+
+// ============================================================================
+// ServiceProvider
+// ============================================================================
+
+/**
+ * Type class for ServiceProvider.
+ */
+export class ServiceProvider {
+    constructor(private _handle: IServiceProviderHandle, private _client: AspireClientRpc) {}
+
+    /** Serialize for JSON-RPC transport */
+    toJSON(): MarshalledHandle { return this._handle.toJSON(); }
+
+    /** Gets the distributed application eventing service from the service provider */
+    /** @internal */
+    async _getEventingInternal(): Promise<DistributedApplicationEventing> {
+        const rpcArgs: Record<string, unknown> = { serviceProvider: this._handle };
+        const result = await this._client.invokeCapability<IDistributedApplicationEventingHandle>(
+            'Aspire.Hosting/getEventing',
+            rpcArgs
+        );
+        return new DistributedApplicationEventing(result, this._client);
+    }
+
+    getEventing(): DistributedApplicationEventingPromise {
+        return new DistributedApplicationEventingPromise(this._getEventingInternal());
+    }
+
+    /** Gets the logger factory from the service provider */
+    /** @internal */
+    async _getLoggerFactoryInternal(): Promise<LoggerFactory> {
+        const rpcArgs: Record<string, unknown> = { serviceProvider: this._handle };
+        const result = await this._client.invokeCapability<ILoggerFactoryHandle>(
+            'Aspire.Hosting/getLoggerFactory',
+            rpcArgs
+        );
+        return new LoggerFactory(result, this._client);
+    }
+
+    getLoggerFactory(): LoggerFactoryPromise {
+        return new LoggerFactoryPromise(this._getLoggerFactoryInternal());
+    }
+
+    /** Gets the resource logger service from the service provider */
+    /** @internal */
+    async _getResourceLoggerServiceInternal(): Promise<ResourceLoggerService> {
+        const rpcArgs: Record<string, unknown> = { serviceProvider: this._handle };
+        const result = await this._client.invokeCapability<ResourceLoggerServiceHandle>(
+            'Aspire.Hosting/getResourceLoggerService',
+            rpcArgs
+        );
+        return new ResourceLoggerService(result, this._client);
+    }
+
+    getResourceLoggerService(): ResourceLoggerServicePromise {
+        return new ResourceLoggerServicePromise(this._getResourceLoggerServiceInternal());
+    }
+
+    /** Gets the distributed application model from the service provider */
+    /** @internal */
+    async _getDistributedApplicationModelInternal(): Promise<DistributedApplicationModel> {
+        const rpcArgs: Record<string, unknown> = { serviceProvider: this._handle };
+        const result = await this._client.invokeCapability<DistributedApplicationModelHandle>(
+            'Aspire.Hosting/getDistributedApplicationModel',
+            rpcArgs
+        );
+        return new DistributedApplicationModel(result, this._client);
+    }
+
+    getDistributedApplicationModel(): DistributedApplicationModelPromise {
+        return new DistributedApplicationModelPromise(this._getDistributedApplicationModelInternal());
+    }
+
+    /** Gets the resource notification service from the service provider */
+    /** @internal */
+    async _getResourceNotificationServiceInternal(): Promise<ResourceNotificationService> {
+        const rpcArgs: Record<string, unknown> = { serviceProvider: this._handle };
+        const result = await this._client.invokeCapability<ResourceNotificationServiceHandle>(
+            'Aspire.Hosting/getResourceNotificationService',
+            rpcArgs
+        );
+        return new ResourceNotificationService(result, this._client);
+    }
+
+    getResourceNotificationService(): ResourceNotificationServicePromise {
+        return new ResourceNotificationServicePromise(this._getResourceNotificationServiceInternal());
+    }
+
+    /** Gets the user secrets manager from the service provider */
+    /** @internal */
+    async _getUserSecretsManagerInternal(): Promise<UserSecretsManager> {
+        const rpcArgs: Record<string, unknown> = { serviceProvider: this._handle };
+        const result = await this._client.invokeCapability<IUserSecretsManagerHandle>(
+            'Aspire.Hosting/getUserSecretsManager',
+            rpcArgs
+        );
+        return new UserSecretsManager(result, this._client);
+    }
+
+    getUserSecretsManager(): UserSecretsManagerPromise {
+        return new UserSecretsManagerPromise(this._getUserSecretsManagerInternal());
+    }
+
+}
+
+/**
+ * Thenable wrapper for ServiceProvider that enables fluent chaining.
+ */
+export class ServiceProviderPromise implements PromiseLike<ServiceProvider> {
+    constructor(private _promise: Promise<ServiceProvider>) {}
+
+    then<TResult1 = ServiceProvider, TResult2 = never>(
+        onfulfilled?: ((value: ServiceProvider) => TResult1 | PromiseLike<TResult1>) | null,
+        onrejected?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null
+    ): PromiseLike<TResult1 | TResult2> {
+        return this._promise.then(onfulfilled, onrejected);
+    }
+
+    /** Gets the distributed application eventing service from the service provider */
+    getEventing(): DistributedApplicationEventingPromise {
+        return new DistributedApplicationEventingPromise(this._promise.then(obj => obj.getEventing()));
+    }
+
+    /** Gets the logger factory from the service provider */
+    getLoggerFactory(): LoggerFactoryPromise {
+        return new LoggerFactoryPromise(this._promise.then(obj => obj.getLoggerFactory()));
+    }
+
+    /** Gets the resource logger service from the service provider */
+    getResourceLoggerService(): ResourceLoggerServicePromise {
+        return new ResourceLoggerServicePromise(this._promise.then(obj => obj.getResourceLoggerService()));
+    }
+
+    /** Gets the distributed application model from the service provider */
+    getDistributedApplicationModel(): DistributedApplicationModelPromise {
+        return new DistributedApplicationModelPromise(this._promise.then(obj => obj.getDistributedApplicationModel()));
+    }
+
+    /** Gets the resource notification service from the service provider */
+    getResourceNotificationService(): ResourceNotificationServicePromise {
+        return new ResourceNotificationServicePromise(this._promise.then(obj => obj.getResourceNotificationService()));
+    }
+
+    /** Gets the user secrets manager from the service provider */
+    getUserSecretsManager(): UserSecretsManagerPromise {
+        return new UserSecretsManagerPromise(this._promise.then(obj => obj.getUserSecretsManager()));
+    }
+
+}
+
+// ============================================================================
+// UserSecretsManager
+// ============================================================================
+
+/**
+ * Type class for UserSecretsManager.
+ */
+export class UserSecretsManager {
+    constructor(private _handle: IUserSecretsManagerHandle, private _client: AspireClientRpc) {}
+
+    /** Serialize for JSON-RPC transport */
+    toJSON(): MarshalledHandle { return this._handle.toJSON(); }
+
+    /** Gets the IsAvailable property */
+    isAvailable = {
+        get: async (): Promise<boolean> => {
+            return await this._client.invokeCapability<boolean>(
+                'Aspire.Hosting/IUserSecretsManager.isAvailable',
+                { context: this._handle }
+            );
+        },
+    };
+
+    /** Gets the FilePath property */
+    filePath = {
+        get: async (): Promise<string> => {
+            return await this._client.invokeCapability<string>(
+                'Aspire.Hosting/IUserSecretsManager.filePath',
+                { context: this._handle }
+            );
+        },
+    };
+
+    /** Attempts to set a user secret value */
+    async trySetSecret(name: string, value: string): Promise<boolean> {
+        const rpcArgs: Record<string, unknown> = { context: this._handle, name, value };
+        return await this._client.invokeCapability<boolean>(
+            'Aspire.Hosting/IUserSecretsManager.trySetSecret',
+            rpcArgs
+        );
+    }
+
+    /** Saves state to user secrets from a JSON string */
+    /** @internal */
+    async _saveStateJsonInternal(json: string, cancellationToken?: AbortSignal | CancellationToken): Promise<UserSecretsManager> {
+        const rpcArgs: Record<string, unknown> = { userSecretsManager: this._handle, json };
+        if (cancellationToken !== undefined) rpcArgs.cancellationToken = CancellationToken.fromValue(cancellationToken);
+        await this._client.invokeCapability<void>(
+            'Aspire.Hosting/saveStateJson',
+            rpcArgs
+        );
+        return this;
+    }
+
+    saveStateJson(json: string, options?: SaveStateJsonOptions): UserSecretsManagerPromise {
+        const cancellationToken = options?.cancellationToken;
+        return new UserSecretsManagerPromise(this._saveStateJsonInternal(json, cancellationToken));
+    }
+
+    /** Gets a secret value if it exists, or sets it to the provided value if it does not */
+    /** @internal */
+    async _getOrSetSecretInternal(resourceBuilder: ResourceBuilderBase, name: string, value: string): Promise<UserSecretsManager> {
+        const rpcArgs: Record<string, unknown> = { userSecretsManager: this._handle, resourceBuilder, name, value };
+        await this._client.invokeCapability<void>(
+            'Aspire.Hosting/getOrSetSecret',
+            rpcArgs
+        );
+        return this;
+    }
+
+    getOrSetSecret(resourceBuilder: ResourceBuilderBase, name: string, value: string): UserSecretsManagerPromise {
+        return new UserSecretsManagerPromise(this._getOrSetSecretInternal(resourceBuilder, name, value));
+    }
+
+}
+
+/**
+ * Thenable wrapper for UserSecretsManager that enables fluent chaining.
+ */
+export class UserSecretsManagerPromise implements PromiseLike<UserSecretsManager> {
+    constructor(private _promise: Promise<UserSecretsManager>) {}
+
+    then<TResult1 = UserSecretsManager, TResult2 = never>(
+        onfulfilled?: ((value: UserSecretsManager) => TResult1 | PromiseLike<TResult1>) | null,
+        onrejected?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null
+    ): PromiseLike<TResult1 | TResult2> {
+        return this._promise.then(onfulfilled, onrejected);
+    }
+
+    /** Attempts to set a user secret value */
+    trySetSecret(name: string, value: string): Promise<boolean> {
+        return this._promise.then(obj => obj.trySetSecret(name, value));
+    }
+
+    /** Saves state to user secrets from a JSON string */
+    saveStateJson(json: string, options?: SaveStateJsonOptions): UserSecretsManagerPromise {
+        return new UserSecretsManagerPromise(this._promise.then(obj => obj.saveStateJson(json, options)));
+    }
+
+    /** Gets a secret value if it exists, or sets it to the provided value if it does not */
+    getOrSetSecret(resourceBuilder: ResourceBuilderBase, name: string, value: string): UserSecretsManagerPromise {
+        return new UserSecretsManagerPromise(this._promise.then(obj => obj.getOrSetSecret(resourceBuilder, name, value)));
     }
 
 }
@@ -2098,6 +4475,15 @@ export class ConnectionStringResource extends ResourceBuilderBase<ConnectionStri
     /** Adds a connection property with a string value */
     withConnectionPropertyValue(name: string, value: string): ConnectionStringResourcePromise {
         return new ConnectionStringResourcePromise(this._withConnectionPropertyValueInternal(name, value));
+    }
+
+    /** Gets a connection property by key */
+    async getConnectionProperty(key: string): Promise<ReferenceExpression> {
+        const rpcArgs: Record<string, unknown> = { resource: this._handle, key };
+        return await this._client.invokeCapability<ReferenceExpression>(
+            'Aspire.Hosting/getConnectionProperty',
+            rpcArgs
+        );
     }
 
     /** @internal */
@@ -2212,7 +4598,7 @@ export class ConnectionStringResource extends ResourceBuilderBase<ConnectionStri
     private async _waitForInternal(dependency: ResourceBuilderBase): Promise<ConnectionStringResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, dependency };
         const result = await this._client.invokeCapability<ConnectionStringResourceHandle>(
-            'Aspire.Hosting/waitFor',
+            'Aspire.Hosting/waitForResource',
             rpcArgs
         );
         return new ConnectionStringResource(result, this._client);
@@ -2242,7 +4628,7 @@ export class ConnectionStringResource extends ResourceBuilderBase<ConnectionStri
     private async _waitForStartInternal(dependency: ResourceBuilderBase): Promise<ConnectionStringResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, dependency };
         const result = await this._client.invokeCapability<ConnectionStringResourceHandle>(
-            'Aspire.Hosting/waitForStart',
+            'Aspire.Hosting/waitForResourceStart',
             rpcArgs
         );
         return new ConnectionStringResource(result, this._client);
@@ -2288,7 +4674,7 @@ export class ConnectionStringResource extends ResourceBuilderBase<ConnectionStri
         const rpcArgs: Record<string, unknown> = { builder: this._handle, dependency };
         if (exitCode !== undefined) rpcArgs.exitCode = exitCode;
         const result = await this._client.invokeCapability<ConnectionStringResourceHandle>(
-            'Aspire.Hosting/waitForCompletion',
+            'Aspire.Hosting/waitForResourceCompletion',
             rpcArgs
         );
         return new ConnectionStringResource(result, this._client);
@@ -2341,7 +4727,7 @@ export class ConnectionStringResource extends ResourceBuilderBase<ConnectionStri
     private async _withParentRelationshipInternal(parent: ResourceBuilderBase): Promise<ConnectionStringResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, parent };
         const result = await this._client.invokeCapability<ConnectionStringResourceHandle>(
-            'Aspire.Hosting/withParentRelationship',
+            'Aspire.Hosting/withBuilderParentRelationship',
             rpcArgs
         );
         return new ConnectionStringResource(result, this._client);
@@ -2356,7 +4742,7 @@ export class ConnectionStringResource extends ResourceBuilderBase<ConnectionStri
     private async _withChildRelationshipInternal(child: ResourceBuilderBase): Promise<ConnectionStringResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, child };
         const result = await this._client.invokeCapability<ConnectionStringResourceHandle>(
-            'Aspire.Hosting/withChildRelationship',
+            'Aspire.Hosting/withBuilderChildRelationship',
             rpcArgs
         );
         return new ConnectionStringResource(result, this._client);
@@ -2397,36 +4783,6 @@ export class ConnectionStringResource extends ResourceBuilderBase<ConnectionStri
     /** Excludes the resource from MCP server exposure */
     excludeFromMcp(): ConnectionStringResourcePromise {
         return new ConnectionStringResourcePromise(this._excludeFromMcpInternal());
-    }
-
-    /** @internal */
-    private async _withRemoteImageNameInternal(remoteImageName: string): Promise<ConnectionStringResource> {
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, remoteImageName };
-        const result = await this._client.invokeCapability<ConnectionStringResourceHandle>(
-            'Aspire.Hosting/withRemoteImageName',
-            rpcArgs
-        );
-        return new ConnectionStringResource(result, this._client);
-    }
-
-    /** Sets the remote image name for publishing */
-    withRemoteImageName(remoteImageName: string): ConnectionStringResourcePromise {
-        return new ConnectionStringResourcePromise(this._withRemoteImageNameInternal(remoteImageName));
-    }
-
-    /** @internal */
-    private async _withRemoteImageTagInternal(remoteImageTag: string): Promise<ConnectionStringResource> {
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, remoteImageTag };
-        const result = await this._client.invokeCapability<ConnectionStringResourceHandle>(
-            'Aspire.Hosting/withRemoteImageTag',
-            rpcArgs
-        );
-        return new ConnectionStringResource(result, this._client);
-    }
-
-    /** Sets the remote image tag for publishing */
-    withRemoteImageTag(remoteImageTag: string): ConnectionStringResourcePromise {
-        return new ConnectionStringResourcePromise(this._withRemoteImageTagInternal(remoteImageTag));
     }
 
     /** @internal */
@@ -2506,6 +4862,106 @@ export class ConnectionStringResource extends ResourceBuilderBase<ConnectionStri
         );
     }
 
+    /** @internal */
+    private async _onBeforeResourceStartedInternal(callback: (arg: BeforeResourceStartedEvent) => Promise<void>): Promise<ConnectionStringResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as BeforeResourceStartedEventHandle;
+            const arg = new BeforeResourceStartedEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<ConnectionStringResourceHandle>(
+            'Aspire.Hosting/onBeforeResourceStarted',
+            rpcArgs
+        );
+        return new ConnectionStringResource(result, this._client);
+    }
+
+    /** Subscribes to the BeforeResourceStarted event */
+    onBeforeResourceStarted(callback: (arg: BeforeResourceStartedEvent) => Promise<void>): ConnectionStringResourcePromise {
+        return new ConnectionStringResourcePromise(this._onBeforeResourceStartedInternal(callback));
+    }
+
+    /** @internal */
+    private async _onResourceStoppedInternal(callback: (arg: ResourceStoppedEvent) => Promise<void>): Promise<ConnectionStringResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ResourceStoppedEventHandle;
+            const arg = new ResourceStoppedEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<ConnectionStringResourceHandle>(
+            'Aspire.Hosting/onResourceStopped',
+            rpcArgs
+        );
+        return new ConnectionStringResource(result, this._client);
+    }
+
+    /** Subscribes to the ResourceStopped event */
+    onResourceStopped(callback: (arg: ResourceStoppedEvent) => Promise<void>): ConnectionStringResourcePromise {
+        return new ConnectionStringResourcePromise(this._onResourceStoppedInternal(callback));
+    }
+
+    /** @internal */
+    private async _onConnectionStringAvailableInternal(callback: (arg: ConnectionStringAvailableEvent) => Promise<void>): Promise<ConnectionStringResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ConnectionStringAvailableEventHandle;
+            const arg = new ConnectionStringAvailableEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<ConnectionStringResourceHandle>(
+            'Aspire.Hosting/onConnectionStringAvailable',
+            rpcArgs
+        );
+        return new ConnectionStringResource(result, this._client);
+    }
+
+    /** Subscribes to the ConnectionStringAvailable event */
+    onConnectionStringAvailable(callback: (arg: ConnectionStringAvailableEvent) => Promise<void>): ConnectionStringResourcePromise {
+        return new ConnectionStringResourcePromise(this._onConnectionStringAvailableInternal(callback));
+    }
+
+    /** @internal */
+    private async _onInitializeResourceInternal(callback: (arg: InitializeResourceEvent) => Promise<void>): Promise<ConnectionStringResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as InitializeResourceEventHandle;
+            const arg = new InitializeResourceEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<ConnectionStringResourceHandle>(
+            'Aspire.Hosting/onInitializeResource',
+            rpcArgs
+        );
+        return new ConnectionStringResource(result, this._client);
+    }
+
+    /** Subscribes to the InitializeResource event */
+    onInitializeResource(callback: (arg: InitializeResourceEvent) => Promise<void>): ConnectionStringResourcePromise {
+        return new ConnectionStringResourcePromise(this._onInitializeResourceInternal(callback));
+    }
+
+    /** @internal */
+    private async _onResourceReadyInternal(callback: (arg: ResourceReadyEvent) => Promise<void>): Promise<ConnectionStringResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ResourceReadyEventHandle;
+            const arg = new ResourceReadyEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<ConnectionStringResourceHandle>(
+            'Aspire.Hosting/onResourceReady',
+            rpcArgs
+        );
+        return new ConnectionStringResource(result, this._client);
+    }
+
+    /** Subscribes to the ResourceReady event */
+    onResourceReady(callback: (arg: ResourceReadyEvent) => Promise<void>): ConnectionStringResourcePromise {
+        return new ConnectionStringResourcePromise(this._onResourceReadyInternal(callback));
+    }
+
 }
 
 /**
@@ -2546,6 +5002,11 @@ export class ConnectionStringResourcePromise implements PromiseLike<ConnectionSt
     /** Adds a connection property with a string value */
     withConnectionPropertyValue(name: string, value: string): ConnectionStringResourcePromise {
         return new ConnectionStringResourcePromise(this._promise.then(obj => obj.withConnectionPropertyValue(name, value)));
+    }
+
+    /** Gets a connection property by key */
+    getConnectionProperty(key: string): Promise<ReferenceExpression> {
+        return this._promise.then(obj => obj.getConnectionProperty(key));
     }
 
     /** Customizes displayed URLs via callback */
@@ -2638,16 +5099,6 @@ export class ConnectionStringResourcePromise implements PromiseLike<ConnectionSt
         return new ConnectionStringResourcePromise(this._promise.then(obj => obj.excludeFromMcp()));
     }
 
-    /** Sets the remote image name for publishing */
-    withRemoteImageName(remoteImageName: string): ConnectionStringResourcePromise {
-        return new ConnectionStringResourcePromise(this._promise.then(obj => obj.withRemoteImageName(remoteImageName)));
-    }
-
-    /** Sets the remote image tag for publishing */
-    withRemoteImageTag(remoteImageTag: string): ConnectionStringResourcePromise {
-        return new ConnectionStringResourcePromise(this._promise.then(obj => obj.withRemoteImageTag(remoteImageTag)));
-    }
-
     /** Adds a pipeline step to the resource */
     withPipelineStepFactory(stepName: string, callback: (arg: PipelineStepContext) => Promise<void>, options?: WithPipelineStepFactoryOptions): ConnectionStringResourcePromise {
         return new ConnectionStringResourcePromise(this._promise.then(obj => obj.withPipelineStepFactory(stepName, callback, options)));
@@ -2666,6 +5117,31 @@ export class ConnectionStringResourcePromise implements PromiseLike<ConnectionSt
     /** Gets the resource name */
     getResourceName(): Promise<string> {
         return this._promise.then(obj => obj.getResourceName());
+    }
+
+    /** Subscribes to the BeforeResourceStarted event */
+    onBeforeResourceStarted(callback: (arg: BeforeResourceStartedEvent) => Promise<void>): ConnectionStringResourcePromise {
+        return new ConnectionStringResourcePromise(this._promise.then(obj => obj.onBeforeResourceStarted(callback)));
+    }
+
+    /** Subscribes to the ResourceStopped event */
+    onResourceStopped(callback: (arg: ResourceStoppedEvent) => Promise<void>): ConnectionStringResourcePromise {
+        return new ConnectionStringResourcePromise(this._promise.then(obj => obj.onResourceStopped(callback)));
+    }
+
+    /** Subscribes to the ConnectionStringAvailable event */
+    onConnectionStringAvailable(callback: (arg: ConnectionStringAvailableEvent) => Promise<void>): ConnectionStringResourcePromise {
+        return new ConnectionStringResourcePromise(this._promise.then(obj => obj.onConnectionStringAvailable(callback)));
+    }
+
+    /** Subscribes to the InitializeResource event */
+    onInitializeResource(callback: (arg: InitializeResourceEvent) => Promise<void>): ConnectionStringResourcePromise {
+        return new ConnectionStringResourcePromise(this._promise.then(obj => obj.onInitializeResource(callback)));
+    }
+
+    /** Subscribes to the ResourceReady event */
+    onResourceReady(callback: (arg: ResourceReadyEvent) => Promise<void>): ConnectionStringResourcePromise {
+        return new ConnectionStringResourcePromise(this._promise.then(obj => obj.onResourceReady(callback)));
     }
 
 }
@@ -2894,7 +5370,7 @@ export class ContainerRegistryResource extends ResourceBuilderBase<ContainerRegi
     private async _withParentRelationshipInternal(parent: ResourceBuilderBase): Promise<ContainerRegistryResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, parent };
         const result = await this._client.invokeCapability<ContainerRegistryResourceHandle>(
-            'Aspire.Hosting/withParentRelationship',
+            'Aspire.Hosting/withBuilderParentRelationship',
             rpcArgs
         );
         return new ContainerRegistryResource(result, this._client);
@@ -2909,7 +5385,7 @@ export class ContainerRegistryResource extends ResourceBuilderBase<ContainerRegi
     private async _withChildRelationshipInternal(child: ResourceBuilderBase): Promise<ContainerRegistryResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, child };
         const result = await this._client.invokeCapability<ContainerRegistryResourceHandle>(
-            'Aspire.Hosting/withChildRelationship',
+            'Aspire.Hosting/withBuilderChildRelationship',
             rpcArgs
         );
         return new ContainerRegistryResource(result, this._client);
@@ -2950,36 +5426,6 @@ export class ContainerRegistryResource extends ResourceBuilderBase<ContainerRegi
     /** Excludes the resource from MCP server exposure */
     excludeFromMcp(): ContainerRegistryResourcePromise {
         return new ContainerRegistryResourcePromise(this._excludeFromMcpInternal());
-    }
-
-    /** @internal */
-    private async _withRemoteImageNameInternal(remoteImageName: string): Promise<ContainerRegistryResource> {
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, remoteImageName };
-        const result = await this._client.invokeCapability<ContainerRegistryResourceHandle>(
-            'Aspire.Hosting/withRemoteImageName',
-            rpcArgs
-        );
-        return new ContainerRegistryResource(result, this._client);
-    }
-
-    /** Sets the remote image name for publishing */
-    withRemoteImageName(remoteImageName: string): ContainerRegistryResourcePromise {
-        return new ContainerRegistryResourcePromise(this._withRemoteImageNameInternal(remoteImageName));
-    }
-
-    /** @internal */
-    private async _withRemoteImageTagInternal(remoteImageTag: string): Promise<ContainerRegistryResource> {
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, remoteImageTag };
-        const result = await this._client.invokeCapability<ContainerRegistryResourceHandle>(
-            'Aspire.Hosting/withRemoteImageTag',
-            rpcArgs
-        );
-        return new ContainerRegistryResource(result, this._client);
-    }
-
-    /** Sets the remote image tag for publishing */
-    withRemoteImageTag(remoteImageTag: string): ContainerRegistryResourcePromise {
-        return new ContainerRegistryResourcePromise(this._withRemoteImageTagInternal(remoteImageTag));
     }
 
     /** @internal */
@@ -3057,6 +5503,86 @@ export class ContainerRegistryResource extends ResourceBuilderBase<ContainerRegi
             'Aspire.Hosting/getResourceName',
             rpcArgs
         );
+    }
+
+    /** @internal */
+    private async _onBeforeResourceStartedInternal(callback: (arg: BeforeResourceStartedEvent) => Promise<void>): Promise<ContainerRegistryResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as BeforeResourceStartedEventHandle;
+            const arg = new BeforeResourceStartedEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<ContainerRegistryResourceHandle>(
+            'Aspire.Hosting/onBeforeResourceStarted',
+            rpcArgs
+        );
+        return new ContainerRegistryResource(result, this._client);
+    }
+
+    /** Subscribes to the BeforeResourceStarted event */
+    onBeforeResourceStarted(callback: (arg: BeforeResourceStartedEvent) => Promise<void>): ContainerRegistryResourcePromise {
+        return new ContainerRegistryResourcePromise(this._onBeforeResourceStartedInternal(callback));
+    }
+
+    /** @internal */
+    private async _onResourceStoppedInternal(callback: (arg: ResourceStoppedEvent) => Promise<void>): Promise<ContainerRegistryResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ResourceStoppedEventHandle;
+            const arg = new ResourceStoppedEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<ContainerRegistryResourceHandle>(
+            'Aspire.Hosting/onResourceStopped',
+            rpcArgs
+        );
+        return new ContainerRegistryResource(result, this._client);
+    }
+
+    /** Subscribes to the ResourceStopped event */
+    onResourceStopped(callback: (arg: ResourceStoppedEvent) => Promise<void>): ContainerRegistryResourcePromise {
+        return new ContainerRegistryResourcePromise(this._onResourceStoppedInternal(callback));
+    }
+
+    /** @internal */
+    private async _onInitializeResourceInternal(callback: (arg: InitializeResourceEvent) => Promise<void>): Promise<ContainerRegistryResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as InitializeResourceEventHandle;
+            const arg = new InitializeResourceEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<ContainerRegistryResourceHandle>(
+            'Aspire.Hosting/onInitializeResource',
+            rpcArgs
+        );
+        return new ContainerRegistryResource(result, this._client);
+    }
+
+    /** Subscribes to the InitializeResource event */
+    onInitializeResource(callback: (arg: InitializeResourceEvent) => Promise<void>): ContainerRegistryResourcePromise {
+        return new ContainerRegistryResourcePromise(this._onInitializeResourceInternal(callback));
+    }
+
+    /** @internal */
+    private async _onResourceReadyInternal(callback: (arg: ResourceReadyEvent) => Promise<void>): Promise<ContainerRegistryResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ResourceReadyEventHandle;
+            const arg = new ResourceReadyEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<ContainerRegistryResourceHandle>(
+            'Aspire.Hosting/onResourceReady',
+            rpcArgs
+        );
+        return new ContainerRegistryResource(result, this._client);
+    }
+
+    /** Subscribes to the ResourceReady event */
+    onResourceReady(callback: (arg: ResourceReadyEvent) => Promise<void>): ContainerRegistryResourcePromise {
+        return new ContainerRegistryResourcePromise(this._onResourceReadyInternal(callback));
     }
 
 }
@@ -3156,16 +5682,6 @@ export class ContainerRegistryResourcePromise implements PromiseLike<ContainerRe
         return new ContainerRegistryResourcePromise(this._promise.then(obj => obj.excludeFromMcp()));
     }
 
-    /** Sets the remote image name for publishing */
-    withRemoteImageName(remoteImageName: string): ContainerRegistryResourcePromise {
-        return new ContainerRegistryResourcePromise(this._promise.then(obj => obj.withRemoteImageName(remoteImageName)));
-    }
-
-    /** Sets the remote image tag for publishing */
-    withRemoteImageTag(remoteImageTag: string): ContainerRegistryResourcePromise {
-        return new ContainerRegistryResourcePromise(this._promise.then(obj => obj.withRemoteImageTag(remoteImageTag)));
-    }
-
     /** Adds a pipeline step to the resource */
     withPipelineStepFactory(stepName: string, callback: (arg: PipelineStepContext) => Promise<void>, options?: WithPipelineStepFactoryOptions): ContainerRegistryResourcePromise {
         return new ContainerRegistryResourcePromise(this._promise.then(obj => obj.withPipelineStepFactory(stepName, callback, options)));
@@ -3184,6 +5700,26 @@ export class ContainerRegistryResourcePromise implements PromiseLike<ContainerRe
     /** Gets the resource name */
     getResourceName(): Promise<string> {
         return this._promise.then(obj => obj.getResourceName());
+    }
+
+    /** Subscribes to the BeforeResourceStarted event */
+    onBeforeResourceStarted(callback: (arg: BeforeResourceStartedEvent) => Promise<void>): ContainerRegistryResourcePromise {
+        return new ContainerRegistryResourcePromise(this._promise.then(obj => obj.onBeforeResourceStarted(callback)));
+    }
+
+    /** Subscribes to the ResourceStopped event */
+    onResourceStopped(callback: (arg: ResourceStoppedEvent) => Promise<void>): ContainerRegistryResourcePromise {
+        return new ContainerRegistryResourcePromise(this._promise.then(obj => obj.onResourceStopped(callback)));
+    }
+
+    /** Subscribes to the InitializeResource event */
+    onInitializeResource(callback: (arg: InitializeResourceEvent) => Promise<void>): ContainerRegistryResourcePromise {
+        return new ContainerRegistryResourcePromise(this._promise.then(obj => obj.onInitializeResource(callback)));
+    }
+
+    /** Subscribes to the ResourceReady event */
+    onResourceReady(callback: (arg: ResourceReadyEvent) => Promise<void>): ContainerRegistryResourcePromise {
+        return new ContainerRegistryResourcePromise(this._promise.then(obj => obj.onResourceReady(callback)));
     }
 
 }
@@ -3213,6 +5749,239 @@ export class ContainerResource extends ResourceBuilderBase<ContainerResourceHand
     }
 
     /** @internal */
+    private async _withBindMountInternal(source: string, target: string, isReadOnly?: boolean): Promise<ContainerResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, source, target };
+        if (isReadOnly !== undefined) rpcArgs.isReadOnly = isReadOnly;
+        const result = await this._client.invokeCapability<ContainerResourceHandle>(
+            'Aspire.Hosting/withBindMount',
+            rpcArgs
+        );
+        return new ContainerResource(result, this._client);
+    }
+
+    /** Adds a bind mount */
+    withBindMount(source: string, target: string, options?: WithBindMountOptions): ContainerResourcePromise {
+        const isReadOnly = options?.isReadOnly;
+        return new ContainerResourcePromise(this._withBindMountInternal(source, target, isReadOnly));
+    }
+
+    /** @internal */
+    private async _withEntrypointInternal(entrypoint: string): Promise<ContainerResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, entrypoint };
+        const result = await this._client.invokeCapability<ContainerResourceHandle>(
+            'Aspire.Hosting/withEntrypoint',
+            rpcArgs
+        );
+        return new ContainerResource(result, this._client);
+    }
+
+    /** Sets the container entrypoint */
+    withEntrypoint(entrypoint: string): ContainerResourcePromise {
+        return new ContainerResourcePromise(this._withEntrypointInternal(entrypoint));
+    }
+
+    /** @internal */
+    private async _withImageTagInternal(tag: string): Promise<ContainerResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, tag };
+        const result = await this._client.invokeCapability<ContainerResourceHandle>(
+            'Aspire.Hosting/withImageTag',
+            rpcArgs
+        );
+        return new ContainerResource(result, this._client);
+    }
+
+    /** Sets the container image tag */
+    withImageTag(tag: string): ContainerResourcePromise {
+        return new ContainerResourcePromise(this._withImageTagInternal(tag));
+    }
+
+    /** @internal */
+    private async _withImageRegistryInternal(registry: string): Promise<ContainerResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, registry };
+        const result = await this._client.invokeCapability<ContainerResourceHandle>(
+            'Aspire.Hosting/withImageRegistry',
+            rpcArgs
+        );
+        return new ContainerResource(result, this._client);
+    }
+
+    /** Sets the container image registry */
+    withImageRegistry(registry: string): ContainerResourcePromise {
+        return new ContainerResourcePromise(this._withImageRegistryInternal(registry));
+    }
+
+    /** @internal */
+    private async _withImageInternal(image: string, tag?: string): Promise<ContainerResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, image };
+        if (tag !== undefined) rpcArgs.tag = tag;
+        const result = await this._client.invokeCapability<ContainerResourceHandle>(
+            'Aspire.Hosting/withImage',
+            rpcArgs
+        );
+        return new ContainerResource(result, this._client);
+    }
+
+    /** Sets the container image */
+    withImage(image: string, options?: WithImageOptions): ContainerResourcePromise {
+        const tag = options?.tag;
+        return new ContainerResourcePromise(this._withImageInternal(image, tag));
+    }
+
+    /** @internal */
+    private async _withImageSHA256Internal(sha256: string): Promise<ContainerResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, sha256 };
+        const result = await this._client.invokeCapability<ContainerResourceHandle>(
+            'Aspire.Hosting/withImageSHA256',
+            rpcArgs
+        );
+        return new ContainerResource(result, this._client);
+    }
+
+    /** Sets the image SHA256 digest */
+    withImageSHA256(sha256: string): ContainerResourcePromise {
+        return new ContainerResourcePromise(this._withImageSHA256Internal(sha256));
+    }
+
+    /** @internal */
+    private async _withContainerRuntimeArgsInternal(args: string[]): Promise<ContainerResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, args };
+        const result = await this._client.invokeCapability<ContainerResourceHandle>(
+            'Aspire.Hosting/withContainerRuntimeArgs',
+            rpcArgs
+        );
+        return new ContainerResource(result, this._client);
+    }
+
+    /** Adds runtime arguments for the container */
+    withContainerRuntimeArgs(args: string[]): ContainerResourcePromise {
+        return new ContainerResourcePromise(this._withContainerRuntimeArgsInternal(args));
+    }
+
+    /** @internal */
+    private async _withLifetimeInternal(lifetime: ContainerLifetime): Promise<ContainerResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, lifetime };
+        const result = await this._client.invokeCapability<ContainerResourceHandle>(
+            'Aspire.Hosting/withLifetime',
+            rpcArgs
+        );
+        return new ContainerResource(result, this._client);
+    }
+
+    /** Sets the lifetime behavior of the container resource */
+    withLifetime(lifetime: ContainerLifetime): ContainerResourcePromise {
+        return new ContainerResourcePromise(this._withLifetimeInternal(lifetime));
+    }
+
+    /** @internal */
+    private async _withImagePullPolicyInternal(pullPolicy: ImagePullPolicy): Promise<ContainerResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, pullPolicy };
+        const result = await this._client.invokeCapability<ContainerResourceHandle>(
+            'Aspire.Hosting/withImagePullPolicy',
+            rpcArgs
+        );
+        return new ContainerResource(result, this._client);
+    }
+
+    /** Sets the container image pull policy */
+    withImagePullPolicy(pullPolicy: ImagePullPolicy): ContainerResourcePromise {
+        return new ContainerResourcePromise(this._withImagePullPolicyInternal(pullPolicy));
+    }
+
+    /** @internal */
+    private async _publishAsContainerInternal(): Promise<ContainerResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle };
+        const result = await this._client.invokeCapability<ContainerResourceHandle>(
+            'Aspire.Hosting/publishAsContainer',
+            rpcArgs
+        );
+        return new ContainerResource(result, this._client);
+    }
+
+    /** Configures the resource to be published as a container */
+    publishAsContainer(): ContainerResourcePromise {
+        return new ContainerResourcePromise(this._publishAsContainerInternal());
+    }
+
+    /** @internal */
+    private async _withDockerfileInternal(contextPath: string, dockerfilePath?: string, stage?: string): Promise<ContainerResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, contextPath };
+        if (dockerfilePath !== undefined) rpcArgs.dockerfilePath = dockerfilePath;
+        if (stage !== undefined) rpcArgs.stage = stage;
+        const result = await this._client.invokeCapability<ContainerResourceHandle>(
+            'Aspire.Hosting/withDockerfile',
+            rpcArgs
+        );
+        return new ContainerResource(result, this._client);
+    }
+
+    /** Configures the resource to use a Dockerfile */
+    withDockerfile(contextPath: string, options?: WithDockerfileOptions): ContainerResourcePromise {
+        const dockerfilePath = options?.dockerfilePath;
+        const stage = options?.stage;
+        return new ContainerResourcePromise(this._withDockerfileInternal(contextPath, dockerfilePath, stage));
+    }
+
+    /** @internal */
+    private async _withContainerNameInternal(name: string): Promise<ContainerResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, name };
+        const result = await this._client.invokeCapability<ContainerResourceHandle>(
+            'Aspire.Hosting/withContainerName',
+            rpcArgs
+        );
+        return new ContainerResource(result, this._client);
+    }
+
+    /** Sets the container name */
+    withContainerName(name: string): ContainerResourcePromise {
+        return new ContainerResourcePromise(this._withContainerNameInternal(name));
+    }
+
+    /** @internal */
+    private async _withBuildArgInternal(name: string, value: ParameterResource): Promise<ContainerResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, name, value };
+        const result = await this._client.invokeCapability<ContainerResourceHandle>(
+            'Aspire.Hosting/withParameterBuildArg',
+            rpcArgs
+        );
+        return new ContainerResource(result, this._client);
+    }
+
+    /** Adds a build argument from a parameter resource */
+    withBuildArg(name: string, value: ParameterResource): ContainerResourcePromise {
+        return new ContainerResourcePromise(this._withBuildArgInternal(name, value));
+    }
+
+    /** @internal */
+    private async _withBuildSecretInternal(name: string, value: ParameterResource): Promise<ContainerResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, name, value };
+        const result = await this._client.invokeCapability<ContainerResourceHandle>(
+            'Aspire.Hosting/withParameterBuildSecret',
+            rpcArgs
+        );
+        return new ContainerResource(result, this._client);
+    }
+
+    /** Adds a build secret from a parameter resource */
+    withBuildSecret(name: string, value: ParameterResource): ContainerResourcePromise {
+        return new ContainerResourcePromise(this._withBuildSecretInternal(name, value));
+    }
+
+    /** @internal */
+    private async _withEndpointProxySupportInternal(proxyEnabled: boolean): Promise<ContainerResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, proxyEnabled };
+        const result = await this._client.invokeCapability<ContainerResourceHandle>(
+            'Aspire.Hosting/withEndpointProxySupport',
+            rpcArgs
+        );
+        return new ContainerResource(result, this._client);
+    }
+
+    /** Configures endpoint proxy support */
+    withEndpointProxySupport(proxyEnabled: boolean): ContainerResourcePromise {
+        return new ContainerResourcePromise(this._withEndpointProxySupportInternal(proxyEnabled));
+    }
+
+    /** @internal */
     private async _withDockerfileBaseImageInternal(buildImage?: string, runtimeImage?: string): Promise<ContainerResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle };
         if (buildImage !== undefined) rpcArgs.buildImage = buildImage;
@@ -3229,6 +5998,21 @@ export class ContainerResource extends ResourceBuilderBase<ContainerResourceHand
         const buildImage = options?.buildImage;
         const runtimeImage = options?.runtimeImage;
         return new ContainerResourcePromise(this._withDockerfileBaseImageInternal(buildImage, runtimeImage));
+    }
+
+    /** @internal */
+    private async _withContainerNetworkAliasInternal(alias: string): Promise<ContainerResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, alias };
+        const result = await this._client.invokeCapability<ContainerResourceHandle>(
+            'Aspire.Hosting/withContainerNetworkAlias',
+            rpcArgs
+        );
+        return new ContainerResource(result, this._client);
+    }
+
+    /** Adds a network alias for the container */
+    withContainerNetworkAlias(alias: string): ContainerResourcePromise {
+        return new ContainerResourcePromise(this._withContainerNetworkAliasInternal(alias));
     }
 
     /** @internal */
@@ -3281,6 +6065,21 @@ export class ContainerResource extends ResourceBuilderBase<ContainerResourceHand
     }
 
     /** @internal */
+    private async _publishAsConnectionStringInternal(): Promise<ContainerResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle };
+        const result = await this._client.invokeCapability<ContainerResourceHandle>(
+            'Aspire.Hosting/publishAsConnectionString',
+            rpcArgs
+        );
+        return new ContainerResource(result, this._client);
+    }
+
+    /** Publishes the resource as a connection string */
+    publishAsConnectionString(): ContainerResourcePromise {
+        return new ContainerResourcePromise(this._publishAsConnectionStringInternal());
+    }
+
+    /** @internal */
     private async _withRequiredCommandInternal(command: string, helpLink?: string): Promise<ContainerResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, command };
         if (helpLink !== undefined) rpcArgs.helpLink = helpLink;
@@ -3298,41 +6097,11 @@ export class ContainerResource extends ResourceBuilderBase<ContainerResourceHand
     }
 
     /** @internal */
-    private async _withEnvironmentInternal(name: string, value: string): Promise<ContainerResource> {
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, name, value };
-        const result = await this._client.invokeCapability<ContainerResourceHandle>(
-            'Aspire.Hosting/withEnvironment',
-            rpcArgs
-        );
-        return new ContainerResource(result, this._client);
-    }
-
-    /** Sets an environment variable */
-    withEnvironment(name: string, value: string): ContainerResourcePromise {
-        return new ContainerResourcePromise(this._withEnvironmentInternal(name, value));
-    }
-
-    /** @internal */
-    private async _withEnvironmentExpressionInternal(name: string, value: ReferenceExpression): Promise<ContainerResource> {
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, name, value };
-        const result = await this._client.invokeCapability<ContainerResourceHandle>(
-            'Aspire.Hosting/withEnvironmentExpression',
-            rpcArgs
-        );
-        return new ContainerResource(result, this._client);
-    }
-
-    /** Adds an environment variable with a reference expression */
-    withEnvironmentExpression(name: string, value: ReferenceExpression): ContainerResourcePromise {
-        return new ContainerResourcePromise(this._withEnvironmentExpressionInternal(name, value));
-    }
-
-    /** @internal */
-    private async _withEnvironmentCallbackInternal(callback: (obj: EnvironmentCallbackContext) => Promise<void>): Promise<ContainerResource> {
-        const callbackId = registerCallback(async (objData: unknown) => {
-            const objHandle = wrapIfHandle(objData) as EnvironmentCallbackContextHandle;
-            const obj = new EnvironmentCallbackContext(objHandle, this._client);
-            await callback(obj);
+    private async _withEnvironmentCallbackInternal(callback: (arg: EnvironmentCallbackContext) => Promise<void>): Promise<ContainerResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as EnvironmentCallbackContextHandle;
+            const arg = new EnvironmentCallbackContext(argHandle, this._client);
+            await callback(arg);
         });
         const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
         const result = await this._client.invokeCapability<ContainerResourceHandle>(
@@ -3343,28 +6112,8 @@ export class ContainerResource extends ResourceBuilderBase<ContainerResourceHand
     }
 
     /** Sets environment variables via callback */
-    withEnvironmentCallback(callback: (obj: EnvironmentCallbackContext) => Promise<void>): ContainerResourcePromise {
+    withEnvironmentCallback(callback: (arg: EnvironmentCallbackContext) => Promise<void>): ContainerResourcePromise {
         return new ContainerResourcePromise(this._withEnvironmentCallbackInternal(callback));
-    }
-
-    /** @internal */
-    private async _withEnvironmentCallbackAsyncInternal(callback: (arg: EnvironmentCallbackContext) => Promise<void>): Promise<ContainerResource> {
-        const callbackId = registerCallback(async (argData: unknown) => {
-            const argHandle = wrapIfHandle(argData) as EnvironmentCallbackContextHandle;
-            const arg = new EnvironmentCallbackContext(argHandle, this._client);
-            await callback(arg);
-        });
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
-        const result = await this._client.invokeCapability<ContainerResourceHandle>(
-            'Aspire.Hosting/withEnvironmentCallbackAsync',
-            rpcArgs
-        );
-        return new ContainerResource(result, this._client);
-    }
-
-    /** Sets environment variables via async callback */
-    withEnvironmentCallbackAsync(callback: (arg: EnvironmentCallbackContext) => Promise<void>): ContainerResourcePromise {
-        return new ContainerResourcePromise(this._withEnvironmentCallbackAsyncInternal(callback));
     }
 
     /** @internal */
@@ -3380,6 +6129,21 @@ export class ContainerResource extends ResourceBuilderBase<ContainerResourceHand
     /** Sets an environment variable from an endpoint reference */
     withEnvironmentEndpoint(name: string, endpointReference: EndpointReference): ContainerResourcePromise {
         return new ContainerResourcePromise(this._withEnvironmentEndpointInternal(name, endpointReference));
+    }
+
+    /** @internal */
+    private async _withEnvironmentInternal(name: string, value: string | ReferenceExpression | EndpointReference | ParameterResource | ResourceWithConnectionString): Promise<ContainerResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, name, value };
+        const result = await this._client.invokeCapability<ContainerResourceHandle>(
+            'Aspire.Hosting/withEnvironment',
+            rpcArgs
+        );
+        return new ContainerResource(result, this._client);
+    }
+
+    /** Sets an environment variable on the resource */
+    withEnvironment(name: string, value: string | ReferenceExpression | EndpointReference | ParameterResource | ResourceWithConnectionString): ContainerResourcePromise {
+        return new ContainerResourcePromise(this._withEnvironmentInternal(name, value));
     }
 
     /** @internal */
@@ -3468,10 +6232,11 @@ export class ContainerResource extends ResourceBuilderBase<ContainerResourceHand
     }
 
     /** @internal */
-    private async _withReferenceInternal(source: ResourceBuilderBase, connectionName?: string, optional?: boolean): Promise<ContainerResource> {
+    private async _withReferenceInternal(source: ResourceBuilderBase, connectionName?: string, optional?: boolean, name?: string): Promise<ContainerResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, source };
         if (connectionName !== undefined) rpcArgs.connectionName = connectionName;
         if (optional !== undefined) rpcArgs.optional = optional;
+        if (name !== undefined) rpcArgs.name = name;
         const result = await this._client.invokeCapability<ContainerResourceHandle>(
             'Aspire.Hosting/withReference',
             rpcArgs
@@ -3483,37 +6248,8 @@ export class ContainerResource extends ResourceBuilderBase<ContainerResourceHand
     withReference(source: ResourceBuilderBase, options?: WithReferenceOptions): ContainerResourcePromise {
         const connectionName = options?.connectionName;
         const optional = options?.optional;
-        return new ContainerResourcePromise(this._withReferenceInternal(source, connectionName, optional));
-    }
-
-    /** @internal */
-    private async _withServiceReferenceInternal(source: ResourceBuilderBase): Promise<ContainerResource> {
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, source };
-        const result = await this._client.invokeCapability<ContainerResourceHandle>(
-            'Aspire.Hosting/withServiceReference',
-            rpcArgs
-        );
-        return new ContainerResource(result, this._client);
-    }
-
-    /** Adds a service discovery reference to another resource */
-    withServiceReference(source: ResourceBuilderBase): ContainerResourcePromise {
-        return new ContainerResourcePromise(this._withServiceReferenceInternal(source));
-    }
-
-    /** @internal */
-    private async _withServiceReferenceNamedInternal(source: ResourceBuilderBase, name: string): Promise<ContainerResource> {
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, source, name };
-        const result = await this._client.invokeCapability<ContainerResourceHandle>(
-            'Aspire.Hosting/withServiceReferenceNamed',
-            rpcArgs
-        );
-        return new ContainerResource(result, this._client);
-    }
-
-    /** Adds a named service discovery reference */
-    withServiceReferenceNamed(source: ResourceBuilderBase, name: string): ContainerResourcePromise {
-        return new ContainerResourcePromise(this._withServiceReferenceNamedInternal(source, name));
+        const name = options?.name;
+        return new ContainerResourcePromise(this._withReferenceInternal(source, connectionName, optional, name));
     }
 
     /** @internal */
@@ -3813,7 +6549,7 @@ export class ContainerResource extends ResourceBuilderBase<ContainerResourceHand
     private async _waitForInternal(dependency: ResourceBuilderBase): Promise<ContainerResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, dependency };
         const result = await this._client.invokeCapability<ContainerResourceHandle>(
-            'Aspire.Hosting/waitFor',
+            'Aspire.Hosting/waitForResource',
             rpcArgs
         );
         return new ContainerResource(result, this._client);
@@ -3843,7 +6579,7 @@ export class ContainerResource extends ResourceBuilderBase<ContainerResourceHand
     private async _waitForStartInternal(dependency: ResourceBuilderBase): Promise<ContainerResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, dependency };
         const result = await this._client.invokeCapability<ContainerResourceHandle>(
-            'Aspire.Hosting/waitForStart',
+            'Aspire.Hosting/waitForResourceStart',
             rpcArgs
         );
         return new ContainerResource(result, this._client);
@@ -3889,7 +6625,7 @@ export class ContainerResource extends ResourceBuilderBase<ContainerResourceHand
         const rpcArgs: Record<string, unknown> = { builder: this._handle, dependency };
         if (exitCode !== undefined) rpcArgs.exitCode = exitCode;
         const result = await this._client.invokeCapability<ContainerResourceHandle>(
-            'Aspire.Hosting/waitForCompletion',
+            'Aspire.Hosting/waitForResourceCompletion',
             rpcArgs
         );
         return new ContainerResource(result, this._client);
@@ -3994,7 +6730,7 @@ export class ContainerResource extends ResourceBuilderBase<ContainerResourceHand
         const rpcArgs: Record<string, unknown> = { builder: this._handle };
         if (password !== undefined) rpcArgs.password = password;
         const result = await this._client.invokeCapability<ContainerResourceHandle>(
-            'Aspire.Hosting/withHttpsDeveloperCertificate',
+            'Aspire.Hosting/withParameterHttpsDeveloperCertificate',
             rpcArgs
         );
         return new ContainerResource(result, this._client);
@@ -4025,7 +6761,7 @@ export class ContainerResource extends ResourceBuilderBase<ContainerResourceHand
     private async _withParentRelationshipInternal(parent: ResourceBuilderBase): Promise<ContainerResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, parent };
         const result = await this._client.invokeCapability<ContainerResourceHandle>(
-            'Aspire.Hosting/withParentRelationship',
+            'Aspire.Hosting/withBuilderParentRelationship',
             rpcArgs
         );
         return new ContainerResource(result, this._client);
@@ -4040,7 +6776,7 @@ export class ContainerResource extends ResourceBuilderBase<ContainerResourceHand
     private async _withChildRelationshipInternal(child: ResourceBuilderBase): Promise<ContainerResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, child };
         const result = await this._client.invokeCapability<ContainerResourceHandle>(
-            'Aspire.Hosting/withChildRelationship',
+            'Aspire.Hosting/withBuilderChildRelationship',
             rpcArgs
         );
         return new ContainerResource(result, this._client);
@@ -4210,6 +6946,25 @@ export class ContainerResource extends ResourceBuilderBase<ContainerResourceHand
         return new ContainerResourcePromise(this._withPipelineConfigurationInternal(callback));
     }
 
+    /** @internal */
+    private async _withVolumeInternal(target: string, name?: string, isReadOnly?: boolean): Promise<ContainerResource> {
+        const rpcArgs: Record<string, unknown> = { resource: this._handle, target };
+        if (name !== undefined) rpcArgs.name = name;
+        if (isReadOnly !== undefined) rpcArgs.isReadOnly = isReadOnly;
+        const result = await this._client.invokeCapability<ContainerResourceHandle>(
+            'Aspire.Hosting/withVolume',
+            rpcArgs
+        );
+        return new ContainerResource(result, this._client);
+    }
+
+    /** Adds a volume */
+    withVolume(target: string, options?: WithVolumeOptions): ContainerResourcePromise {
+        const name = options?.name;
+        const isReadOnly = options?.isReadOnly;
+        return new ContainerResourcePromise(this._withVolumeInternal(target, name, isReadOnly));
+    }
+
     /** Gets the resource name */
     async getResourceName(): Promise<string> {
         const rpcArgs: Record<string, unknown> = { resource: this._handle };
@@ -4217,6 +6972,106 @@ export class ContainerResource extends ResourceBuilderBase<ContainerResourceHand
             'Aspire.Hosting/getResourceName',
             rpcArgs
         );
+    }
+
+    /** @internal */
+    private async _onBeforeResourceStartedInternal(callback: (arg: BeforeResourceStartedEvent) => Promise<void>): Promise<ContainerResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as BeforeResourceStartedEventHandle;
+            const arg = new BeforeResourceStartedEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<ContainerResourceHandle>(
+            'Aspire.Hosting/onBeforeResourceStarted',
+            rpcArgs
+        );
+        return new ContainerResource(result, this._client);
+    }
+
+    /** Subscribes to the BeforeResourceStarted event */
+    onBeforeResourceStarted(callback: (arg: BeforeResourceStartedEvent) => Promise<void>): ContainerResourcePromise {
+        return new ContainerResourcePromise(this._onBeforeResourceStartedInternal(callback));
+    }
+
+    /** @internal */
+    private async _onResourceStoppedInternal(callback: (arg: ResourceStoppedEvent) => Promise<void>): Promise<ContainerResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ResourceStoppedEventHandle;
+            const arg = new ResourceStoppedEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<ContainerResourceHandle>(
+            'Aspire.Hosting/onResourceStopped',
+            rpcArgs
+        );
+        return new ContainerResource(result, this._client);
+    }
+
+    /** Subscribes to the ResourceStopped event */
+    onResourceStopped(callback: (arg: ResourceStoppedEvent) => Promise<void>): ContainerResourcePromise {
+        return new ContainerResourcePromise(this._onResourceStoppedInternal(callback));
+    }
+
+    /** @internal */
+    private async _onInitializeResourceInternal(callback: (arg: InitializeResourceEvent) => Promise<void>): Promise<ContainerResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as InitializeResourceEventHandle;
+            const arg = new InitializeResourceEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<ContainerResourceHandle>(
+            'Aspire.Hosting/onInitializeResource',
+            rpcArgs
+        );
+        return new ContainerResource(result, this._client);
+    }
+
+    /** Subscribes to the InitializeResource event */
+    onInitializeResource(callback: (arg: InitializeResourceEvent) => Promise<void>): ContainerResourcePromise {
+        return new ContainerResourcePromise(this._onInitializeResourceInternal(callback));
+    }
+
+    /** @internal */
+    private async _onResourceEndpointsAllocatedInternal(callback: (arg: ResourceEndpointsAllocatedEvent) => Promise<void>): Promise<ContainerResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ResourceEndpointsAllocatedEventHandle;
+            const arg = new ResourceEndpointsAllocatedEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<ContainerResourceHandle>(
+            'Aspire.Hosting/onResourceEndpointsAllocated',
+            rpcArgs
+        );
+        return new ContainerResource(result, this._client);
+    }
+
+    /** Subscribes to the ResourceEndpointsAllocated event */
+    onResourceEndpointsAllocated(callback: (arg: ResourceEndpointsAllocatedEvent) => Promise<void>): ContainerResourcePromise {
+        return new ContainerResourcePromise(this._onResourceEndpointsAllocatedInternal(callback));
+    }
+
+    /** @internal */
+    private async _onResourceReadyInternal(callback: (arg: ResourceReadyEvent) => Promise<void>): Promise<ContainerResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ResourceReadyEventHandle;
+            const arg = new ResourceReadyEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<ContainerResourceHandle>(
+            'Aspire.Hosting/onResourceReady',
+            rpcArgs
+        );
+        return new ContainerResource(result, this._client);
+    }
+
+    /** Subscribes to the ResourceReady event */
+    onResourceReady(callback: (arg: ResourceReadyEvent) => Promise<void>): ContainerResourcePromise {
+        return new ContainerResourcePromise(this._onResourceReadyInternal(callback));
     }
 
 }
@@ -4241,9 +7096,89 @@ export class ContainerResourcePromise implements PromiseLike<ContainerResource> 
         return new ContainerResourcePromise(this._promise.then(obj => obj.withContainerRegistry(registry)));
     }
 
+    /** Adds a bind mount */
+    withBindMount(source: string, target: string, options?: WithBindMountOptions): ContainerResourcePromise {
+        return new ContainerResourcePromise(this._promise.then(obj => obj.withBindMount(source, target, options)));
+    }
+
+    /** Sets the container entrypoint */
+    withEntrypoint(entrypoint: string): ContainerResourcePromise {
+        return new ContainerResourcePromise(this._promise.then(obj => obj.withEntrypoint(entrypoint)));
+    }
+
+    /** Sets the container image tag */
+    withImageTag(tag: string): ContainerResourcePromise {
+        return new ContainerResourcePromise(this._promise.then(obj => obj.withImageTag(tag)));
+    }
+
+    /** Sets the container image registry */
+    withImageRegistry(registry: string): ContainerResourcePromise {
+        return new ContainerResourcePromise(this._promise.then(obj => obj.withImageRegistry(registry)));
+    }
+
+    /** Sets the container image */
+    withImage(image: string, options?: WithImageOptions): ContainerResourcePromise {
+        return new ContainerResourcePromise(this._promise.then(obj => obj.withImage(image, options)));
+    }
+
+    /** Sets the image SHA256 digest */
+    withImageSHA256(sha256: string): ContainerResourcePromise {
+        return new ContainerResourcePromise(this._promise.then(obj => obj.withImageSHA256(sha256)));
+    }
+
+    /** Adds runtime arguments for the container */
+    withContainerRuntimeArgs(args: string[]): ContainerResourcePromise {
+        return new ContainerResourcePromise(this._promise.then(obj => obj.withContainerRuntimeArgs(args)));
+    }
+
+    /** Sets the lifetime behavior of the container resource */
+    withLifetime(lifetime: ContainerLifetime): ContainerResourcePromise {
+        return new ContainerResourcePromise(this._promise.then(obj => obj.withLifetime(lifetime)));
+    }
+
+    /** Sets the container image pull policy */
+    withImagePullPolicy(pullPolicy: ImagePullPolicy): ContainerResourcePromise {
+        return new ContainerResourcePromise(this._promise.then(obj => obj.withImagePullPolicy(pullPolicy)));
+    }
+
+    /** Configures the resource to be published as a container */
+    publishAsContainer(): ContainerResourcePromise {
+        return new ContainerResourcePromise(this._promise.then(obj => obj.publishAsContainer()));
+    }
+
+    /** Configures the resource to use a Dockerfile */
+    withDockerfile(contextPath: string, options?: WithDockerfileOptions): ContainerResourcePromise {
+        return new ContainerResourcePromise(this._promise.then(obj => obj.withDockerfile(contextPath, options)));
+    }
+
+    /** Sets the container name */
+    withContainerName(name: string): ContainerResourcePromise {
+        return new ContainerResourcePromise(this._promise.then(obj => obj.withContainerName(name)));
+    }
+
+    /** Adds a build argument from a parameter resource */
+    withBuildArg(name: string, value: ParameterResource): ContainerResourcePromise {
+        return new ContainerResourcePromise(this._promise.then(obj => obj.withBuildArg(name, value)));
+    }
+
+    /** Adds a build secret from a parameter resource */
+    withBuildSecret(name: string, value: ParameterResource): ContainerResourcePromise {
+        return new ContainerResourcePromise(this._promise.then(obj => obj.withBuildSecret(name, value)));
+    }
+
+    /** Configures endpoint proxy support */
+    withEndpointProxySupport(proxyEnabled: boolean): ContainerResourcePromise {
+        return new ContainerResourcePromise(this._promise.then(obj => obj.withEndpointProxySupport(proxyEnabled)));
+    }
+
     /** Sets the base image for a Dockerfile build */
     withDockerfileBaseImage(options?: WithDockerfileBaseImageOptions): ContainerResourcePromise {
         return new ContainerResourcePromise(this._promise.then(obj => obj.withDockerfileBaseImage(options)));
+    }
+
+    /** Adds a network alias for the container */
+    withContainerNetworkAlias(alias: string): ContainerResourcePromise {
+        return new ContainerResourcePromise(this._promise.then(obj => obj.withContainerNetworkAlias(alias)));
     }
 
     /** Configures an MCP server endpoint on the resource */
@@ -4261,34 +7196,29 @@ export class ContainerResourcePromise implements PromiseLike<ContainerResource> 
         return new ContainerResourcePromise(this._promise.then(obj => obj.withOtlpExporterProtocol(protocol)));
     }
 
+    /** Publishes the resource as a connection string */
+    publishAsConnectionString(): ContainerResourcePromise {
+        return new ContainerResourcePromise(this._promise.then(obj => obj.publishAsConnectionString()));
+    }
+
     /** Adds a required command dependency */
     withRequiredCommand(command: string, options?: WithRequiredCommandOptions): ContainerResourcePromise {
         return new ContainerResourcePromise(this._promise.then(obj => obj.withRequiredCommand(command, options)));
     }
 
-    /** Sets an environment variable */
-    withEnvironment(name: string, value: string): ContainerResourcePromise {
-        return new ContainerResourcePromise(this._promise.then(obj => obj.withEnvironment(name, value)));
-    }
-
-    /** Adds an environment variable with a reference expression */
-    withEnvironmentExpression(name: string, value: ReferenceExpression): ContainerResourcePromise {
-        return new ContainerResourcePromise(this._promise.then(obj => obj.withEnvironmentExpression(name, value)));
-    }
-
     /** Sets environment variables via callback */
-    withEnvironmentCallback(callback: (obj: EnvironmentCallbackContext) => Promise<void>): ContainerResourcePromise {
+    withEnvironmentCallback(callback: (arg: EnvironmentCallbackContext) => Promise<void>): ContainerResourcePromise {
         return new ContainerResourcePromise(this._promise.then(obj => obj.withEnvironmentCallback(callback)));
-    }
-
-    /** Sets environment variables via async callback */
-    withEnvironmentCallbackAsync(callback: (arg: EnvironmentCallbackContext) => Promise<void>): ContainerResourcePromise {
-        return new ContainerResourcePromise(this._promise.then(obj => obj.withEnvironmentCallbackAsync(callback)));
     }
 
     /** Sets an environment variable from an endpoint reference */
     withEnvironmentEndpoint(name: string, endpointReference: EndpointReference): ContainerResourcePromise {
         return new ContainerResourcePromise(this._promise.then(obj => obj.withEnvironmentEndpoint(name, endpointReference)));
+    }
+
+    /** Sets an environment variable on the resource */
+    withEnvironment(name: string, value: string | ReferenceExpression | EndpointReference | ParameterResource | ResourceWithConnectionString): ContainerResourcePromise {
+        return new ContainerResourcePromise(this._promise.then(obj => obj.withEnvironment(name, value)));
     }
 
     /** Sets an environment variable from a parameter resource */
@@ -4319,16 +7249,6 @@ export class ContainerResourcePromise implements PromiseLike<ContainerResource> 
     /** Adds a reference to another resource */
     withReference(source: ResourceBuilderBase, options?: WithReferenceOptions): ContainerResourcePromise {
         return new ContainerResourcePromise(this._promise.then(obj => obj.withReference(source, options)));
-    }
-
-    /** Adds a service discovery reference to another resource */
-    withServiceReference(source: ResourceBuilderBase): ContainerResourcePromise {
-        return new ContainerResourcePromise(this._promise.then(obj => obj.withServiceReference(source)));
-    }
-
-    /** Adds a named service discovery reference */
-    withServiceReferenceNamed(source: ResourceBuilderBase, name: string): ContainerResourcePromise {
-        return new ContainerResourcePromise(this._promise.then(obj => obj.withServiceReferenceNamed(source, name)));
     }
 
     /** Adds a reference to a URI */
@@ -4526,9 +7446,39 @@ export class ContainerResourcePromise implements PromiseLike<ContainerResource> 
         return new ContainerResourcePromise(this._promise.then(obj => obj.withPipelineConfiguration(callback)));
     }
 
+    /** Adds a volume */
+    withVolume(target: string, options?: WithVolumeOptions): ContainerResourcePromise {
+        return new ContainerResourcePromise(this._promise.then(obj => obj.withVolume(target, options)));
+    }
+
     /** Gets the resource name */
     getResourceName(): Promise<string> {
         return this._promise.then(obj => obj.getResourceName());
+    }
+
+    /** Subscribes to the BeforeResourceStarted event */
+    onBeforeResourceStarted(callback: (arg: BeforeResourceStartedEvent) => Promise<void>): ContainerResourcePromise {
+        return new ContainerResourcePromise(this._promise.then(obj => obj.onBeforeResourceStarted(callback)));
+    }
+
+    /** Subscribes to the ResourceStopped event */
+    onResourceStopped(callback: (arg: ResourceStoppedEvent) => Promise<void>): ContainerResourcePromise {
+        return new ContainerResourcePromise(this._promise.then(obj => obj.onResourceStopped(callback)));
+    }
+
+    /** Subscribes to the InitializeResource event */
+    onInitializeResource(callback: (arg: InitializeResourceEvent) => Promise<void>): ContainerResourcePromise {
+        return new ContainerResourcePromise(this._promise.then(obj => obj.onInitializeResource(callback)));
+    }
+
+    /** Subscribes to the ResourceEndpointsAllocated event */
+    onResourceEndpointsAllocated(callback: (arg: ResourceEndpointsAllocatedEvent) => Promise<void>): ContainerResourcePromise {
+        return new ContainerResourcePromise(this._promise.then(obj => obj.onResourceEndpointsAllocated(callback)));
+    }
+
+    /** Subscribes to the ResourceReady event */
+    onResourceReady(callback: (arg: ResourceReadyEvent) => Promise<void>): ContainerResourcePromise {
+        return new ContainerResourcePromise(this._promise.then(obj => obj.onResourceReady(callback)));
     }
 
 }
@@ -4656,6 +7606,28 @@ export class CSharpAppResource extends ResourceBuilderBase<CSharpAppResourceHand
     }
 
     /** @internal */
+    private async _publishAsDockerFileInternal(configure?: (obj: ContainerResource) => Promise<void>): Promise<CSharpAppResource> {
+        const configureId = configure ? registerCallback(async (objData: unknown) => {
+            const objHandle = wrapIfHandle(objData) as ContainerResourceHandle;
+            const obj = new ContainerResource(objHandle, this._client);
+            await configure(obj);
+        }) : undefined;
+        const rpcArgs: Record<string, unknown> = { builder: this._handle };
+        if (configure !== undefined) rpcArgs.configure = configureId;
+        const result = await this._client.invokeCapability<CSharpAppResourceHandle>(
+            'Aspire.Hosting/publishProjectAsDockerFileWithConfigure',
+            rpcArgs
+        );
+        return new CSharpAppResource(result, this._client);
+    }
+
+    /** Publishes a project as a Docker file with optional container configuration */
+    publishAsDockerFile(options?: PublishAsDockerFileOptions): CSharpAppResourcePromise {
+        const configure = options?.configure;
+        return new CSharpAppResourcePromise(this._publishAsDockerFileInternal(configure));
+    }
+
+    /** @internal */
     private async _withRequiredCommandInternal(command: string, helpLink?: string): Promise<CSharpAppResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, command };
         if (helpLink !== undefined) rpcArgs.helpLink = helpLink;
@@ -4673,41 +7645,11 @@ export class CSharpAppResource extends ResourceBuilderBase<CSharpAppResourceHand
     }
 
     /** @internal */
-    private async _withEnvironmentInternal(name: string, value: string): Promise<CSharpAppResource> {
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, name, value };
-        const result = await this._client.invokeCapability<CSharpAppResourceHandle>(
-            'Aspire.Hosting/withEnvironment',
-            rpcArgs
-        );
-        return new CSharpAppResource(result, this._client);
-    }
-
-    /** Sets an environment variable */
-    withEnvironment(name: string, value: string): CSharpAppResourcePromise {
-        return new CSharpAppResourcePromise(this._withEnvironmentInternal(name, value));
-    }
-
-    /** @internal */
-    private async _withEnvironmentExpressionInternal(name: string, value: ReferenceExpression): Promise<CSharpAppResource> {
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, name, value };
-        const result = await this._client.invokeCapability<CSharpAppResourceHandle>(
-            'Aspire.Hosting/withEnvironmentExpression',
-            rpcArgs
-        );
-        return new CSharpAppResource(result, this._client);
-    }
-
-    /** Adds an environment variable with a reference expression */
-    withEnvironmentExpression(name: string, value: ReferenceExpression): CSharpAppResourcePromise {
-        return new CSharpAppResourcePromise(this._withEnvironmentExpressionInternal(name, value));
-    }
-
-    /** @internal */
-    private async _withEnvironmentCallbackInternal(callback: (obj: EnvironmentCallbackContext) => Promise<void>): Promise<CSharpAppResource> {
-        const callbackId = registerCallback(async (objData: unknown) => {
-            const objHandle = wrapIfHandle(objData) as EnvironmentCallbackContextHandle;
-            const obj = new EnvironmentCallbackContext(objHandle, this._client);
-            await callback(obj);
+    private async _withEnvironmentCallbackInternal(callback: (arg: EnvironmentCallbackContext) => Promise<void>): Promise<CSharpAppResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as EnvironmentCallbackContextHandle;
+            const arg = new EnvironmentCallbackContext(argHandle, this._client);
+            await callback(arg);
         });
         const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
         const result = await this._client.invokeCapability<CSharpAppResourceHandle>(
@@ -4718,28 +7660,8 @@ export class CSharpAppResource extends ResourceBuilderBase<CSharpAppResourceHand
     }
 
     /** Sets environment variables via callback */
-    withEnvironmentCallback(callback: (obj: EnvironmentCallbackContext) => Promise<void>): CSharpAppResourcePromise {
+    withEnvironmentCallback(callback: (arg: EnvironmentCallbackContext) => Promise<void>): CSharpAppResourcePromise {
         return new CSharpAppResourcePromise(this._withEnvironmentCallbackInternal(callback));
-    }
-
-    /** @internal */
-    private async _withEnvironmentCallbackAsyncInternal(callback: (arg: EnvironmentCallbackContext) => Promise<void>): Promise<CSharpAppResource> {
-        const callbackId = registerCallback(async (argData: unknown) => {
-            const argHandle = wrapIfHandle(argData) as EnvironmentCallbackContextHandle;
-            const arg = new EnvironmentCallbackContext(argHandle, this._client);
-            await callback(arg);
-        });
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
-        const result = await this._client.invokeCapability<CSharpAppResourceHandle>(
-            'Aspire.Hosting/withEnvironmentCallbackAsync',
-            rpcArgs
-        );
-        return new CSharpAppResource(result, this._client);
-    }
-
-    /** Sets environment variables via async callback */
-    withEnvironmentCallbackAsync(callback: (arg: EnvironmentCallbackContext) => Promise<void>): CSharpAppResourcePromise {
-        return new CSharpAppResourcePromise(this._withEnvironmentCallbackAsyncInternal(callback));
     }
 
     /** @internal */
@@ -4755,6 +7677,21 @@ export class CSharpAppResource extends ResourceBuilderBase<CSharpAppResourceHand
     /** Sets an environment variable from an endpoint reference */
     withEnvironmentEndpoint(name: string, endpointReference: EndpointReference): CSharpAppResourcePromise {
         return new CSharpAppResourcePromise(this._withEnvironmentEndpointInternal(name, endpointReference));
+    }
+
+    /** @internal */
+    private async _withEnvironmentInternal(name: string, value: string | ReferenceExpression | EndpointReference | ParameterResource | ResourceWithConnectionString): Promise<CSharpAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, name, value };
+        const result = await this._client.invokeCapability<CSharpAppResourceHandle>(
+            'Aspire.Hosting/withEnvironment',
+            rpcArgs
+        );
+        return new CSharpAppResource(result, this._client);
+    }
+
+    /** Sets an environment variable on the resource */
+    withEnvironment(name: string, value: string | ReferenceExpression | EndpointReference | ParameterResource | ResourceWithConnectionString): CSharpAppResourcePromise {
+        return new CSharpAppResourcePromise(this._withEnvironmentInternal(name, value));
     }
 
     /** @internal */
@@ -4843,10 +7780,11 @@ export class CSharpAppResource extends ResourceBuilderBase<CSharpAppResourceHand
     }
 
     /** @internal */
-    private async _withReferenceInternal(source: ResourceBuilderBase, connectionName?: string, optional?: boolean): Promise<CSharpAppResource> {
+    private async _withReferenceInternal(source: ResourceBuilderBase, connectionName?: string, optional?: boolean, name?: string): Promise<CSharpAppResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, source };
         if (connectionName !== undefined) rpcArgs.connectionName = connectionName;
         if (optional !== undefined) rpcArgs.optional = optional;
+        if (name !== undefined) rpcArgs.name = name;
         const result = await this._client.invokeCapability<CSharpAppResourceHandle>(
             'Aspire.Hosting/withReference',
             rpcArgs
@@ -4858,37 +7796,8 @@ export class CSharpAppResource extends ResourceBuilderBase<CSharpAppResourceHand
     withReference(source: ResourceBuilderBase, options?: WithReferenceOptions): CSharpAppResourcePromise {
         const connectionName = options?.connectionName;
         const optional = options?.optional;
-        return new CSharpAppResourcePromise(this._withReferenceInternal(source, connectionName, optional));
-    }
-
-    /** @internal */
-    private async _withServiceReferenceInternal(source: ResourceBuilderBase): Promise<CSharpAppResource> {
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, source };
-        const result = await this._client.invokeCapability<CSharpAppResourceHandle>(
-            'Aspire.Hosting/withServiceReference',
-            rpcArgs
-        );
-        return new CSharpAppResource(result, this._client);
-    }
-
-    /** Adds a service discovery reference to another resource */
-    withServiceReference(source: ResourceBuilderBase): CSharpAppResourcePromise {
-        return new CSharpAppResourcePromise(this._withServiceReferenceInternal(source));
-    }
-
-    /** @internal */
-    private async _withServiceReferenceNamedInternal(source: ResourceBuilderBase, name: string): Promise<CSharpAppResource> {
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, source, name };
-        const result = await this._client.invokeCapability<CSharpAppResourceHandle>(
-            'Aspire.Hosting/withServiceReferenceNamed',
-            rpcArgs
-        );
-        return new CSharpAppResource(result, this._client);
-    }
-
-    /** Adds a named service discovery reference */
-    withServiceReferenceNamed(source: ResourceBuilderBase, name: string): CSharpAppResourcePromise {
-        return new CSharpAppResourcePromise(this._withServiceReferenceNamedInternal(source, name));
+        const name = options?.name;
+        return new CSharpAppResourcePromise(this._withReferenceInternal(source, connectionName, optional, name));
     }
 
     /** @internal */
@@ -5173,7 +8082,7 @@ export class CSharpAppResource extends ResourceBuilderBase<CSharpAppResourceHand
     private async _publishWithContainerFilesInternal(source: ResourceBuilderBase, destinationPath: string): Promise<CSharpAppResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, source, destinationPath };
         const result = await this._client.invokeCapability<CSharpAppResourceHandle>(
-            'Aspire.Hosting/publishWithContainerFiles',
+            'Aspire.Hosting/publishWithContainerFilesFromResource',
             rpcArgs
         );
         return new CSharpAppResource(result, this._client);
@@ -5203,7 +8112,7 @@ export class CSharpAppResource extends ResourceBuilderBase<CSharpAppResourceHand
     private async _waitForInternal(dependency: ResourceBuilderBase): Promise<CSharpAppResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, dependency };
         const result = await this._client.invokeCapability<CSharpAppResourceHandle>(
-            'Aspire.Hosting/waitFor',
+            'Aspire.Hosting/waitForResource',
             rpcArgs
         );
         return new CSharpAppResource(result, this._client);
@@ -5233,7 +8142,7 @@ export class CSharpAppResource extends ResourceBuilderBase<CSharpAppResourceHand
     private async _waitForStartInternal(dependency: ResourceBuilderBase): Promise<CSharpAppResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, dependency };
         const result = await this._client.invokeCapability<CSharpAppResourceHandle>(
-            'Aspire.Hosting/waitForStart',
+            'Aspire.Hosting/waitForResourceStart',
             rpcArgs
         );
         return new CSharpAppResource(result, this._client);
@@ -5279,7 +8188,7 @@ export class CSharpAppResource extends ResourceBuilderBase<CSharpAppResourceHand
         const rpcArgs: Record<string, unknown> = { builder: this._handle, dependency };
         if (exitCode !== undefined) rpcArgs.exitCode = exitCode;
         const result = await this._client.invokeCapability<CSharpAppResourceHandle>(
-            'Aspire.Hosting/waitForCompletion',
+            'Aspire.Hosting/waitForResourceCompletion',
             rpcArgs
         );
         return new CSharpAppResource(result, this._client);
@@ -5384,7 +8293,7 @@ export class CSharpAppResource extends ResourceBuilderBase<CSharpAppResourceHand
         const rpcArgs: Record<string, unknown> = { builder: this._handle };
         if (password !== undefined) rpcArgs.password = password;
         const result = await this._client.invokeCapability<CSharpAppResourceHandle>(
-            'Aspire.Hosting/withHttpsDeveloperCertificate',
+            'Aspire.Hosting/withParameterHttpsDeveloperCertificate',
             rpcArgs
         );
         return new CSharpAppResource(result, this._client);
@@ -5415,7 +8324,7 @@ export class CSharpAppResource extends ResourceBuilderBase<CSharpAppResourceHand
     private async _withParentRelationshipInternal(parent: ResourceBuilderBase): Promise<CSharpAppResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, parent };
         const result = await this._client.invokeCapability<CSharpAppResourceHandle>(
-            'Aspire.Hosting/withParentRelationship',
+            'Aspire.Hosting/withBuilderParentRelationship',
             rpcArgs
         );
         return new CSharpAppResource(result, this._client);
@@ -5430,7 +8339,7 @@ export class CSharpAppResource extends ResourceBuilderBase<CSharpAppResourceHand
     private async _withChildRelationshipInternal(child: ResourceBuilderBase): Promise<CSharpAppResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, child };
         const result = await this._client.invokeCapability<CSharpAppResourceHandle>(
-            'Aspire.Hosting/withChildRelationship',
+            'Aspire.Hosting/withBuilderChildRelationship',
             rpcArgs
         );
         return new CSharpAppResource(result, this._client);
@@ -5609,6 +8518,106 @@ export class CSharpAppResource extends ResourceBuilderBase<CSharpAppResourceHand
         );
     }
 
+    /** @internal */
+    private async _onBeforeResourceStartedInternal(callback: (arg: BeforeResourceStartedEvent) => Promise<void>): Promise<CSharpAppResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as BeforeResourceStartedEventHandle;
+            const arg = new BeforeResourceStartedEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<CSharpAppResourceHandle>(
+            'Aspire.Hosting/onBeforeResourceStarted',
+            rpcArgs
+        );
+        return new CSharpAppResource(result, this._client);
+    }
+
+    /** Subscribes to the BeforeResourceStarted event */
+    onBeforeResourceStarted(callback: (arg: BeforeResourceStartedEvent) => Promise<void>): CSharpAppResourcePromise {
+        return new CSharpAppResourcePromise(this._onBeforeResourceStartedInternal(callback));
+    }
+
+    /** @internal */
+    private async _onResourceStoppedInternal(callback: (arg: ResourceStoppedEvent) => Promise<void>): Promise<CSharpAppResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ResourceStoppedEventHandle;
+            const arg = new ResourceStoppedEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<CSharpAppResourceHandle>(
+            'Aspire.Hosting/onResourceStopped',
+            rpcArgs
+        );
+        return new CSharpAppResource(result, this._client);
+    }
+
+    /** Subscribes to the ResourceStopped event */
+    onResourceStopped(callback: (arg: ResourceStoppedEvent) => Promise<void>): CSharpAppResourcePromise {
+        return new CSharpAppResourcePromise(this._onResourceStoppedInternal(callback));
+    }
+
+    /** @internal */
+    private async _onInitializeResourceInternal(callback: (arg: InitializeResourceEvent) => Promise<void>): Promise<CSharpAppResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as InitializeResourceEventHandle;
+            const arg = new InitializeResourceEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<CSharpAppResourceHandle>(
+            'Aspire.Hosting/onInitializeResource',
+            rpcArgs
+        );
+        return new CSharpAppResource(result, this._client);
+    }
+
+    /** Subscribes to the InitializeResource event */
+    onInitializeResource(callback: (arg: InitializeResourceEvent) => Promise<void>): CSharpAppResourcePromise {
+        return new CSharpAppResourcePromise(this._onInitializeResourceInternal(callback));
+    }
+
+    /** @internal */
+    private async _onResourceEndpointsAllocatedInternal(callback: (arg: ResourceEndpointsAllocatedEvent) => Promise<void>): Promise<CSharpAppResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ResourceEndpointsAllocatedEventHandle;
+            const arg = new ResourceEndpointsAllocatedEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<CSharpAppResourceHandle>(
+            'Aspire.Hosting/onResourceEndpointsAllocated',
+            rpcArgs
+        );
+        return new CSharpAppResource(result, this._client);
+    }
+
+    /** Subscribes to the ResourceEndpointsAllocated event */
+    onResourceEndpointsAllocated(callback: (arg: ResourceEndpointsAllocatedEvent) => Promise<void>): CSharpAppResourcePromise {
+        return new CSharpAppResourcePromise(this._onResourceEndpointsAllocatedInternal(callback));
+    }
+
+    /** @internal */
+    private async _onResourceReadyInternal(callback: (arg: ResourceReadyEvent) => Promise<void>): Promise<CSharpAppResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ResourceReadyEventHandle;
+            const arg = new ResourceReadyEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<CSharpAppResourceHandle>(
+            'Aspire.Hosting/onResourceReady',
+            rpcArgs
+        );
+        return new CSharpAppResource(result, this._client);
+    }
+
+    /** Subscribes to the ResourceReady event */
+    onResourceReady(callback: (arg: ResourceReadyEvent) => Promise<void>): CSharpAppResourcePromise {
+        return new CSharpAppResourcePromise(this._onResourceReadyInternal(callback));
+    }
+
 }
 
 /**
@@ -5661,34 +8670,29 @@ export class CSharpAppResourcePromise implements PromiseLike<CSharpAppResource> 
         return new CSharpAppResourcePromise(this._promise.then(obj => obj.disableForwardedHeaders()));
     }
 
+    /** Publishes a project as a Docker file with optional container configuration */
+    publishAsDockerFile(options?: PublishAsDockerFileOptions): CSharpAppResourcePromise {
+        return new CSharpAppResourcePromise(this._promise.then(obj => obj.publishAsDockerFile(options)));
+    }
+
     /** Adds a required command dependency */
     withRequiredCommand(command: string, options?: WithRequiredCommandOptions): CSharpAppResourcePromise {
         return new CSharpAppResourcePromise(this._promise.then(obj => obj.withRequiredCommand(command, options)));
     }
 
-    /** Sets an environment variable */
-    withEnvironment(name: string, value: string): CSharpAppResourcePromise {
-        return new CSharpAppResourcePromise(this._promise.then(obj => obj.withEnvironment(name, value)));
-    }
-
-    /** Adds an environment variable with a reference expression */
-    withEnvironmentExpression(name: string, value: ReferenceExpression): CSharpAppResourcePromise {
-        return new CSharpAppResourcePromise(this._promise.then(obj => obj.withEnvironmentExpression(name, value)));
-    }
-
     /** Sets environment variables via callback */
-    withEnvironmentCallback(callback: (obj: EnvironmentCallbackContext) => Promise<void>): CSharpAppResourcePromise {
+    withEnvironmentCallback(callback: (arg: EnvironmentCallbackContext) => Promise<void>): CSharpAppResourcePromise {
         return new CSharpAppResourcePromise(this._promise.then(obj => obj.withEnvironmentCallback(callback)));
-    }
-
-    /** Sets environment variables via async callback */
-    withEnvironmentCallbackAsync(callback: (arg: EnvironmentCallbackContext) => Promise<void>): CSharpAppResourcePromise {
-        return new CSharpAppResourcePromise(this._promise.then(obj => obj.withEnvironmentCallbackAsync(callback)));
     }
 
     /** Sets an environment variable from an endpoint reference */
     withEnvironmentEndpoint(name: string, endpointReference: EndpointReference): CSharpAppResourcePromise {
         return new CSharpAppResourcePromise(this._promise.then(obj => obj.withEnvironmentEndpoint(name, endpointReference)));
+    }
+
+    /** Sets an environment variable on the resource */
+    withEnvironment(name: string, value: string | ReferenceExpression | EndpointReference | ParameterResource | ResourceWithConnectionString): CSharpAppResourcePromise {
+        return new CSharpAppResourcePromise(this._promise.then(obj => obj.withEnvironment(name, value)));
     }
 
     /** Sets an environment variable from a parameter resource */
@@ -5719,16 +8723,6 @@ export class CSharpAppResourcePromise implements PromiseLike<CSharpAppResource> 
     /** Adds a reference to another resource */
     withReference(source: ResourceBuilderBase, options?: WithReferenceOptions): CSharpAppResourcePromise {
         return new CSharpAppResourcePromise(this._promise.then(obj => obj.withReference(source, options)));
-    }
-
-    /** Adds a service discovery reference to another resource */
-    withServiceReference(source: ResourceBuilderBase): CSharpAppResourcePromise {
-        return new CSharpAppResourcePromise(this._promise.then(obj => obj.withServiceReference(source)));
-    }
-
-    /** Adds a named service discovery reference */
-    withServiceReferenceNamed(source: ResourceBuilderBase, name: string): CSharpAppResourcePromise {
-        return new CSharpAppResourcePromise(this._promise.then(obj => obj.withServiceReferenceNamed(source, name)));
     }
 
     /** Adds a reference to a URI */
@@ -5934,6 +8928,31 @@ export class CSharpAppResourcePromise implements PromiseLike<CSharpAppResource> 
     /** Gets the resource name */
     getResourceName(): Promise<string> {
         return this._promise.then(obj => obj.getResourceName());
+    }
+
+    /** Subscribes to the BeforeResourceStarted event */
+    onBeforeResourceStarted(callback: (arg: BeforeResourceStartedEvent) => Promise<void>): CSharpAppResourcePromise {
+        return new CSharpAppResourcePromise(this._promise.then(obj => obj.onBeforeResourceStarted(callback)));
+    }
+
+    /** Subscribes to the ResourceStopped event */
+    onResourceStopped(callback: (arg: ResourceStoppedEvent) => Promise<void>): CSharpAppResourcePromise {
+        return new CSharpAppResourcePromise(this._promise.then(obj => obj.onResourceStopped(callback)));
+    }
+
+    /** Subscribes to the InitializeResource event */
+    onInitializeResource(callback: (arg: InitializeResourceEvent) => Promise<void>): CSharpAppResourcePromise {
+        return new CSharpAppResourcePromise(this._promise.then(obj => obj.onInitializeResource(callback)));
+    }
+
+    /** Subscribes to the ResourceEndpointsAllocated event */
+    onResourceEndpointsAllocated(callback: (arg: ResourceEndpointsAllocatedEvent) => Promise<void>): CSharpAppResourcePromise {
+        return new CSharpAppResourcePromise(this._promise.then(obj => obj.onResourceEndpointsAllocated(callback)));
+    }
+
+    /** Subscribes to the ResourceReady event */
+    onResourceReady(callback: (arg: ResourceReadyEvent) => Promise<void>): CSharpAppResourcePromise {
+        return new CSharpAppResourcePromise(this._promise.then(obj => obj.onResourceReady(callback)));
     }
 
 }
@@ -6203,41 +9222,11 @@ export class DotnetToolResource extends ResourceBuilderBase<DotnetToolResourceHa
     }
 
     /** @internal */
-    private async _withEnvironmentInternal(name: string, value: string): Promise<DotnetToolResource> {
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, name, value };
-        const result = await this._client.invokeCapability<DotnetToolResourceHandle>(
-            'Aspire.Hosting/withEnvironment',
-            rpcArgs
-        );
-        return new DotnetToolResource(result, this._client);
-    }
-
-    /** Sets an environment variable */
-    withEnvironment(name: string, value: string): DotnetToolResourcePromise {
-        return new DotnetToolResourcePromise(this._withEnvironmentInternal(name, value));
-    }
-
-    /** @internal */
-    private async _withEnvironmentExpressionInternal(name: string, value: ReferenceExpression): Promise<DotnetToolResource> {
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, name, value };
-        const result = await this._client.invokeCapability<DotnetToolResourceHandle>(
-            'Aspire.Hosting/withEnvironmentExpression',
-            rpcArgs
-        );
-        return new DotnetToolResource(result, this._client);
-    }
-
-    /** Adds an environment variable with a reference expression */
-    withEnvironmentExpression(name: string, value: ReferenceExpression): DotnetToolResourcePromise {
-        return new DotnetToolResourcePromise(this._withEnvironmentExpressionInternal(name, value));
-    }
-
-    /** @internal */
-    private async _withEnvironmentCallbackInternal(callback: (obj: EnvironmentCallbackContext) => Promise<void>): Promise<DotnetToolResource> {
-        const callbackId = registerCallback(async (objData: unknown) => {
-            const objHandle = wrapIfHandle(objData) as EnvironmentCallbackContextHandle;
-            const obj = new EnvironmentCallbackContext(objHandle, this._client);
-            await callback(obj);
+    private async _withEnvironmentCallbackInternal(callback: (arg: EnvironmentCallbackContext) => Promise<void>): Promise<DotnetToolResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as EnvironmentCallbackContextHandle;
+            const arg = new EnvironmentCallbackContext(argHandle, this._client);
+            await callback(arg);
         });
         const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
         const result = await this._client.invokeCapability<DotnetToolResourceHandle>(
@@ -6248,28 +9237,8 @@ export class DotnetToolResource extends ResourceBuilderBase<DotnetToolResourceHa
     }
 
     /** Sets environment variables via callback */
-    withEnvironmentCallback(callback: (obj: EnvironmentCallbackContext) => Promise<void>): DotnetToolResourcePromise {
+    withEnvironmentCallback(callback: (arg: EnvironmentCallbackContext) => Promise<void>): DotnetToolResourcePromise {
         return new DotnetToolResourcePromise(this._withEnvironmentCallbackInternal(callback));
-    }
-
-    /** @internal */
-    private async _withEnvironmentCallbackAsyncInternal(callback: (arg: EnvironmentCallbackContext) => Promise<void>): Promise<DotnetToolResource> {
-        const callbackId = registerCallback(async (argData: unknown) => {
-            const argHandle = wrapIfHandle(argData) as EnvironmentCallbackContextHandle;
-            const arg = new EnvironmentCallbackContext(argHandle, this._client);
-            await callback(arg);
-        });
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
-        const result = await this._client.invokeCapability<DotnetToolResourceHandle>(
-            'Aspire.Hosting/withEnvironmentCallbackAsync',
-            rpcArgs
-        );
-        return new DotnetToolResource(result, this._client);
-    }
-
-    /** Sets environment variables via async callback */
-    withEnvironmentCallbackAsync(callback: (arg: EnvironmentCallbackContext) => Promise<void>): DotnetToolResourcePromise {
-        return new DotnetToolResourcePromise(this._withEnvironmentCallbackAsyncInternal(callback));
     }
 
     /** @internal */
@@ -6285,6 +9254,21 @@ export class DotnetToolResource extends ResourceBuilderBase<DotnetToolResourceHa
     /** Sets an environment variable from an endpoint reference */
     withEnvironmentEndpoint(name: string, endpointReference: EndpointReference): DotnetToolResourcePromise {
         return new DotnetToolResourcePromise(this._withEnvironmentEndpointInternal(name, endpointReference));
+    }
+
+    /** @internal */
+    private async _withEnvironmentInternal(name: string, value: string | ReferenceExpression | EndpointReference | ParameterResource | ResourceWithConnectionString): Promise<DotnetToolResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, name, value };
+        const result = await this._client.invokeCapability<DotnetToolResourceHandle>(
+            'Aspire.Hosting/withEnvironment',
+            rpcArgs
+        );
+        return new DotnetToolResource(result, this._client);
+    }
+
+    /** Sets an environment variable on the resource */
+    withEnvironment(name: string, value: string | ReferenceExpression | EndpointReference | ParameterResource | ResourceWithConnectionString): DotnetToolResourcePromise {
+        return new DotnetToolResourcePromise(this._withEnvironmentInternal(name, value));
     }
 
     /** @internal */
@@ -6373,10 +9357,11 @@ export class DotnetToolResource extends ResourceBuilderBase<DotnetToolResourceHa
     }
 
     /** @internal */
-    private async _withReferenceInternal(source: ResourceBuilderBase, connectionName?: string, optional?: boolean): Promise<DotnetToolResource> {
+    private async _withReferenceInternal(source: ResourceBuilderBase, connectionName?: string, optional?: boolean, name?: string): Promise<DotnetToolResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, source };
         if (connectionName !== undefined) rpcArgs.connectionName = connectionName;
         if (optional !== undefined) rpcArgs.optional = optional;
+        if (name !== undefined) rpcArgs.name = name;
         const result = await this._client.invokeCapability<DotnetToolResourceHandle>(
             'Aspire.Hosting/withReference',
             rpcArgs
@@ -6388,37 +9373,8 @@ export class DotnetToolResource extends ResourceBuilderBase<DotnetToolResourceHa
     withReference(source: ResourceBuilderBase, options?: WithReferenceOptions): DotnetToolResourcePromise {
         const connectionName = options?.connectionName;
         const optional = options?.optional;
-        return new DotnetToolResourcePromise(this._withReferenceInternal(source, connectionName, optional));
-    }
-
-    /** @internal */
-    private async _withServiceReferenceInternal(source: ResourceBuilderBase): Promise<DotnetToolResource> {
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, source };
-        const result = await this._client.invokeCapability<DotnetToolResourceHandle>(
-            'Aspire.Hosting/withServiceReference',
-            rpcArgs
-        );
-        return new DotnetToolResource(result, this._client);
-    }
-
-    /** Adds a service discovery reference to another resource */
-    withServiceReference(source: ResourceBuilderBase): DotnetToolResourcePromise {
-        return new DotnetToolResourcePromise(this._withServiceReferenceInternal(source));
-    }
-
-    /** @internal */
-    private async _withServiceReferenceNamedInternal(source: ResourceBuilderBase, name: string): Promise<DotnetToolResource> {
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, source, name };
-        const result = await this._client.invokeCapability<DotnetToolResourceHandle>(
-            'Aspire.Hosting/withServiceReferenceNamed',
-            rpcArgs
-        );
-        return new DotnetToolResource(result, this._client);
-    }
-
-    /** Adds a named service discovery reference */
-    withServiceReferenceNamed(source: ResourceBuilderBase, name: string): DotnetToolResourcePromise {
-        return new DotnetToolResourcePromise(this._withServiceReferenceNamedInternal(source, name));
+        const name = options?.name;
+        return new DotnetToolResourcePromise(this._withReferenceInternal(source, connectionName, optional, name));
     }
 
     /** @internal */
@@ -6718,7 +9674,7 @@ export class DotnetToolResource extends ResourceBuilderBase<DotnetToolResourceHa
     private async _waitForInternal(dependency: ResourceBuilderBase): Promise<DotnetToolResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, dependency };
         const result = await this._client.invokeCapability<DotnetToolResourceHandle>(
-            'Aspire.Hosting/waitFor',
+            'Aspire.Hosting/waitForResource',
             rpcArgs
         );
         return new DotnetToolResource(result, this._client);
@@ -6748,7 +9704,7 @@ export class DotnetToolResource extends ResourceBuilderBase<DotnetToolResourceHa
     private async _waitForStartInternal(dependency: ResourceBuilderBase): Promise<DotnetToolResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, dependency };
         const result = await this._client.invokeCapability<DotnetToolResourceHandle>(
-            'Aspire.Hosting/waitForStart',
+            'Aspire.Hosting/waitForResourceStart',
             rpcArgs
         );
         return new DotnetToolResource(result, this._client);
@@ -6794,7 +9750,7 @@ export class DotnetToolResource extends ResourceBuilderBase<DotnetToolResourceHa
         const rpcArgs: Record<string, unknown> = { builder: this._handle, dependency };
         if (exitCode !== undefined) rpcArgs.exitCode = exitCode;
         const result = await this._client.invokeCapability<DotnetToolResourceHandle>(
-            'Aspire.Hosting/waitForCompletion',
+            'Aspire.Hosting/waitForResourceCompletion',
             rpcArgs
         );
         return new DotnetToolResource(result, this._client);
@@ -6899,7 +9855,7 @@ export class DotnetToolResource extends ResourceBuilderBase<DotnetToolResourceHa
         const rpcArgs: Record<string, unknown> = { builder: this._handle };
         if (password !== undefined) rpcArgs.password = password;
         const result = await this._client.invokeCapability<DotnetToolResourceHandle>(
-            'Aspire.Hosting/withHttpsDeveloperCertificate',
+            'Aspire.Hosting/withParameterHttpsDeveloperCertificate',
             rpcArgs
         );
         return new DotnetToolResource(result, this._client);
@@ -6930,7 +9886,7 @@ export class DotnetToolResource extends ResourceBuilderBase<DotnetToolResourceHa
     private async _withParentRelationshipInternal(parent: ResourceBuilderBase): Promise<DotnetToolResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, parent };
         const result = await this._client.invokeCapability<DotnetToolResourceHandle>(
-            'Aspire.Hosting/withParentRelationship',
+            'Aspire.Hosting/withBuilderParentRelationship',
             rpcArgs
         );
         return new DotnetToolResource(result, this._client);
@@ -6945,7 +9901,7 @@ export class DotnetToolResource extends ResourceBuilderBase<DotnetToolResourceHa
     private async _withChildRelationshipInternal(child: ResourceBuilderBase): Promise<DotnetToolResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, child };
         const result = await this._client.invokeCapability<DotnetToolResourceHandle>(
-            'Aspire.Hosting/withChildRelationship',
+            'Aspire.Hosting/withBuilderChildRelationship',
             rpcArgs
         );
         return new DotnetToolResource(result, this._client);
@@ -7124,6 +10080,106 @@ export class DotnetToolResource extends ResourceBuilderBase<DotnetToolResourceHa
         );
     }
 
+    /** @internal */
+    private async _onBeforeResourceStartedInternal(callback: (arg: BeforeResourceStartedEvent) => Promise<void>): Promise<DotnetToolResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as BeforeResourceStartedEventHandle;
+            const arg = new BeforeResourceStartedEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<DotnetToolResourceHandle>(
+            'Aspire.Hosting/onBeforeResourceStarted',
+            rpcArgs
+        );
+        return new DotnetToolResource(result, this._client);
+    }
+
+    /** Subscribes to the BeforeResourceStarted event */
+    onBeforeResourceStarted(callback: (arg: BeforeResourceStartedEvent) => Promise<void>): DotnetToolResourcePromise {
+        return new DotnetToolResourcePromise(this._onBeforeResourceStartedInternal(callback));
+    }
+
+    /** @internal */
+    private async _onResourceStoppedInternal(callback: (arg: ResourceStoppedEvent) => Promise<void>): Promise<DotnetToolResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ResourceStoppedEventHandle;
+            const arg = new ResourceStoppedEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<DotnetToolResourceHandle>(
+            'Aspire.Hosting/onResourceStopped',
+            rpcArgs
+        );
+        return new DotnetToolResource(result, this._client);
+    }
+
+    /** Subscribes to the ResourceStopped event */
+    onResourceStopped(callback: (arg: ResourceStoppedEvent) => Promise<void>): DotnetToolResourcePromise {
+        return new DotnetToolResourcePromise(this._onResourceStoppedInternal(callback));
+    }
+
+    /** @internal */
+    private async _onInitializeResourceInternal(callback: (arg: InitializeResourceEvent) => Promise<void>): Promise<DotnetToolResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as InitializeResourceEventHandle;
+            const arg = new InitializeResourceEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<DotnetToolResourceHandle>(
+            'Aspire.Hosting/onInitializeResource',
+            rpcArgs
+        );
+        return new DotnetToolResource(result, this._client);
+    }
+
+    /** Subscribes to the InitializeResource event */
+    onInitializeResource(callback: (arg: InitializeResourceEvent) => Promise<void>): DotnetToolResourcePromise {
+        return new DotnetToolResourcePromise(this._onInitializeResourceInternal(callback));
+    }
+
+    /** @internal */
+    private async _onResourceEndpointsAllocatedInternal(callback: (arg: ResourceEndpointsAllocatedEvent) => Promise<void>): Promise<DotnetToolResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ResourceEndpointsAllocatedEventHandle;
+            const arg = new ResourceEndpointsAllocatedEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<DotnetToolResourceHandle>(
+            'Aspire.Hosting/onResourceEndpointsAllocated',
+            rpcArgs
+        );
+        return new DotnetToolResource(result, this._client);
+    }
+
+    /** Subscribes to the ResourceEndpointsAllocated event */
+    onResourceEndpointsAllocated(callback: (arg: ResourceEndpointsAllocatedEvent) => Promise<void>): DotnetToolResourcePromise {
+        return new DotnetToolResourcePromise(this._onResourceEndpointsAllocatedInternal(callback));
+    }
+
+    /** @internal */
+    private async _onResourceReadyInternal(callback: (arg: ResourceReadyEvent) => Promise<void>): Promise<DotnetToolResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ResourceReadyEventHandle;
+            const arg = new ResourceReadyEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<DotnetToolResourceHandle>(
+            'Aspire.Hosting/onResourceReady',
+            rpcArgs
+        );
+        return new DotnetToolResource(result, this._client);
+    }
+
+    /** Subscribes to the ResourceReady event */
+    onResourceReady(callback: (arg: ResourceReadyEvent) => Promise<void>): DotnetToolResourcePromise {
+        return new DotnetToolResourcePromise(this._onResourceReadyInternal(callback));
+    }
+
 }
 
 /**
@@ -7221,29 +10277,19 @@ export class DotnetToolResourcePromise implements PromiseLike<DotnetToolResource
         return new DotnetToolResourcePromise(this._promise.then(obj => obj.withRequiredCommand(command, options)));
     }
 
-    /** Sets an environment variable */
-    withEnvironment(name: string, value: string): DotnetToolResourcePromise {
-        return new DotnetToolResourcePromise(this._promise.then(obj => obj.withEnvironment(name, value)));
-    }
-
-    /** Adds an environment variable with a reference expression */
-    withEnvironmentExpression(name: string, value: ReferenceExpression): DotnetToolResourcePromise {
-        return new DotnetToolResourcePromise(this._promise.then(obj => obj.withEnvironmentExpression(name, value)));
-    }
-
     /** Sets environment variables via callback */
-    withEnvironmentCallback(callback: (obj: EnvironmentCallbackContext) => Promise<void>): DotnetToolResourcePromise {
+    withEnvironmentCallback(callback: (arg: EnvironmentCallbackContext) => Promise<void>): DotnetToolResourcePromise {
         return new DotnetToolResourcePromise(this._promise.then(obj => obj.withEnvironmentCallback(callback)));
-    }
-
-    /** Sets environment variables via async callback */
-    withEnvironmentCallbackAsync(callback: (arg: EnvironmentCallbackContext) => Promise<void>): DotnetToolResourcePromise {
-        return new DotnetToolResourcePromise(this._promise.then(obj => obj.withEnvironmentCallbackAsync(callback)));
     }
 
     /** Sets an environment variable from an endpoint reference */
     withEnvironmentEndpoint(name: string, endpointReference: EndpointReference): DotnetToolResourcePromise {
         return new DotnetToolResourcePromise(this._promise.then(obj => obj.withEnvironmentEndpoint(name, endpointReference)));
+    }
+
+    /** Sets an environment variable on the resource */
+    withEnvironment(name: string, value: string | ReferenceExpression | EndpointReference | ParameterResource | ResourceWithConnectionString): DotnetToolResourcePromise {
+        return new DotnetToolResourcePromise(this._promise.then(obj => obj.withEnvironment(name, value)));
     }
 
     /** Sets an environment variable from a parameter resource */
@@ -7274,16 +10320,6 @@ export class DotnetToolResourcePromise implements PromiseLike<DotnetToolResource
     /** Adds a reference to another resource */
     withReference(source: ResourceBuilderBase, options?: WithReferenceOptions): DotnetToolResourcePromise {
         return new DotnetToolResourcePromise(this._promise.then(obj => obj.withReference(source, options)));
-    }
-
-    /** Adds a service discovery reference to another resource */
-    withServiceReference(source: ResourceBuilderBase): DotnetToolResourcePromise {
-        return new DotnetToolResourcePromise(this._promise.then(obj => obj.withServiceReference(source)));
-    }
-
-    /** Adds a named service discovery reference */
-    withServiceReferenceNamed(source: ResourceBuilderBase, name: string): DotnetToolResourcePromise {
-        return new DotnetToolResourcePromise(this._promise.then(obj => obj.withServiceReferenceNamed(source, name)));
     }
 
     /** Adds a reference to a URI */
@@ -7486,6 +10522,31 @@ export class DotnetToolResourcePromise implements PromiseLike<DotnetToolResource
         return this._promise.then(obj => obj.getResourceName());
     }
 
+    /** Subscribes to the BeforeResourceStarted event */
+    onBeforeResourceStarted(callback: (arg: BeforeResourceStartedEvent) => Promise<void>): DotnetToolResourcePromise {
+        return new DotnetToolResourcePromise(this._promise.then(obj => obj.onBeforeResourceStarted(callback)));
+    }
+
+    /** Subscribes to the ResourceStopped event */
+    onResourceStopped(callback: (arg: ResourceStoppedEvent) => Promise<void>): DotnetToolResourcePromise {
+        return new DotnetToolResourcePromise(this._promise.then(obj => obj.onResourceStopped(callback)));
+    }
+
+    /** Subscribes to the InitializeResource event */
+    onInitializeResource(callback: (arg: InitializeResourceEvent) => Promise<void>): DotnetToolResourcePromise {
+        return new DotnetToolResourcePromise(this._promise.then(obj => obj.onInitializeResource(callback)));
+    }
+
+    /** Subscribes to the ResourceEndpointsAllocated event */
+    onResourceEndpointsAllocated(callback: (arg: ResourceEndpointsAllocatedEvent) => Promise<void>): DotnetToolResourcePromise {
+        return new DotnetToolResourcePromise(this._promise.then(obj => obj.onResourceEndpointsAllocated(callback)));
+    }
+
+    /** Subscribes to the ResourceReady event */
+    onResourceReady(callback: (arg: ResourceReadyEvent) => Promise<void>): DotnetToolResourcePromise {
+        return new DotnetToolResourcePromise(this._promise.then(obj => obj.onResourceReady(callback)));
+    }
+
 }
 
 // ============================================================================
@@ -7529,6 +10590,71 @@ export class ExecutableResource extends ResourceBuilderBase<ExecutableResourceHa
         const buildImage = options?.buildImage;
         const runtimeImage = options?.runtimeImage;
         return new ExecutableResourcePromise(this._withDockerfileBaseImageInternal(buildImage, runtimeImage));
+    }
+
+    /** @internal */
+    private async _publishAsDockerFileInternal(): Promise<ExecutableResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle };
+        const result = await this._client.invokeCapability<ExecutableResourceHandle>(
+            'Aspire.Hosting/publishAsDockerFile',
+            rpcArgs
+        );
+        return new ExecutableResource(result, this._client);
+    }
+
+    /** Publishes the executable as a Docker container */
+    publishAsDockerFile(): ExecutableResourcePromise {
+        return new ExecutableResourcePromise(this._publishAsDockerFileInternal());
+    }
+
+    /** @internal */
+    private async _publishAsDockerFileWithConfigureInternal(configure: (obj: ContainerResource) => Promise<void>): Promise<ExecutableResource> {
+        const configureId = registerCallback(async (objData: unknown) => {
+            const objHandle = wrapIfHandle(objData) as ContainerResourceHandle;
+            const obj = new ContainerResource(objHandle, this._client);
+            await configure(obj);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, configure: configureId };
+        const result = await this._client.invokeCapability<ExecutableResourceHandle>(
+            'Aspire.Hosting/publishAsDockerFileWithConfigure',
+            rpcArgs
+        );
+        return new ExecutableResource(result, this._client);
+    }
+
+    /** Publishes an executable as a Docker file with optional container configuration */
+    publishAsDockerFileWithConfigure(configure: (obj: ContainerResource) => Promise<void>): ExecutableResourcePromise {
+        return new ExecutableResourcePromise(this._publishAsDockerFileWithConfigureInternal(configure));
+    }
+
+    /** @internal */
+    private async _withExecutableCommandInternal(command: string): Promise<ExecutableResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, command };
+        const result = await this._client.invokeCapability<ExecutableResourceHandle>(
+            'Aspire.Hosting/withExecutableCommand',
+            rpcArgs
+        );
+        return new ExecutableResource(result, this._client);
+    }
+
+    /** Sets the executable command */
+    withExecutableCommand(command: string): ExecutableResourcePromise {
+        return new ExecutableResourcePromise(this._withExecutableCommandInternal(command));
+    }
+
+    /** @internal */
+    private async _withWorkingDirectoryInternal(workingDirectory: string): Promise<ExecutableResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, workingDirectory };
+        const result = await this._client.invokeCapability<ExecutableResourceHandle>(
+            'Aspire.Hosting/withWorkingDirectory',
+            rpcArgs
+        );
+        return new ExecutableResource(result, this._client);
+    }
+
+    /** Sets the executable working directory */
+    withWorkingDirectory(workingDirectory: string): ExecutableResourcePromise {
+        return new ExecutableResourcePromise(this._withWorkingDirectoryInternal(workingDirectory));
     }
 
     /** @internal */
@@ -7598,41 +10724,11 @@ export class ExecutableResource extends ResourceBuilderBase<ExecutableResourceHa
     }
 
     /** @internal */
-    private async _withEnvironmentInternal(name: string, value: string): Promise<ExecutableResource> {
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, name, value };
-        const result = await this._client.invokeCapability<ExecutableResourceHandle>(
-            'Aspire.Hosting/withEnvironment',
-            rpcArgs
-        );
-        return new ExecutableResource(result, this._client);
-    }
-
-    /** Sets an environment variable */
-    withEnvironment(name: string, value: string): ExecutableResourcePromise {
-        return new ExecutableResourcePromise(this._withEnvironmentInternal(name, value));
-    }
-
-    /** @internal */
-    private async _withEnvironmentExpressionInternal(name: string, value: ReferenceExpression): Promise<ExecutableResource> {
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, name, value };
-        const result = await this._client.invokeCapability<ExecutableResourceHandle>(
-            'Aspire.Hosting/withEnvironmentExpression',
-            rpcArgs
-        );
-        return new ExecutableResource(result, this._client);
-    }
-
-    /** Adds an environment variable with a reference expression */
-    withEnvironmentExpression(name: string, value: ReferenceExpression): ExecutableResourcePromise {
-        return new ExecutableResourcePromise(this._withEnvironmentExpressionInternal(name, value));
-    }
-
-    /** @internal */
-    private async _withEnvironmentCallbackInternal(callback: (obj: EnvironmentCallbackContext) => Promise<void>): Promise<ExecutableResource> {
-        const callbackId = registerCallback(async (objData: unknown) => {
-            const objHandle = wrapIfHandle(objData) as EnvironmentCallbackContextHandle;
-            const obj = new EnvironmentCallbackContext(objHandle, this._client);
-            await callback(obj);
+    private async _withEnvironmentCallbackInternal(callback: (arg: EnvironmentCallbackContext) => Promise<void>): Promise<ExecutableResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as EnvironmentCallbackContextHandle;
+            const arg = new EnvironmentCallbackContext(argHandle, this._client);
+            await callback(arg);
         });
         const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
         const result = await this._client.invokeCapability<ExecutableResourceHandle>(
@@ -7643,28 +10739,8 @@ export class ExecutableResource extends ResourceBuilderBase<ExecutableResourceHa
     }
 
     /** Sets environment variables via callback */
-    withEnvironmentCallback(callback: (obj: EnvironmentCallbackContext) => Promise<void>): ExecutableResourcePromise {
+    withEnvironmentCallback(callback: (arg: EnvironmentCallbackContext) => Promise<void>): ExecutableResourcePromise {
         return new ExecutableResourcePromise(this._withEnvironmentCallbackInternal(callback));
-    }
-
-    /** @internal */
-    private async _withEnvironmentCallbackAsyncInternal(callback: (arg: EnvironmentCallbackContext) => Promise<void>): Promise<ExecutableResource> {
-        const callbackId = registerCallback(async (argData: unknown) => {
-            const argHandle = wrapIfHandle(argData) as EnvironmentCallbackContextHandle;
-            const arg = new EnvironmentCallbackContext(argHandle, this._client);
-            await callback(arg);
-        });
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
-        const result = await this._client.invokeCapability<ExecutableResourceHandle>(
-            'Aspire.Hosting/withEnvironmentCallbackAsync',
-            rpcArgs
-        );
-        return new ExecutableResource(result, this._client);
-    }
-
-    /** Sets environment variables via async callback */
-    withEnvironmentCallbackAsync(callback: (arg: EnvironmentCallbackContext) => Promise<void>): ExecutableResourcePromise {
-        return new ExecutableResourcePromise(this._withEnvironmentCallbackAsyncInternal(callback));
     }
 
     /** @internal */
@@ -7680,6 +10756,21 @@ export class ExecutableResource extends ResourceBuilderBase<ExecutableResourceHa
     /** Sets an environment variable from an endpoint reference */
     withEnvironmentEndpoint(name: string, endpointReference: EndpointReference): ExecutableResourcePromise {
         return new ExecutableResourcePromise(this._withEnvironmentEndpointInternal(name, endpointReference));
+    }
+
+    /** @internal */
+    private async _withEnvironmentInternal(name: string, value: string | ReferenceExpression | EndpointReference | ParameterResource | ResourceWithConnectionString): Promise<ExecutableResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, name, value };
+        const result = await this._client.invokeCapability<ExecutableResourceHandle>(
+            'Aspire.Hosting/withEnvironment',
+            rpcArgs
+        );
+        return new ExecutableResource(result, this._client);
+    }
+
+    /** Sets an environment variable on the resource */
+    withEnvironment(name: string, value: string | ReferenceExpression | EndpointReference | ParameterResource | ResourceWithConnectionString): ExecutableResourcePromise {
+        return new ExecutableResourcePromise(this._withEnvironmentInternal(name, value));
     }
 
     /** @internal */
@@ -7768,10 +10859,11 @@ export class ExecutableResource extends ResourceBuilderBase<ExecutableResourceHa
     }
 
     /** @internal */
-    private async _withReferenceInternal(source: ResourceBuilderBase, connectionName?: string, optional?: boolean): Promise<ExecutableResource> {
+    private async _withReferenceInternal(source: ResourceBuilderBase, connectionName?: string, optional?: boolean, name?: string): Promise<ExecutableResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, source };
         if (connectionName !== undefined) rpcArgs.connectionName = connectionName;
         if (optional !== undefined) rpcArgs.optional = optional;
+        if (name !== undefined) rpcArgs.name = name;
         const result = await this._client.invokeCapability<ExecutableResourceHandle>(
             'Aspire.Hosting/withReference',
             rpcArgs
@@ -7783,37 +10875,8 @@ export class ExecutableResource extends ResourceBuilderBase<ExecutableResourceHa
     withReference(source: ResourceBuilderBase, options?: WithReferenceOptions): ExecutableResourcePromise {
         const connectionName = options?.connectionName;
         const optional = options?.optional;
-        return new ExecutableResourcePromise(this._withReferenceInternal(source, connectionName, optional));
-    }
-
-    /** @internal */
-    private async _withServiceReferenceInternal(source: ResourceBuilderBase): Promise<ExecutableResource> {
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, source };
-        const result = await this._client.invokeCapability<ExecutableResourceHandle>(
-            'Aspire.Hosting/withServiceReference',
-            rpcArgs
-        );
-        return new ExecutableResource(result, this._client);
-    }
-
-    /** Adds a service discovery reference to another resource */
-    withServiceReference(source: ResourceBuilderBase): ExecutableResourcePromise {
-        return new ExecutableResourcePromise(this._withServiceReferenceInternal(source));
-    }
-
-    /** @internal */
-    private async _withServiceReferenceNamedInternal(source: ResourceBuilderBase, name: string): Promise<ExecutableResource> {
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, source, name };
-        const result = await this._client.invokeCapability<ExecutableResourceHandle>(
-            'Aspire.Hosting/withServiceReferenceNamed',
-            rpcArgs
-        );
-        return new ExecutableResource(result, this._client);
-    }
-
-    /** Adds a named service discovery reference */
-    withServiceReferenceNamed(source: ResourceBuilderBase, name: string): ExecutableResourcePromise {
-        return new ExecutableResourcePromise(this._withServiceReferenceNamedInternal(source, name));
+        const name = options?.name;
+        return new ExecutableResourcePromise(this._withReferenceInternal(source, connectionName, optional, name));
     }
 
     /** @internal */
@@ -8113,7 +11176,7 @@ export class ExecutableResource extends ResourceBuilderBase<ExecutableResourceHa
     private async _waitForInternal(dependency: ResourceBuilderBase): Promise<ExecutableResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, dependency };
         const result = await this._client.invokeCapability<ExecutableResourceHandle>(
-            'Aspire.Hosting/waitFor',
+            'Aspire.Hosting/waitForResource',
             rpcArgs
         );
         return new ExecutableResource(result, this._client);
@@ -8143,7 +11206,7 @@ export class ExecutableResource extends ResourceBuilderBase<ExecutableResourceHa
     private async _waitForStartInternal(dependency: ResourceBuilderBase): Promise<ExecutableResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, dependency };
         const result = await this._client.invokeCapability<ExecutableResourceHandle>(
-            'Aspire.Hosting/waitForStart',
+            'Aspire.Hosting/waitForResourceStart',
             rpcArgs
         );
         return new ExecutableResource(result, this._client);
@@ -8189,7 +11252,7 @@ export class ExecutableResource extends ResourceBuilderBase<ExecutableResourceHa
         const rpcArgs: Record<string, unknown> = { builder: this._handle, dependency };
         if (exitCode !== undefined) rpcArgs.exitCode = exitCode;
         const result = await this._client.invokeCapability<ExecutableResourceHandle>(
-            'Aspire.Hosting/waitForCompletion',
+            'Aspire.Hosting/waitForResourceCompletion',
             rpcArgs
         );
         return new ExecutableResource(result, this._client);
@@ -8294,7 +11357,7 @@ export class ExecutableResource extends ResourceBuilderBase<ExecutableResourceHa
         const rpcArgs: Record<string, unknown> = { builder: this._handle };
         if (password !== undefined) rpcArgs.password = password;
         const result = await this._client.invokeCapability<ExecutableResourceHandle>(
-            'Aspire.Hosting/withHttpsDeveloperCertificate',
+            'Aspire.Hosting/withParameterHttpsDeveloperCertificate',
             rpcArgs
         );
         return new ExecutableResource(result, this._client);
@@ -8325,7 +11388,7 @@ export class ExecutableResource extends ResourceBuilderBase<ExecutableResourceHa
     private async _withParentRelationshipInternal(parent: ResourceBuilderBase): Promise<ExecutableResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, parent };
         const result = await this._client.invokeCapability<ExecutableResourceHandle>(
-            'Aspire.Hosting/withParentRelationship',
+            'Aspire.Hosting/withBuilderParentRelationship',
             rpcArgs
         );
         return new ExecutableResource(result, this._client);
@@ -8340,7 +11403,7 @@ export class ExecutableResource extends ResourceBuilderBase<ExecutableResourceHa
     private async _withChildRelationshipInternal(child: ResourceBuilderBase): Promise<ExecutableResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, child };
         const result = await this._client.invokeCapability<ExecutableResourceHandle>(
-            'Aspire.Hosting/withChildRelationship',
+            'Aspire.Hosting/withBuilderChildRelationship',
             rpcArgs
         );
         return new ExecutableResource(result, this._client);
@@ -8519,6 +11582,106 @@ export class ExecutableResource extends ResourceBuilderBase<ExecutableResourceHa
         );
     }
 
+    /** @internal */
+    private async _onBeforeResourceStartedInternal(callback: (arg: BeforeResourceStartedEvent) => Promise<void>): Promise<ExecutableResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as BeforeResourceStartedEventHandle;
+            const arg = new BeforeResourceStartedEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<ExecutableResourceHandle>(
+            'Aspire.Hosting/onBeforeResourceStarted',
+            rpcArgs
+        );
+        return new ExecutableResource(result, this._client);
+    }
+
+    /** Subscribes to the BeforeResourceStarted event */
+    onBeforeResourceStarted(callback: (arg: BeforeResourceStartedEvent) => Promise<void>): ExecutableResourcePromise {
+        return new ExecutableResourcePromise(this._onBeforeResourceStartedInternal(callback));
+    }
+
+    /** @internal */
+    private async _onResourceStoppedInternal(callback: (arg: ResourceStoppedEvent) => Promise<void>): Promise<ExecutableResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ResourceStoppedEventHandle;
+            const arg = new ResourceStoppedEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<ExecutableResourceHandle>(
+            'Aspire.Hosting/onResourceStopped',
+            rpcArgs
+        );
+        return new ExecutableResource(result, this._client);
+    }
+
+    /** Subscribes to the ResourceStopped event */
+    onResourceStopped(callback: (arg: ResourceStoppedEvent) => Promise<void>): ExecutableResourcePromise {
+        return new ExecutableResourcePromise(this._onResourceStoppedInternal(callback));
+    }
+
+    /** @internal */
+    private async _onInitializeResourceInternal(callback: (arg: InitializeResourceEvent) => Promise<void>): Promise<ExecutableResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as InitializeResourceEventHandle;
+            const arg = new InitializeResourceEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<ExecutableResourceHandle>(
+            'Aspire.Hosting/onInitializeResource',
+            rpcArgs
+        );
+        return new ExecutableResource(result, this._client);
+    }
+
+    /** Subscribes to the InitializeResource event */
+    onInitializeResource(callback: (arg: InitializeResourceEvent) => Promise<void>): ExecutableResourcePromise {
+        return new ExecutableResourcePromise(this._onInitializeResourceInternal(callback));
+    }
+
+    /** @internal */
+    private async _onResourceEndpointsAllocatedInternal(callback: (arg: ResourceEndpointsAllocatedEvent) => Promise<void>): Promise<ExecutableResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ResourceEndpointsAllocatedEventHandle;
+            const arg = new ResourceEndpointsAllocatedEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<ExecutableResourceHandle>(
+            'Aspire.Hosting/onResourceEndpointsAllocated',
+            rpcArgs
+        );
+        return new ExecutableResource(result, this._client);
+    }
+
+    /** Subscribes to the ResourceEndpointsAllocated event */
+    onResourceEndpointsAllocated(callback: (arg: ResourceEndpointsAllocatedEvent) => Promise<void>): ExecutableResourcePromise {
+        return new ExecutableResourcePromise(this._onResourceEndpointsAllocatedInternal(callback));
+    }
+
+    /** @internal */
+    private async _onResourceReadyInternal(callback: (arg: ResourceReadyEvent) => Promise<void>): Promise<ExecutableResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ResourceReadyEventHandle;
+            const arg = new ResourceReadyEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<ExecutableResourceHandle>(
+            'Aspire.Hosting/onResourceReady',
+            rpcArgs
+        );
+        return new ExecutableResource(result, this._client);
+    }
+
+    /** Subscribes to the ResourceReady event */
+    onResourceReady(callback: (arg: ResourceReadyEvent) => Promise<void>): ExecutableResourcePromise {
+        return new ExecutableResourcePromise(this._onResourceReadyInternal(callback));
+    }
+
 }
 
 /**
@@ -8546,6 +11709,26 @@ export class ExecutableResourcePromise implements PromiseLike<ExecutableResource
         return new ExecutableResourcePromise(this._promise.then(obj => obj.withDockerfileBaseImage(options)));
     }
 
+    /** Publishes the executable as a Docker container */
+    publishAsDockerFile(): ExecutableResourcePromise {
+        return new ExecutableResourcePromise(this._promise.then(obj => obj.publishAsDockerFile()));
+    }
+
+    /** Publishes an executable as a Docker file with optional container configuration */
+    publishAsDockerFileWithConfigure(configure: (obj: ContainerResource) => Promise<void>): ExecutableResourcePromise {
+        return new ExecutableResourcePromise(this._promise.then(obj => obj.publishAsDockerFileWithConfigure(configure)));
+    }
+
+    /** Sets the executable command */
+    withExecutableCommand(command: string): ExecutableResourcePromise {
+        return new ExecutableResourcePromise(this._promise.then(obj => obj.withExecutableCommand(command)));
+    }
+
+    /** Sets the executable working directory */
+    withWorkingDirectory(workingDirectory: string): ExecutableResourcePromise {
+        return new ExecutableResourcePromise(this._promise.then(obj => obj.withWorkingDirectory(workingDirectory)));
+    }
+
     /** Configures an MCP server endpoint on the resource */
     withMcpServer(options?: WithMcpServerOptions): ExecutableResourcePromise {
         return new ExecutableResourcePromise(this._promise.then(obj => obj.withMcpServer(options)));
@@ -8566,29 +11749,19 @@ export class ExecutableResourcePromise implements PromiseLike<ExecutableResource
         return new ExecutableResourcePromise(this._promise.then(obj => obj.withRequiredCommand(command, options)));
     }
 
-    /** Sets an environment variable */
-    withEnvironment(name: string, value: string): ExecutableResourcePromise {
-        return new ExecutableResourcePromise(this._promise.then(obj => obj.withEnvironment(name, value)));
-    }
-
-    /** Adds an environment variable with a reference expression */
-    withEnvironmentExpression(name: string, value: ReferenceExpression): ExecutableResourcePromise {
-        return new ExecutableResourcePromise(this._promise.then(obj => obj.withEnvironmentExpression(name, value)));
-    }
-
     /** Sets environment variables via callback */
-    withEnvironmentCallback(callback: (obj: EnvironmentCallbackContext) => Promise<void>): ExecutableResourcePromise {
+    withEnvironmentCallback(callback: (arg: EnvironmentCallbackContext) => Promise<void>): ExecutableResourcePromise {
         return new ExecutableResourcePromise(this._promise.then(obj => obj.withEnvironmentCallback(callback)));
-    }
-
-    /** Sets environment variables via async callback */
-    withEnvironmentCallbackAsync(callback: (arg: EnvironmentCallbackContext) => Promise<void>): ExecutableResourcePromise {
-        return new ExecutableResourcePromise(this._promise.then(obj => obj.withEnvironmentCallbackAsync(callback)));
     }
 
     /** Sets an environment variable from an endpoint reference */
     withEnvironmentEndpoint(name: string, endpointReference: EndpointReference): ExecutableResourcePromise {
         return new ExecutableResourcePromise(this._promise.then(obj => obj.withEnvironmentEndpoint(name, endpointReference)));
+    }
+
+    /** Sets an environment variable on the resource */
+    withEnvironment(name: string, value: string | ReferenceExpression | EndpointReference | ParameterResource | ResourceWithConnectionString): ExecutableResourcePromise {
+        return new ExecutableResourcePromise(this._promise.then(obj => obj.withEnvironment(name, value)));
     }
 
     /** Sets an environment variable from a parameter resource */
@@ -8619,16 +11792,6 @@ export class ExecutableResourcePromise implements PromiseLike<ExecutableResource
     /** Adds a reference to another resource */
     withReference(source: ResourceBuilderBase, options?: WithReferenceOptions): ExecutableResourcePromise {
         return new ExecutableResourcePromise(this._promise.then(obj => obj.withReference(source, options)));
-    }
-
-    /** Adds a service discovery reference to another resource */
-    withServiceReference(source: ResourceBuilderBase): ExecutableResourcePromise {
-        return new ExecutableResourcePromise(this._promise.then(obj => obj.withServiceReference(source)));
-    }
-
-    /** Adds a named service discovery reference */
-    withServiceReferenceNamed(source: ResourceBuilderBase, name: string): ExecutableResourcePromise {
-        return new ExecutableResourcePromise(this._promise.then(obj => obj.withServiceReferenceNamed(source, name)));
     }
 
     /** Adds a reference to a URI */
@@ -8829,6 +11992,31 @@ export class ExecutableResourcePromise implements PromiseLike<ExecutableResource
     /** Gets the resource name */
     getResourceName(): Promise<string> {
         return this._promise.then(obj => obj.getResourceName());
+    }
+
+    /** Subscribes to the BeforeResourceStarted event */
+    onBeforeResourceStarted(callback: (arg: BeforeResourceStartedEvent) => Promise<void>): ExecutableResourcePromise {
+        return new ExecutableResourcePromise(this._promise.then(obj => obj.onBeforeResourceStarted(callback)));
+    }
+
+    /** Subscribes to the ResourceStopped event */
+    onResourceStopped(callback: (arg: ResourceStoppedEvent) => Promise<void>): ExecutableResourcePromise {
+        return new ExecutableResourcePromise(this._promise.then(obj => obj.onResourceStopped(callback)));
+    }
+
+    /** Subscribes to the InitializeResource event */
+    onInitializeResource(callback: (arg: InitializeResourceEvent) => Promise<void>): ExecutableResourcePromise {
+        return new ExecutableResourcePromise(this._promise.then(obj => obj.onInitializeResource(callback)));
+    }
+
+    /** Subscribes to the ResourceEndpointsAllocated event */
+    onResourceEndpointsAllocated(callback: (arg: ResourceEndpointsAllocatedEvent) => Promise<void>): ExecutableResourcePromise {
+        return new ExecutableResourcePromise(this._promise.then(obj => obj.onResourceEndpointsAllocated(callback)));
+    }
+
+    /** Subscribes to the ResourceReady event */
+    onResourceReady(callback: (arg: ResourceReadyEvent) => Promise<void>): ExecutableResourcePromise {
+        return new ExecutableResourcePromise(this._promise.then(obj => obj.onResourceReady(callback)));
     }
 
 }
@@ -9076,7 +12264,7 @@ export class ExternalServiceResource extends ResourceBuilderBase<ExternalService
     private async _withParentRelationshipInternal(parent: ResourceBuilderBase): Promise<ExternalServiceResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, parent };
         const result = await this._client.invokeCapability<ExternalServiceResourceHandle>(
-            'Aspire.Hosting/withParentRelationship',
+            'Aspire.Hosting/withBuilderParentRelationship',
             rpcArgs
         );
         return new ExternalServiceResource(result, this._client);
@@ -9091,7 +12279,7 @@ export class ExternalServiceResource extends ResourceBuilderBase<ExternalService
     private async _withChildRelationshipInternal(child: ResourceBuilderBase): Promise<ExternalServiceResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, child };
         const result = await this._client.invokeCapability<ExternalServiceResourceHandle>(
-            'Aspire.Hosting/withChildRelationship',
+            'Aspire.Hosting/withBuilderChildRelationship',
             rpcArgs
         );
         return new ExternalServiceResource(result, this._client);
@@ -9132,36 +12320,6 @@ export class ExternalServiceResource extends ResourceBuilderBase<ExternalService
     /** Excludes the resource from MCP server exposure */
     excludeFromMcp(): ExternalServiceResourcePromise {
         return new ExternalServiceResourcePromise(this._excludeFromMcpInternal());
-    }
-
-    /** @internal */
-    private async _withRemoteImageNameInternal(remoteImageName: string): Promise<ExternalServiceResource> {
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, remoteImageName };
-        const result = await this._client.invokeCapability<ExternalServiceResourceHandle>(
-            'Aspire.Hosting/withRemoteImageName',
-            rpcArgs
-        );
-        return new ExternalServiceResource(result, this._client);
-    }
-
-    /** Sets the remote image name for publishing */
-    withRemoteImageName(remoteImageName: string): ExternalServiceResourcePromise {
-        return new ExternalServiceResourcePromise(this._withRemoteImageNameInternal(remoteImageName));
-    }
-
-    /** @internal */
-    private async _withRemoteImageTagInternal(remoteImageTag: string): Promise<ExternalServiceResource> {
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, remoteImageTag };
-        const result = await this._client.invokeCapability<ExternalServiceResourceHandle>(
-            'Aspire.Hosting/withRemoteImageTag',
-            rpcArgs
-        );
-        return new ExternalServiceResource(result, this._client);
-    }
-
-    /** Sets the remote image tag for publishing */
-    withRemoteImageTag(remoteImageTag: string): ExternalServiceResourcePromise {
-        return new ExternalServiceResourcePromise(this._withRemoteImageTagInternal(remoteImageTag));
     }
 
     /** @internal */
@@ -9239,6 +12397,86 @@ export class ExternalServiceResource extends ResourceBuilderBase<ExternalService
             'Aspire.Hosting/getResourceName',
             rpcArgs
         );
+    }
+
+    /** @internal */
+    private async _onBeforeResourceStartedInternal(callback: (arg: BeforeResourceStartedEvent) => Promise<void>): Promise<ExternalServiceResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as BeforeResourceStartedEventHandle;
+            const arg = new BeforeResourceStartedEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<ExternalServiceResourceHandle>(
+            'Aspire.Hosting/onBeforeResourceStarted',
+            rpcArgs
+        );
+        return new ExternalServiceResource(result, this._client);
+    }
+
+    /** Subscribes to the BeforeResourceStarted event */
+    onBeforeResourceStarted(callback: (arg: BeforeResourceStartedEvent) => Promise<void>): ExternalServiceResourcePromise {
+        return new ExternalServiceResourcePromise(this._onBeforeResourceStartedInternal(callback));
+    }
+
+    /** @internal */
+    private async _onResourceStoppedInternal(callback: (arg: ResourceStoppedEvent) => Promise<void>): Promise<ExternalServiceResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ResourceStoppedEventHandle;
+            const arg = new ResourceStoppedEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<ExternalServiceResourceHandle>(
+            'Aspire.Hosting/onResourceStopped',
+            rpcArgs
+        );
+        return new ExternalServiceResource(result, this._client);
+    }
+
+    /** Subscribes to the ResourceStopped event */
+    onResourceStopped(callback: (arg: ResourceStoppedEvent) => Promise<void>): ExternalServiceResourcePromise {
+        return new ExternalServiceResourcePromise(this._onResourceStoppedInternal(callback));
+    }
+
+    /** @internal */
+    private async _onInitializeResourceInternal(callback: (arg: InitializeResourceEvent) => Promise<void>): Promise<ExternalServiceResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as InitializeResourceEventHandle;
+            const arg = new InitializeResourceEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<ExternalServiceResourceHandle>(
+            'Aspire.Hosting/onInitializeResource',
+            rpcArgs
+        );
+        return new ExternalServiceResource(result, this._client);
+    }
+
+    /** Subscribes to the InitializeResource event */
+    onInitializeResource(callback: (arg: InitializeResourceEvent) => Promise<void>): ExternalServiceResourcePromise {
+        return new ExternalServiceResourcePromise(this._onInitializeResourceInternal(callback));
+    }
+
+    /** @internal */
+    private async _onResourceReadyInternal(callback: (arg: ResourceReadyEvent) => Promise<void>): Promise<ExternalServiceResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ResourceReadyEventHandle;
+            const arg = new ResourceReadyEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<ExternalServiceResourceHandle>(
+            'Aspire.Hosting/onResourceReady',
+            rpcArgs
+        );
+        return new ExternalServiceResource(result, this._client);
+    }
+
+    /** Subscribes to the ResourceReady event */
+    onResourceReady(callback: (arg: ResourceReadyEvent) => Promise<void>): ExternalServiceResourcePromise {
+        return new ExternalServiceResourcePromise(this._onResourceReadyInternal(callback));
     }
 
 }
@@ -9343,16 +12581,6 @@ export class ExternalServiceResourcePromise implements PromiseLike<ExternalServi
         return new ExternalServiceResourcePromise(this._promise.then(obj => obj.excludeFromMcp()));
     }
 
-    /** Sets the remote image name for publishing */
-    withRemoteImageName(remoteImageName: string): ExternalServiceResourcePromise {
-        return new ExternalServiceResourcePromise(this._promise.then(obj => obj.withRemoteImageName(remoteImageName)));
-    }
-
-    /** Sets the remote image tag for publishing */
-    withRemoteImageTag(remoteImageTag: string): ExternalServiceResourcePromise {
-        return new ExternalServiceResourcePromise(this._promise.then(obj => obj.withRemoteImageTag(remoteImageTag)));
-    }
-
     /** Adds a pipeline step to the resource */
     withPipelineStepFactory(stepName: string, callback: (arg: PipelineStepContext) => Promise<void>, options?: WithPipelineStepFactoryOptions): ExternalServiceResourcePromise {
         return new ExternalServiceResourcePromise(this._promise.then(obj => obj.withPipelineStepFactory(stepName, callback, options)));
@@ -9371,6 +12599,1732 @@ export class ExternalServiceResourcePromise implements PromiseLike<ExternalServi
     /** Gets the resource name */
     getResourceName(): Promise<string> {
         return this._promise.then(obj => obj.getResourceName());
+    }
+
+    /** Subscribes to the BeforeResourceStarted event */
+    onBeforeResourceStarted(callback: (arg: BeforeResourceStartedEvent) => Promise<void>): ExternalServiceResourcePromise {
+        return new ExternalServiceResourcePromise(this._promise.then(obj => obj.onBeforeResourceStarted(callback)));
+    }
+
+    /** Subscribes to the ResourceStopped event */
+    onResourceStopped(callback: (arg: ResourceStoppedEvent) => Promise<void>): ExternalServiceResourcePromise {
+        return new ExternalServiceResourcePromise(this._promise.then(obj => obj.onResourceStopped(callback)));
+    }
+
+    /** Subscribes to the InitializeResource event */
+    onInitializeResource(callback: (arg: InitializeResourceEvent) => Promise<void>): ExternalServiceResourcePromise {
+        return new ExternalServiceResourcePromise(this._promise.then(obj => obj.onInitializeResource(callback)));
+    }
+
+    /** Subscribes to the ResourceReady event */
+    onResourceReady(callback: (arg: ResourceReadyEvent) => Promise<void>): ExternalServiceResourcePromise {
+        return new ExternalServiceResourcePromise(this._promise.then(obj => obj.onResourceReady(callback)));
+    }
+
+}
+
+// ============================================================================
+// JavaScriptAppResource
+// ============================================================================
+
+export class JavaScriptAppResource extends ResourceBuilderBase<JavaScriptAppResourceHandle> {
+    constructor(handle: JavaScriptAppResourceHandle, client: AspireClientRpc) {
+        super(handle, client);
+    }
+
+    /** Gets the Command property */
+    command = {
+        get: async (): Promise<string> => {
+            return await this._client.invokeCapability<string>(
+                'Aspire.Hosting.JavaScript/JavaScriptAppResource.command',
+                { context: this._handle }
+            );
+        },
+    };
+
+    /** Gets the WorkingDirectory property */
+    workingDirectory = {
+        get: async (): Promise<string> => {
+            return await this._client.invokeCapability<string>(
+                'Aspire.Hosting.JavaScript/JavaScriptAppResource.workingDirectory',
+                { context: this._handle }
+            );
+        },
+    };
+
+    /** Gets the Name property */
+    name = {
+        get: async (): Promise<string> => {
+            return await this._client.invokeCapability<string>(
+                'Aspire.Hosting.JavaScript/JavaScriptAppResource.name',
+                { context: this._handle }
+            );
+        },
+    };
+
+    /** @internal */
+    private async _withContainerRegistryInternal(registry: ResourceBuilderBase): Promise<JavaScriptAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, registry };
+        const result = await this._client.invokeCapability<JavaScriptAppResourceHandle>(
+            'Aspire.Hosting/withContainerRegistry',
+            rpcArgs
+        );
+        return new JavaScriptAppResource(result, this._client);
+    }
+
+    /** Configures a resource to use a container registry */
+    withContainerRegistry(registry: ResourceBuilderBase): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._withContainerRegistryInternal(registry));
+    }
+
+    /** @internal */
+    private async _withDockerfileBaseImageInternal(buildImage?: string, runtimeImage?: string): Promise<JavaScriptAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle };
+        if (buildImage !== undefined) rpcArgs.buildImage = buildImage;
+        if (runtimeImage !== undefined) rpcArgs.runtimeImage = runtimeImage;
+        const result = await this._client.invokeCapability<JavaScriptAppResourceHandle>(
+            'Aspire.Hosting/withDockerfileBaseImage',
+            rpcArgs
+        );
+        return new JavaScriptAppResource(result, this._client);
+    }
+
+    /** Sets the base image for a Dockerfile build */
+    withDockerfileBaseImage(options?: WithDockerfileBaseImageOptions): JavaScriptAppResourcePromise {
+        const buildImage = options?.buildImage;
+        const runtimeImage = options?.runtimeImage;
+        return new JavaScriptAppResourcePromise(this._withDockerfileBaseImageInternal(buildImage, runtimeImage));
+    }
+
+    /** @internal */
+    private async _publishAsDockerFileInternal(): Promise<JavaScriptAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle };
+        const result = await this._client.invokeCapability<JavaScriptAppResourceHandle>(
+            'Aspire.Hosting/publishAsDockerFile',
+            rpcArgs
+        );
+        return new JavaScriptAppResource(result, this._client);
+    }
+
+    /** Publishes the executable as a Docker container */
+    publishAsDockerFile(): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._publishAsDockerFileInternal());
+    }
+
+    /** @internal */
+    private async _publishAsDockerFileWithConfigureInternal(configure: (obj: ContainerResource) => Promise<void>): Promise<JavaScriptAppResource> {
+        const configureId = registerCallback(async (objData: unknown) => {
+            const objHandle = wrapIfHandle(objData) as ContainerResourceHandle;
+            const obj = new ContainerResource(objHandle, this._client);
+            await configure(obj);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, configure: configureId };
+        const result = await this._client.invokeCapability<JavaScriptAppResourceHandle>(
+            'Aspire.Hosting/publishAsDockerFileWithConfigure',
+            rpcArgs
+        );
+        return new JavaScriptAppResource(result, this._client);
+    }
+
+    /** Publishes an executable as a Docker file with optional container configuration */
+    publishAsDockerFileWithConfigure(configure: (obj: ContainerResource) => Promise<void>): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._publishAsDockerFileWithConfigureInternal(configure));
+    }
+
+    /** @internal */
+    private async _withExecutableCommandInternal(command: string): Promise<JavaScriptAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, command };
+        const result = await this._client.invokeCapability<JavaScriptAppResourceHandle>(
+            'Aspire.Hosting/withExecutableCommand',
+            rpcArgs
+        );
+        return new JavaScriptAppResource(result, this._client);
+    }
+
+    /** Sets the executable command */
+    withExecutableCommand(command: string): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._withExecutableCommandInternal(command));
+    }
+
+    /** @internal */
+    private async _withWorkingDirectoryInternal(workingDirectory: string): Promise<JavaScriptAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, workingDirectory };
+        const result = await this._client.invokeCapability<JavaScriptAppResourceHandle>(
+            'Aspire.Hosting/withWorkingDirectory',
+            rpcArgs
+        );
+        return new JavaScriptAppResource(result, this._client);
+    }
+
+    /** Sets the executable working directory */
+    withWorkingDirectory(workingDirectory: string): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._withWorkingDirectoryInternal(workingDirectory));
+    }
+
+    /** @internal */
+    private async _withMcpServerInternal(path?: string, endpointName?: string): Promise<JavaScriptAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle };
+        if (path !== undefined) rpcArgs.path = path;
+        if (endpointName !== undefined) rpcArgs.endpointName = endpointName;
+        const result = await this._client.invokeCapability<JavaScriptAppResourceHandle>(
+            'Aspire.Hosting/withMcpServer',
+            rpcArgs
+        );
+        return new JavaScriptAppResource(result, this._client);
+    }
+
+    /** Configures an MCP server endpoint on the resource */
+    withMcpServer(options?: WithMcpServerOptions): JavaScriptAppResourcePromise {
+        const path = options?.path;
+        const endpointName = options?.endpointName;
+        return new JavaScriptAppResourcePromise(this._withMcpServerInternal(path, endpointName));
+    }
+
+    /** @internal */
+    private async _withOtlpExporterInternal(): Promise<JavaScriptAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle };
+        const result = await this._client.invokeCapability<JavaScriptAppResourceHandle>(
+            'Aspire.Hosting/withOtlpExporter',
+            rpcArgs
+        );
+        return new JavaScriptAppResource(result, this._client);
+    }
+
+    /** Configures OTLP telemetry export */
+    withOtlpExporter(): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._withOtlpExporterInternal());
+    }
+
+    /** @internal */
+    private async _withOtlpExporterProtocolInternal(protocol: OtlpProtocol): Promise<JavaScriptAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, protocol };
+        const result = await this._client.invokeCapability<JavaScriptAppResourceHandle>(
+            'Aspire.Hosting/withOtlpExporterProtocol',
+            rpcArgs
+        );
+        return new JavaScriptAppResource(result, this._client);
+    }
+
+    /** Configures OTLP telemetry export with specific protocol */
+    withOtlpExporterProtocol(protocol: OtlpProtocol): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._withOtlpExporterProtocolInternal(protocol));
+    }
+
+    /** @internal */
+    private async _withRequiredCommandInternal(command: string, helpLink?: string): Promise<JavaScriptAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, command };
+        if (helpLink !== undefined) rpcArgs.helpLink = helpLink;
+        const result = await this._client.invokeCapability<JavaScriptAppResourceHandle>(
+            'Aspire.Hosting/withRequiredCommand',
+            rpcArgs
+        );
+        return new JavaScriptAppResource(result, this._client);
+    }
+
+    /** Adds a required command dependency */
+    withRequiredCommand(command: string, options?: WithRequiredCommandOptions): JavaScriptAppResourcePromise {
+        const helpLink = options?.helpLink;
+        return new JavaScriptAppResourcePromise(this._withRequiredCommandInternal(command, helpLink));
+    }
+
+    /** @internal */
+    private async _withEnvironmentCallbackInternal(callback: (arg: EnvironmentCallbackContext) => Promise<void>): Promise<JavaScriptAppResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as EnvironmentCallbackContextHandle;
+            const arg = new EnvironmentCallbackContext(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<JavaScriptAppResourceHandle>(
+            'Aspire.Hosting/withEnvironmentCallback',
+            rpcArgs
+        );
+        return new JavaScriptAppResource(result, this._client);
+    }
+
+    /** Sets environment variables via callback */
+    withEnvironmentCallback(callback: (arg: EnvironmentCallbackContext) => Promise<void>): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._withEnvironmentCallbackInternal(callback));
+    }
+
+    /** @internal */
+    private async _withEnvironmentEndpointInternal(name: string, endpointReference: EndpointReference): Promise<JavaScriptAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, name, endpointReference };
+        const result = await this._client.invokeCapability<JavaScriptAppResourceHandle>(
+            'Aspire.Hosting/withEnvironmentEndpoint',
+            rpcArgs
+        );
+        return new JavaScriptAppResource(result, this._client);
+    }
+
+    /** Sets an environment variable from an endpoint reference */
+    withEnvironmentEndpoint(name: string, endpointReference: EndpointReference): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._withEnvironmentEndpointInternal(name, endpointReference));
+    }
+
+    /** @internal */
+    private async _withEnvironmentInternal(name: string, value: string | ReferenceExpression | EndpointReference | ParameterResource | ResourceWithConnectionString): Promise<JavaScriptAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, name, value };
+        const result = await this._client.invokeCapability<JavaScriptAppResourceHandle>(
+            'Aspire.Hosting/withEnvironment',
+            rpcArgs
+        );
+        return new JavaScriptAppResource(result, this._client);
+    }
+
+    /** Sets an environment variable on the resource */
+    withEnvironment(name: string, value: string | ReferenceExpression | EndpointReference | ParameterResource | ResourceWithConnectionString): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._withEnvironmentInternal(name, value));
+    }
+
+    /** @internal */
+    private async _withEnvironmentParameterInternal(name: string, parameter: ParameterResource): Promise<JavaScriptAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, name, parameter };
+        const result = await this._client.invokeCapability<JavaScriptAppResourceHandle>(
+            'Aspire.Hosting/withEnvironmentParameter',
+            rpcArgs
+        );
+        return new JavaScriptAppResource(result, this._client);
+    }
+
+    /** Sets an environment variable from a parameter resource */
+    withEnvironmentParameter(name: string, parameter: ParameterResource): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._withEnvironmentParameterInternal(name, parameter));
+    }
+
+    /** @internal */
+    private async _withEnvironmentConnectionStringInternal(envVarName: string, resource: ResourceBuilderBase): Promise<JavaScriptAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, envVarName, resource };
+        const result = await this._client.invokeCapability<JavaScriptAppResourceHandle>(
+            'Aspire.Hosting/withEnvironmentConnectionString',
+            rpcArgs
+        );
+        return new JavaScriptAppResource(result, this._client);
+    }
+
+    /** Sets an environment variable from a connection string resource */
+    withEnvironmentConnectionString(envVarName: string, resource: ResourceBuilderBase): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._withEnvironmentConnectionStringInternal(envVarName, resource));
+    }
+
+    /** @internal */
+    private async _withArgsInternal(args: string[]): Promise<JavaScriptAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, args };
+        const result = await this._client.invokeCapability<JavaScriptAppResourceHandle>(
+            'Aspire.Hosting/withArgs',
+            rpcArgs
+        );
+        return new JavaScriptAppResource(result, this._client);
+    }
+
+    /** Adds arguments */
+    withArgs(args: string[]): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._withArgsInternal(args));
+    }
+
+    /** @internal */
+    private async _withArgsCallbackInternal(callback: (obj: CommandLineArgsCallbackContext) => Promise<void>): Promise<JavaScriptAppResource> {
+        const callbackId = registerCallback(async (objData: unknown) => {
+            const objHandle = wrapIfHandle(objData) as CommandLineArgsCallbackContextHandle;
+            const obj = new CommandLineArgsCallbackContext(objHandle, this._client);
+            await callback(obj);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<JavaScriptAppResourceHandle>(
+            'Aspire.Hosting/withArgsCallback',
+            rpcArgs
+        );
+        return new JavaScriptAppResource(result, this._client);
+    }
+
+    /** Sets command-line arguments via callback */
+    withArgsCallback(callback: (obj: CommandLineArgsCallbackContext) => Promise<void>): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._withArgsCallbackInternal(callback));
+    }
+
+    /** @internal */
+    private async _withArgsCallbackAsyncInternal(callback: (arg: CommandLineArgsCallbackContext) => Promise<void>): Promise<JavaScriptAppResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as CommandLineArgsCallbackContextHandle;
+            const arg = new CommandLineArgsCallbackContext(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<JavaScriptAppResourceHandle>(
+            'Aspire.Hosting/withArgsCallbackAsync',
+            rpcArgs
+        );
+        return new JavaScriptAppResource(result, this._client);
+    }
+
+    /** Sets command-line arguments via async callback */
+    withArgsCallbackAsync(callback: (arg: CommandLineArgsCallbackContext) => Promise<void>): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._withArgsCallbackAsyncInternal(callback));
+    }
+
+    /** @internal */
+    private async _withReferenceInternal(source: ResourceBuilderBase, connectionName?: string, optional?: boolean, name?: string): Promise<JavaScriptAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, source };
+        if (connectionName !== undefined) rpcArgs.connectionName = connectionName;
+        if (optional !== undefined) rpcArgs.optional = optional;
+        if (name !== undefined) rpcArgs.name = name;
+        const result = await this._client.invokeCapability<JavaScriptAppResourceHandle>(
+            'Aspire.Hosting/withReference',
+            rpcArgs
+        );
+        return new JavaScriptAppResource(result, this._client);
+    }
+
+    /** Adds a reference to another resource */
+    withReference(source: ResourceBuilderBase, options?: WithReferenceOptions): JavaScriptAppResourcePromise {
+        const connectionName = options?.connectionName;
+        const optional = options?.optional;
+        const name = options?.name;
+        return new JavaScriptAppResourcePromise(this._withReferenceInternal(source, connectionName, optional, name));
+    }
+
+    /** @internal */
+    private async _withReferenceUriInternal(name: string, uri: string): Promise<JavaScriptAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, name, uri };
+        const result = await this._client.invokeCapability<JavaScriptAppResourceHandle>(
+            'Aspire.Hosting/withReferenceUri',
+            rpcArgs
+        );
+        return new JavaScriptAppResource(result, this._client);
+    }
+
+    /** Adds a reference to a URI */
+    withReferenceUri(name: string, uri: string): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._withReferenceUriInternal(name, uri));
+    }
+
+    /** @internal */
+    private async _withReferenceExternalServiceInternal(externalService: ExternalServiceResource): Promise<JavaScriptAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, externalService };
+        const result = await this._client.invokeCapability<JavaScriptAppResourceHandle>(
+            'Aspire.Hosting/withReferenceExternalService',
+            rpcArgs
+        );
+        return new JavaScriptAppResource(result, this._client);
+    }
+
+    /** Adds a reference to an external service */
+    withReferenceExternalService(externalService: ExternalServiceResource): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._withReferenceExternalServiceInternal(externalService));
+    }
+
+    /** @internal */
+    private async _withReferenceEndpointInternal(endpointReference: EndpointReference): Promise<JavaScriptAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, endpointReference };
+        const result = await this._client.invokeCapability<JavaScriptAppResourceHandle>(
+            'Aspire.Hosting/withReferenceEndpoint',
+            rpcArgs
+        );
+        return new JavaScriptAppResource(result, this._client);
+    }
+
+    /** Adds a reference to an endpoint */
+    withReferenceEndpoint(endpointReference: EndpointReference): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._withReferenceEndpointInternal(endpointReference));
+    }
+
+    /** @internal */
+    private async _withEndpointInternal(port?: number, targetPort?: number, scheme?: string, name?: string, env?: string, isProxied?: boolean, isExternal?: boolean, protocol?: ProtocolType): Promise<JavaScriptAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle };
+        if (port !== undefined) rpcArgs.port = port;
+        if (targetPort !== undefined) rpcArgs.targetPort = targetPort;
+        if (scheme !== undefined) rpcArgs.scheme = scheme;
+        if (name !== undefined) rpcArgs.name = name;
+        if (env !== undefined) rpcArgs.env = env;
+        if (isProxied !== undefined) rpcArgs.isProxied = isProxied;
+        if (isExternal !== undefined) rpcArgs.isExternal = isExternal;
+        if (protocol !== undefined) rpcArgs.protocol = protocol;
+        const result = await this._client.invokeCapability<JavaScriptAppResourceHandle>(
+            'Aspire.Hosting/withEndpoint',
+            rpcArgs
+        );
+        return new JavaScriptAppResource(result, this._client);
+    }
+
+    /** Adds a network endpoint */
+    withEndpoint(options?: WithEndpointOptions): JavaScriptAppResourcePromise {
+        const port = options?.port;
+        const targetPort = options?.targetPort;
+        const scheme = options?.scheme;
+        const name = options?.name;
+        const env = options?.env;
+        const isProxied = options?.isProxied;
+        const isExternal = options?.isExternal;
+        const protocol = options?.protocol;
+        return new JavaScriptAppResourcePromise(this._withEndpointInternal(port, targetPort, scheme, name, env, isProxied, isExternal, protocol));
+    }
+
+    /** @internal */
+    private async _withHttpEndpointInternal(port?: number, targetPort?: number, name?: string, env?: string, isProxied?: boolean): Promise<JavaScriptAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle };
+        if (port !== undefined) rpcArgs.port = port;
+        if (targetPort !== undefined) rpcArgs.targetPort = targetPort;
+        if (name !== undefined) rpcArgs.name = name;
+        if (env !== undefined) rpcArgs.env = env;
+        if (isProxied !== undefined) rpcArgs.isProxied = isProxied;
+        const result = await this._client.invokeCapability<JavaScriptAppResourceHandle>(
+            'Aspire.Hosting/withHttpEndpoint',
+            rpcArgs
+        );
+        return new JavaScriptAppResource(result, this._client);
+    }
+
+    /** Adds an HTTP endpoint */
+    withHttpEndpoint(options?: WithHttpEndpointOptions): JavaScriptAppResourcePromise {
+        const port = options?.port;
+        const targetPort = options?.targetPort;
+        const name = options?.name;
+        const env = options?.env;
+        const isProxied = options?.isProxied;
+        return new JavaScriptAppResourcePromise(this._withHttpEndpointInternal(port, targetPort, name, env, isProxied));
+    }
+
+    /** @internal */
+    private async _withHttpsEndpointInternal(port?: number, targetPort?: number, name?: string, env?: string, isProxied?: boolean): Promise<JavaScriptAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle };
+        if (port !== undefined) rpcArgs.port = port;
+        if (targetPort !== undefined) rpcArgs.targetPort = targetPort;
+        if (name !== undefined) rpcArgs.name = name;
+        if (env !== undefined) rpcArgs.env = env;
+        if (isProxied !== undefined) rpcArgs.isProxied = isProxied;
+        const result = await this._client.invokeCapability<JavaScriptAppResourceHandle>(
+            'Aspire.Hosting/withHttpsEndpoint',
+            rpcArgs
+        );
+        return new JavaScriptAppResource(result, this._client);
+    }
+
+    /** Adds an HTTPS endpoint */
+    withHttpsEndpoint(options?: WithHttpsEndpointOptions): JavaScriptAppResourcePromise {
+        const port = options?.port;
+        const targetPort = options?.targetPort;
+        const name = options?.name;
+        const env = options?.env;
+        const isProxied = options?.isProxied;
+        return new JavaScriptAppResourcePromise(this._withHttpsEndpointInternal(port, targetPort, name, env, isProxied));
+    }
+
+    /** @internal */
+    private async _withExternalHttpEndpointsInternal(): Promise<JavaScriptAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle };
+        const result = await this._client.invokeCapability<JavaScriptAppResourceHandle>(
+            'Aspire.Hosting/withExternalHttpEndpoints',
+            rpcArgs
+        );
+        return new JavaScriptAppResource(result, this._client);
+    }
+
+    /** Makes HTTP endpoints externally accessible */
+    withExternalHttpEndpoints(): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._withExternalHttpEndpointsInternal());
+    }
+
+    /** Gets an endpoint reference */
+    async getEndpoint(name: string): Promise<EndpointReference> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, name };
+        return await this._client.invokeCapability<EndpointReference>(
+            'Aspire.Hosting/getEndpoint',
+            rpcArgs
+        );
+    }
+
+    /** @internal */
+    private async _asHttp2ServiceInternal(): Promise<JavaScriptAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle };
+        const result = await this._client.invokeCapability<JavaScriptAppResourceHandle>(
+            'Aspire.Hosting/asHttp2Service',
+            rpcArgs
+        );
+        return new JavaScriptAppResource(result, this._client);
+    }
+
+    /** Configures resource for HTTP/2 */
+    asHttp2Service(): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._asHttp2ServiceInternal());
+    }
+
+    /** @internal */
+    private async _withUrlsCallbackInternal(callback: (obj: ResourceUrlsCallbackContext) => Promise<void>): Promise<JavaScriptAppResource> {
+        const callbackId = registerCallback(async (objData: unknown) => {
+            const objHandle = wrapIfHandle(objData) as ResourceUrlsCallbackContextHandle;
+            const obj = new ResourceUrlsCallbackContext(objHandle, this._client);
+            await callback(obj);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<JavaScriptAppResourceHandle>(
+            'Aspire.Hosting/withUrlsCallback',
+            rpcArgs
+        );
+        return new JavaScriptAppResource(result, this._client);
+    }
+
+    /** Customizes displayed URLs via callback */
+    withUrlsCallback(callback: (obj: ResourceUrlsCallbackContext) => Promise<void>): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._withUrlsCallbackInternal(callback));
+    }
+
+    /** @internal */
+    private async _withUrlsCallbackAsyncInternal(callback: (arg: ResourceUrlsCallbackContext) => Promise<void>): Promise<JavaScriptAppResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ResourceUrlsCallbackContextHandle;
+            const arg = new ResourceUrlsCallbackContext(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<JavaScriptAppResourceHandle>(
+            'Aspire.Hosting/withUrlsCallbackAsync',
+            rpcArgs
+        );
+        return new JavaScriptAppResource(result, this._client);
+    }
+
+    /** Customizes displayed URLs via async callback */
+    withUrlsCallbackAsync(callback: (arg: ResourceUrlsCallbackContext) => Promise<void>): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._withUrlsCallbackAsyncInternal(callback));
+    }
+
+    /** @internal */
+    private async _withUrlInternal(url: string, displayText?: string): Promise<JavaScriptAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, url };
+        if (displayText !== undefined) rpcArgs.displayText = displayText;
+        const result = await this._client.invokeCapability<JavaScriptAppResourceHandle>(
+            'Aspire.Hosting/withUrl',
+            rpcArgs
+        );
+        return new JavaScriptAppResource(result, this._client);
+    }
+
+    /** Adds or modifies displayed URLs */
+    withUrl(url: string, options?: WithUrlOptions): JavaScriptAppResourcePromise {
+        const displayText = options?.displayText;
+        return new JavaScriptAppResourcePromise(this._withUrlInternal(url, displayText));
+    }
+
+    /** @internal */
+    private async _withUrlExpressionInternal(url: ReferenceExpression, displayText?: string): Promise<JavaScriptAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, url };
+        if (displayText !== undefined) rpcArgs.displayText = displayText;
+        const result = await this._client.invokeCapability<JavaScriptAppResourceHandle>(
+            'Aspire.Hosting/withUrlExpression',
+            rpcArgs
+        );
+        return new JavaScriptAppResource(result, this._client);
+    }
+
+    /** Adds a URL using a reference expression */
+    withUrlExpression(url: ReferenceExpression, options?: WithUrlExpressionOptions): JavaScriptAppResourcePromise {
+        const displayText = options?.displayText;
+        return new JavaScriptAppResourcePromise(this._withUrlExpressionInternal(url, displayText));
+    }
+
+    /** @internal */
+    private async _withUrlForEndpointInternal(endpointName: string, callback: (obj: ResourceUrlAnnotation) => Promise<void>): Promise<JavaScriptAppResource> {
+        const callbackId = registerCallback(async (objData: unknown) => {
+            const obj = wrapIfHandle(objData) as ResourceUrlAnnotation;
+            await callback(obj);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, endpointName, callback: callbackId };
+        const result = await this._client.invokeCapability<JavaScriptAppResourceHandle>(
+            'Aspire.Hosting/withUrlForEndpoint',
+            rpcArgs
+        );
+        return new JavaScriptAppResource(result, this._client);
+    }
+
+    /** Customizes the URL for a specific endpoint via callback */
+    withUrlForEndpoint(endpointName: string, callback: (obj: ResourceUrlAnnotation) => Promise<void>): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._withUrlForEndpointInternal(endpointName, callback));
+    }
+
+    /** @internal */
+    private async _withUrlForEndpointFactoryInternal(endpointName: string, callback: (arg: EndpointReference) => Promise<ResourceUrlAnnotation>): Promise<JavaScriptAppResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as EndpointReferenceHandle;
+            const arg = new EndpointReference(argHandle, this._client);
+            return await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, endpointName, callback: callbackId };
+        const result = await this._client.invokeCapability<JavaScriptAppResourceHandle>(
+            'Aspire.Hosting/withUrlForEndpointFactory',
+            rpcArgs
+        );
+        return new JavaScriptAppResource(result, this._client);
+    }
+
+    /** Adds a URL for a specific endpoint via factory callback */
+    withUrlForEndpointFactory(endpointName: string, callback: (arg: EndpointReference) => Promise<ResourceUrlAnnotation>): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._withUrlForEndpointFactoryInternal(endpointName, callback));
+    }
+
+    /** @internal */
+    private async _withContainerFilesSourceInternal(sourcePath: string): Promise<JavaScriptAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, sourcePath };
+        const result = await this._client.invokeCapability<JavaScriptAppResourceHandle>(
+            'Aspire.Hosting/withContainerFilesSource',
+            rpcArgs
+        );
+        return new JavaScriptAppResource(result, this._client);
+    }
+
+    /** Sets the source directory for container files */
+    withContainerFilesSource(sourcePath: string): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._withContainerFilesSourceInternal(sourcePath));
+    }
+
+    /** @internal */
+    private async _clearContainerFilesSourcesInternal(): Promise<JavaScriptAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle };
+        const result = await this._client.invokeCapability<JavaScriptAppResourceHandle>(
+            'Aspire.Hosting/clearContainerFilesSources',
+            rpcArgs
+        );
+        return new JavaScriptAppResource(result, this._client);
+    }
+
+    /** Clears all container file sources */
+    clearContainerFilesSources(): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._clearContainerFilesSourcesInternal());
+    }
+
+    /** @internal */
+    private async _excludeFromManifestInternal(): Promise<JavaScriptAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle };
+        const result = await this._client.invokeCapability<JavaScriptAppResourceHandle>(
+            'Aspire.Hosting/excludeFromManifest',
+            rpcArgs
+        );
+        return new JavaScriptAppResource(result, this._client);
+    }
+
+    /** Excludes the resource from the deployment manifest */
+    excludeFromManifest(): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._excludeFromManifestInternal());
+    }
+
+    /** @internal */
+    private async _waitForInternal(dependency: ResourceBuilderBase): Promise<JavaScriptAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, dependency };
+        const result = await this._client.invokeCapability<JavaScriptAppResourceHandle>(
+            'Aspire.Hosting/waitForResource',
+            rpcArgs
+        );
+        return new JavaScriptAppResource(result, this._client);
+    }
+
+    /** Waits for another resource to be ready */
+    waitFor(dependency: ResourceBuilderBase): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._waitForInternal(dependency));
+    }
+
+    /** @internal */
+    private async _waitForWithBehaviorInternal(dependency: ResourceBuilderBase, waitBehavior: WaitBehavior): Promise<JavaScriptAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, dependency, waitBehavior };
+        const result = await this._client.invokeCapability<JavaScriptAppResourceHandle>(
+            'Aspire.Hosting/waitForWithBehavior',
+            rpcArgs
+        );
+        return new JavaScriptAppResource(result, this._client);
+    }
+
+    /** Waits for another resource with specific behavior */
+    waitForWithBehavior(dependency: ResourceBuilderBase, waitBehavior: WaitBehavior): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._waitForWithBehaviorInternal(dependency, waitBehavior));
+    }
+
+    /** @internal */
+    private async _waitForStartInternal(dependency: ResourceBuilderBase): Promise<JavaScriptAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, dependency };
+        const result = await this._client.invokeCapability<JavaScriptAppResourceHandle>(
+            'Aspire.Hosting/waitForResourceStart',
+            rpcArgs
+        );
+        return new JavaScriptAppResource(result, this._client);
+    }
+
+    /** Waits for another resource to start */
+    waitForStart(dependency: ResourceBuilderBase): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._waitForStartInternal(dependency));
+    }
+
+    /** @internal */
+    private async _waitForStartWithBehaviorInternal(dependency: ResourceBuilderBase, waitBehavior: WaitBehavior): Promise<JavaScriptAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, dependency, waitBehavior };
+        const result = await this._client.invokeCapability<JavaScriptAppResourceHandle>(
+            'Aspire.Hosting/waitForStartWithBehavior',
+            rpcArgs
+        );
+        return new JavaScriptAppResource(result, this._client);
+    }
+
+    /** Waits for another resource to start with specific behavior */
+    waitForStartWithBehavior(dependency: ResourceBuilderBase, waitBehavior: WaitBehavior): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._waitForStartWithBehaviorInternal(dependency, waitBehavior));
+    }
+
+    /** @internal */
+    private async _withExplicitStartInternal(): Promise<JavaScriptAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle };
+        const result = await this._client.invokeCapability<JavaScriptAppResourceHandle>(
+            'Aspire.Hosting/withExplicitStart',
+            rpcArgs
+        );
+        return new JavaScriptAppResource(result, this._client);
+    }
+
+    /** Prevents resource from starting automatically */
+    withExplicitStart(): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._withExplicitStartInternal());
+    }
+
+    /** @internal */
+    private async _waitForCompletionInternal(dependency: ResourceBuilderBase, exitCode?: number): Promise<JavaScriptAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, dependency };
+        if (exitCode !== undefined) rpcArgs.exitCode = exitCode;
+        const result = await this._client.invokeCapability<JavaScriptAppResourceHandle>(
+            'Aspire.Hosting/waitForResourceCompletion',
+            rpcArgs
+        );
+        return new JavaScriptAppResource(result, this._client);
+    }
+
+    /** Waits for resource completion */
+    waitForCompletion(dependency: ResourceBuilderBase, options?: WaitForCompletionOptions): JavaScriptAppResourcePromise {
+        const exitCode = options?.exitCode;
+        return new JavaScriptAppResourcePromise(this._waitForCompletionInternal(dependency, exitCode));
+    }
+
+    /** @internal */
+    private async _withHealthCheckInternal(key: string): Promise<JavaScriptAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, key };
+        const result = await this._client.invokeCapability<JavaScriptAppResourceHandle>(
+            'Aspire.Hosting/withHealthCheck',
+            rpcArgs
+        );
+        return new JavaScriptAppResource(result, this._client);
+    }
+
+    /** Adds a health check by key */
+    withHealthCheck(key: string): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._withHealthCheckInternal(key));
+    }
+
+    /** @internal */
+    private async _withHttpHealthCheckInternal(path?: string, statusCode?: number, endpointName?: string): Promise<JavaScriptAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle };
+        if (path !== undefined) rpcArgs.path = path;
+        if (statusCode !== undefined) rpcArgs.statusCode = statusCode;
+        if (endpointName !== undefined) rpcArgs.endpointName = endpointName;
+        const result = await this._client.invokeCapability<JavaScriptAppResourceHandle>(
+            'Aspire.Hosting/withHttpHealthCheck',
+            rpcArgs
+        );
+        return new JavaScriptAppResource(result, this._client);
+    }
+
+    /** Adds an HTTP health check */
+    withHttpHealthCheck(options?: WithHttpHealthCheckOptions): JavaScriptAppResourcePromise {
+        const path = options?.path;
+        const statusCode = options?.statusCode;
+        const endpointName = options?.endpointName;
+        return new JavaScriptAppResourcePromise(this._withHttpHealthCheckInternal(path, statusCode, endpointName));
+    }
+
+    /** @internal */
+    private async _withCommandInternal(name: string, displayName: string, executeCommand: (arg: ExecuteCommandContext) => Promise<ExecuteCommandResult>, commandOptions?: CommandOptions): Promise<JavaScriptAppResource> {
+        const executeCommandId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ExecuteCommandContextHandle;
+            const arg = new ExecuteCommandContext(argHandle, this._client);
+            return await executeCommand(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, name, displayName, executeCommand: executeCommandId };
+        if (commandOptions !== undefined) rpcArgs.commandOptions = commandOptions;
+        const result = await this._client.invokeCapability<JavaScriptAppResourceHandle>(
+            'Aspire.Hosting/withCommand',
+            rpcArgs
+        );
+        return new JavaScriptAppResource(result, this._client);
+    }
+
+    /** Adds a resource command */
+    withCommand(name: string, displayName: string, executeCommand: (arg: ExecuteCommandContext) => Promise<ExecuteCommandResult>, options?: WithCommandOptions): JavaScriptAppResourcePromise {
+        const commandOptions = options?.commandOptions;
+        return new JavaScriptAppResourcePromise(this._withCommandInternal(name, displayName, executeCommand, commandOptions));
+    }
+
+    /** @internal */
+    private async _withDeveloperCertificateTrustInternal(trust: boolean): Promise<JavaScriptAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, trust };
+        const result = await this._client.invokeCapability<JavaScriptAppResourceHandle>(
+            'Aspire.Hosting/withDeveloperCertificateTrust',
+            rpcArgs
+        );
+        return new JavaScriptAppResource(result, this._client);
+    }
+
+    /** Configures developer certificate trust */
+    withDeveloperCertificateTrust(trust: boolean): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._withDeveloperCertificateTrustInternal(trust));
+    }
+
+    /** @internal */
+    private async _withCertificateTrustScopeInternal(scope: CertificateTrustScope): Promise<JavaScriptAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, scope };
+        const result = await this._client.invokeCapability<JavaScriptAppResourceHandle>(
+            'Aspire.Hosting/withCertificateTrustScope',
+            rpcArgs
+        );
+        return new JavaScriptAppResource(result, this._client);
+    }
+
+    /** Sets the certificate trust scope */
+    withCertificateTrustScope(scope: CertificateTrustScope): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._withCertificateTrustScopeInternal(scope));
+    }
+
+    /** @internal */
+    private async _withHttpsDeveloperCertificateInternal(password?: ParameterResource): Promise<JavaScriptAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle };
+        if (password !== undefined) rpcArgs.password = password;
+        const result = await this._client.invokeCapability<JavaScriptAppResourceHandle>(
+            'Aspire.Hosting/withParameterHttpsDeveloperCertificate',
+            rpcArgs
+        );
+        return new JavaScriptAppResource(result, this._client);
+    }
+
+    /** Configures HTTPS with a developer certificate */
+    withHttpsDeveloperCertificate(options?: WithHttpsDeveloperCertificateOptions): JavaScriptAppResourcePromise {
+        const password = options?.password;
+        return new JavaScriptAppResourcePromise(this._withHttpsDeveloperCertificateInternal(password));
+    }
+
+    /** @internal */
+    private async _withoutHttpsCertificateInternal(): Promise<JavaScriptAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle };
+        const result = await this._client.invokeCapability<JavaScriptAppResourceHandle>(
+            'Aspire.Hosting/withoutHttpsCertificate',
+            rpcArgs
+        );
+        return new JavaScriptAppResource(result, this._client);
+    }
+
+    /** Removes HTTPS certificate configuration */
+    withoutHttpsCertificate(): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._withoutHttpsCertificateInternal());
+    }
+
+    /** @internal */
+    private async _withParentRelationshipInternal(parent: ResourceBuilderBase): Promise<JavaScriptAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, parent };
+        const result = await this._client.invokeCapability<JavaScriptAppResourceHandle>(
+            'Aspire.Hosting/withBuilderParentRelationship',
+            rpcArgs
+        );
+        return new JavaScriptAppResource(result, this._client);
+    }
+
+    /** Sets the parent relationship */
+    withParentRelationship(parent: ResourceBuilderBase): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._withParentRelationshipInternal(parent));
+    }
+
+    /** @internal */
+    private async _withChildRelationshipInternal(child: ResourceBuilderBase): Promise<JavaScriptAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, child };
+        const result = await this._client.invokeCapability<JavaScriptAppResourceHandle>(
+            'Aspire.Hosting/withBuilderChildRelationship',
+            rpcArgs
+        );
+        return new JavaScriptAppResource(result, this._client);
+    }
+
+    /** Sets a child relationship */
+    withChildRelationship(child: ResourceBuilderBase): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._withChildRelationshipInternal(child));
+    }
+
+    /** @internal */
+    private async _withIconNameInternal(iconName: string, iconVariant?: IconVariant): Promise<JavaScriptAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, iconName };
+        if (iconVariant !== undefined) rpcArgs.iconVariant = iconVariant;
+        const result = await this._client.invokeCapability<JavaScriptAppResourceHandle>(
+            'Aspire.Hosting/withIconName',
+            rpcArgs
+        );
+        return new JavaScriptAppResource(result, this._client);
+    }
+
+    /** Sets the icon for the resource */
+    withIconName(iconName: string, options?: WithIconNameOptions): JavaScriptAppResourcePromise {
+        const iconVariant = options?.iconVariant;
+        return new JavaScriptAppResourcePromise(this._withIconNameInternal(iconName, iconVariant));
+    }
+
+    /** @internal */
+    private async _withHttpProbeInternal(probeType: ProbeType, path?: string, initialDelaySeconds?: number, periodSeconds?: number, timeoutSeconds?: number, failureThreshold?: number, successThreshold?: number, endpointName?: string): Promise<JavaScriptAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, probeType };
+        if (path !== undefined) rpcArgs.path = path;
+        if (initialDelaySeconds !== undefined) rpcArgs.initialDelaySeconds = initialDelaySeconds;
+        if (periodSeconds !== undefined) rpcArgs.periodSeconds = periodSeconds;
+        if (timeoutSeconds !== undefined) rpcArgs.timeoutSeconds = timeoutSeconds;
+        if (failureThreshold !== undefined) rpcArgs.failureThreshold = failureThreshold;
+        if (successThreshold !== undefined) rpcArgs.successThreshold = successThreshold;
+        if (endpointName !== undefined) rpcArgs.endpointName = endpointName;
+        const result = await this._client.invokeCapability<JavaScriptAppResourceHandle>(
+            'Aspire.Hosting/withHttpProbe',
+            rpcArgs
+        );
+        return new JavaScriptAppResource(result, this._client);
+    }
+
+    /** Adds an HTTP health probe to the resource */
+    withHttpProbe(probeType: ProbeType, options?: WithHttpProbeOptions): JavaScriptAppResourcePromise {
+        const path = options?.path;
+        const initialDelaySeconds = options?.initialDelaySeconds;
+        const periodSeconds = options?.periodSeconds;
+        const timeoutSeconds = options?.timeoutSeconds;
+        const failureThreshold = options?.failureThreshold;
+        const successThreshold = options?.successThreshold;
+        const endpointName = options?.endpointName;
+        return new JavaScriptAppResourcePromise(this._withHttpProbeInternal(probeType, path, initialDelaySeconds, periodSeconds, timeoutSeconds, failureThreshold, successThreshold, endpointName));
+    }
+
+    /** @internal */
+    private async _excludeFromMcpInternal(): Promise<JavaScriptAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle };
+        const result = await this._client.invokeCapability<JavaScriptAppResourceHandle>(
+            'Aspire.Hosting/excludeFromMcp',
+            rpcArgs
+        );
+        return new JavaScriptAppResource(result, this._client);
+    }
+
+    /** Excludes the resource from MCP server exposure */
+    excludeFromMcp(): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._excludeFromMcpInternal());
+    }
+
+    /** @internal */
+    private async _withRemoteImageNameInternal(remoteImageName: string): Promise<JavaScriptAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, remoteImageName };
+        const result = await this._client.invokeCapability<JavaScriptAppResourceHandle>(
+            'Aspire.Hosting/withRemoteImageName',
+            rpcArgs
+        );
+        return new JavaScriptAppResource(result, this._client);
+    }
+
+    /** Sets the remote image name for publishing */
+    withRemoteImageName(remoteImageName: string): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._withRemoteImageNameInternal(remoteImageName));
+    }
+
+    /** @internal */
+    private async _withRemoteImageTagInternal(remoteImageTag: string): Promise<JavaScriptAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, remoteImageTag };
+        const result = await this._client.invokeCapability<JavaScriptAppResourceHandle>(
+            'Aspire.Hosting/withRemoteImageTag',
+            rpcArgs
+        );
+        return new JavaScriptAppResource(result, this._client);
+    }
+
+    /** Sets the remote image tag for publishing */
+    withRemoteImageTag(remoteImageTag: string): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._withRemoteImageTagInternal(remoteImageTag));
+    }
+
+    /** @internal */
+    private async _withPipelineStepFactoryInternal(stepName: string, callback: (arg: PipelineStepContext) => Promise<void>, dependsOn?: string[], requiredBy?: string[], tags?: string[], description?: string): Promise<JavaScriptAppResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as PipelineStepContextHandle;
+            const arg = new PipelineStepContext(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, stepName, callback: callbackId };
+        if (dependsOn !== undefined) rpcArgs.dependsOn = dependsOn;
+        if (requiredBy !== undefined) rpcArgs.requiredBy = requiredBy;
+        if (tags !== undefined) rpcArgs.tags = tags;
+        if (description !== undefined) rpcArgs.description = description;
+        const result = await this._client.invokeCapability<JavaScriptAppResourceHandle>(
+            'Aspire.Hosting/withPipelineStepFactory',
+            rpcArgs
+        );
+        return new JavaScriptAppResource(result, this._client);
+    }
+
+    /** Adds a pipeline step to the resource */
+    withPipelineStepFactory(stepName: string, callback: (arg: PipelineStepContext) => Promise<void>, options?: WithPipelineStepFactoryOptions): JavaScriptAppResourcePromise {
+        const dependsOn = options?.dependsOn;
+        const requiredBy = options?.requiredBy;
+        const tags = options?.tags;
+        const description = options?.description;
+        return new JavaScriptAppResourcePromise(this._withPipelineStepFactoryInternal(stepName, callback, dependsOn, requiredBy, tags, description));
+    }
+
+    /** @internal */
+    private async _withPipelineConfigurationAsyncInternal(callback: (arg: PipelineConfigurationContext) => Promise<void>): Promise<JavaScriptAppResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as PipelineConfigurationContextHandle;
+            const arg = new PipelineConfigurationContext(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<JavaScriptAppResourceHandle>(
+            'Aspire.Hosting/withPipelineConfigurationAsync',
+            rpcArgs
+        );
+        return new JavaScriptAppResource(result, this._client);
+    }
+
+    /** Configures pipeline step dependencies via an async callback */
+    withPipelineConfigurationAsync(callback: (arg: PipelineConfigurationContext) => Promise<void>): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._withPipelineConfigurationAsyncInternal(callback));
+    }
+
+    /** @internal */
+    private async _withPipelineConfigurationInternal(callback: (obj: PipelineConfigurationContext) => Promise<void>): Promise<JavaScriptAppResource> {
+        const callbackId = registerCallback(async (objData: unknown) => {
+            const objHandle = wrapIfHandle(objData) as PipelineConfigurationContextHandle;
+            const obj = new PipelineConfigurationContext(objHandle, this._client);
+            await callback(obj);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<JavaScriptAppResourceHandle>(
+            'Aspire.Hosting/withPipelineConfiguration',
+            rpcArgs
+        );
+        return new JavaScriptAppResource(result, this._client);
+    }
+
+    /** Configures pipeline step dependencies via a callback */
+    withPipelineConfiguration(callback: (obj: PipelineConfigurationContext) => Promise<void>): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._withPipelineConfigurationInternal(callback));
+    }
+
+    /** Gets the resource name */
+    async getResourceName(): Promise<string> {
+        const rpcArgs: Record<string, unknown> = { resource: this._handle };
+        return await this._client.invokeCapability<string>(
+            'Aspire.Hosting/getResourceName',
+            rpcArgs
+        );
+    }
+
+    /** @internal */
+    private async _onBeforeResourceStartedInternal(callback: (arg: BeforeResourceStartedEvent) => Promise<void>): Promise<JavaScriptAppResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as BeforeResourceStartedEventHandle;
+            const arg = new BeforeResourceStartedEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<JavaScriptAppResourceHandle>(
+            'Aspire.Hosting/onBeforeResourceStarted',
+            rpcArgs
+        );
+        return new JavaScriptAppResource(result, this._client);
+    }
+
+    /** Subscribes to the BeforeResourceStarted event */
+    onBeforeResourceStarted(callback: (arg: BeforeResourceStartedEvent) => Promise<void>): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._onBeforeResourceStartedInternal(callback));
+    }
+
+    /** @internal */
+    private async _onResourceStoppedInternal(callback: (arg: ResourceStoppedEvent) => Promise<void>): Promise<JavaScriptAppResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ResourceStoppedEventHandle;
+            const arg = new ResourceStoppedEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<JavaScriptAppResourceHandle>(
+            'Aspire.Hosting/onResourceStopped',
+            rpcArgs
+        );
+        return new JavaScriptAppResource(result, this._client);
+    }
+
+    /** Subscribes to the ResourceStopped event */
+    onResourceStopped(callback: (arg: ResourceStoppedEvent) => Promise<void>): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._onResourceStoppedInternal(callback));
+    }
+
+    /** @internal */
+    private async _onInitializeResourceInternal(callback: (arg: InitializeResourceEvent) => Promise<void>): Promise<JavaScriptAppResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as InitializeResourceEventHandle;
+            const arg = new InitializeResourceEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<JavaScriptAppResourceHandle>(
+            'Aspire.Hosting/onInitializeResource',
+            rpcArgs
+        );
+        return new JavaScriptAppResource(result, this._client);
+    }
+
+    /** Subscribes to the InitializeResource event */
+    onInitializeResource(callback: (arg: InitializeResourceEvent) => Promise<void>): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._onInitializeResourceInternal(callback));
+    }
+
+    /** @internal */
+    private async _onResourceEndpointsAllocatedInternal(callback: (arg: ResourceEndpointsAllocatedEvent) => Promise<void>): Promise<JavaScriptAppResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ResourceEndpointsAllocatedEventHandle;
+            const arg = new ResourceEndpointsAllocatedEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<JavaScriptAppResourceHandle>(
+            'Aspire.Hosting/onResourceEndpointsAllocated',
+            rpcArgs
+        );
+        return new JavaScriptAppResource(result, this._client);
+    }
+
+    /** Subscribes to the ResourceEndpointsAllocated event */
+    onResourceEndpointsAllocated(callback: (arg: ResourceEndpointsAllocatedEvent) => Promise<void>): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._onResourceEndpointsAllocatedInternal(callback));
+    }
+
+    /** @internal */
+    private async _onResourceReadyInternal(callback: (arg: ResourceReadyEvent) => Promise<void>): Promise<JavaScriptAppResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ResourceReadyEventHandle;
+            const arg = new ResourceReadyEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<JavaScriptAppResourceHandle>(
+            'Aspire.Hosting/onResourceReady',
+            rpcArgs
+        );
+        return new JavaScriptAppResource(result, this._client);
+    }
+
+    /** Subscribes to the ResourceReady event */
+    onResourceReady(callback: (arg: ResourceReadyEvent) => Promise<void>): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._onResourceReadyInternal(callback));
+    }
+
+    /** @internal */
+    private async _withNpmInternal(install?: boolean, installCommand?: string, installArgs?: string[]): Promise<JavaScriptAppResource> {
+        const rpcArgs: Record<string, unknown> = { resource: this._handle };
+        if (install !== undefined) rpcArgs.install = install;
+        if (installCommand !== undefined) rpcArgs.installCommand = installCommand;
+        if (installArgs !== undefined) rpcArgs.installArgs = installArgs;
+        const result = await this._client.invokeCapability<JavaScriptAppResourceHandle>(
+            'Aspire.Hosting.JavaScript/withNpm',
+            rpcArgs
+        );
+        return new JavaScriptAppResource(result, this._client);
+    }
+
+    /** Configures npm as the package manager */
+    withNpm(options?: WithNpmOptions): JavaScriptAppResourcePromise {
+        const install = options?.install;
+        const installCommand = options?.installCommand;
+        const installArgs = options?.installArgs;
+        return new JavaScriptAppResourcePromise(this._withNpmInternal(install, installCommand, installArgs));
+    }
+
+    /** @internal */
+    private async _withBunInternal(install?: boolean, installArgs?: string[]): Promise<JavaScriptAppResource> {
+        const rpcArgs: Record<string, unknown> = { resource: this._handle };
+        if (install !== undefined) rpcArgs.install = install;
+        if (installArgs !== undefined) rpcArgs.installArgs = installArgs;
+        const result = await this._client.invokeCapability<JavaScriptAppResourceHandle>(
+            'Aspire.Hosting.JavaScript/withBun',
+            rpcArgs
+        );
+        return new JavaScriptAppResource(result, this._client);
+    }
+
+    /** Configures Bun as the package manager */
+    withBun(options?: WithBunOptions): JavaScriptAppResourcePromise {
+        const install = options?.install;
+        const installArgs = options?.installArgs;
+        return new JavaScriptAppResourcePromise(this._withBunInternal(install, installArgs));
+    }
+
+    /** @internal */
+    private async _withYarnInternal(install?: boolean, installArgs?: string[]): Promise<JavaScriptAppResource> {
+        const rpcArgs: Record<string, unknown> = { resource: this._handle };
+        if (install !== undefined) rpcArgs.install = install;
+        if (installArgs !== undefined) rpcArgs.installArgs = installArgs;
+        const result = await this._client.invokeCapability<JavaScriptAppResourceHandle>(
+            'Aspire.Hosting.JavaScript/withYarn',
+            rpcArgs
+        );
+        return new JavaScriptAppResource(result, this._client);
+    }
+
+    /** Configures yarn as the package manager */
+    withYarn(options?: WithYarnOptions): JavaScriptAppResourcePromise {
+        const install = options?.install;
+        const installArgs = options?.installArgs;
+        return new JavaScriptAppResourcePromise(this._withYarnInternal(install, installArgs));
+    }
+
+    /** @internal */
+    private async _withPnpmInternal(install?: boolean, installArgs?: string[]): Promise<JavaScriptAppResource> {
+        const rpcArgs: Record<string, unknown> = { resource: this._handle };
+        if (install !== undefined) rpcArgs.install = install;
+        if (installArgs !== undefined) rpcArgs.installArgs = installArgs;
+        const result = await this._client.invokeCapability<JavaScriptAppResourceHandle>(
+            'Aspire.Hosting.JavaScript/withPnpm',
+            rpcArgs
+        );
+        return new JavaScriptAppResource(result, this._client);
+    }
+
+    /** Configures pnpm as the package manager */
+    withPnpm(options?: WithPnpmOptions): JavaScriptAppResourcePromise {
+        const install = options?.install;
+        const installArgs = options?.installArgs;
+        return new JavaScriptAppResourcePromise(this._withPnpmInternal(install, installArgs));
+    }
+
+    /** @internal */
+    private async _withBuildScriptInternal(scriptName: string, args?: string[]): Promise<JavaScriptAppResource> {
+        const rpcArgs: Record<string, unknown> = { resource: this._handle, scriptName };
+        if (args !== undefined) rpcArgs.args = args;
+        const result = await this._client.invokeCapability<JavaScriptAppResourceHandle>(
+            'Aspire.Hosting.JavaScript/withBuildScript',
+            rpcArgs
+        );
+        return new JavaScriptAppResource(result, this._client);
+    }
+
+    /** Specifies an npm script to run before starting the application */
+    withBuildScript(scriptName: string, options?: WithBuildScriptOptions): JavaScriptAppResourcePromise {
+        const args = options?.args;
+        return new JavaScriptAppResourcePromise(this._withBuildScriptInternal(scriptName, args));
+    }
+
+    /** @internal */
+    private async _withRunScriptInternal(scriptName: string, args?: string[]): Promise<JavaScriptAppResource> {
+        const rpcArgs: Record<string, unknown> = { resource: this._handle, scriptName };
+        if (args !== undefined) rpcArgs.args = args;
+        const result = await this._client.invokeCapability<JavaScriptAppResourceHandle>(
+            'Aspire.Hosting.JavaScript/withRunScript',
+            rpcArgs
+        );
+        return new JavaScriptAppResource(result, this._client);
+    }
+
+    /** Specifies an npm script to run during development */
+    withRunScript(scriptName: string, options?: WithRunScriptOptions): JavaScriptAppResourcePromise {
+        const args = options?.args;
+        return new JavaScriptAppResourcePromise(this._withRunScriptInternal(scriptName, args));
+    }
+
+    /** @internal */
+    private async _withBrowserDebuggerInternal(browser?: string): Promise<JavaScriptAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle };
+        if (browser !== undefined) rpcArgs.browser = browser;
+        const result = await this._client.invokeCapability<JavaScriptAppResourceHandle>(
+            'Aspire.Hosting.JavaScript/withBrowserDebugger',
+            rpcArgs
+        );
+        return new JavaScriptAppResource(result, this._client);
+    }
+
+    /** Configures a browser debugger for the JavaScript application */
+    withBrowserDebugger(options?: WithBrowserDebuggerOptions): JavaScriptAppResourcePromise {
+        const browser = options?.browser;
+        return new JavaScriptAppResourcePromise(this._withBrowserDebuggerInternal(browser));
+    }
+
+}
+
+/**
+ * Thenable wrapper for JavaScriptAppResource that enables fluent chaining.
+ * @example
+ * await builder.addSomething().withX().withY();
+ */
+export class JavaScriptAppResourcePromise implements PromiseLike<JavaScriptAppResource> {
+    constructor(private _promise: Promise<JavaScriptAppResource>) {}
+
+    then<TResult1 = JavaScriptAppResource, TResult2 = never>(
+        onfulfilled?: ((value: JavaScriptAppResource) => TResult1 | PromiseLike<TResult1>) | null,
+        onrejected?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null
+    ): PromiseLike<TResult1 | TResult2> {
+        return this._promise.then(onfulfilled, onrejected);
+    }
+
+    /** Configures a resource to use a container registry */
+    withContainerRegistry(registry: ResourceBuilderBase): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._promise.then(obj => obj.withContainerRegistry(registry)));
+    }
+
+    /** Sets the base image for a Dockerfile build */
+    withDockerfileBaseImage(options?: WithDockerfileBaseImageOptions): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._promise.then(obj => obj.withDockerfileBaseImage(options)));
+    }
+
+    /** Publishes the executable as a Docker container */
+    publishAsDockerFile(): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._promise.then(obj => obj.publishAsDockerFile()));
+    }
+
+    /** Publishes an executable as a Docker file with optional container configuration */
+    publishAsDockerFileWithConfigure(configure: (obj: ContainerResource) => Promise<void>): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._promise.then(obj => obj.publishAsDockerFileWithConfigure(configure)));
+    }
+
+    /** Sets the executable command */
+    withExecutableCommand(command: string): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._promise.then(obj => obj.withExecutableCommand(command)));
+    }
+
+    /** Sets the executable working directory */
+    withWorkingDirectory(workingDirectory: string): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._promise.then(obj => obj.withWorkingDirectory(workingDirectory)));
+    }
+
+    /** Configures an MCP server endpoint on the resource */
+    withMcpServer(options?: WithMcpServerOptions): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._promise.then(obj => obj.withMcpServer(options)));
+    }
+
+    /** Configures OTLP telemetry export */
+    withOtlpExporter(): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._promise.then(obj => obj.withOtlpExporter()));
+    }
+
+    /** Configures OTLP telemetry export with specific protocol */
+    withOtlpExporterProtocol(protocol: OtlpProtocol): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._promise.then(obj => obj.withOtlpExporterProtocol(protocol)));
+    }
+
+    /** Adds a required command dependency */
+    withRequiredCommand(command: string, options?: WithRequiredCommandOptions): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._promise.then(obj => obj.withRequiredCommand(command, options)));
+    }
+
+    /** Sets environment variables via callback */
+    withEnvironmentCallback(callback: (arg: EnvironmentCallbackContext) => Promise<void>): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._promise.then(obj => obj.withEnvironmentCallback(callback)));
+    }
+
+    /** Sets an environment variable from an endpoint reference */
+    withEnvironmentEndpoint(name: string, endpointReference: EndpointReference): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._promise.then(obj => obj.withEnvironmentEndpoint(name, endpointReference)));
+    }
+
+    /** Sets an environment variable on the resource */
+    withEnvironment(name: string, value: string | ReferenceExpression | EndpointReference | ParameterResource | ResourceWithConnectionString): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._promise.then(obj => obj.withEnvironment(name, value)));
+    }
+
+    /** Sets an environment variable from a parameter resource */
+    withEnvironmentParameter(name: string, parameter: ParameterResource): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._promise.then(obj => obj.withEnvironmentParameter(name, parameter)));
+    }
+
+    /** Sets an environment variable from a connection string resource */
+    withEnvironmentConnectionString(envVarName: string, resource: ResourceBuilderBase): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._promise.then(obj => obj.withEnvironmentConnectionString(envVarName, resource)));
+    }
+
+    /** Adds arguments */
+    withArgs(args: string[]): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._promise.then(obj => obj.withArgs(args)));
+    }
+
+    /** Sets command-line arguments via callback */
+    withArgsCallback(callback: (obj: CommandLineArgsCallbackContext) => Promise<void>): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._promise.then(obj => obj.withArgsCallback(callback)));
+    }
+
+    /** Sets command-line arguments via async callback */
+    withArgsCallbackAsync(callback: (arg: CommandLineArgsCallbackContext) => Promise<void>): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._promise.then(obj => obj.withArgsCallbackAsync(callback)));
+    }
+
+    /** Adds a reference to another resource */
+    withReference(source: ResourceBuilderBase, options?: WithReferenceOptions): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._promise.then(obj => obj.withReference(source, options)));
+    }
+
+    /** Adds a reference to a URI */
+    withReferenceUri(name: string, uri: string): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._promise.then(obj => obj.withReferenceUri(name, uri)));
+    }
+
+    /** Adds a reference to an external service */
+    withReferenceExternalService(externalService: ExternalServiceResource): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._promise.then(obj => obj.withReferenceExternalService(externalService)));
+    }
+
+    /** Adds a reference to an endpoint */
+    withReferenceEndpoint(endpointReference: EndpointReference): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._promise.then(obj => obj.withReferenceEndpoint(endpointReference)));
+    }
+
+    /** Adds a network endpoint */
+    withEndpoint(options?: WithEndpointOptions): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._promise.then(obj => obj.withEndpoint(options)));
+    }
+
+    /** Adds an HTTP endpoint */
+    withHttpEndpoint(options?: WithHttpEndpointOptions): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._promise.then(obj => obj.withHttpEndpoint(options)));
+    }
+
+    /** Adds an HTTPS endpoint */
+    withHttpsEndpoint(options?: WithHttpsEndpointOptions): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._promise.then(obj => obj.withHttpsEndpoint(options)));
+    }
+
+    /** Makes HTTP endpoints externally accessible */
+    withExternalHttpEndpoints(): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._promise.then(obj => obj.withExternalHttpEndpoints()));
+    }
+
+    /** Gets an endpoint reference */
+    getEndpoint(name: string): Promise<EndpointReference> {
+        return this._promise.then(obj => obj.getEndpoint(name));
+    }
+
+    /** Configures resource for HTTP/2 */
+    asHttp2Service(): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._promise.then(obj => obj.asHttp2Service()));
+    }
+
+    /** Customizes displayed URLs via callback */
+    withUrlsCallback(callback: (obj: ResourceUrlsCallbackContext) => Promise<void>): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._promise.then(obj => obj.withUrlsCallback(callback)));
+    }
+
+    /** Customizes displayed URLs via async callback */
+    withUrlsCallbackAsync(callback: (arg: ResourceUrlsCallbackContext) => Promise<void>): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._promise.then(obj => obj.withUrlsCallbackAsync(callback)));
+    }
+
+    /** Adds or modifies displayed URLs */
+    withUrl(url: string, options?: WithUrlOptions): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._promise.then(obj => obj.withUrl(url, options)));
+    }
+
+    /** Adds a URL using a reference expression */
+    withUrlExpression(url: ReferenceExpression, options?: WithUrlExpressionOptions): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._promise.then(obj => obj.withUrlExpression(url, options)));
+    }
+
+    /** Customizes the URL for a specific endpoint via callback */
+    withUrlForEndpoint(endpointName: string, callback: (obj: ResourceUrlAnnotation) => Promise<void>): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._promise.then(obj => obj.withUrlForEndpoint(endpointName, callback)));
+    }
+
+    /** Adds a URL for a specific endpoint via factory callback */
+    withUrlForEndpointFactory(endpointName: string, callback: (arg: EndpointReference) => Promise<ResourceUrlAnnotation>): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._promise.then(obj => obj.withUrlForEndpointFactory(endpointName, callback)));
+    }
+
+    /** Sets the source directory for container files */
+    withContainerFilesSource(sourcePath: string): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._promise.then(obj => obj.withContainerFilesSource(sourcePath)));
+    }
+
+    /** Clears all container file sources */
+    clearContainerFilesSources(): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._promise.then(obj => obj.clearContainerFilesSources()));
+    }
+
+    /** Excludes the resource from the deployment manifest */
+    excludeFromManifest(): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._promise.then(obj => obj.excludeFromManifest()));
+    }
+
+    /** Waits for another resource to be ready */
+    waitFor(dependency: ResourceBuilderBase): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._promise.then(obj => obj.waitFor(dependency)));
+    }
+
+    /** Waits for another resource with specific behavior */
+    waitForWithBehavior(dependency: ResourceBuilderBase, waitBehavior: WaitBehavior): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._promise.then(obj => obj.waitForWithBehavior(dependency, waitBehavior)));
+    }
+
+    /** Waits for another resource to start */
+    waitForStart(dependency: ResourceBuilderBase): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._promise.then(obj => obj.waitForStart(dependency)));
+    }
+
+    /** Waits for another resource to start with specific behavior */
+    waitForStartWithBehavior(dependency: ResourceBuilderBase, waitBehavior: WaitBehavior): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._promise.then(obj => obj.waitForStartWithBehavior(dependency, waitBehavior)));
+    }
+
+    /** Prevents resource from starting automatically */
+    withExplicitStart(): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._promise.then(obj => obj.withExplicitStart()));
+    }
+
+    /** Waits for resource completion */
+    waitForCompletion(dependency: ResourceBuilderBase, options?: WaitForCompletionOptions): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._promise.then(obj => obj.waitForCompletion(dependency, options)));
+    }
+
+    /** Adds a health check by key */
+    withHealthCheck(key: string): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._promise.then(obj => obj.withHealthCheck(key)));
+    }
+
+    /** Adds an HTTP health check */
+    withHttpHealthCheck(options?: WithHttpHealthCheckOptions): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._promise.then(obj => obj.withHttpHealthCheck(options)));
+    }
+
+    /** Adds a resource command */
+    withCommand(name: string, displayName: string, executeCommand: (arg: ExecuteCommandContext) => Promise<ExecuteCommandResult>, options?: WithCommandOptions): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._promise.then(obj => obj.withCommand(name, displayName, executeCommand, options)));
+    }
+
+    /** Configures developer certificate trust */
+    withDeveloperCertificateTrust(trust: boolean): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._promise.then(obj => obj.withDeveloperCertificateTrust(trust)));
+    }
+
+    /** Sets the certificate trust scope */
+    withCertificateTrustScope(scope: CertificateTrustScope): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._promise.then(obj => obj.withCertificateTrustScope(scope)));
+    }
+
+    /** Configures HTTPS with a developer certificate */
+    withHttpsDeveloperCertificate(options?: WithHttpsDeveloperCertificateOptions): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._promise.then(obj => obj.withHttpsDeveloperCertificate(options)));
+    }
+
+    /** Removes HTTPS certificate configuration */
+    withoutHttpsCertificate(): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._promise.then(obj => obj.withoutHttpsCertificate()));
+    }
+
+    /** Sets the parent relationship */
+    withParentRelationship(parent: ResourceBuilderBase): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._promise.then(obj => obj.withParentRelationship(parent)));
+    }
+
+    /** Sets a child relationship */
+    withChildRelationship(child: ResourceBuilderBase): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._promise.then(obj => obj.withChildRelationship(child)));
+    }
+
+    /** Sets the icon for the resource */
+    withIconName(iconName: string, options?: WithIconNameOptions): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._promise.then(obj => obj.withIconName(iconName, options)));
+    }
+
+    /** Adds an HTTP health probe to the resource */
+    withHttpProbe(probeType: ProbeType, options?: WithHttpProbeOptions): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._promise.then(obj => obj.withHttpProbe(probeType, options)));
+    }
+
+    /** Excludes the resource from MCP server exposure */
+    excludeFromMcp(): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._promise.then(obj => obj.excludeFromMcp()));
+    }
+
+    /** Sets the remote image name for publishing */
+    withRemoteImageName(remoteImageName: string): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._promise.then(obj => obj.withRemoteImageName(remoteImageName)));
+    }
+
+    /** Sets the remote image tag for publishing */
+    withRemoteImageTag(remoteImageTag: string): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._promise.then(obj => obj.withRemoteImageTag(remoteImageTag)));
+    }
+
+    /** Adds a pipeline step to the resource */
+    withPipelineStepFactory(stepName: string, callback: (arg: PipelineStepContext) => Promise<void>, options?: WithPipelineStepFactoryOptions): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._promise.then(obj => obj.withPipelineStepFactory(stepName, callback, options)));
+    }
+
+    /** Configures pipeline step dependencies via an async callback */
+    withPipelineConfigurationAsync(callback: (arg: PipelineConfigurationContext) => Promise<void>): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._promise.then(obj => obj.withPipelineConfigurationAsync(callback)));
+    }
+
+    /** Configures pipeline step dependencies via a callback */
+    withPipelineConfiguration(callback: (obj: PipelineConfigurationContext) => Promise<void>): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._promise.then(obj => obj.withPipelineConfiguration(callback)));
+    }
+
+    /** Gets the resource name */
+    getResourceName(): Promise<string> {
+        return this._promise.then(obj => obj.getResourceName());
+    }
+
+    /** Subscribes to the BeforeResourceStarted event */
+    onBeforeResourceStarted(callback: (arg: BeforeResourceStartedEvent) => Promise<void>): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._promise.then(obj => obj.onBeforeResourceStarted(callback)));
+    }
+
+    /** Subscribes to the ResourceStopped event */
+    onResourceStopped(callback: (arg: ResourceStoppedEvent) => Promise<void>): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._promise.then(obj => obj.onResourceStopped(callback)));
+    }
+
+    /** Subscribes to the InitializeResource event */
+    onInitializeResource(callback: (arg: InitializeResourceEvent) => Promise<void>): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._promise.then(obj => obj.onInitializeResource(callback)));
+    }
+
+    /** Subscribes to the ResourceEndpointsAllocated event */
+    onResourceEndpointsAllocated(callback: (arg: ResourceEndpointsAllocatedEvent) => Promise<void>): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._promise.then(obj => obj.onResourceEndpointsAllocated(callback)));
+    }
+
+    /** Subscribes to the ResourceReady event */
+    onResourceReady(callback: (arg: ResourceReadyEvent) => Promise<void>): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._promise.then(obj => obj.onResourceReady(callback)));
+    }
+
+    /** Configures npm as the package manager */
+    withNpm(options?: WithNpmOptions): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._promise.then(obj => obj.withNpm(options)));
+    }
+
+    /** Configures Bun as the package manager */
+    withBun(options?: WithBunOptions): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._promise.then(obj => obj.withBun(options)));
+    }
+
+    /** Configures yarn as the package manager */
+    withYarn(options?: WithYarnOptions): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._promise.then(obj => obj.withYarn(options)));
+    }
+
+    /** Configures pnpm as the package manager */
+    withPnpm(options?: WithPnpmOptions): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._promise.then(obj => obj.withPnpm(options)));
+    }
+
+    /** Specifies an npm script to run before starting the application */
+    withBuildScript(scriptName: string, options?: WithBuildScriptOptions): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._promise.then(obj => obj.withBuildScript(scriptName, options)));
+    }
+
+    /** Specifies an npm script to run during development */
+    withRunScript(scriptName: string, options?: WithRunScriptOptions): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._promise.then(obj => obj.withRunScript(scriptName, options)));
+    }
+
+    /** Configures a browser debugger for the JavaScript application */
+    withBrowserDebugger(options?: WithBrowserDebuggerOptions): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._promise.then(obj => obj.withBrowserDebugger(options)));
     }
 
 }
@@ -9524,6 +14478,15 @@ export class MySqlDatabaseResource extends ResourceBuilderBase<MySqlDatabaseReso
     /** Adds a connection property with a string value */
     withConnectionPropertyValue(name: string, value: string): MySqlDatabaseResourcePromise {
         return new MySqlDatabaseResourcePromise(this._withConnectionPropertyValueInternal(name, value));
+    }
+
+    /** Gets a connection property by key */
+    async getConnectionProperty(key: string): Promise<ReferenceExpression> {
+        const rpcArgs: Record<string, unknown> = { resource: this._handle, key };
+        return await this._client.invokeCapability<ReferenceExpression>(
+            'Aspire.Hosting/getConnectionProperty',
+            rpcArgs
+        );
     }
 
     /** @internal */
@@ -9690,7 +14653,7 @@ export class MySqlDatabaseResource extends ResourceBuilderBase<MySqlDatabaseReso
     private async _withParentRelationshipInternal(parent: ResourceBuilderBase): Promise<MySqlDatabaseResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, parent };
         const result = await this._client.invokeCapability<MySqlDatabaseResourceHandle>(
-            'Aspire.Hosting/withParentRelationship',
+            'Aspire.Hosting/withBuilderParentRelationship',
             rpcArgs
         );
         return new MySqlDatabaseResource(result, this._client);
@@ -9705,7 +14668,7 @@ export class MySqlDatabaseResource extends ResourceBuilderBase<MySqlDatabaseReso
     private async _withChildRelationshipInternal(child: ResourceBuilderBase): Promise<MySqlDatabaseResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, child };
         const result = await this._client.invokeCapability<MySqlDatabaseResourceHandle>(
-            'Aspire.Hosting/withChildRelationship',
+            'Aspire.Hosting/withBuilderChildRelationship',
             rpcArgs
         );
         return new MySqlDatabaseResource(result, this._client);
@@ -9746,36 +14709,6 @@ export class MySqlDatabaseResource extends ResourceBuilderBase<MySqlDatabaseReso
     /** Excludes the resource from MCP server exposure */
     excludeFromMcp(): MySqlDatabaseResourcePromise {
         return new MySqlDatabaseResourcePromise(this._excludeFromMcpInternal());
-    }
-
-    /** @internal */
-    private async _withRemoteImageNameInternal(remoteImageName: string): Promise<MySqlDatabaseResource> {
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, remoteImageName };
-        const result = await this._client.invokeCapability<MySqlDatabaseResourceHandle>(
-            'Aspire.Hosting/withRemoteImageName',
-            rpcArgs
-        );
-        return new MySqlDatabaseResource(result, this._client);
-    }
-
-    /** Sets the remote image name for publishing */
-    withRemoteImageName(remoteImageName: string): MySqlDatabaseResourcePromise {
-        return new MySqlDatabaseResourcePromise(this._withRemoteImageNameInternal(remoteImageName));
-    }
-
-    /** @internal */
-    private async _withRemoteImageTagInternal(remoteImageTag: string): Promise<MySqlDatabaseResource> {
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, remoteImageTag };
-        const result = await this._client.invokeCapability<MySqlDatabaseResourceHandle>(
-            'Aspire.Hosting/withRemoteImageTag',
-            rpcArgs
-        );
-        return new MySqlDatabaseResource(result, this._client);
-    }
-
-    /** Sets the remote image tag for publishing */
-    withRemoteImageTag(remoteImageTag: string): MySqlDatabaseResourcePromise {
-        return new MySqlDatabaseResourcePromise(this._withRemoteImageTagInternal(remoteImageTag));
     }
 
     /** @internal */
@@ -9856,6 +14789,106 @@ export class MySqlDatabaseResource extends ResourceBuilderBase<MySqlDatabaseReso
     }
 
     /** @internal */
+    private async _onBeforeResourceStartedInternal(callback: (arg: BeforeResourceStartedEvent) => Promise<void>): Promise<MySqlDatabaseResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as BeforeResourceStartedEventHandle;
+            const arg = new BeforeResourceStartedEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<MySqlDatabaseResourceHandle>(
+            'Aspire.Hosting/onBeforeResourceStarted',
+            rpcArgs
+        );
+        return new MySqlDatabaseResource(result, this._client);
+    }
+
+    /** Subscribes to the BeforeResourceStarted event */
+    onBeforeResourceStarted(callback: (arg: BeforeResourceStartedEvent) => Promise<void>): MySqlDatabaseResourcePromise {
+        return new MySqlDatabaseResourcePromise(this._onBeforeResourceStartedInternal(callback));
+    }
+
+    /** @internal */
+    private async _onResourceStoppedInternal(callback: (arg: ResourceStoppedEvent) => Promise<void>): Promise<MySqlDatabaseResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ResourceStoppedEventHandle;
+            const arg = new ResourceStoppedEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<MySqlDatabaseResourceHandle>(
+            'Aspire.Hosting/onResourceStopped',
+            rpcArgs
+        );
+        return new MySqlDatabaseResource(result, this._client);
+    }
+
+    /** Subscribes to the ResourceStopped event */
+    onResourceStopped(callback: (arg: ResourceStoppedEvent) => Promise<void>): MySqlDatabaseResourcePromise {
+        return new MySqlDatabaseResourcePromise(this._onResourceStoppedInternal(callback));
+    }
+
+    /** @internal */
+    private async _onConnectionStringAvailableInternal(callback: (arg: ConnectionStringAvailableEvent) => Promise<void>): Promise<MySqlDatabaseResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ConnectionStringAvailableEventHandle;
+            const arg = new ConnectionStringAvailableEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<MySqlDatabaseResourceHandle>(
+            'Aspire.Hosting/onConnectionStringAvailable',
+            rpcArgs
+        );
+        return new MySqlDatabaseResource(result, this._client);
+    }
+
+    /** Subscribes to the ConnectionStringAvailable event */
+    onConnectionStringAvailable(callback: (arg: ConnectionStringAvailableEvent) => Promise<void>): MySqlDatabaseResourcePromise {
+        return new MySqlDatabaseResourcePromise(this._onConnectionStringAvailableInternal(callback));
+    }
+
+    /** @internal */
+    private async _onInitializeResourceInternal(callback: (arg: InitializeResourceEvent) => Promise<void>): Promise<MySqlDatabaseResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as InitializeResourceEventHandle;
+            const arg = new InitializeResourceEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<MySqlDatabaseResourceHandle>(
+            'Aspire.Hosting/onInitializeResource',
+            rpcArgs
+        );
+        return new MySqlDatabaseResource(result, this._client);
+    }
+
+    /** Subscribes to the InitializeResource event */
+    onInitializeResource(callback: (arg: InitializeResourceEvent) => Promise<void>): MySqlDatabaseResourcePromise {
+        return new MySqlDatabaseResourcePromise(this._onInitializeResourceInternal(callback));
+    }
+
+    /** @internal */
+    private async _onResourceReadyInternal(callback: (arg: ResourceReadyEvent) => Promise<void>): Promise<MySqlDatabaseResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ResourceReadyEventHandle;
+            const arg = new ResourceReadyEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<MySqlDatabaseResourceHandle>(
+            'Aspire.Hosting/onResourceReady',
+            rpcArgs
+        );
+        return new MySqlDatabaseResource(result, this._client);
+    }
+
+    /** Subscribes to the ResourceReady event */
+    onResourceReady(callback: (arg: ResourceReadyEvent) => Promise<void>): MySqlDatabaseResourcePromise {
+        return new MySqlDatabaseResourcePromise(this._onResourceReadyInternal(callback));
+    }
+
+    /** @internal */
     private async _withCreationScriptInternal(script: string): Promise<MySqlDatabaseResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, script };
         const result = await this._client.invokeCapability<MySqlDatabaseResourceHandle>(
@@ -9910,6 +14943,11 @@ export class MySqlDatabaseResourcePromise implements PromiseLike<MySqlDatabaseRe
     /** Adds a connection property with a string value */
     withConnectionPropertyValue(name: string, value: string): MySqlDatabaseResourcePromise {
         return new MySqlDatabaseResourcePromise(this._promise.then(obj => obj.withConnectionPropertyValue(name, value)));
+    }
+
+    /** Gets a connection property by key */
+    getConnectionProperty(key: string): Promise<ReferenceExpression> {
+        return this._promise.then(obj => obj.getConnectionProperty(key));
     }
 
     /** Customizes displayed URLs via callback */
@@ -9977,16 +15015,6 @@ export class MySqlDatabaseResourcePromise implements PromiseLike<MySqlDatabaseRe
         return new MySqlDatabaseResourcePromise(this._promise.then(obj => obj.excludeFromMcp()));
     }
 
-    /** Sets the remote image name for publishing */
-    withRemoteImageName(remoteImageName: string): MySqlDatabaseResourcePromise {
-        return new MySqlDatabaseResourcePromise(this._promise.then(obj => obj.withRemoteImageName(remoteImageName)));
-    }
-
-    /** Sets the remote image tag for publishing */
-    withRemoteImageTag(remoteImageTag: string): MySqlDatabaseResourcePromise {
-        return new MySqlDatabaseResourcePromise(this._promise.then(obj => obj.withRemoteImageTag(remoteImageTag)));
-    }
-
     /** Adds a pipeline step to the resource */
     withPipelineStepFactory(stepName: string, callback: (arg: PipelineStepContext) => Promise<void>, options?: WithPipelineStepFactoryOptions): MySqlDatabaseResourcePromise {
         return new MySqlDatabaseResourcePromise(this._promise.then(obj => obj.withPipelineStepFactory(stepName, callback, options)));
@@ -10005,6 +15033,31 @@ export class MySqlDatabaseResourcePromise implements PromiseLike<MySqlDatabaseRe
     /** Gets the resource name */
     getResourceName(): Promise<string> {
         return this._promise.then(obj => obj.getResourceName());
+    }
+
+    /** Subscribes to the BeforeResourceStarted event */
+    onBeforeResourceStarted(callback: (arg: BeforeResourceStartedEvent) => Promise<void>): MySqlDatabaseResourcePromise {
+        return new MySqlDatabaseResourcePromise(this._promise.then(obj => obj.onBeforeResourceStarted(callback)));
+    }
+
+    /** Subscribes to the ResourceStopped event */
+    onResourceStopped(callback: (arg: ResourceStoppedEvent) => Promise<void>): MySqlDatabaseResourcePromise {
+        return new MySqlDatabaseResourcePromise(this._promise.then(obj => obj.onResourceStopped(callback)));
+    }
+
+    /** Subscribes to the ConnectionStringAvailable event */
+    onConnectionStringAvailable(callback: (arg: ConnectionStringAvailableEvent) => Promise<void>): MySqlDatabaseResourcePromise {
+        return new MySqlDatabaseResourcePromise(this._promise.then(obj => obj.onConnectionStringAvailable(callback)));
+    }
+
+    /** Subscribes to the InitializeResource event */
+    onInitializeResource(callback: (arg: InitializeResourceEvent) => Promise<void>): MySqlDatabaseResourcePromise {
+        return new MySqlDatabaseResourcePromise(this._promise.then(obj => obj.onInitializeResource(callback)));
+    }
+
+    /** Subscribes to the ResourceReady event */
+    onResourceReady(callback: (arg: ResourceReadyEvent) => Promise<void>): MySqlDatabaseResourcePromise {
+        return new MySqlDatabaseResourcePromise(this._promise.then(obj => obj.onResourceReady(callback)));
     }
 
     /** Defines the SQL script for database creation */
@@ -10053,6 +15106,17 @@ export class MySqlServerResource extends ResourceBuilderBase<MySqlServerResource
                 { context: this._handle }
             );
             return new EndpointReferenceExpression(handle, this._client);
+        },
+    };
+
+    /** Gets the PasswordParameter property */
+    passwordParameter = {
+        get: async (): Promise<ParameterResource> => {
+            const handle = await this._client.invokeCapability<ParameterResourceHandle>(
+                'Aspire.Hosting.ApplicationModel/MySqlServerResource.passwordParameter',
+                { context: this._handle }
+            );
+            return new ParameterResource(handle, this._client);
         },
     };
 
@@ -10349,7 +15413,7 @@ export class MySqlServerResource extends ResourceBuilderBase<MySqlServerResource
     private async _withBuildArgInternal(name: string, value: ParameterResource): Promise<MySqlServerResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, name, value };
         const result = await this._client.invokeCapability<MySqlServerResourceHandle>(
-            'Aspire.Hosting/withBuildArg',
+            'Aspire.Hosting/withParameterBuildArg',
             rpcArgs
         );
         return new MySqlServerResource(result, this._client);
@@ -10364,7 +15428,7 @@ export class MySqlServerResource extends ResourceBuilderBase<MySqlServerResource
     private async _withBuildSecretInternal(name: string, value: ParameterResource): Promise<MySqlServerResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, name, value };
         const result = await this._client.invokeCapability<MySqlServerResourceHandle>(
-            'Aspire.Hosting/withBuildSecret',
+            'Aspire.Hosting/withParameterBuildSecret',
             rpcArgs
         );
         return new MySqlServerResource(result, this._client);
@@ -10506,41 +15570,11 @@ export class MySqlServerResource extends ResourceBuilderBase<MySqlServerResource
     }
 
     /** @internal */
-    private async _withEnvironmentInternal(name: string, value: string): Promise<MySqlServerResource> {
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, name, value };
-        const result = await this._client.invokeCapability<MySqlServerResourceHandle>(
-            'Aspire.Hosting/withEnvironment',
-            rpcArgs
-        );
-        return new MySqlServerResource(result, this._client);
-    }
-
-    /** Sets an environment variable */
-    withEnvironment(name: string, value: string): MySqlServerResourcePromise {
-        return new MySqlServerResourcePromise(this._withEnvironmentInternal(name, value));
-    }
-
-    /** @internal */
-    private async _withEnvironmentExpressionInternal(name: string, value: ReferenceExpression): Promise<MySqlServerResource> {
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, name, value };
-        const result = await this._client.invokeCapability<MySqlServerResourceHandle>(
-            'Aspire.Hosting/withEnvironmentExpression',
-            rpcArgs
-        );
-        return new MySqlServerResource(result, this._client);
-    }
-
-    /** Adds an environment variable with a reference expression */
-    withEnvironmentExpression(name: string, value: ReferenceExpression): MySqlServerResourcePromise {
-        return new MySqlServerResourcePromise(this._withEnvironmentExpressionInternal(name, value));
-    }
-
-    /** @internal */
-    private async _withEnvironmentCallbackInternal(callback: (obj: EnvironmentCallbackContext) => Promise<void>): Promise<MySqlServerResource> {
-        const callbackId = registerCallback(async (objData: unknown) => {
-            const objHandle = wrapIfHandle(objData) as EnvironmentCallbackContextHandle;
-            const obj = new EnvironmentCallbackContext(objHandle, this._client);
-            await callback(obj);
+    private async _withEnvironmentCallbackInternal(callback: (arg: EnvironmentCallbackContext) => Promise<void>): Promise<MySqlServerResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as EnvironmentCallbackContextHandle;
+            const arg = new EnvironmentCallbackContext(argHandle, this._client);
+            await callback(arg);
         });
         const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
         const result = await this._client.invokeCapability<MySqlServerResourceHandle>(
@@ -10551,28 +15585,8 @@ export class MySqlServerResource extends ResourceBuilderBase<MySqlServerResource
     }
 
     /** Sets environment variables via callback */
-    withEnvironmentCallback(callback: (obj: EnvironmentCallbackContext) => Promise<void>): MySqlServerResourcePromise {
+    withEnvironmentCallback(callback: (arg: EnvironmentCallbackContext) => Promise<void>): MySqlServerResourcePromise {
         return new MySqlServerResourcePromise(this._withEnvironmentCallbackInternal(callback));
-    }
-
-    /** @internal */
-    private async _withEnvironmentCallbackAsyncInternal(callback: (arg: EnvironmentCallbackContext) => Promise<void>): Promise<MySqlServerResource> {
-        const callbackId = registerCallback(async (argData: unknown) => {
-            const argHandle = wrapIfHandle(argData) as EnvironmentCallbackContextHandle;
-            const arg = new EnvironmentCallbackContext(argHandle, this._client);
-            await callback(arg);
-        });
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
-        const result = await this._client.invokeCapability<MySqlServerResourceHandle>(
-            'Aspire.Hosting/withEnvironmentCallbackAsync',
-            rpcArgs
-        );
-        return new MySqlServerResource(result, this._client);
-    }
-
-    /** Sets environment variables via async callback */
-    withEnvironmentCallbackAsync(callback: (arg: EnvironmentCallbackContext) => Promise<void>): MySqlServerResourcePromise {
-        return new MySqlServerResourcePromise(this._withEnvironmentCallbackAsyncInternal(callback));
     }
 
     /** @internal */
@@ -10588,6 +15602,21 @@ export class MySqlServerResource extends ResourceBuilderBase<MySqlServerResource
     /** Sets an environment variable from an endpoint reference */
     withEnvironmentEndpoint(name: string, endpointReference: EndpointReference): MySqlServerResourcePromise {
         return new MySqlServerResourcePromise(this._withEnvironmentEndpointInternal(name, endpointReference));
+    }
+
+    /** @internal */
+    private async _withEnvironmentInternal(name: string, value: string | ReferenceExpression | EndpointReference | ParameterResource | ResourceWithConnectionString): Promise<MySqlServerResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, name, value };
+        const result = await this._client.invokeCapability<MySqlServerResourceHandle>(
+            'Aspire.Hosting/withEnvironment',
+            rpcArgs
+        );
+        return new MySqlServerResource(result, this._client);
+    }
+
+    /** Sets an environment variable on the resource */
+    withEnvironment(name: string, value: string | ReferenceExpression | EndpointReference | ParameterResource | ResourceWithConnectionString): MySqlServerResourcePromise {
+        return new MySqlServerResourcePromise(this._withEnvironmentInternal(name, value));
     }
 
     /** @internal */
@@ -10706,10 +15735,11 @@ export class MySqlServerResource extends ResourceBuilderBase<MySqlServerResource
     }
 
     /** @internal */
-    private async _withReferenceInternal(source: ResourceBuilderBase, connectionName?: string, optional?: boolean): Promise<MySqlServerResource> {
+    private async _withReferenceInternal(source: ResourceBuilderBase, connectionName?: string, optional?: boolean, name?: string): Promise<MySqlServerResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, source };
         if (connectionName !== undefined) rpcArgs.connectionName = connectionName;
         if (optional !== undefined) rpcArgs.optional = optional;
+        if (name !== undefined) rpcArgs.name = name;
         const result = await this._client.invokeCapability<MySqlServerResourceHandle>(
             'Aspire.Hosting/withReference',
             rpcArgs
@@ -10721,37 +15751,17 @@ export class MySqlServerResource extends ResourceBuilderBase<MySqlServerResource
     withReference(source: ResourceBuilderBase, options?: WithReferenceOptions): MySqlServerResourcePromise {
         const connectionName = options?.connectionName;
         const optional = options?.optional;
-        return new MySqlServerResourcePromise(this._withReferenceInternal(source, connectionName, optional));
+        const name = options?.name;
+        return new MySqlServerResourcePromise(this._withReferenceInternal(source, connectionName, optional, name));
     }
 
-    /** @internal */
-    private async _withServiceReferenceInternal(source: ResourceBuilderBase): Promise<MySqlServerResource> {
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, source };
-        const result = await this._client.invokeCapability<MySqlServerResourceHandle>(
-            'Aspire.Hosting/withServiceReference',
+    /** Gets a connection property by key */
+    async getConnectionProperty(key: string): Promise<ReferenceExpression> {
+        const rpcArgs: Record<string, unknown> = { resource: this._handle, key };
+        return await this._client.invokeCapability<ReferenceExpression>(
+            'Aspire.Hosting/getConnectionProperty',
             rpcArgs
         );
-        return new MySqlServerResource(result, this._client);
-    }
-
-    /** Adds a service discovery reference to another resource */
-    withServiceReference(source: ResourceBuilderBase): MySqlServerResourcePromise {
-        return new MySqlServerResourcePromise(this._withServiceReferenceInternal(source));
-    }
-
-    /** @internal */
-    private async _withServiceReferenceNamedInternal(source: ResourceBuilderBase, name: string): Promise<MySqlServerResource> {
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, source, name };
-        const result = await this._client.invokeCapability<MySqlServerResourceHandle>(
-            'Aspire.Hosting/withServiceReferenceNamed',
-            rpcArgs
-        );
-        return new MySqlServerResource(result, this._client);
-    }
-
-    /** Adds a named service discovery reference */
-    withServiceReferenceNamed(source: ResourceBuilderBase, name: string): MySqlServerResourcePromise {
-        return new MySqlServerResourcePromise(this._withServiceReferenceNamedInternal(source, name));
     }
 
     /** @internal */
@@ -11051,7 +16061,7 @@ export class MySqlServerResource extends ResourceBuilderBase<MySqlServerResource
     private async _waitForInternal(dependency: ResourceBuilderBase): Promise<MySqlServerResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, dependency };
         const result = await this._client.invokeCapability<MySqlServerResourceHandle>(
-            'Aspire.Hosting/waitFor',
+            'Aspire.Hosting/waitForResource',
             rpcArgs
         );
         return new MySqlServerResource(result, this._client);
@@ -11081,7 +16091,7 @@ export class MySqlServerResource extends ResourceBuilderBase<MySqlServerResource
     private async _waitForStartInternal(dependency: ResourceBuilderBase): Promise<MySqlServerResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, dependency };
         const result = await this._client.invokeCapability<MySqlServerResourceHandle>(
-            'Aspire.Hosting/waitForStart',
+            'Aspire.Hosting/waitForResourceStart',
             rpcArgs
         );
         return new MySqlServerResource(result, this._client);
@@ -11127,7 +16137,7 @@ export class MySqlServerResource extends ResourceBuilderBase<MySqlServerResource
         const rpcArgs: Record<string, unknown> = { builder: this._handle, dependency };
         if (exitCode !== undefined) rpcArgs.exitCode = exitCode;
         const result = await this._client.invokeCapability<MySqlServerResourceHandle>(
-            'Aspire.Hosting/waitForCompletion',
+            'Aspire.Hosting/waitForResourceCompletion',
             rpcArgs
         );
         return new MySqlServerResource(result, this._client);
@@ -11232,7 +16242,7 @@ export class MySqlServerResource extends ResourceBuilderBase<MySqlServerResource
         const rpcArgs: Record<string, unknown> = { builder: this._handle };
         if (password !== undefined) rpcArgs.password = password;
         const result = await this._client.invokeCapability<MySqlServerResourceHandle>(
-            'Aspire.Hosting/withHttpsDeveloperCertificate',
+            'Aspire.Hosting/withParameterHttpsDeveloperCertificate',
             rpcArgs
         );
         return new MySqlServerResource(result, this._client);
@@ -11263,7 +16273,7 @@ export class MySqlServerResource extends ResourceBuilderBase<MySqlServerResource
     private async _withParentRelationshipInternal(parent: ResourceBuilderBase): Promise<MySqlServerResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, parent };
         const result = await this._client.invokeCapability<MySqlServerResourceHandle>(
-            'Aspire.Hosting/withParentRelationship',
+            'Aspire.Hosting/withBuilderParentRelationship',
             rpcArgs
         );
         return new MySqlServerResource(result, this._client);
@@ -11278,7 +16288,7 @@ export class MySqlServerResource extends ResourceBuilderBase<MySqlServerResource
     private async _withChildRelationshipInternal(child: ResourceBuilderBase): Promise<MySqlServerResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, child };
         const result = await this._client.invokeCapability<MySqlServerResourceHandle>(
-            'Aspire.Hosting/withChildRelationship',
+            'Aspire.Hosting/withBuilderChildRelationship',
             rpcArgs
         );
         return new MySqlServerResource(result, this._client);
@@ -11474,6 +16484,126 @@ export class MySqlServerResource extends ResourceBuilderBase<MySqlServerResource
             'Aspire.Hosting/getResourceName',
             rpcArgs
         );
+    }
+
+    /** @internal */
+    private async _onBeforeResourceStartedInternal(callback: (arg: BeforeResourceStartedEvent) => Promise<void>): Promise<MySqlServerResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as BeforeResourceStartedEventHandle;
+            const arg = new BeforeResourceStartedEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<MySqlServerResourceHandle>(
+            'Aspire.Hosting/onBeforeResourceStarted',
+            rpcArgs
+        );
+        return new MySqlServerResource(result, this._client);
+    }
+
+    /** Subscribes to the BeforeResourceStarted event */
+    onBeforeResourceStarted(callback: (arg: BeforeResourceStartedEvent) => Promise<void>): MySqlServerResourcePromise {
+        return new MySqlServerResourcePromise(this._onBeforeResourceStartedInternal(callback));
+    }
+
+    /** @internal */
+    private async _onResourceStoppedInternal(callback: (arg: ResourceStoppedEvent) => Promise<void>): Promise<MySqlServerResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ResourceStoppedEventHandle;
+            const arg = new ResourceStoppedEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<MySqlServerResourceHandle>(
+            'Aspire.Hosting/onResourceStopped',
+            rpcArgs
+        );
+        return new MySqlServerResource(result, this._client);
+    }
+
+    /** Subscribes to the ResourceStopped event */
+    onResourceStopped(callback: (arg: ResourceStoppedEvent) => Promise<void>): MySqlServerResourcePromise {
+        return new MySqlServerResourcePromise(this._onResourceStoppedInternal(callback));
+    }
+
+    /** @internal */
+    private async _onConnectionStringAvailableInternal(callback: (arg: ConnectionStringAvailableEvent) => Promise<void>): Promise<MySqlServerResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ConnectionStringAvailableEventHandle;
+            const arg = new ConnectionStringAvailableEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<MySqlServerResourceHandle>(
+            'Aspire.Hosting/onConnectionStringAvailable',
+            rpcArgs
+        );
+        return new MySqlServerResource(result, this._client);
+    }
+
+    /** Subscribes to the ConnectionStringAvailable event */
+    onConnectionStringAvailable(callback: (arg: ConnectionStringAvailableEvent) => Promise<void>): MySqlServerResourcePromise {
+        return new MySqlServerResourcePromise(this._onConnectionStringAvailableInternal(callback));
+    }
+
+    /** @internal */
+    private async _onInitializeResourceInternal(callback: (arg: InitializeResourceEvent) => Promise<void>): Promise<MySqlServerResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as InitializeResourceEventHandle;
+            const arg = new InitializeResourceEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<MySqlServerResourceHandle>(
+            'Aspire.Hosting/onInitializeResource',
+            rpcArgs
+        );
+        return new MySqlServerResource(result, this._client);
+    }
+
+    /** Subscribes to the InitializeResource event */
+    onInitializeResource(callback: (arg: InitializeResourceEvent) => Promise<void>): MySqlServerResourcePromise {
+        return new MySqlServerResourcePromise(this._onInitializeResourceInternal(callback));
+    }
+
+    /** @internal */
+    private async _onResourceEndpointsAllocatedInternal(callback: (arg: ResourceEndpointsAllocatedEvent) => Promise<void>): Promise<MySqlServerResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ResourceEndpointsAllocatedEventHandle;
+            const arg = new ResourceEndpointsAllocatedEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<MySqlServerResourceHandle>(
+            'Aspire.Hosting/onResourceEndpointsAllocated',
+            rpcArgs
+        );
+        return new MySqlServerResource(result, this._client);
+    }
+
+    /** Subscribes to the ResourceEndpointsAllocated event */
+    onResourceEndpointsAllocated(callback: (arg: ResourceEndpointsAllocatedEvent) => Promise<void>): MySqlServerResourcePromise {
+        return new MySqlServerResourcePromise(this._onResourceEndpointsAllocatedInternal(callback));
+    }
+
+    /** @internal */
+    private async _onResourceReadyInternal(callback: (arg: ResourceReadyEvent) => Promise<void>): Promise<MySqlServerResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ResourceReadyEventHandle;
+            const arg = new ResourceReadyEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<MySqlServerResourceHandle>(
+            'Aspire.Hosting/onResourceReady',
+            rpcArgs
+        );
+        return new MySqlServerResource(result, this._client);
+    }
+
+    /** Subscribes to the ResourceReady event */
+    onResourceReady(callback: (arg: ResourceReadyEvent) => Promise<void>): MySqlServerResourcePromise {
+        return new MySqlServerResourcePromise(this._onResourceReadyInternal(callback));
     }
 
     /** @internal */
@@ -11715,29 +16845,19 @@ export class MySqlServerResourcePromise implements PromiseLike<MySqlServerResour
         return new MySqlServerResourcePromise(this._promise.then(obj => obj.withRequiredCommand(command, options)));
     }
 
-    /** Sets an environment variable */
-    withEnvironment(name: string, value: string): MySqlServerResourcePromise {
-        return new MySqlServerResourcePromise(this._promise.then(obj => obj.withEnvironment(name, value)));
-    }
-
-    /** Adds an environment variable with a reference expression */
-    withEnvironmentExpression(name: string, value: ReferenceExpression): MySqlServerResourcePromise {
-        return new MySqlServerResourcePromise(this._promise.then(obj => obj.withEnvironmentExpression(name, value)));
-    }
-
     /** Sets environment variables via callback */
-    withEnvironmentCallback(callback: (obj: EnvironmentCallbackContext) => Promise<void>): MySqlServerResourcePromise {
+    withEnvironmentCallback(callback: (arg: EnvironmentCallbackContext) => Promise<void>): MySqlServerResourcePromise {
         return new MySqlServerResourcePromise(this._promise.then(obj => obj.withEnvironmentCallback(callback)));
-    }
-
-    /** Sets environment variables via async callback */
-    withEnvironmentCallbackAsync(callback: (arg: EnvironmentCallbackContext) => Promise<void>): MySqlServerResourcePromise {
-        return new MySqlServerResourcePromise(this._promise.then(obj => obj.withEnvironmentCallbackAsync(callback)));
     }
 
     /** Sets an environment variable from an endpoint reference */
     withEnvironmentEndpoint(name: string, endpointReference: EndpointReference): MySqlServerResourcePromise {
         return new MySqlServerResourcePromise(this._promise.then(obj => obj.withEnvironmentEndpoint(name, endpointReference)));
+    }
+
+    /** Sets an environment variable on the resource */
+    withEnvironment(name: string, value: string | ReferenceExpression | EndpointReference | ParameterResource | ResourceWithConnectionString): MySqlServerResourcePromise {
+        return new MySqlServerResourcePromise(this._promise.then(obj => obj.withEnvironment(name, value)));
     }
 
     /** Sets an environment variable from a parameter resource */
@@ -11780,14 +16900,9 @@ export class MySqlServerResourcePromise implements PromiseLike<MySqlServerResour
         return new MySqlServerResourcePromise(this._promise.then(obj => obj.withReference(source, options)));
     }
 
-    /** Adds a service discovery reference to another resource */
-    withServiceReference(source: ResourceBuilderBase): MySqlServerResourcePromise {
-        return new MySqlServerResourcePromise(this._promise.then(obj => obj.withServiceReference(source)));
-    }
-
-    /** Adds a named service discovery reference */
-    withServiceReferenceNamed(source: ResourceBuilderBase, name: string): MySqlServerResourcePromise {
-        return new MySqlServerResourcePromise(this._promise.then(obj => obj.withServiceReferenceNamed(source, name)));
+    /** Gets a connection property by key */
+    getConnectionProperty(key: string): Promise<ReferenceExpression> {
+        return this._promise.then(obj => obj.getConnectionProperty(key));
     }
 
     /** Adds a reference to a URI */
@@ -11995,6 +17110,36 @@ export class MySqlServerResourcePromise implements PromiseLike<MySqlServerResour
         return this._promise.then(obj => obj.getResourceName());
     }
 
+    /** Subscribes to the BeforeResourceStarted event */
+    onBeforeResourceStarted(callback: (arg: BeforeResourceStartedEvent) => Promise<void>): MySqlServerResourcePromise {
+        return new MySqlServerResourcePromise(this._promise.then(obj => obj.onBeforeResourceStarted(callback)));
+    }
+
+    /** Subscribes to the ResourceStopped event */
+    onResourceStopped(callback: (arg: ResourceStoppedEvent) => Promise<void>): MySqlServerResourcePromise {
+        return new MySqlServerResourcePromise(this._promise.then(obj => obj.onResourceStopped(callback)));
+    }
+
+    /** Subscribes to the ConnectionStringAvailable event */
+    onConnectionStringAvailable(callback: (arg: ConnectionStringAvailableEvent) => Promise<void>): MySqlServerResourcePromise {
+        return new MySqlServerResourcePromise(this._promise.then(obj => obj.onConnectionStringAvailable(callback)));
+    }
+
+    /** Subscribes to the InitializeResource event */
+    onInitializeResource(callback: (arg: InitializeResourceEvent) => Promise<void>): MySqlServerResourcePromise {
+        return new MySqlServerResourcePromise(this._promise.then(obj => obj.onInitializeResource(callback)));
+    }
+
+    /** Subscribes to the ResourceEndpointsAllocated event */
+    onResourceEndpointsAllocated(callback: (arg: ResourceEndpointsAllocatedEvent) => Promise<void>): MySqlServerResourcePromise {
+        return new MySqlServerResourcePromise(this._promise.then(obj => obj.onResourceEndpointsAllocated(callback)));
+    }
+
+    /** Subscribes to the ResourceReady event */
+    onResourceReady(callback: (arg: ResourceReadyEvent) => Promise<void>): MySqlServerResourcePromise {
+        return new MySqlServerResourcePromise(this._promise.then(obj => obj.onResourceReady(callback)));
+    }
+
     /** Adds a MySQL database */
     addDatabase(name: string, options?: AddDatabaseOptions): MySqlDatabaseResourcePromise {
         return new MySqlDatabaseResourcePromise(this._promise.then(obj => obj.addDatabase(name, options)));
@@ -12023,6 +17168,1732 @@ export class MySqlServerResourcePromise implements PromiseLike<MySqlServerResour
     /** Copies init files to MySQL */
     withInitFiles(source: string): MySqlServerResourcePromise {
         return new MySqlServerResourcePromise(this._promise.then(obj => obj.withInitFiles(source)));
+    }
+
+}
+
+// ============================================================================
+// NodeAppResource
+// ============================================================================
+
+export class NodeAppResource extends ResourceBuilderBase<NodeAppResourceHandle> {
+    constructor(handle: NodeAppResourceHandle, client: AspireClientRpc) {
+        super(handle, client);
+    }
+
+    /** Gets the Command property */
+    command = {
+        get: async (): Promise<string> => {
+            return await this._client.invokeCapability<string>(
+                'Aspire.Hosting.JavaScript/JavaScriptAppResource.command',
+                { context: this._handle }
+            );
+        },
+    };
+
+    /** Gets the WorkingDirectory property */
+    workingDirectory = {
+        get: async (): Promise<string> => {
+            return await this._client.invokeCapability<string>(
+                'Aspire.Hosting.JavaScript/JavaScriptAppResource.workingDirectory',
+                { context: this._handle }
+            );
+        },
+    };
+
+    /** Gets the Name property */
+    name = {
+        get: async (): Promise<string> => {
+            return await this._client.invokeCapability<string>(
+                'Aspire.Hosting.JavaScript/JavaScriptAppResource.name',
+                { context: this._handle }
+            );
+        },
+    };
+
+    /** @internal */
+    private async _withContainerRegistryInternal(registry: ResourceBuilderBase): Promise<NodeAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, registry };
+        const result = await this._client.invokeCapability<NodeAppResourceHandle>(
+            'Aspire.Hosting/withContainerRegistry',
+            rpcArgs
+        );
+        return new NodeAppResource(result, this._client);
+    }
+
+    /** Configures a resource to use a container registry */
+    withContainerRegistry(registry: ResourceBuilderBase): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._withContainerRegistryInternal(registry));
+    }
+
+    /** @internal */
+    private async _withDockerfileBaseImageInternal(buildImage?: string, runtimeImage?: string): Promise<NodeAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle };
+        if (buildImage !== undefined) rpcArgs.buildImage = buildImage;
+        if (runtimeImage !== undefined) rpcArgs.runtimeImage = runtimeImage;
+        const result = await this._client.invokeCapability<NodeAppResourceHandle>(
+            'Aspire.Hosting/withDockerfileBaseImage',
+            rpcArgs
+        );
+        return new NodeAppResource(result, this._client);
+    }
+
+    /** Sets the base image for a Dockerfile build */
+    withDockerfileBaseImage(options?: WithDockerfileBaseImageOptions): NodeAppResourcePromise {
+        const buildImage = options?.buildImage;
+        const runtimeImage = options?.runtimeImage;
+        return new NodeAppResourcePromise(this._withDockerfileBaseImageInternal(buildImage, runtimeImage));
+    }
+
+    /** @internal */
+    private async _publishAsDockerFileInternal(): Promise<NodeAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle };
+        const result = await this._client.invokeCapability<NodeAppResourceHandle>(
+            'Aspire.Hosting/publishAsDockerFile',
+            rpcArgs
+        );
+        return new NodeAppResource(result, this._client);
+    }
+
+    /** Publishes the executable as a Docker container */
+    publishAsDockerFile(): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._publishAsDockerFileInternal());
+    }
+
+    /** @internal */
+    private async _publishAsDockerFileWithConfigureInternal(configure: (obj: ContainerResource) => Promise<void>): Promise<NodeAppResource> {
+        const configureId = registerCallback(async (objData: unknown) => {
+            const objHandle = wrapIfHandle(objData) as ContainerResourceHandle;
+            const obj = new ContainerResource(objHandle, this._client);
+            await configure(obj);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, configure: configureId };
+        const result = await this._client.invokeCapability<NodeAppResourceHandle>(
+            'Aspire.Hosting/publishAsDockerFileWithConfigure',
+            rpcArgs
+        );
+        return new NodeAppResource(result, this._client);
+    }
+
+    /** Publishes an executable as a Docker file with optional container configuration */
+    publishAsDockerFileWithConfigure(configure: (obj: ContainerResource) => Promise<void>): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._publishAsDockerFileWithConfigureInternal(configure));
+    }
+
+    /** @internal */
+    private async _withExecutableCommandInternal(command: string): Promise<NodeAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, command };
+        const result = await this._client.invokeCapability<NodeAppResourceHandle>(
+            'Aspire.Hosting/withExecutableCommand',
+            rpcArgs
+        );
+        return new NodeAppResource(result, this._client);
+    }
+
+    /** Sets the executable command */
+    withExecutableCommand(command: string): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._withExecutableCommandInternal(command));
+    }
+
+    /** @internal */
+    private async _withWorkingDirectoryInternal(workingDirectory: string): Promise<NodeAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, workingDirectory };
+        const result = await this._client.invokeCapability<NodeAppResourceHandle>(
+            'Aspire.Hosting/withWorkingDirectory',
+            rpcArgs
+        );
+        return new NodeAppResource(result, this._client);
+    }
+
+    /** Sets the executable working directory */
+    withWorkingDirectory(workingDirectory: string): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._withWorkingDirectoryInternal(workingDirectory));
+    }
+
+    /** @internal */
+    private async _withMcpServerInternal(path?: string, endpointName?: string): Promise<NodeAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle };
+        if (path !== undefined) rpcArgs.path = path;
+        if (endpointName !== undefined) rpcArgs.endpointName = endpointName;
+        const result = await this._client.invokeCapability<NodeAppResourceHandle>(
+            'Aspire.Hosting/withMcpServer',
+            rpcArgs
+        );
+        return new NodeAppResource(result, this._client);
+    }
+
+    /** Configures an MCP server endpoint on the resource */
+    withMcpServer(options?: WithMcpServerOptions): NodeAppResourcePromise {
+        const path = options?.path;
+        const endpointName = options?.endpointName;
+        return new NodeAppResourcePromise(this._withMcpServerInternal(path, endpointName));
+    }
+
+    /** @internal */
+    private async _withOtlpExporterInternal(): Promise<NodeAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle };
+        const result = await this._client.invokeCapability<NodeAppResourceHandle>(
+            'Aspire.Hosting/withOtlpExporter',
+            rpcArgs
+        );
+        return new NodeAppResource(result, this._client);
+    }
+
+    /** Configures OTLP telemetry export */
+    withOtlpExporter(): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._withOtlpExporterInternal());
+    }
+
+    /** @internal */
+    private async _withOtlpExporterProtocolInternal(protocol: OtlpProtocol): Promise<NodeAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, protocol };
+        const result = await this._client.invokeCapability<NodeAppResourceHandle>(
+            'Aspire.Hosting/withOtlpExporterProtocol',
+            rpcArgs
+        );
+        return new NodeAppResource(result, this._client);
+    }
+
+    /** Configures OTLP telemetry export with specific protocol */
+    withOtlpExporterProtocol(protocol: OtlpProtocol): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._withOtlpExporterProtocolInternal(protocol));
+    }
+
+    /** @internal */
+    private async _withRequiredCommandInternal(command: string, helpLink?: string): Promise<NodeAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, command };
+        if (helpLink !== undefined) rpcArgs.helpLink = helpLink;
+        const result = await this._client.invokeCapability<NodeAppResourceHandle>(
+            'Aspire.Hosting/withRequiredCommand',
+            rpcArgs
+        );
+        return new NodeAppResource(result, this._client);
+    }
+
+    /** Adds a required command dependency */
+    withRequiredCommand(command: string, options?: WithRequiredCommandOptions): NodeAppResourcePromise {
+        const helpLink = options?.helpLink;
+        return new NodeAppResourcePromise(this._withRequiredCommandInternal(command, helpLink));
+    }
+
+    /** @internal */
+    private async _withEnvironmentCallbackInternal(callback: (arg: EnvironmentCallbackContext) => Promise<void>): Promise<NodeAppResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as EnvironmentCallbackContextHandle;
+            const arg = new EnvironmentCallbackContext(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<NodeAppResourceHandle>(
+            'Aspire.Hosting/withEnvironmentCallback',
+            rpcArgs
+        );
+        return new NodeAppResource(result, this._client);
+    }
+
+    /** Sets environment variables via callback */
+    withEnvironmentCallback(callback: (arg: EnvironmentCallbackContext) => Promise<void>): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._withEnvironmentCallbackInternal(callback));
+    }
+
+    /** @internal */
+    private async _withEnvironmentEndpointInternal(name: string, endpointReference: EndpointReference): Promise<NodeAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, name, endpointReference };
+        const result = await this._client.invokeCapability<NodeAppResourceHandle>(
+            'Aspire.Hosting/withEnvironmentEndpoint',
+            rpcArgs
+        );
+        return new NodeAppResource(result, this._client);
+    }
+
+    /** Sets an environment variable from an endpoint reference */
+    withEnvironmentEndpoint(name: string, endpointReference: EndpointReference): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._withEnvironmentEndpointInternal(name, endpointReference));
+    }
+
+    /** @internal */
+    private async _withEnvironmentInternal(name: string, value: string | ReferenceExpression | EndpointReference | ParameterResource | ResourceWithConnectionString): Promise<NodeAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, name, value };
+        const result = await this._client.invokeCapability<NodeAppResourceHandle>(
+            'Aspire.Hosting/withEnvironment',
+            rpcArgs
+        );
+        return new NodeAppResource(result, this._client);
+    }
+
+    /** Sets an environment variable on the resource */
+    withEnvironment(name: string, value: string | ReferenceExpression | EndpointReference | ParameterResource | ResourceWithConnectionString): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._withEnvironmentInternal(name, value));
+    }
+
+    /** @internal */
+    private async _withEnvironmentParameterInternal(name: string, parameter: ParameterResource): Promise<NodeAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, name, parameter };
+        const result = await this._client.invokeCapability<NodeAppResourceHandle>(
+            'Aspire.Hosting/withEnvironmentParameter',
+            rpcArgs
+        );
+        return new NodeAppResource(result, this._client);
+    }
+
+    /** Sets an environment variable from a parameter resource */
+    withEnvironmentParameter(name: string, parameter: ParameterResource): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._withEnvironmentParameterInternal(name, parameter));
+    }
+
+    /** @internal */
+    private async _withEnvironmentConnectionStringInternal(envVarName: string, resource: ResourceBuilderBase): Promise<NodeAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, envVarName, resource };
+        const result = await this._client.invokeCapability<NodeAppResourceHandle>(
+            'Aspire.Hosting/withEnvironmentConnectionString',
+            rpcArgs
+        );
+        return new NodeAppResource(result, this._client);
+    }
+
+    /** Sets an environment variable from a connection string resource */
+    withEnvironmentConnectionString(envVarName: string, resource: ResourceBuilderBase): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._withEnvironmentConnectionStringInternal(envVarName, resource));
+    }
+
+    /** @internal */
+    private async _withArgsInternal(args: string[]): Promise<NodeAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, args };
+        const result = await this._client.invokeCapability<NodeAppResourceHandle>(
+            'Aspire.Hosting/withArgs',
+            rpcArgs
+        );
+        return new NodeAppResource(result, this._client);
+    }
+
+    /** Adds arguments */
+    withArgs(args: string[]): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._withArgsInternal(args));
+    }
+
+    /** @internal */
+    private async _withArgsCallbackInternal(callback: (obj: CommandLineArgsCallbackContext) => Promise<void>): Promise<NodeAppResource> {
+        const callbackId = registerCallback(async (objData: unknown) => {
+            const objHandle = wrapIfHandle(objData) as CommandLineArgsCallbackContextHandle;
+            const obj = new CommandLineArgsCallbackContext(objHandle, this._client);
+            await callback(obj);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<NodeAppResourceHandle>(
+            'Aspire.Hosting/withArgsCallback',
+            rpcArgs
+        );
+        return new NodeAppResource(result, this._client);
+    }
+
+    /** Sets command-line arguments via callback */
+    withArgsCallback(callback: (obj: CommandLineArgsCallbackContext) => Promise<void>): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._withArgsCallbackInternal(callback));
+    }
+
+    /** @internal */
+    private async _withArgsCallbackAsyncInternal(callback: (arg: CommandLineArgsCallbackContext) => Promise<void>): Promise<NodeAppResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as CommandLineArgsCallbackContextHandle;
+            const arg = new CommandLineArgsCallbackContext(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<NodeAppResourceHandle>(
+            'Aspire.Hosting/withArgsCallbackAsync',
+            rpcArgs
+        );
+        return new NodeAppResource(result, this._client);
+    }
+
+    /** Sets command-line arguments via async callback */
+    withArgsCallbackAsync(callback: (arg: CommandLineArgsCallbackContext) => Promise<void>): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._withArgsCallbackAsyncInternal(callback));
+    }
+
+    /** @internal */
+    private async _withReferenceInternal(source: ResourceBuilderBase, connectionName?: string, optional?: boolean, name?: string): Promise<NodeAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, source };
+        if (connectionName !== undefined) rpcArgs.connectionName = connectionName;
+        if (optional !== undefined) rpcArgs.optional = optional;
+        if (name !== undefined) rpcArgs.name = name;
+        const result = await this._client.invokeCapability<NodeAppResourceHandle>(
+            'Aspire.Hosting/withReference',
+            rpcArgs
+        );
+        return new NodeAppResource(result, this._client);
+    }
+
+    /** Adds a reference to another resource */
+    withReference(source: ResourceBuilderBase, options?: WithReferenceOptions): NodeAppResourcePromise {
+        const connectionName = options?.connectionName;
+        const optional = options?.optional;
+        const name = options?.name;
+        return new NodeAppResourcePromise(this._withReferenceInternal(source, connectionName, optional, name));
+    }
+
+    /** @internal */
+    private async _withReferenceUriInternal(name: string, uri: string): Promise<NodeAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, name, uri };
+        const result = await this._client.invokeCapability<NodeAppResourceHandle>(
+            'Aspire.Hosting/withReferenceUri',
+            rpcArgs
+        );
+        return new NodeAppResource(result, this._client);
+    }
+
+    /** Adds a reference to a URI */
+    withReferenceUri(name: string, uri: string): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._withReferenceUriInternal(name, uri));
+    }
+
+    /** @internal */
+    private async _withReferenceExternalServiceInternal(externalService: ExternalServiceResource): Promise<NodeAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, externalService };
+        const result = await this._client.invokeCapability<NodeAppResourceHandle>(
+            'Aspire.Hosting/withReferenceExternalService',
+            rpcArgs
+        );
+        return new NodeAppResource(result, this._client);
+    }
+
+    /** Adds a reference to an external service */
+    withReferenceExternalService(externalService: ExternalServiceResource): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._withReferenceExternalServiceInternal(externalService));
+    }
+
+    /** @internal */
+    private async _withReferenceEndpointInternal(endpointReference: EndpointReference): Promise<NodeAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, endpointReference };
+        const result = await this._client.invokeCapability<NodeAppResourceHandle>(
+            'Aspire.Hosting/withReferenceEndpoint',
+            rpcArgs
+        );
+        return new NodeAppResource(result, this._client);
+    }
+
+    /** Adds a reference to an endpoint */
+    withReferenceEndpoint(endpointReference: EndpointReference): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._withReferenceEndpointInternal(endpointReference));
+    }
+
+    /** @internal */
+    private async _withEndpointInternal(port?: number, targetPort?: number, scheme?: string, name?: string, env?: string, isProxied?: boolean, isExternal?: boolean, protocol?: ProtocolType): Promise<NodeAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle };
+        if (port !== undefined) rpcArgs.port = port;
+        if (targetPort !== undefined) rpcArgs.targetPort = targetPort;
+        if (scheme !== undefined) rpcArgs.scheme = scheme;
+        if (name !== undefined) rpcArgs.name = name;
+        if (env !== undefined) rpcArgs.env = env;
+        if (isProxied !== undefined) rpcArgs.isProxied = isProxied;
+        if (isExternal !== undefined) rpcArgs.isExternal = isExternal;
+        if (protocol !== undefined) rpcArgs.protocol = protocol;
+        const result = await this._client.invokeCapability<NodeAppResourceHandle>(
+            'Aspire.Hosting/withEndpoint',
+            rpcArgs
+        );
+        return new NodeAppResource(result, this._client);
+    }
+
+    /** Adds a network endpoint */
+    withEndpoint(options?: WithEndpointOptions): NodeAppResourcePromise {
+        const port = options?.port;
+        const targetPort = options?.targetPort;
+        const scheme = options?.scheme;
+        const name = options?.name;
+        const env = options?.env;
+        const isProxied = options?.isProxied;
+        const isExternal = options?.isExternal;
+        const protocol = options?.protocol;
+        return new NodeAppResourcePromise(this._withEndpointInternal(port, targetPort, scheme, name, env, isProxied, isExternal, protocol));
+    }
+
+    /** @internal */
+    private async _withHttpEndpointInternal(port?: number, targetPort?: number, name?: string, env?: string, isProxied?: boolean): Promise<NodeAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle };
+        if (port !== undefined) rpcArgs.port = port;
+        if (targetPort !== undefined) rpcArgs.targetPort = targetPort;
+        if (name !== undefined) rpcArgs.name = name;
+        if (env !== undefined) rpcArgs.env = env;
+        if (isProxied !== undefined) rpcArgs.isProxied = isProxied;
+        const result = await this._client.invokeCapability<NodeAppResourceHandle>(
+            'Aspire.Hosting/withHttpEndpoint',
+            rpcArgs
+        );
+        return new NodeAppResource(result, this._client);
+    }
+
+    /** Adds an HTTP endpoint */
+    withHttpEndpoint(options?: WithHttpEndpointOptions): NodeAppResourcePromise {
+        const port = options?.port;
+        const targetPort = options?.targetPort;
+        const name = options?.name;
+        const env = options?.env;
+        const isProxied = options?.isProxied;
+        return new NodeAppResourcePromise(this._withHttpEndpointInternal(port, targetPort, name, env, isProxied));
+    }
+
+    /** @internal */
+    private async _withHttpsEndpointInternal(port?: number, targetPort?: number, name?: string, env?: string, isProxied?: boolean): Promise<NodeAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle };
+        if (port !== undefined) rpcArgs.port = port;
+        if (targetPort !== undefined) rpcArgs.targetPort = targetPort;
+        if (name !== undefined) rpcArgs.name = name;
+        if (env !== undefined) rpcArgs.env = env;
+        if (isProxied !== undefined) rpcArgs.isProxied = isProxied;
+        const result = await this._client.invokeCapability<NodeAppResourceHandle>(
+            'Aspire.Hosting/withHttpsEndpoint',
+            rpcArgs
+        );
+        return new NodeAppResource(result, this._client);
+    }
+
+    /** Adds an HTTPS endpoint */
+    withHttpsEndpoint(options?: WithHttpsEndpointOptions): NodeAppResourcePromise {
+        const port = options?.port;
+        const targetPort = options?.targetPort;
+        const name = options?.name;
+        const env = options?.env;
+        const isProxied = options?.isProxied;
+        return new NodeAppResourcePromise(this._withHttpsEndpointInternal(port, targetPort, name, env, isProxied));
+    }
+
+    /** @internal */
+    private async _withExternalHttpEndpointsInternal(): Promise<NodeAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle };
+        const result = await this._client.invokeCapability<NodeAppResourceHandle>(
+            'Aspire.Hosting/withExternalHttpEndpoints',
+            rpcArgs
+        );
+        return new NodeAppResource(result, this._client);
+    }
+
+    /** Makes HTTP endpoints externally accessible */
+    withExternalHttpEndpoints(): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._withExternalHttpEndpointsInternal());
+    }
+
+    /** Gets an endpoint reference */
+    async getEndpoint(name: string): Promise<EndpointReference> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, name };
+        return await this._client.invokeCapability<EndpointReference>(
+            'Aspire.Hosting/getEndpoint',
+            rpcArgs
+        );
+    }
+
+    /** @internal */
+    private async _asHttp2ServiceInternal(): Promise<NodeAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle };
+        const result = await this._client.invokeCapability<NodeAppResourceHandle>(
+            'Aspire.Hosting/asHttp2Service',
+            rpcArgs
+        );
+        return new NodeAppResource(result, this._client);
+    }
+
+    /** Configures resource for HTTP/2 */
+    asHttp2Service(): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._asHttp2ServiceInternal());
+    }
+
+    /** @internal */
+    private async _withUrlsCallbackInternal(callback: (obj: ResourceUrlsCallbackContext) => Promise<void>): Promise<NodeAppResource> {
+        const callbackId = registerCallback(async (objData: unknown) => {
+            const objHandle = wrapIfHandle(objData) as ResourceUrlsCallbackContextHandle;
+            const obj = new ResourceUrlsCallbackContext(objHandle, this._client);
+            await callback(obj);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<NodeAppResourceHandle>(
+            'Aspire.Hosting/withUrlsCallback',
+            rpcArgs
+        );
+        return new NodeAppResource(result, this._client);
+    }
+
+    /** Customizes displayed URLs via callback */
+    withUrlsCallback(callback: (obj: ResourceUrlsCallbackContext) => Promise<void>): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._withUrlsCallbackInternal(callback));
+    }
+
+    /** @internal */
+    private async _withUrlsCallbackAsyncInternal(callback: (arg: ResourceUrlsCallbackContext) => Promise<void>): Promise<NodeAppResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ResourceUrlsCallbackContextHandle;
+            const arg = new ResourceUrlsCallbackContext(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<NodeAppResourceHandle>(
+            'Aspire.Hosting/withUrlsCallbackAsync',
+            rpcArgs
+        );
+        return new NodeAppResource(result, this._client);
+    }
+
+    /** Customizes displayed URLs via async callback */
+    withUrlsCallbackAsync(callback: (arg: ResourceUrlsCallbackContext) => Promise<void>): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._withUrlsCallbackAsyncInternal(callback));
+    }
+
+    /** @internal */
+    private async _withUrlInternal(url: string, displayText?: string): Promise<NodeAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, url };
+        if (displayText !== undefined) rpcArgs.displayText = displayText;
+        const result = await this._client.invokeCapability<NodeAppResourceHandle>(
+            'Aspire.Hosting/withUrl',
+            rpcArgs
+        );
+        return new NodeAppResource(result, this._client);
+    }
+
+    /** Adds or modifies displayed URLs */
+    withUrl(url: string, options?: WithUrlOptions): NodeAppResourcePromise {
+        const displayText = options?.displayText;
+        return new NodeAppResourcePromise(this._withUrlInternal(url, displayText));
+    }
+
+    /** @internal */
+    private async _withUrlExpressionInternal(url: ReferenceExpression, displayText?: string): Promise<NodeAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, url };
+        if (displayText !== undefined) rpcArgs.displayText = displayText;
+        const result = await this._client.invokeCapability<NodeAppResourceHandle>(
+            'Aspire.Hosting/withUrlExpression',
+            rpcArgs
+        );
+        return new NodeAppResource(result, this._client);
+    }
+
+    /** Adds a URL using a reference expression */
+    withUrlExpression(url: ReferenceExpression, options?: WithUrlExpressionOptions): NodeAppResourcePromise {
+        const displayText = options?.displayText;
+        return new NodeAppResourcePromise(this._withUrlExpressionInternal(url, displayText));
+    }
+
+    /** @internal */
+    private async _withUrlForEndpointInternal(endpointName: string, callback: (obj: ResourceUrlAnnotation) => Promise<void>): Promise<NodeAppResource> {
+        const callbackId = registerCallback(async (objData: unknown) => {
+            const obj = wrapIfHandle(objData) as ResourceUrlAnnotation;
+            await callback(obj);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, endpointName, callback: callbackId };
+        const result = await this._client.invokeCapability<NodeAppResourceHandle>(
+            'Aspire.Hosting/withUrlForEndpoint',
+            rpcArgs
+        );
+        return new NodeAppResource(result, this._client);
+    }
+
+    /** Customizes the URL for a specific endpoint via callback */
+    withUrlForEndpoint(endpointName: string, callback: (obj: ResourceUrlAnnotation) => Promise<void>): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._withUrlForEndpointInternal(endpointName, callback));
+    }
+
+    /** @internal */
+    private async _withUrlForEndpointFactoryInternal(endpointName: string, callback: (arg: EndpointReference) => Promise<ResourceUrlAnnotation>): Promise<NodeAppResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as EndpointReferenceHandle;
+            const arg = new EndpointReference(argHandle, this._client);
+            return await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, endpointName, callback: callbackId };
+        const result = await this._client.invokeCapability<NodeAppResourceHandle>(
+            'Aspire.Hosting/withUrlForEndpointFactory',
+            rpcArgs
+        );
+        return new NodeAppResource(result, this._client);
+    }
+
+    /** Adds a URL for a specific endpoint via factory callback */
+    withUrlForEndpointFactory(endpointName: string, callback: (arg: EndpointReference) => Promise<ResourceUrlAnnotation>): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._withUrlForEndpointFactoryInternal(endpointName, callback));
+    }
+
+    /** @internal */
+    private async _publishWithContainerFilesInternal(source: ResourceBuilderBase, destinationPath: string): Promise<NodeAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, source, destinationPath };
+        const result = await this._client.invokeCapability<NodeAppResourceHandle>(
+            'Aspire.Hosting/publishWithContainerFilesFromResource',
+            rpcArgs
+        );
+        return new NodeAppResource(result, this._client);
+    }
+
+    /** Configures the resource to copy container files from the specified source during publishing */
+    publishWithContainerFiles(source: ResourceBuilderBase, destinationPath: string): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._publishWithContainerFilesInternal(source, destinationPath));
+    }
+
+    /** @internal */
+    private async _withContainerFilesSourceInternal(sourcePath: string): Promise<NodeAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, sourcePath };
+        const result = await this._client.invokeCapability<NodeAppResourceHandle>(
+            'Aspire.Hosting/withContainerFilesSource',
+            rpcArgs
+        );
+        return new NodeAppResource(result, this._client);
+    }
+
+    /** Sets the source directory for container files */
+    withContainerFilesSource(sourcePath: string): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._withContainerFilesSourceInternal(sourcePath));
+    }
+
+    /** @internal */
+    private async _clearContainerFilesSourcesInternal(): Promise<NodeAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle };
+        const result = await this._client.invokeCapability<NodeAppResourceHandle>(
+            'Aspire.Hosting/clearContainerFilesSources',
+            rpcArgs
+        );
+        return new NodeAppResource(result, this._client);
+    }
+
+    /** Clears all container file sources */
+    clearContainerFilesSources(): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._clearContainerFilesSourcesInternal());
+    }
+
+    /** @internal */
+    private async _excludeFromManifestInternal(): Promise<NodeAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle };
+        const result = await this._client.invokeCapability<NodeAppResourceHandle>(
+            'Aspire.Hosting/excludeFromManifest',
+            rpcArgs
+        );
+        return new NodeAppResource(result, this._client);
+    }
+
+    /** Excludes the resource from the deployment manifest */
+    excludeFromManifest(): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._excludeFromManifestInternal());
+    }
+
+    /** @internal */
+    private async _waitForInternal(dependency: ResourceBuilderBase): Promise<NodeAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, dependency };
+        const result = await this._client.invokeCapability<NodeAppResourceHandle>(
+            'Aspire.Hosting/waitForResource',
+            rpcArgs
+        );
+        return new NodeAppResource(result, this._client);
+    }
+
+    /** Waits for another resource to be ready */
+    waitFor(dependency: ResourceBuilderBase): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._waitForInternal(dependency));
+    }
+
+    /** @internal */
+    private async _waitForWithBehaviorInternal(dependency: ResourceBuilderBase, waitBehavior: WaitBehavior): Promise<NodeAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, dependency, waitBehavior };
+        const result = await this._client.invokeCapability<NodeAppResourceHandle>(
+            'Aspire.Hosting/waitForWithBehavior',
+            rpcArgs
+        );
+        return new NodeAppResource(result, this._client);
+    }
+
+    /** Waits for another resource with specific behavior */
+    waitForWithBehavior(dependency: ResourceBuilderBase, waitBehavior: WaitBehavior): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._waitForWithBehaviorInternal(dependency, waitBehavior));
+    }
+
+    /** @internal */
+    private async _waitForStartInternal(dependency: ResourceBuilderBase): Promise<NodeAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, dependency };
+        const result = await this._client.invokeCapability<NodeAppResourceHandle>(
+            'Aspire.Hosting/waitForResourceStart',
+            rpcArgs
+        );
+        return new NodeAppResource(result, this._client);
+    }
+
+    /** Waits for another resource to start */
+    waitForStart(dependency: ResourceBuilderBase): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._waitForStartInternal(dependency));
+    }
+
+    /** @internal */
+    private async _waitForStartWithBehaviorInternal(dependency: ResourceBuilderBase, waitBehavior: WaitBehavior): Promise<NodeAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, dependency, waitBehavior };
+        const result = await this._client.invokeCapability<NodeAppResourceHandle>(
+            'Aspire.Hosting/waitForStartWithBehavior',
+            rpcArgs
+        );
+        return new NodeAppResource(result, this._client);
+    }
+
+    /** Waits for another resource to start with specific behavior */
+    waitForStartWithBehavior(dependency: ResourceBuilderBase, waitBehavior: WaitBehavior): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._waitForStartWithBehaviorInternal(dependency, waitBehavior));
+    }
+
+    /** @internal */
+    private async _withExplicitStartInternal(): Promise<NodeAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle };
+        const result = await this._client.invokeCapability<NodeAppResourceHandle>(
+            'Aspire.Hosting/withExplicitStart',
+            rpcArgs
+        );
+        return new NodeAppResource(result, this._client);
+    }
+
+    /** Prevents resource from starting automatically */
+    withExplicitStart(): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._withExplicitStartInternal());
+    }
+
+    /** @internal */
+    private async _waitForCompletionInternal(dependency: ResourceBuilderBase, exitCode?: number): Promise<NodeAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, dependency };
+        if (exitCode !== undefined) rpcArgs.exitCode = exitCode;
+        const result = await this._client.invokeCapability<NodeAppResourceHandle>(
+            'Aspire.Hosting/waitForResourceCompletion',
+            rpcArgs
+        );
+        return new NodeAppResource(result, this._client);
+    }
+
+    /** Waits for resource completion */
+    waitForCompletion(dependency: ResourceBuilderBase, options?: WaitForCompletionOptions): NodeAppResourcePromise {
+        const exitCode = options?.exitCode;
+        return new NodeAppResourcePromise(this._waitForCompletionInternal(dependency, exitCode));
+    }
+
+    /** @internal */
+    private async _withHealthCheckInternal(key: string): Promise<NodeAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, key };
+        const result = await this._client.invokeCapability<NodeAppResourceHandle>(
+            'Aspire.Hosting/withHealthCheck',
+            rpcArgs
+        );
+        return new NodeAppResource(result, this._client);
+    }
+
+    /** Adds a health check by key */
+    withHealthCheck(key: string): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._withHealthCheckInternal(key));
+    }
+
+    /** @internal */
+    private async _withHttpHealthCheckInternal(path?: string, statusCode?: number, endpointName?: string): Promise<NodeAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle };
+        if (path !== undefined) rpcArgs.path = path;
+        if (statusCode !== undefined) rpcArgs.statusCode = statusCode;
+        if (endpointName !== undefined) rpcArgs.endpointName = endpointName;
+        const result = await this._client.invokeCapability<NodeAppResourceHandle>(
+            'Aspire.Hosting/withHttpHealthCheck',
+            rpcArgs
+        );
+        return new NodeAppResource(result, this._client);
+    }
+
+    /** Adds an HTTP health check */
+    withHttpHealthCheck(options?: WithHttpHealthCheckOptions): NodeAppResourcePromise {
+        const path = options?.path;
+        const statusCode = options?.statusCode;
+        const endpointName = options?.endpointName;
+        return new NodeAppResourcePromise(this._withHttpHealthCheckInternal(path, statusCode, endpointName));
+    }
+
+    /** @internal */
+    private async _withCommandInternal(name: string, displayName: string, executeCommand: (arg: ExecuteCommandContext) => Promise<ExecuteCommandResult>, commandOptions?: CommandOptions): Promise<NodeAppResource> {
+        const executeCommandId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ExecuteCommandContextHandle;
+            const arg = new ExecuteCommandContext(argHandle, this._client);
+            return await executeCommand(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, name, displayName, executeCommand: executeCommandId };
+        if (commandOptions !== undefined) rpcArgs.commandOptions = commandOptions;
+        const result = await this._client.invokeCapability<NodeAppResourceHandle>(
+            'Aspire.Hosting/withCommand',
+            rpcArgs
+        );
+        return new NodeAppResource(result, this._client);
+    }
+
+    /** Adds a resource command */
+    withCommand(name: string, displayName: string, executeCommand: (arg: ExecuteCommandContext) => Promise<ExecuteCommandResult>, options?: WithCommandOptions): NodeAppResourcePromise {
+        const commandOptions = options?.commandOptions;
+        return new NodeAppResourcePromise(this._withCommandInternal(name, displayName, executeCommand, commandOptions));
+    }
+
+    /** @internal */
+    private async _withDeveloperCertificateTrustInternal(trust: boolean): Promise<NodeAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, trust };
+        const result = await this._client.invokeCapability<NodeAppResourceHandle>(
+            'Aspire.Hosting/withDeveloperCertificateTrust',
+            rpcArgs
+        );
+        return new NodeAppResource(result, this._client);
+    }
+
+    /** Configures developer certificate trust */
+    withDeveloperCertificateTrust(trust: boolean): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._withDeveloperCertificateTrustInternal(trust));
+    }
+
+    /** @internal */
+    private async _withCertificateTrustScopeInternal(scope: CertificateTrustScope): Promise<NodeAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, scope };
+        const result = await this._client.invokeCapability<NodeAppResourceHandle>(
+            'Aspire.Hosting/withCertificateTrustScope',
+            rpcArgs
+        );
+        return new NodeAppResource(result, this._client);
+    }
+
+    /** Sets the certificate trust scope */
+    withCertificateTrustScope(scope: CertificateTrustScope): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._withCertificateTrustScopeInternal(scope));
+    }
+
+    /** @internal */
+    private async _withHttpsDeveloperCertificateInternal(password?: ParameterResource): Promise<NodeAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle };
+        if (password !== undefined) rpcArgs.password = password;
+        const result = await this._client.invokeCapability<NodeAppResourceHandle>(
+            'Aspire.Hosting/withParameterHttpsDeveloperCertificate',
+            rpcArgs
+        );
+        return new NodeAppResource(result, this._client);
+    }
+
+    /** Configures HTTPS with a developer certificate */
+    withHttpsDeveloperCertificate(options?: WithHttpsDeveloperCertificateOptions): NodeAppResourcePromise {
+        const password = options?.password;
+        return new NodeAppResourcePromise(this._withHttpsDeveloperCertificateInternal(password));
+    }
+
+    /** @internal */
+    private async _withoutHttpsCertificateInternal(): Promise<NodeAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle };
+        const result = await this._client.invokeCapability<NodeAppResourceHandle>(
+            'Aspire.Hosting/withoutHttpsCertificate',
+            rpcArgs
+        );
+        return new NodeAppResource(result, this._client);
+    }
+
+    /** Removes HTTPS certificate configuration */
+    withoutHttpsCertificate(): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._withoutHttpsCertificateInternal());
+    }
+
+    /** @internal */
+    private async _withParentRelationshipInternal(parent: ResourceBuilderBase): Promise<NodeAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, parent };
+        const result = await this._client.invokeCapability<NodeAppResourceHandle>(
+            'Aspire.Hosting/withBuilderParentRelationship',
+            rpcArgs
+        );
+        return new NodeAppResource(result, this._client);
+    }
+
+    /** Sets the parent relationship */
+    withParentRelationship(parent: ResourceBuilderBase): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._withParentRelationshipInternal(parent));
+    }
+
+    /** @internal */
+    private async _withChildRelationshipInternal(child: ResourceBuilderBase): Promise<NodeAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, child };
+        const result = await this._client.invokeCapability<NodeAppResourceHandle>(
+            'Aspire.Hosting/withBuilderChildRelationship',
+            rpcArgs
+        );
+        return new NodeAppResource(result, this._client);
+    }
+
+    /** Sets a child relationship */
+    withChildRelationship(child: ResourceBuilderBase): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._withChildRelationshipInternal(child));
+    }
+
+    /** @internal */
+    private async _withIconNameInternal(iconName: string, iconVariant?: IconVariant): Promise<NodeAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, iconName };
+        if (iconVariant !== undefined) rpcArgs.iconVariant = iconVariant;
+        const result = await this._client.invokeCapability<NodeAppResourceHandle>(
+            'Aspire.Hosting/withIconName',
+            rpcArgs
+        );
+        return new NodeAppResource(result, this._client);
+    }
+
+    /** Sets the icon for the resource */
+    withIconName(iconName: string, options?: WithIconNameOptions): NodeAppResourcePromise {
+        const iconVariant = options?.iconVariant;
+        return new NodeAppResourcePromise(this._withIconNameInternal(iconName, iconVariant));
+    }
+
+    /** @internal */
+    private async _withHttpProbeInternal(probeType: ProbeType, path?: string, initialDelaySeconds?: number, periodSeconds?: number, timeoutSeconds?: number, failureThreshold?: number, successThreshold?: number, endpointName?: string): Promise<NodeAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, probeType };
+        if (path !== undefined) rpcArgs.path = path;
+        if (initialDelaySeconds !== undefined) rpcArgs.initialDelaySeconds = initialDelaySeconds;
+        if (periodSeconds !== undefined) rpcArgs.periodSeconds = periodSeconds;
+        if (timeoutSeconds !== undefined) rpcArgs.timeoutSeconds = timeoutSeconds;
+        if (failureThreshold !== undefined) rpcArgs.failureThreshold = failureThreshold;
+        if (successThreshold !== undefined) rpcArgs.successThreshold = successThreshold;
+        if (endpointName !== undefined) rpcArgs.endpointName = endpointName;
+        const result = await this._client.invokeCapability<NodeAppResourceHandle>(
+            'Aspire.Hosting/withHttpProbe',
+            rpcArgs
+        );
+        return new NodeAppResource(result, this._client);
+    }
+
+    /** Adds an HTTP health probe to the resource */
+    withHttpProbe(probeType: ProbeType, options?: WithHttpProbeOptions): NodeAppResourcePromise {
+        const path = options?.path;
+        const initialDelaySeconds = options?.initialDelaySeconds;
+        const periodSeconds = options?.periodSeconds;
+        const timeoutSeconds = options?.timeoutSeconds;
+        const failureThreshold = options?.failureThreshold;
+        const successThreshold = options?.successThreshold;
+        const endpointName = options?.endpointName;
+        return new NodeAppResourcePromise(this._withHttpProbeInternal(probeType, path, initialDelaySeconds, periodSeconds, timeoutSeconds, failureThreshold, successThreshold, endpointName));
+    }
+
+    /** @internal */
+    private async _excludeFromMcpInternal(): Promise<NodeAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle };
+        const result = await this._client.invokeCapability<NodeAppResourceHandle>(
+            'Aspire.Hosting/excludeFromMcp',
+            rpcArgs
+        );
+        return new NodeAppResource(result, this._client);
+    }
+
+    /** Excludes the resource from MCP server exposure */
+    excludeFromMcp(): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._excludeFromMcpInternal());
+    }
+
+    /** @internal */
+    private async _withRemoteImageNameInternal(remoteImageName: string): Promise<NodeAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, remoteImageName };
+        const result = await this._client.invokeCapability<NodeAppResourceHandle>(
+            'Aspire.Hosting/withRemoteImageName',
+            rpcArgs
+        );
+        return new NodeAppResource(result, this._client);
+    }
+
+    /** Sets the remote image name for publishing */
+    withRemoteImageName(remoteImageName: string): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._withRemoteImageNameInternal(remoteImageName));
+    }
+
+    /** @internal */
+    private async _withRemoteImageTagInternal(remoteImageTag: string): Promise<NodeAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, remoteImageTag };
+        const result = await this._client.invokeCapability<NodeAppResourceHandle>(
+            'Aspire.Hosting/withRemoteImageTag',
+            rpcArgs
+        );
+        return new NodeAppResource(result, this._client);
+    }
+
+    /** Sets the remote image tag for publishing */
+    withRemoteImageTag(remoteImageTag: string): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._withRemoteImageTagInternal(remoteImageTag));
+    }
+
+    /** @internal */
+    private async _withPipelineStepFactoryInternal(stepName: string, callback: (arg: PipelineStepContext) => Promise<void>, dependsOn?: string[], requiredBy?: string[], tags?: string[], description?: string): Promise<NodeAppResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as PipelineStepContextHandle;
+            const arg = new PipelineStepContext(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, stepName, callback: callbackId };
+        if (dependsOn !== undefined) rpcArgs.dependsOn = dependsOn;
+        if (requiredBy !== undefined) rpcArgs.requiredBy = requiredBy;
+        if (tags !== undefined) rpcArgs.tags = tags;
+        if (description !== undefined) rpcArgs.description = description;
+        const result = await this._client.invokeCapability<NodeAppResourceHandle>(
+            'Aspire.Hosting/withPipelineStepFactory',
+            rpcArgs
+        );
+        return new NodeAppResource(result, this._client);
+    }
+
+    /** Adds a pipeline step to the resource */
+    withPipelineStepFactory(stepName: string, callback: (arg: PipelineStepContext) => Promise<void>, options?: WithPipelineStepFactoryOptions): NodeAppResourcePromise {
+        const dependsOn = options?.dependsOn;
+        const requiredBy = options?.requiredBy;
+        const tags = options?.tags;
+        const description = options?.description;
+        return new NodeAppResourcePromise(this._withPipelineStepFactoryInternal(stepName, callback, dependsOn, requiredBy, tags, description));
+    }
+
+    /** @internal */
+    private async _withPipelineConfigurationAsyncInternal(callback: (arg: PipelineConfigurationContext) => Promise<void>): Promise<NodeAppResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as PipelineConfigurationContextHandle;
+            const arg = new PipelineConfigurationContext(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<NodeAppResourceHandle>(
+            'Aspire.Hosting/withPipelineConfigurationAsync',
+            rpcArgs
+        );
+        return new NodeAppResource(result, this._client);
+    }
+
+    /** Configures pipeline step dependencies via an async callback */
+    withPipelineConfigurationAsync(callback: (arg: PipelineConfigurationContext) => Promise<void>): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._withPipelineConfigurationAsyncInternal(callback));
+    }
+
+    /** @internal */
+    private async _withPipelineConfigurationInternal(callback: (obj: PipelineConfigurationContext) => Promise<void>): Promise<NodeAppResource> {
+        const callbackId = registerCallback(async (objData: unknown) => {
+            const objHandle = wrapIfHandle(objData) as PipelineConfigurationContextHandle;
+            const obj = new PipelineConfigurationContext(objHandle, this._client);
+            await callback(obj);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<NodeAppResourceHandle>(
+            'Aspire.Hosting/withPipelineConfiguration',
+            rpcArgs
+        );
+        return new NodeAppResource(result, this._client);
+    }
+
+    /** Configures pipeline step dependencies via a callback */
+    withPipelineConfiguration(callback: (obj: PipelineConfigurationContext) => Promise<void>): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._withPipelineConfigurationInternal(callback));
+    }
+
+    /** Gets the resource name */
+    async getResourceName(): Promise<string> {
+        const rpcArgs: Record<string, unknown> = { resource: this._handle };
+        return await this._client.invokeCapability<string>(
+            'Aspire.Hosting/getResourceName',
+            rpcArgs
+        );
+    }
+
+    /** @internal */
+    private async _onBeforeResourceStartedInternal(callback: (arg: BeforeResourceStartedEvent) => Promise<void>): Promise<NodeAppResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as BeforeResourceStartedEventHandle;
+            const arg = new BeforeResourceStartedEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<NodeAppResourceHandle>(
+            'Aspire.Hosting/onBeforeResourceStarted',
+            rpcArgs
+        );
+        return new NodeAppResource(result, this._client);
+    }
+
+    /** Subscribes to the BeforeResourceStarted event */
+    onBeforeResourceStarted(callback: (arg: BeforeResourceStartedEvent) => Promise<void>): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._onBeforeResourceStartedInternal(callback));
+    }
+
+    /** @internal */
+    private async _onResourceStoppedInternal(callback: (arg: ResourceStoppedEvent) => Promise<void>): Promise<NodeAppResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ResourceStoppedEventHandle;
+            const arg = new ResourceStoppedEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<NodeAppResourceHandle>(
+            'Aspire.Hosting/onResourceStopped',
+            rpcArgs
+        );
+        return new NodeAppResource(result, this._client);
+    }
+
+    /** Subscribes to the ResourceStopped event */
+    onResourceStopped(callback: (arg: ResourceStoppedEvent) => Promise<void>): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._onResourceStoppedInternal(callback));
+    }
+
+    /** @internal */
+    private async _onInitializeResourceInternal(callback: (arg: InitializeResourceEvent) => Promise<void>): Promise<NodeAppResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as InitializeResourceEventHandle;
+            const arg = new InitializeResourceEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<NodeAppResourceHandle>(
+            'Aspire.Hosting/onInitializeResource',
+            rpcArgs
+        );
+        return new NodeAppResource(result, this._client);
+    }
+
+    /** Subscribes to the InitializeResource event */
+    onInitializeResource(callback: (arg: InitializeResourceEvent) => Promise<void>): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._onInitializeResourceInternal(callback));
+    }
+
+    /** @internal */
+    private async _onResourceEndpointsAllocatedInternal(callback: (arg: ResourceEndpointsAllocatedEvent) => Promise<void>): Promise<NodeAppResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ResourceEndpointsAllocatedEventHandle;
+            const arg = new ResourceEndpointsAllocatedEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<NodeAppResourceHandle>(
+            'Aspire.Hosting/onResourceEndpointsAllocated',
+            rpcArgs
+        );
+        return new NodeAppResource(result, this._client);
+    }
+
+    /** Subscribes to the ResourceEndpointsAllocated event */
+    onResourceEndpointsAllocated(callback: (arg: ResourceEndpointsAllocatedEvent) => Promise<void>): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._onResourceEndpointsAllocatedInternal(callback));
+    }
+
+    /** @internal */
+    private async _onResourceReadyInternal(callback: (arg: ResourceReadyEvent) => Promise<void>): Promise<NodeAppResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ResourceReadyEventHandle;
+            const arg = new ResourceReadyEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<NodeAppResourceHandle>(
+            'Aspire.Hosting/onResourceReady',
+            rpcArgs
+        );
+        return new NodeAppResource(result, this._client);
+    }
+
+    /** Subscribes to the ResourceReady event */
+    onResourceReady(callback: (arg: ResourceReadyEvent) => Promise<void>): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._onResourceReadyInternal(callback));
+    }
+
+    /** @internal */
+    private async _withNpmInternal(install?: boolean, installCommand?: string, installArgs?: string[]): Promise<NodeAppResource> {
+        const rpcArgs: Record<string, unknown> = { resource: this._handle };
+        if (install !== undefined) rpcArgs.install = install;
+        if (installCommand !== undefined) rpcArgs.installCommand = installCommand;
+        if (installArgs !== undefined) rpcArgs.installArgs = installArgs;
+        const result = await this._client.invokeCapability<NodeAppResourceHandle>(
+            'Aspire.Hosting.JavaScript/withNpm',
+            rpcArgs
+        );
+        return new NodeAppResource(result, this._client);
+    }
+
+    /** Configures npm as the package manager */
+    withNpm(options?: WithNpmOptions): NodeAppResourcePromise {
+        const install = options?.install;
+        const installCommand = options?.installCommand;
+        const installArgs = options?.installArgs;
+        return new NodeAppResourcePromise(this._withNpmInternal(install, installCommand, installArgs));
+    }
+
+    /** @internal */
+    private async _withBunInternal(install?: boolean, installArgs?: string[]): Promise<NodeAppResource> {
+        const rpcArgs: Record<string, unknown> = { resource: this._handle };
+        if (install !== undefined) rpcArgs.install = install;
+        if (installArgs !== undefined) rpcArgs.installArgs = installArgs;
+        const result = await this._client.invokeCapability<NodeAppResourceHandle>(
+            'Aspire.Hosting.JavaScript/withBun',
+            rpcArgs
+        );
+        return new NodeAppResource(result, this._client);
+    }
+
+    /** Configures Bun as the package manager */
+    withBun(options?: WithBunOptions): NodeAppResourcePromise {
+        const install = options?.install;
+        const installArgs = options?.installArgs;
+        return new NodeAppResourcePromise(this._withBunInternal(install, installArgs));
+    }
+
+    /** @internal */
+    private async _withYarnInternal(install?: boolean, installArgs?: string[]): Promise<NodeAppResource> {
+        const rpcArgs: Record<string, unknown> = { resource: this._handle };
+        if (install !== undefined) rpcArgs.install = install;
+        if (installArgs !== undefined) rpcArgs.installArgs = installArgs;
+        const result = await this._client.invokeCapability<NodeAppResourceHandle>(
+            'Aspire.Hosting.JavaScript/withYarn',
+            rpcArgs
+        );
+        return new NodeAppResource(result, this._client);
+    }
+
+    /** Configures yarn as the package manager */
+    withYarn(options?: WithYarnOptions): NodeAppResourcePromise {
+        const install = options?.install;
+        const installArgs = options?.installArgs;
+        return new NodeAppResourcePromise(this._withYarnInternal(install, installArgs));
+    }
+
+    /** @internal */
+    private async _withPnpmInternal(install?: boolean, installArgs?: string[]): Promise<NodeAppResource> {
+        const rpcArgs: Record<string, unknown> = { resource: this._handle };
+        if (install !== undefined) rpcArgs.install = install;
+        if (installArgs !== undefined) rpcArgs.installArgs = installArgs;
+        const result = await this._client.invokeCapability<NodeAppResourceHandle>(
+            'Aspire.Hosting.JavaScript/withPnpm',
+            rpcArgs
+        );
+        return new NodeAppResource(result, this._client);
+    }
+
+    /** Configures pnpm as the package manager */
+    withPnpm(options?: WithPnpmOptions): NodeAppResourcePromise {
+        const install = options?.install;
+        const installArgs = options?.installArgs;
+        return new NodeAppResourcePromise(this._withPnpmInternal(install, installArgs));
+    }
+
+    /** @internal */
+    private async _withBuildScriptInternal(scriptName: string, args?: string[]): Promise<NodeAppResource> {
+        const rpcArgs: Record<string, unknown> = { resource: this._handle, scriptName };
+        if (args !== undefined) rpcArgs.args = args;
+        const result = await this._client.invokeCapability<NodeAppResourceHandle>(
+            'Aspire.Hosting.JavaScript/withBuildScript',
+            rpcArgs
+        );
+        return new NodeAppResource(result, this._client);
+    }
+
+    /** Specifies an npm script to run before starting the application */
+    withBuildScript(scriptName: string, options?: WithBuildScriptOptions): NodeAppResourcePromise {
+        const args = options?.args;
+        return new NodeAppResourcePromise(this._withBuildScriptInternal(scriptName, args));
+    }
+
+    /** @internal */
+    private async _withRunScriptInternal(scriptName: string, args?: string[]): Promise<NodeAppResource> {
+        const rpcArgs: Record<string, unknown> = { resource: this._handle, scriptName };
+        if (args !== undefined) rpcArgs.args = args;
+        const result = await this._client.invokeCapability<NodeAppResourceHandle>(
+            'Aspire.Hosting.JavaScript/withRunScript',
+            rpcArgs
+        );
+        return new NodeAppResource(result, this._client);
+    }
+
+    /** Specifies an npm script to run during development */
+    withRunScript(scriptName: string, options?: WithRunScriptOptions): NodeAppResourcePromise {
+        const args = options?.args;
+        return new NodeAppResourcePromise(this._withRunScriptInternal(scriptName, args));
+    }
+
+    /** @internal */
+    private async _withBrowserDebuggerInternal(browser?: string): Promise<NodeAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle };
+        if (browser !== undefined) rpcArgs.browser = browser;
+        const result = await this._client.invokeCapability<NodeAppResourceHandle>(
+            'Aspire.Hosting.JavaScript/withBrowserDebugger',
+            rpcArgs
+        );
+        return new NodeAppResource(result, this._client);
+    }
+
+    /** Configures a browser debugger for the JavaScript application */
+    withBrowserDebugger(options?: WithBrowserDebuggerOptions): NodeAppResourcePromise {
+        const browser = options?.browser;
+        return new NodeAppResourcePromise(this._withBrowserDebuggerInternal(browser));
+    }
+
+}
+
+/**
+ * Thenable wrapper for NodeAppResource that enables fluent chaining.
+ * @example
+ * await builder.addSomething().withX().withY();
+ */
+export class NodeAppResourcePromise implements PromiseLike<NodeAppResource> {
+    constructor(private _promise: Promise<NodeAppResource>) {}
+
+    then<TResult1 = NodeAppResource, TResult2 = never>(
+        onfulfilled?: ((value: NodeAppResource) => TResult1 | PromiseLike<TResult1>) | null,
+        onrejected?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null
+    ): PromiseLike<TResult1 | TResult2> {
+        return this._promise.then(onfulfilled, onrejected);
+    }
+
+    /** Configures a resource to use a container registry */
+    withContainerRegistry(registry: ResourceBuilderBase): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._promise.then(obj => obj.withContainerRegistry(registry)));
+    }
+
+    /** Sets the base image for a Dockerfile build */
+    withDockerfileBaseImage(options?: WithDockerfileBaseImageOptions): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._promise.then(obj => obj.withDockerfileBaseImage(options)));
+    }
+
+    /** Publishes the executable as a Docker container */
+    publishAsDockerFile(): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._promise.then(obj => obj.publishAsDockerFile()));
+    }
+
+    /** Publishes an executable as a Docker file with optional container configuration */
+    publishAsDockerFileWithConfigure(configure: (obj: ContainerResource) => Promise<void>): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._promise.then(obj => obj.publishAsDockerFileWithConfigure(configure)));
+    }
+
+    /** Sets the executable command */
+    withExecutableCommand(command: string): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._promise.then(obj => obj.withExecutableCommand(command)));
+    }
+
+    /** Sets the executable working directory */
+    withWorkingDirectory(workingDirectory: string): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._promise.then(obj => obj.withWorkingDirectory(workingDirectory)));
+    }
+
+    /** Configures an MCP server endpoint on the resource */
+    withMcpServer(options?: WithMcpServerOptions): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._promise.then(obj => obj.withMcpServer(options)));
+    }
+
+    /** Configures OTLP telemetry export */
+    withOtlpExporter(): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._promise.then(obj => obj.withOtlpExporter()));
+    }
+
+    /** Configures OTLP telemetry export with specific protocol */
+    withOtlpExporterProtocol(protocol: OtlpProtocol): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._promise.then(obj => obj.withOtlpExporterProtocol(protocol)));
+    }
+
+    /** Adds a required command dependency */
+    withRequiredCommand(command: string, options?: WithRequiredCommandOptions): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._promise.then(obj => obj.withRequiredCommand(command, options)));
+    }
+
+    /** Sets environment variables via callback */
+    withEnvironmentCallback(callback: (arg: EnvironmentCallbackContext) => Promise<void>): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._promise.then(obj => obj.withEnvironmentCallback(callback)));
+    }
+
+    /** Sets an environment variable from an endpoint reference */
+    withEnvironmentEndpoint(name: string, endpointReference: EndpointReference): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._promise.then(obj => obj.withEnvironmentEndpoint(name, endpointReference)));
+    }
+
+    /** Sets an environment variable on the resource */
+    withEnvironment(name: string, value: string | ReferenceExpression | EndpointReference | ParameterResource | ResourceWithConnectionString): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._promise.then(obj => obj.withEnvironment(name, value)));
+    }
+
+    /** Sets an environment variable from a parameter resource */
+    withEnvironmentParameter(name: string, parameter: ParameterResource): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._promise.then(obj => obj.withEnvironmentParameter(name, parameter)));
+    }
+
+    /** Sets an environment variable from a connection string resource */
+    withEnvironmentConnectionString(envVarName: string, resource: ResourceBuilderBase): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._promise.then(obj => obj.withEnvironmentConnectionString(envVarName, resource)));
+    }
+
+    /** Adds arguments */
+    withArgs(args: string[]): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._promise.then(obj => obj.withArgs(args)));
+    }
+
+    /** Sets command-line arguments via callback */
+    withArgsCallback(callback: (obj: CommandLineArgsCallbackContext) => Promise<void>): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._promise.then(obj => obj.withArgsCallback(callback)));
+    }
+
+    /** Sets command-line arguments via async callback */
+    withArgsCallbackAsync(callback: (arg: CommandLineArgsCallbackContext) => Promise<void>): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._promise.then(obj => obj.withArgsCallbackAsync(callback)));
+    }
+
+    /** Adds a reference to another resource */
+    withReference(source: ResourceBuilderBase, options?: WithReferenceOptions): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._promise.then(obj => obj.withReference(source, options)));
+    }
+
+    /** Adds a reference to a URI */
+    withReferenceUri(name: string, uri: string): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._promise.then(obj => obj.withReferenceUri(name, uri)));
+    }
+
+    /** Adds a reference to an external service */
+    withReferenceExternalService(externalService: ExternalServiceResource): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._promise.then(obj => obj.withReferenceExternalService(externalService)));
+    }
+
+    /** Adds a reference to an endpoint */
+    withReferenceEndpoint(endpointReference: EndpointReference): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._promise.then(obj => obj.withReferenceEndpoint(endpointReference)));
+    }
+
+    /** Adds a network endpoint */
+    withEndpoint(options?: WithEndpointOptions): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._promise.then(obj => obj.withEndpoint(options)));
+    }
+
+    /** Adds an HTTP endpoint */
+    withHttpEndpoint(options?: WithHttpEndpointOptions): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._promise.then(obj => obj.withHttpEndpoint(options)));
+    }
+
+    /** Adds an HTTPS endpoint */
+    withHttpsEndpoint(options?: WithHttpsEndpointOptions): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._promise.then(obj => obj.withHttpsEndpoint(options)));
+    }
+
+    /** Makes HTTP endpoints externally accessible */
+    withExternalHttpEndpoints(): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._promise.then(obj => obj.withExternalHttpEndpoints()));
+    }
+
+    /** Gets an endpoint reference */
+    getEndpoint(name: string): Promise<EndpointReference> {
+        return this._promise.then(obj => obj.getEndpoint(name));
+    }
+
+    /** Configures resource for HTTP/2 */
+    asHttp2Service(): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._promise.then(obj => obj.asHttp2Service()));
+    }
+
+    /** Customizes displayed URLs via callback */
+    withUrlsCallback(callback: (obj: ResourceUrlsCallbackContext) => Promise<void>): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._promise.then(obj => obj.withUrlsCallback(callback)));
+    }
+
+    /** Customizes displayed URLs via async callback */
+    withUrlsCallbackAsync(callback: (arg: ResourceUrlsCallbackContext) => Promise<void>): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._promise.then(obj => obj.withUrlsCallbackAsync(callback)));
+    }
+
+    /** Adds or modifies displayed URLs */
+    withUrl(url: string, options?: WithUrlOptions): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._promise.then(obj => obj.withUrl(url, options)));
+    }
+
+    /** Adds a URL using a reference expression */
+    withUrlExpression(url: ReferenceExpression, options?: WithUrlExpressionOptions): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._promise.then(obj => obj.withUrlExpression(url, options)));
+    }
+
+    /** Customizes the URL for a specific endpoint via callback */
+    withUrlForEndpoint(endpointName: string, callback: (obj: ResourceUrlAnnotation) => Promise<void>): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._promise.then(obj => obj.withUrlForEndpoint(endpointName, callback)));
+    }
+
+    /** Adds a URL for a specific endpoint via factory callback */
+    withUrlForEndpointFactory(endpointName: string, callback: (arg: EndpointReference) => Promise<ResourceUrlAnnotation>): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._promise.then(obj => obj.withUrlForEndpointFactory(endpointName, callback)));
+    }
+
+    /** Configures the resource to copy container files from the specified source during publishing */
+    publishWithContainerFiles(source: ResourceBuilderBase, destinationPath: string): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._promise.then(obj => obj.publishWithContainerFiles(source, destinationPath)));
+    }
+
+    /** Sets the source directory for container files */
+    withContainerFilesSource(sourcePath: string): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._promise.then(obj => obj.withContainerFilesSource(sourcePath)));
+    }
+
+    /** Clears all container file sources */
+    clearContainerFilesSources(): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._promise.then(obj => obj.clearContainerFilesSources()));
+    }
+
+    /** Excludes the resource from the deployment manifest */
+    excludeFromManifest(): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._promise.then(obj => obj.excludeFromManifest()));
+    }
+
+    /** Waits for another resource to be ready */
+    waitFor(dependency: ResourceBuilderBase): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._promise.then(obj => obj.waitFor(dependency)));
+    }
+
+    /** Waits for another resource with specific behavior */
+    waitForWithBehavior(dependency: ResourceBuilderBase, waitBehavior: WaitBehavior): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._promise.then(obj => obj.waitForWithBehavior(dependency, waitBehavior)));
+    }
+
+    /** Waits for another resource to start */
+    waitForStart(dependency: ResourceBuilderBase): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._promise.then(obj => obj.waitForStart(dependency)));
+    }
+
+    /** Waits for another resource to start with specific behavior */
+    waitForStartWithBehavior(dependency: ResourceBuilderBase, waitBehavior: WaitBehavior): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._promise.then(obj => obj.waitForStartWithBehavior(dependency, waitBehavior)));
+    }
+
+    /** Prevents resource from starting automatically */
+    withExplicitStart(): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._promise.then(obj => obj.withExplicitStart()));
+    }
+
+    /** Waits for resource completion */
+    waitForCompletion(dependency: ResourceBuilderBase, options?: WaitForCompletionOptions): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._promise.then(obj => obj.waitForCompletion(dependency, options)));
+    }
+
+    /** Adds a health check by key */
+    withHealthCheck(key: string): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._promise.then(obj => obj.withHealthCheck(key)));
+    }
+
+    /** Adds an HTTP health check */
+    withHttpHealthCheck(options?: WithHttpHealthCheckOptions): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._promise.then(obj => obj.withHttpHealthCheck(options)));
+    }
+
+    /** Adds a resource command */
+    withCommand(name: string, displayName: string, executeCommand: (arg: ExecuteCommandContext) => Promise<ExecuteCommandResult>, options?: WithCommandOptions): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._promise.then(obj => obj.withCommand(name, displayName, executeCommand, options)));
+    }
+
+    /** Configures developer certificate trust */
+    withDeveloperCertificateTrust(trust: boolean): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._promise.then(obj => obj.withDeveloperCertificateTrust(trust)));
+    }
+
+    /** Sets the certificate trust scope */
+    withCertificateTrustScope(scope: CertificateTrustScope): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._promise.then(obj => obj.withCertificateTrustScope(scope)));
+    }
+
+    /** Configures HTTPS with a developer certificate */
+    withHttpsDeveloperCertificate(options?: WithHttpsDeveloperCertificateOptions): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._promise.then(obj => obj.withHttpsDeveloperCertificate(options)));
+    }
+
+    /** Removes HTTPS certificate configuration */
+    withoutHttpsCertificate(): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._promise.then(obj => obj.withoutHttpsCertificate()));
+    }
+
+    /** Sets the parent relationship */
+    withParentRelationship(parent: ResourceBuilderBase): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._promise.then(obj => obj.withParentRelationship(parent)));
+    }
+
+    /** Sets a child relationship */
+    withChildRelationship(child: ResourceBuilderBase): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._promise.then(obj => obj.withChildRelationship(child)));
+    }
+
+    /** Sets the icon for the resource */
+    withIconName(iconName: string, options?: WithIconNameOptions): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._promise.then(obj => obj.withIconName(iconName, options)));
+    }
+
+    /** Adds an HTTP health probe to the resource */
+    withHttpProbe(probeType: ProbeType, options?: WithHttpProbeOptions): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._promise.then(obj => obj.withHttpProbe(probeType, options)));
+    }
+
+    /** Excludes the resource from MCP server exposure */
+    excludeFromMcp(): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._promise.then(obj => obj.excludeFromMcp()));
+    }
+
+    /** Sets the remote image name for publishing */
+    withRemoteImageName(remoteImageName: string): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._promise.then(obj => obj.withRemoteImageName(remoteImageName)));
+    }
+
+    /** Sets the remote image tag for publishing */
+    withRemoteImageTag(remoteImageTag: string): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._promise.then(obj => obj.withRemoteImageTag(remoteImageTag)));
+    }
+
+    /** Adds a pipeline step to the resource */
+    withPipelineStepFactory(stepName: string, callback: (arg: PipelineStepContext) => Promise<void>, options?: WithPipelineStepFactoryOptions): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._promise.then(obj => obj.withPipelineStepFactory(stepName, callback, options)));
+    }
+
+    /** Configures pipeline step dependencies via an async callback */
+    withPipelineConfigurationAsync(callback: (arg: PipelineConfigurationContext) => Promise<void>): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._promise.then(obj => obj.withPipelineConfigurationAsync(callback)));
+    }
+
+    /** Configures pipeline step dependencies via a callback */
+    withPipelineConfiguration(callback: (obj: PipelineConfigurationContext) => Promise<void>): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._promise.then(obj => obj.withPipelineConfiguration(callback)));
+    }
+
+    /** Gets the resource name */
+    getResourceName(): Promise<string> {
+        return this._promise.then(obj => obj.getResourceName());
+    }
+
+    /** Subscribes to the BeforeResourceStarted event */
+    onBeforeResourceStarted(callback: (arg: BeforeResourceStartedEvent) => Promise<void>): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._promise.then(obj => obj.onBeforeResourceStarted(callback)));
+    }
+
+    /** Subscribes to the ResourceStopped event */
+    onResourceStopped(callback: (arg: ResourceStoppedEvent) => Promise<void>): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._promise.then(obj => obj.onResourceStopped(callback)));
+    }
+
+    /** Subscribes to the InitializeResource event */
+    onInitializeResource(callback: (arg: InitializeResourceEvent) => Promise<void>): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._promise.then(obj => obj.onInitializeResource(callback)));
+    }
+
+    /** Subscribes to the ResourceEndpointsAllocated event */
+    onResourceEndpointsAllocated(callback: (arg: ResourceEndpointsAllocatedEvent) => Promise<void>): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._promise.then(obj => obj.onResourceEndpointsAllocated(callback)));
+    }
+
+    /** Subscribes to the ResourceReady event */
+    onResourceReady(callback: (arg: ResourceReadyEvent) => Promise<void>): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._promise.then(obj => obj.onResourceReady(callback)));
+    }
+
+    /** Configures npm as the package manager */
+    withNpm(options?: WithNpmOptions): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._promise.then(obj => obj.withNpm(options)));
+    }
+
+    /** Configures Bun as the package manager */
+    withBun(options?: WithBunOptions): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._promise.then(obj => obj.withBun(options)));
+    }
+
+    /** Configures yarn as the package manager */
+    withYarn(options?: WithYarnOptions): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._promise.then(obj => obj.withYarn(options)));
+    }
+
+    /** Configures pnpm as the package manager */
+    withPnpm(options?: WithPnpmOptions): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._promise.then(obj => obj.withPnpm(options)));
+    }
+
+    /** Specifies an npm script to run before starting the application */
+    withBuildScript(scriptName: string, options?: WithBuildScriptOptions): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._promise.then(obj => obj.withBuildScript(scriptName, options)));
+    }
+
+    /** Specifies an npm script to run during development */
+    withRunScript(scriptName: string, options?: WithRunScriptOptions): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._promise.then(obj => obj.withRunScript(scriptName, options)));
+    }
+
+    /** Configures a browser debugger for the JavaScript application */
+    withBrowserDebugger(options?: WithBrowserDebuggerOptions): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._promise.then(obj => obj.withBrowserDebugger(options)));
     }
 
 }
@@ -12268,7 +19139,7 @@ export class ParameterResource extends ResourceBuilderBase<ParameterResourceHand
     private async _withParentRelationshipInternal(parent: ResourceBuilderBase): Promise<ParameterResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, parent };
         const result = await this._client.invokeCapability<ParameterResourceHandle>(
-            'Aspire.Hosting/withParentRelationship',
+            'Aspire.Hosting/withBuilderParentRelationship',
             rpcArgs
         );
         return new ParameterResource(result, this._client);
@@ -12283,7 +19154,7 @@ export class ParameterResource extends ResourceBuilderBase<ParameterResourceHand
     private async _withChildRelationshipInternal(child: ResourceBuilderBase): Promise<ParameterResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, child };
         const result = await this._client.invokeCapability<ParameterResourceHandle>(
-            'Aspire.Hosting/withChildRelationship',
+            'Aspire.Hosting/withBuilderChildRelationship',
             rpcArgs
         );
         return new ParameterResource(result, this._client);
@@ -12324,36 +19195,6 @@ export class ParameterResource extends ResourceBuilderBase<ParameterResourceHand
     /** Excludes the resource from MCP server exposure */
     excludeFromMcp(): ParameterResourcePromise {
         return new ParameterResourcePromise(this._excludeFromMcpInternal());
-    }
-
-    /** @internal */
-    private async _withRemoteImageNameInternal(remoteImageName: string): Promise<ParameterResource> {
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, remoteImageName };
-        const result = await this._client.invokeCapability<ParameterResourceHandle>(
-            'Aspire.Hosting/withRemoteImageName',
-            rpcArgs
-        );
-        return new ParameterResource(result, this._client);
-    }
-
-    /** Sets the remote image name for publishing */
-    withRemoteImageName(remoteImageName: string): ParameterResourcePromise {
-        return new ParameterResourcePromise(this._withRemoteImageNameInternal(remoteImageName));
-    }
-
-    /** @internal */
-    private async _withRemoteImageTagInternal(remoteImageTag: string): Promise<ParameterResource> {
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, remoteImageTag };
-        const result = await this._client.invokeCapability<ParameterResourceHandle>(
-            'Aspire.Hosting/withRemoteImageTag',
-            rpcArgs
-        );
-        return new ParameterResource(result, this._client);
-    }
-
-    /** Sets the remote image tag for publishing */
-    withRemoteImageTag(remoteImageTag: string): ParameterResourcePromise {
-        return new ParameterResourcePromise(this._withRemoteImageTagInternal(remoteImageTag));
     }
 
     /** @internal */
@@ -12431,6 +19272,86 @@ export class ParameterResource extends ResourceBuilderBase<ParameterResourceHand
             'Aspire.Hosting/getResourceName',
             rpcArgs
         );
+    }
+
+    /** @internal */
+    private async _onBeforeResourceStartedInternal(callback: (arg: BeforeResourceStartedEvent) => Promise<void>): Promise<ParameterResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as BeforeResourceStartedEventHandle;
+            const arg = new BeforeResourceStartedEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<ParameterResourceHandle>(
+            'Aspire.Hosting/onBeforeResourceStarted',
+            rpcArgs
+        );
+        return new ParameterResource(result, this._client);
+    }
+
+    /** Subscribes to the BeforeResourceStarted event */
+    onBeforeResourceStarted(callback: (arg: BeforeResourceStartedEvent) => Promise<void>): ParameterResourcePromise {
+        return new ParameterResourcePromise(this._onBeforeResourceStartedInternal(callback));
+    }
+
+    /** @internal */
+    private async _onResourceStoppedInternal(callback: (arg: ResourceStoppedEvent) => Promise<void>): Promise<ParameterResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ResourceStoppedEventHandle;
+            const arg = new ResourceStoppedEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<ParameterResourceHandle>(
+            'Aspire.Hosting/onResourceStopped',
+            rpcArgs
+        );
+        return new ParameterResource(result, this._client);
+    }
+
+    /** Subscribes to the ResourceStopped event */
+    onResourceStopped(callback: (arg: ResourceStoppedEvent) => Promise<void>): ParameterResourcePromise {
+        return new ParameterResourcePromise(this._onResourceStoppedInternal(callback));
+    }
+
+    /** @internal */
+    private async _onInitializeResourceInternal(callback: (arg: InitializeResourceEvent) => Promise<void>): Promise<ParameterResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as InitializeResourceEventHandle;
+            const arg = new InitializeResourceEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<ParameterResourceHandle>(
+            'Aspire.Hosting/onInitializeResource',
+            rpcArgs
+        );
+        return new ParameterResource(result, this._client);
+    }
+
+    /** Subscribes to the InitializeResource event */
+    onInitializeResource(callback: (arg: InitializeResourceEvent) => Promise<void>): ParameterResourcePromise {
+        return new ParameterResourcePromise(this._onInitializeResourceInternal(callback));
+    }
+
+    /** @internal */
+    private async _onResourceReadyInternal(callback: (arg: ResourceReadyEvent) => Promise<void>): Promise<ParameterResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ResourceReadyEventHandle;
+            const arg = new ResourceReadyEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<ParameterResourceHandle>(
+            'Aspire.Hosting/onResourceReady',
+            rpcArgs
+        );
+        return new ParameterResource(result, this._client);
+    }
+
+    /** Subscribes to the ResourceReady event */
+    onResourceReady(callback: (arg: ResourceReadyEvent) => Promise<void>): ParameterResourcePromise {
+        return new ParameterResourcePromise(this._onResourceReadyInternal(callback));
     }
 
 }
@@ -12535,16 +19456,6 @@ export class ParameterResourcePromise implements PromiseLike<ParameterResource> 
         return new ParameterResourcePromise(this._promise.then(obj => obj.excludeFromMcp()));
     }
 
-    /** Sets the remote image name for publishing */
-    withRemoteImageName(remoteImageName: string): ParameterResourcePromise {
-        return new ParameterResourcePromise(this._promise.then(obj => obj.withRemoteImageName(remoteImageName)));
-    }
-
-    /** Sets the remote image tag for publishing */
-    withRemoteImageTag(remoteImageTag: string): ParameterResourcePromise {
-        return new ParameterResourcePromise(this._promise.then(obj => obj.withRemoteImageTag(remoteImageTag)));
-    }
-
     /** Adds a pipeline step to the resource */
     withPipelineStepFactory(stepName: string, callback: (arg: PipelineStepContext) => Promise<void>, options?: WithPipelineStepFactoryOptions): ParameterResourcePromise {
         return new ParameterResourcePromise(this._promise.then(obj => obj.withPipelineStepFactory(stepName, callback, options)));
@@ -12563,6 +19474,26 @@ export class ParameterResourcePromise implements PromiseLike<ParameterResource> 
     /** Gets the resource name */
     getResourceName(): Promise<string> {
         return this._promise.then(obj => obj.getResourceName());
+    }
+
+    /** Subscribes to the BeforeResourceStarted event */
+    onBeforeResourceStarted(callback: (arg: BeforeResourceStartedEvent) => Promise<void>): ParameterResourcePromise {
+        return new ParameterResourcePromise(this._promise.then(obj => obj.onBeforeResourceStarted(callback)));
+    }
+
+    /** Subscribes to the ResourceStopped event */
+    onResourceStopped(callback: (arg: ResourceStoppedEvent) => Promise<void>): ParameterResourcePromise {
+        return new ParameterResourcePromise(this._promise.then(obj => obj.onResourceStopped(callback)));
+    }
+
+    /** Subscribes to the InitializeResource event */
+    onInitializeResource(callback: (arg: InitializeResourceEvent) => Promise<void>): ParameterResourcePromise {
+        return new ParameterResourcePromise(this._promise.then(obj => obj.onInitializeResource(callback)));
+    }
+
+    /** Subscribes to the ResourceReady event */
+    onResourceReady(callback: (arg: ResourceReadyEvent) => Promise<void>): ParameterResourcePromise {
+        return new ParameterResourcePromise(this._promise.then(obj => obj.onResourceReady(callback)));
     }
 
 }
@@ -12783,7 +19714,7 @@ export class PgAdminContainerResource extends ResourceBuilderBase<PgAdminContain
     private async _withBuildArgInternal(name: string, value: ParameterResource): Promise<PgAdminContainerResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, name, value };
         const result = await this._client.invokeCapability<PgAdminContainerResourceHandle>(
-            'Aspire.Hosting/withBuildArg',
+            'Aspire.Hosting/withParameterBuildArg',
             rpcArgs
         );
         return new PgAdminContainerResource(result, this._client);
@@ -12798,7 +19729,7 @@ export class PgAdminContainerResource extends ResourceBuilderBase<PgAdminContain
     private async _withBuildSecretInternal(name: string, value: ParameterResource): Promise<PgAdminContainerResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, name, value };
         const result = await this._client.invokeCapability<PgAdminContainerResourceHandle>(
-            'Aspire.Hosting/withBuildSecret',
+            'Aspire.Hosting/withParameterBuildSecret',
             rpcArgs
         );
         return new PgAdminContainerResource(result, this._client);
@@ -12940,41 +19871,11 @@ export class PgAdminContainerResource extends ResourceBuilderBase<PgAdminContain
     }
 
     /** @internal */
-    private async _withEnvironmentInternal(name: string, value: string): Promise<PgAdminContainerResource> {
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, name, value };
-        const result = await this._client.invokeCapability<PgAdminContainerResourceHandle>(
-            'Aspire.Hosting/withEnvironment',
-            rpcArgs
-        );
-        return new PgAdminContainerResource(result, this._client);
-    }
-
-    /** Sets an environment variable */
-    withEnvironment(name: string, value: string): PgAdminContainerResourcePromise {
-        return new PgAdminContainerResourcePromise(this._withEnvironmentInternal(name, value));
-    }
-
-    /** @internal */
-    private async _withEnvironmentExpressionInternal(name: string, value: ReferenceExpression): Promise<PgAdminContainerResource> {
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, name, value };
-        const result = await this._client.invokeCapability<PgAdminContainerResourceHandle>(
-            'Aspire.Hosting/withEnvironmentExpression',
-            rpcArgs
-        );
-        return new PgAdminContainerResource(result, this._client);
-    }
-
-    /** Adds an environment variable with a reference expression */
-    withEnvironmentExpression(name: string, value: ReferenceExpression): PgAdminContainerResourcePromise {
-        return new PgAdminContainerResourcePromise(this._withEnvironmentExpressionInternal(name, value));
-    }
-
-    /** @internal */
-    private async _withEnvironmentCallbackInternal(callback: (obj: EnvironmentCallbackContext) => Promise<void>): Promise<PgAdminContainerResource> {
-        const callbackId = registerCallback(async (objData: unknown) => {
-            const objHandle = wrapIfHandle(objData) as EnvironmentCallbackContextHandle;
-            const obj = new EnvironmentCallbackContext(objHandle, this._client);
-            await callback(obj);
+    private async _withEnvironmentCallbackInternal(callback: (arg: EnvironmentCallbackContext) => Promise<void>): Promise<PgAdminContainerResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as EnvironmentCallbackContextHandle;
+            const arg = new EnvironmentCallbackContext(argHandle, this._client);
+            await callback(arg);
         });
         const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
         const result = await this._client.invokeCapability<PgAdminContainerResourceHandle>(
@@ -12985,28 +19886,8 @@ export class PgAdminContainerResource extends ResourceBuilderBase<PgAdminContain
     }
 
     /** Sets environment variables via callback */
-    withEnvironmentCallback(callback: (obj: EnvironmentCallbackContext) => Promise<void>): PgAdminContainerResourcePromise {
+    withEnvironmentCallback(callback: (arg: EnvironmentCallbackContext) => Promise<void>): PgAdminContainerResourcePromise {
         return new PgAdminContainerResourcePromise(this._withEnvironmentCallbackInternal(callback));
-    }
-
-    /** @internal */
-    private async _withEnvironmentCallbackAsyncInternal(callback: (arg: EnvironmentCallbackContext) => Promise<void>): Promise<PgAdminContainerResource> {
-        const callbackId = registerCallback(async (argData: unknown) => {
-            const argHandle = wrapIfHandle(argData) as EnvironmentCallbackContextHandle;
-            const arg = new EnvironmentCallbackContext(argHandle, this._client);
-            await callback(arg);
-        });
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
-        const result = await this._client.invokeCapability<PgAdminContainerResourceHandle>(
-            'Aspire.Hosting/withEnvironmentCallbackAsync',
-            rpcArgs
-        );
-        return new PgAdminContainerResource(result, this._client);
-    }
-
-    /** Sets environment variables via async callback */
-    withEnvironmentCallbackAsync(callback: (arg: EnvironmentCallbackContext) => Promise<void>): PgAdminContainerResourcePromise {
-        return new PgAdminContainerResourcePromise(this._withEnvironmentCallbackAsyncInternal(callback));
     }
 
     /** @internal */
@@ -13022,6 +19903,21 @@ export class PgAdminContainerResource extends ResourceBuilderBase<PgAdminContain
     /** Sets an environment variable from an endpoint reference */
     withEnvironmentEndpoint(name: string, endpointReference: EndpointReference): PgAdminContainerResourcePromise {
         return new PgAdminContainerResourcePromise(this._withEnvironmentEndpointInternal(name, endpointReference));
+    }
+
+    /** @internal */
+    private async _withEnvironmentInternal(name: string, value: string | ReferenceExpression | EndpointReference | ParameterResource | ResourceWithConnectionString): Promise<PgAdminContainerResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, name, value };
+        const result = await this._client.invokeCapability<PgAdminContainerResourceHandle>(
+            'Aspire.Hosting/withEnvironment',
+            rpcArgs
+        );
+        return new PgAdminContainerResource(result, this._client);
+    }
+
+    /** Sets an environment variable on the resource */
+    withEnvironment(name: string, value: string | ReferenceExpression | EndpointReference | ParameterResource | ResourceWithConnectionString): PgAdminContainerResourcePromise {
+        return new PgAdminContainerResourcePromise(this._withEnvironmentInternal(name, value));
     }
 
     /** @internal */
@@ -13110,10 +20006,11 @@ export class PgAdminContainerResource extends ResourceBuilderBase<PgAdminContain
     }
 
     /** @internal */
-    private async _withReferenceInternal(source: ResourceBuilderBase, connectionName?: string, optional?: boolean): Promise<PgAdminContainerResource> {
+    private async _withReferenceInternal(source: ResourceBuilderBase, connectionName?: string, optional?: boolean, name?: string): Promise<PgAdminContainerResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, source };
         if (connectionName !== undefined) rpcArgs.connectionName = connectionName;
         if (optional !== undefined) rpcArgs.optional = optional;
+        if (name !== undefined) rpcArgs.name = name;
         const result = await this._client.invokeCapability<PgAdminContainerResourceHandle>(
             'Aspire.Hosting/withReference',
             rpcArgs
@@ -13125,37 +20022,8 @@ export class PgAdminContainerResource extends ResourceBuilderBase<PgAdminContain
     withReference(source: ResourceBuilderBase, options?: WithReferenceOptions): PgAdminContainerResourcePromise {
         const connectionName = options?.connectionName;
         const optional = options?.optional;
-        return new PgAdminContainerResourcePromise(this._withReferenceInternal(source, connectionName, optional));
-    }
-
-    /** @internal */
-    private async _withServiceReferenceInternal(source: ResourceBuilderBase): Promise<PgAdminContainerResource> {
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, source };
-        const result = await this._client.invokeCapability<PgAdminContainerResourceHandle>(
-            'Aspire.Hosting/withServiceReference',
-            rpcArgs
-        );
-        return new PgAdminContainerResource(result, this._client);
-    }
-
-    /** Adds a service discovery reference to another resource */
-    withServiceReference(source: ResourceBuilderBase): PgAdminContainerResourcePromise {
-        return new PgAdminContainerResourcePromise(this._withServiceReferenceInternal(source));
-    }
-
-    /** @internal */
-    private async _withServiceReferenceNamedInternal(source: ResourceBuilderBase, name: string): Promise<PgAdminContainerResource> {
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, source, name };
-        const result = await this._client.invokeCapability<PgAdminContainerResourceHandle>(
-            'Aspire.Hosting/withServiceReferenceNamed',
-            rpcArgs
-        );
-        return new PgAdminContainerResource(result, this._client);
-    }
-
-    /** Adds a named service discovery reference */
-    withServiceReferenceNamed(source: ResourceBuilderBase, name: string): PgAdminContainerResourcePromise {
-        return new PgAdminContainerResourcePromise(this._withServiceReferenceNamedInternal(source, name));
+        const name = options?.name;
+        return new PgAdminContainerResourcePromise(this._withReferenceInternal(source, connectionName, optional, name));
     }
 
     /** @internal */
@@ -13455,7 +20323,7 @@ export class PgAdminContainerResource extends ResourceBuilderBase<PgAdminContain
     private async _waitForInternal(dependency: ResourceBuilderBase): Promise<PgAdminContainerResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, dependency };
         const result = await this._client.invokeCapability<PgAdminContainerResourceHandle>(
-            'Aspire.Hosting/waitFor',
+            'Aspire.Hosting/waitForResource',
             rpcArgs
         );
         return new PgAdminContainerResource(result, this._client);
@@ -13485,7 +20353,7 @@ export class PgAdminContainerResource extends ResourceBuilderBase<PgAdminContain
     private async _waitForStartInternal(dependency: ResourceBuilderBase): Promise<PgAdminContainerResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, dependency };
         const result = await this._client.invokeCapability<PgAdminContainerResourceHandle>(
-            'Aspire.Hosting/waitForStart',
+            'Aspire.Hosting/waitForResourceStart',
             rpcArgs
         );
         return new PgAdminContainerResource(result, this._client);
@@ -13531,7 +20399,7 @@ export class PgAdminContainerResource extends ResourceBuilderBase<PgAdminContain
         const rpcArgs: Record<string, unknown> = { builder: this._handle, dependency };
         if (exitCode !== undefined) rpcArgs.exitCode = exitCode;
         const result = await this._client.invokeCapability<PgAdminContainerResourceHandle>(
-            'Aspire.Hosting/waitForCompletion',
+            'Aspire.Hosting/waitForResourceCompletion',
             rpcArgs
         );
         return new PgAdminContainerResource(result, this._client);
@@ -13636,7 +20504,7 @@ export class PgAdminContainerResource extends ResourceBuilderBase<PgAdminContain
         const rpcArgs: Record<string, unknown> = { builder: this._handle };
         if (password !== undefined) rpcArgs.password = password;
         const result = await this._client.invokeCapability<PgAdminContainerResourceHandle>(
-            'Aspire.Hosting/withHttpsDeveloperCertificate',
+            'Aspire.Hosting/withParameterHttpsDeveloperCertificate',
             rpcArgs
         );
         return new PgAdminContainerResource(result, this._client);
@@ -13667,7 +20535,7 @@ export class PgAdminContainerResource extends ResourceBuilderBase<PgAdminContain
     private async _withParentRelationshipInternal(parent: ResourceBuilderBase): Promise<PgAdminContainerResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, parent };
         const result = await this._client.invokeCapability<PgAdminContainerResourceHandle>(
-            'Aspire.Hosting/withParentRelationship',
+            'Aspire.Hosting/withBuilderParentRelationship',
             rpcArgs
         );
         return new PgAdminContainerResource(result, this._client);
@@ -13682,7 +20550,7 @@ export class PgAdminContainerResource extends ResourceBuilderBase<PgAdminContain
     private async _withChildRelationshipInternal(child: ResourceBuilderBase): Promise<PgAdminContainerResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, child };
         const result = await this._client.invokeCapability<PgAdminContainerResourceHandle>(
-            'Aspire.Hosting/withChildRelationship',
+            'Aspire.Hosting/withBuilderChildRelationship',
             rpcArgs
         );
         return new PgAdminContainerResource(result, this._client);
@@ -13881,6 +20749,106 @@ export class PgAdminContainerResource extends ResourceBuilderBase<PgAdminContain
     }
 
     /** @internal */
+    private async _onBeforeResourceStartedInternal(callback: (arg: BeforeResourceStartedEvent) => Promise<void>): Promise<PgAdminContainerResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as BeforeResourceStartedEventHandle;
+            const arg = new BeforeResourceStartedEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<PgAdminContainerResourceHandle>(
+            'Aspire.Hosting/onBeforeResourceStarted',
+            rpcArgs
+        );
+        return new PgAdminContainerResource(result, this._client);
+    }
+
+    /** Subscribes to the BeforeResourceStarted event */
+    onBeforeResourceStarted(callback: (arg: BeforeResourceStartedEvent) => Promise<void>): PgAdminContainerResourcePromise {
+        return new PgAdminContainerResourcePromise(this._onBeforeResourceStartedInternal(callback));
+    }
+
+    /** @internal */
+    private async _onResourceStoppedInternal(callback: (arg: ResourceStoppedEvent) => Promise<void>): Promise<PgAdminContainerResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ResourceStoppedEventHandle;
+            const arg = new ResourceStoppedEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<PgAdminContainerResourceHandle>(
+            'Aspire.Hosting/onResourceStopped',
+            rpcArgs
+        );
+        return new PgAdminContainerResource(result, this._client);
+    }
+
+    /** Subscribes to the ResourceStopped event */
+    onResourceStopped(callback: (arg: ResourceStoppedEvent) => Promise<void>): PgAdminContainerResourcePromise {
+        return new PgAdminContainerResourcePromise(this._onResourceStoppedInternal(callback));
+    }
+
+    /** @internal */
+    private async _onInitializeResourceInternal(callback: (arg: InitializeResourceEvent) => Promise<void>): Promise<PgAdminContainerResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as InitializeResourceEventHandle;
+            const arg = new InitializeResourceEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<PgAdminContainerResourceHandle>(
+            'Aspire.Hosting/onInitializeResource',
+            rpcArgs
+        );
+        return new PgAdminContainerResource(result, this._client);
+    }
+
+    /** Subscribes to the InitializeResource event */
+    onInitializeResource(callback: (arg: InitializeResourceEvent) => Promise<void>): PgAdminContainerResourcePromise {
+        return new PgAdminContainerResourcePromise(this._onInitializeResourceInternal(callback));
+    }
+
+    /** @internal */
+    private async _onResourceEndpointsAllocatedInternal(callback: (arg: ResourceEndpointsAllocatedEvent) => Promise<void>): Promise<PgAdminContainerResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ResourceEndpointsAllocatedEventHandle;
+            const arg = new ResourceEndpointsAllocatedEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<PgAdminContainerResourceHandle>(
+            'Aspire.Hosting/onResourceEndpointsAllocated',
+            rpcArgs
+        );
+        return new PgAdminContainerResource(result, this._client);
+    }
+
+    /** Subscribes to the ResourceEndpointsAllocated event */
+    onResourceEndpointsAllocated(callback: (arg: ResourceEndpointsAllocatedEvent) => Promise<void>): PgAdminContainerResourcePromise {
+        return new PgAdminContainerResourcePromise(this._onResourceEndpointsAllocatedInternal(callback));
+    }
+
+    /** @internal */
+    private async _onResourceReadyInternal(callback: (arg: ResourceReadyEvent) => Promise<void>): Promise<PgAdminContainerResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ResourceReadyEventHandle;
+            const arg = new ResourceReadyEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<PgAdminContainerResourceHandle>(
+            'Aspire.Hosting/onResourceReady',
+            rpcArgs
+        );
+        return new PgAdminContainerResource(result, this._client);
+    }
+
+    /** Subscribes to the ResourceReady event */
+    onResourceReady(callback: (arg: ResourceReadyEvent) => Promise<void>): PgAdminContainerResourcePromise {
+        return new PgAdminContainerResourcePromise(this._onResourceReadyInternal(callback));
+    }
+
+    /** @internal */
     private async _withHostPortInternal(port?: number): Promise<PgAdminContainerResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle };
         if (port !== undefined) rpcArgs.port = port;
@@ -14029,29 +20997,19 @@ export class PgAdminContainerResourcePromise implements PromiseLike<PgAdminConta
         return new PgAdminContainerResourcePromise(this._promise.then(obj => obj.withRequiredCommand(command, options)));
     }
 
-    /** Sets an environment variable */
-    withEnvironment(name: string, value: string): PgAdminContainerResourcePromise {
-        return new PgAdminContainerResourcePromise(this._promise.then(obj => obj.withEnvironment(name, value)));
-    }
-
-    /** Adds an environment variable with a reference expression */
-    withEnvironmentExpression(name: string, value: ReferenceExpression): PgAdminContainerResourcePromise {
-        return new PgAdminContainerResourcePromise(this._promise.then(obj => obj.withEnvironmentExpression(name, value)));
-    }
-
     /** Sets environment variables via callback */
-    withEnvironmentCallback(callback: (obj: EnvironmentCallbackContext) => Promise<void>): PgAdminContainerResourcePromise {
+    withEnvironmentCallback(callback: (arg: EnvironmentCallbackContext) => Promise<void>): PgAdminContainerResourcePromise {
         return new PgAdminContainerResourcePromise(this._promise.then(obj => obj.withEnvironmentCallback(callback)));
-    }
-
-    /** Sets environment variables via async callback */
-    withEnvironmentCallbackAsync(callback: (arg: EnvironmentCallbackContext) => Promise<void>): PgAdminContainerResourcePromise {
-        return new PgAdminContainerResourcePromise(this._promise.then(obj => obj.withEnvironmentCallbackAsync(callback)));
     }
 
     /** Sets an environment variable from an endpoint reference */
     withEnvironmentEndpoint(name: string, endpointReference: EndpointReference): PgAdminContainerResourcePromise {
         return new PgAdminContainerResourcePromise(this._promise.then(obj => obj.withEnvironmentEndpoint(name, endpointReference)));
+    }
+
+    /** Sets an environment variable on the resource */
+    withEnvironment(name: string, value: string | ReferenceExpression | EndpointReference | ParameterResource | ResourceWithConnectionString): PgAdminContainerResourcePromise {
+        return new PgAdminContainerResourcePromise(this._promise.then(obj => obj.withEnvironment(name, value)));
     }
 
     /** Sets an environment variable from a parameter resource */
@@ -14082,16 +21040,6 @@ export class PgAdminContainerResourcePromise implements PromiseLike<PgAdminConta
     /** Adds a reference to another resource */
     withReference(source: ResourceBuilderBase, options?: WithReferenceOptions): PgAdminContainerResourcePromise {
         return new PgAdminContainerResourcePromise(this._promise.then(obj => obj.withReference(source, options)));
-    }
-
-    /** Adds a service discovery reference to another resource */
-    withServiceReference(source: ResourceBuilderBase): PgAdminContainerResourcePromise {
-        return new PgAdminContainerResourcePromise(this._promise.then(obj => obj.withServiceReference(source)));
-    }
-
-    /** Adds a named service discovery reference */
-    withServiceReferenceNamed(source: ResourceBuilderBase, name: string): PgAdminContainerResourcePromise {
-        return new PgAdminContainerResourcePromise(this._promise.then(obj => obj.withServiceReferenceNamed(source, name)));
     }
 
     /** Adds a reference to a URI */
@@ -14297,6 +21245,31 @@ export class PgAdminContainerResourcePromise implements PromiseLike<PgAdminConta
     /** Gets the resource name */
     getResourceName(): Promise<string> {
         return this._promise.then(obj => obj.getResourceName());
+    }
+
+    /** Subscribes to the BeforeResourceStarted event */
+    onBeforeResourceStarted(callback: (arg: BeforeResourceStartedEvent) => Promise<void>): PgAdminContainerResourcePromise {
+        return new PgAdminContainerResourcePromise(this._promise.then(obj => obj.onBeforeResourceStarted(callback)));
+    }
+
+    /** Subscribes to the ResourceStopped event */
+    onResourceStopped(callback: (arg: ResourceStoppedEvent) => Promise<void>): PgAdminContainerResourcePromise {
+        return new PgAdminContainerResourcePromise(this._promise.then(obj => obj.onResourceStopped(callback)));
+    }
+
+    /** Subscribes to the InitializeResource event */
+    onInitializeResource(callback: (arg: InitializeResourceEvent) => Promise<void>): PgAdminContainerResourcePromise {
+        return new PgAdminContainerResourcePromise(this._promise.then(obj => obj.onInitializeResource(callback)));
+    }
+
+    /** Subscribes to the ResourceEndpointsAllocated event */
+    onResourceEndpointsAllocated(callback: (arg: ResourceEndpointsAllocatedEvent) => Promise<void>): PgAdminContainerResourcePromise {
+        return new PgAdminContainerResourcePromise(this._promise.then(obj => obj.onResourceEndpointsAllocated(callback)));
+    }
+
+    /** Subscribes to the ResourceReady event */
+    onResourceReady(callback: (arg: ResourceReadyEvent) => Promise<void>): PgAdminContainerResourcePromise {
+        return new PgAdminContainerResourcePromise(this._promise.then(obj => obj.onResourceReady(callback)));
     }
 
     /** Sets the host port for pgAdmin */
@@ -14522,7 +21495,7 @@ export class PgWebContainerResource extends ResourceBuilderBase<PgWebContainerRe
     private async _withBuildArgInternal(name: string, value: ParameterResource): Promise<PgWebContainerResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, name, value };
         const result = await this._client.invokeCapability<PgWebContainerResourceHandle>(
-            'Aspire.Hosting/withBuildArg',
+            'Aspire.Hosting/withParameterBuildArg',
             rpcArgs
         );
         return new PgWebContainerResource(result, this._client);
@@ -14537,7 +21510,7 @@ export class PgWebContainerResource extends ResourceBuilderBase<PgWebContainerRe
     private async _withBuildSecretInternal(name: string, value: ParameterResource): Promise<PgWebContainerResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, name, value };
         const result = await this._client.invokeCapability<PgWebContainerResourceHandle>(
-            'Aspire.Hosting/withBuildSecret',
+            'Aspire.Hosting/withParameterBuildSecret',
             rpcArgs
         );
         return new PgWebContainerResource(result, this._client);
@@ -14679,41 +21652,11 @@ export class PgWebContainerResource extends ResourceBuilderBase<PgWebContainerRe
     }
 
     /** @internal */
-    private async _withEnvironmentInternal(name: string, value: string): Promise<PgWebContainerResource> {
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, name, value };
-        const result = await this._client.invokeCapability<PgWebContainerResourceHandle>(
-            'Aspire.Hosting/withEnvironment',
-            rpcArgs
-        );
-        return new PgWebContainerResource(result, this._client);
-    }
-
-    /** Sets an environment variable */
-    withEnvironment(name: string, value: string): PgWebContainerResourcePromise {
-        return new PgWebContainerResourcePromise(this._withEnvironmentInternal(name, value));
-    }
-
-    /** @internal */
-    private async _withEnvironmentExpressionInternal(name: string, value: ReferenceExpression): Promise<PgWebContainerResource> {
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, name, value };
-        const result = await this._client.invokeCapability<PgWebContainerResourceHandle>(
-            'Aspire.Hosting/withEnvironmentExpression',
-            rpcArgs
-        );
-        return new PgWebContainerResource(result, this._client);
-    }
-
-    /** Adds an environment variable with a reference expression */
-    withEnvironmentExpression(name: string, value: ReferenceExpression): PgWebContainerResourcePromise {
-        return new PgWebContainerResourcePromise(this._withEnvironmentExpressionInternal(name, value));
-    }
-
-    /** @internal */
-    private async _withEnvironmentCallbackInternal(callback: (obj: EnvironmentCallbackContext) => Promise<void>): Promise<PgWebContainerResource> {
-        const callbackId = registerCallback(async (objData: unknown) => {
-            const objHandle = wrapIfHandle(objData) as EnvironmentCallbackContextHandle;
-            const obj = new EnvironmentCallbackContext(objHandle, this._client);
-            await callback(obj);
+    private async _withEnvironmentCallbackInternal(callback: (arg: EnvironmentCallbackContext) => Promise<void>): Promise<PgWebContainerResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as EnvironmentCallbackContextHandle;
+            const arg = new EnvironmentCallbackContext(argHandle, this._client);
+            await callback(arg);
         });
         const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
         const result = await this._client.invokeCapability<PgWebContainerResourceHandle>(
@@ -14724,28 +21667,8 @@ export class PgWebContainerResource extends ResourceBuilderBase<PgWebContainerRe
     }
 
     /** Sets environment variables via callback */
-    withEnvironmentCallback(callback: (obj: EnvironmentCallbackContext) => Promise<void>): PgWebContainerResourcePromise {
+    withEnvironmentCallback(callback: (arg: EnvironmentCallbackContext) => Promise<void>): PgWebContainerResourcePromise {
         return new PgWebContainerResourcePromise(this._withEnvironmentCallbackInternal(callback));
-    }
-
-    /** @internal */
-    private async _withEnvironmentCallbackAsyncInternal(callback: (arg: EnvironmentCallbackContext) => Promise<void>): Promise<PgWebContainerResource> {
-        const callbackId = registerCallback(async (argData: unknown) => {
-            const argHandle = wrapIfHandle(argData) as EnvironmentCallbackContextHandle;
-            const arg = new EnvironmentCallbackContext(argHandle, this._client);
-            await callback(arg);
-        });
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
-        const result = await this._client.invokeCapability<PgWebContainerResourceHandle>(
-            'Aspire.Hosting/withEnvironmentCallbackAsync',
-            rpcArgs
-        );
-        return new PgWebContainerResource(result, this._client);
-    }
-
-    /** Sets environment variables via async callback */
-    withEnvironmentCallbackAsync(callback: (arg: EnvironmentCallbackContext) => Promise<void>): PgWebContainerResourcePromise {
-        return new PgWebContainerResourcePromise(this._withEnvironmentCallbackAsyncInternal(callback));
     }
 
     /** @internal */
@@ -14761,6 +21684,21 @@ export class PgWebContainerResource extends ResourceBuilderBase<PgWebContainerRe
     /** Sets an environment variable from an endpoint reference */
     withEnvironmentEndpoint(name: string, endpointReference: EndpointReference): PgWebContainerResourcePromise {
         return new PgWebContainerResourcePromise(this._withEnvironmentEndpointInternal(name, endpointReference));
+    }
+
+    /** @internal */
+    private async _withEnvironmentInternal(name: string, value: string | ReferenceExpression | EndpointReference | ParameterResource | ResourceWithConnectionString): Promise<PgWebContainerResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, name, value };
+        const result = await this._client.invokeCapability<PgWebContainerResourceHandle>(
+            'Aspire.Hosting/withEnvironment',
+            rpcArgs
+        );
+        return new PgWebContainerResource(result, this._client);
+    }
+
+    /** Sets an environment variable on the resource */
+    withEnvironment(name: string, value: string | ReferenceExpression | EndpointReference | ParameterResource | ResourceWithConnectionString): PgWebContainerResourcePromise {
+        return new PgWebContainerResourcePromise(this._withEnvironmentInternal(name, value));
     }
 
     /** @internal */
@@ -14849,10 +21787,11 @@ export class PgWebContainerResource extends ResourceBuilderBase<PgWebContainerRe
     }
 
     /** @internal */
-    private async _withReferenceInternal(source: ResourceBuilderBase, connectionName?: string, optional?: boolean): Promise<PgWebContainerResource> {
+    private async _withReferenceInternal(source: ResourceBuilderBase, connectionName?: string, optional?: boolean, name?: string): Promise<PgWebContainerResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, source };
         if (connectionName !== undefined) rpcArgs.connectionName = connectionName;
         if (optional !== undefined) rpcArgs.optional = optional;
+        if (name !== undefined) rpcArgs.name = name;
         const result = await this._client.invokeCapability<PgWebContainerResourceHandle>(
             'Aspire.Hosting/withReference',
             rpcArgs
@@ -14864,37 +21803,8 @@ export class PgWebContainerResource extends ResourceBuilderBase<PgWebContainerRe
     withReference(source: ResourceBuilderBase, options?: WithReferenceOptions): PgWebContainerResourcePromise {
         const connectionName = options?.connectionName;
         const optional = options?.optional;
-        return new PgWebContainerResourcePromise(this._withReferenceInternal(source, connectionName, optional));
-    }
-
-    /** @internal */
-    private async _withServiceReferenceInternal(source: ResourceBuilderBase): Promise<PgWebContainerResource> {
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, source };
-        const result = await this._client.invokeCapability<PgWebContainerResourceHandle>(
-            'Aspire.Hosting/withServiceReference',
-            rpcArgs
-        );
-        return new PgWebContainerResource(result, this._client);
-    }
-
-    /** Adds a service discovery reference to another resource */
-    withServiceReference(source: ResourceBuilderBase): PgWebContainerResourcePromise {
-        return new PgWebContainerResourcePromise(this._withServiceReferenceInternal(source));
-    }
-
-    /** @internal */
-    private async _withServiceReferenceNamedInternal(source: ResourceBuilderBase, name: string): Promise<PgWebContainerResource> {
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, source, name };
-        const result = await this._client.invokeCapability<PgWebContainerResourceHandle>(
-            'Aspire.Hosting/withServiceReferenceNamed',
-            rpcArgs
-        );
-        return new PgWebContainerResource(result, this._client);
-    }
-
-    /** Adds a named service discovery reference */
-    withServiceReferenceNamed(source: ResourceBuilderBase, name: string): PgWebContainerResourcePromise {
-        return new PgWebContainerResourcePromise(this._withServiceReferenceNamedInternal(source, name));
+        const name = options?.name;
+        return new PgWebContainerResourcePromise(this._withReferenceInternal(source, connectionName, optional, name));
     }
 
     /** @internal */
@@ -15194,7 +22104,7 @@ export class PgWebContainerResource extends ResourceBuilderBase<PgWebContainerRe
     private async _waitForInternal(dependency: ResourceBuilderBase): Promise<PgWebContainerResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, dependency };
         const result = await this._client.invokeCapability<PgWebContainerResourceHandle>(
-            'Aspire.Hosting/waitFor',
+            'Aspire.Hosting/waitForResource',
             rpcArgs
         );
         return new PgWebContainerResource(result, this._client);
@@ -15224,7 +22134,7 @@ export class PgWebContainerResource extends ResourceBuilderBase<PgWebContainerRe
     private async _waitForStartInternal(dependency: ResourceBuilderBase): Promise<PgWebContainerResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, dependency };
         const result = await this._client.invokeCapability<PgWebContainerResourceHandle>(
-            'Aspire.Hosting/waitForStart',
+            'Aspire.Hosting/waitForResourceStart',
             rpcArgs
         );
         return new PgWebContainerResource(result, this._client);
@@ -15270,7 +22180,7 @@ export class PgWebContainerResource extends ResourceBuilderBase<PgWebContainerRe
         const rpcArgs: Record<string, unknown> = { builder: this._handle, dependency };
         if (exitCode !== undefined) rpcArgs.exitCode = exitCode;
         const result = await this._client.invokeCapability<PgWebContainerResourceHandle>(
-            'Aspire.Hosting/waitForCompletion',
+            'Aspire.Hosting/waitForResourceCompletion',
             rpcArgs
         );
         return new PgWebContainerResource(result, this._client);
@@ -15375,7 +22285,7 @@ export class PgWebContainerResource extends ResourceBuilderBase<PgWebContainerRe
         const rpcArgs: Record<string, unknown> = { builder: this._handle };
         if (password !== undefined) rpcArgs.password = password;
         const result = await this._client.invokeCapability<PgWebContainerResourceHandle>(
-            'Aspire.Hosting/withHttpsDeveloperCertificate',
+            'Aspire.Hosting/withParameterHttpsDeveloperCertificate',
             rpcArgs
         );
         return new PgWebContainerResource(result, this._client);
@@ -15406,7 +22316,7 @@ export class PgWebContainerResource extends ResourceBuilderBase<PgWebContainerRe
     private async _withParentRelationshipInternal(parent: ResourceBuilderBase): Promise<PgWebContainerResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, parent };
         const result = await this._client.invokeCapability<PgWebContainerResourceHandle>(
-            'Aspire.Hosting/withParentRelationship',
+            'Aspire.Hosting/withBuilderParentRelationship',
             rpcArgs
         );
         return new PgWebContainerResource(result, this._client);
@@ -15421,7 +22331,7 @@ export class PgWebContainerResource extends ResourceBuilderBase<PgWebContainerRe
     private async _withChildRelationshipInternal(child: ResourceBuilderBase): Promise<PgWebContainerResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, child };
         const result = await this._client.invokeCapability<PgWebContainerResourceHandle>(
-            'Aspire.Hosting/withChildRelationship',
+            'Aspire.Hosting/withBuilderChildRelationship',
             rpcArgs
         );
         return new PgWebContainerResource(result, this._client);
@@ -15620,6 +22530,106 @@ export class PgWebContainerResource extends ResourceBuilderBase<PgWebContainerRe
     }
 
     /** @internal */
+    private async _onBeforeResourceStartedInternal(callback: (arg: BeforeResourceStartedEvent) => Promise<void>): Promise<PgWebContainerResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as BeforeResourceStartedEventHandle;
+            const arg = new BeforeResourceStartedEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<PgWebContainerResourceHandle>(
+            'Aspire.Hosting/onBeforeResourceStarted',
+            rpcArgs
+        );
+        return new PgWebContainerResource(result, this._client);
+    }
+
+    /** Subscribes to the BeforeResourceStarted event */
+    onBeforeResourceStarted(callback: (arg: BeforeResourceStartedEvent) => Promise<void>): PgWebContainerResourcePromise {
+        return new PgWebContainerResourcePromise(this._onBeforeResourceStartedInternal(callback));
+    }
+
+    /** @internal */
+    private async _onResourceStoppedInternal(callback: (arg: ResourceStoppedEvent) => Promise<void>): Promise<PgWebContainerResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ResourceStoppedEventHandle;
+            const arg = new ResourceStoppedEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<PgWebContainerResourceHandle>(
+            'Aspire.Hosting/onResourceStopped',
+            rpcArgs
+        );
+        return new PgWebContainerResource(result, this._client);
+    }
+
+    /** Subscribes to the ResourceStopped event */
+    onResourceStopped(callback: (arg: ResourceStoppedEvent) => Promise<void>): PgWebContainerResourcePromise {
+        return new PgWebContainerResourcePromise(this._onResourceStoppedInternal(callback));
+    }
+
+    /** @internal */
+    private async _onInitializeResourceInternal(callback: (arg: InitializeResourceEvent) => Promise<void>): Promise<PgWebContainerResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as InitializeResourceEventHandle;
+            const arg = new InitializeResourceEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<PgWebContainerResourceHandle>(
+            'Aspire.Hosting/onInitializeResource',
+            rpcArgs
+        );
+        return new PgWebContainerResource(result, this._client);
+    }
+
+    /** Subscribes to the InitializeResource event */
+    onInitializeResource(callback: (arg: InitializeResourceEvent) => Promise<void>): PgWebContainerResourcePromise {
+        return new PgWebContainerResourcePromise(this._onInitializeResourceInternal(callback));
+    }
+
+    /** @internal */
+    private async _onResourceEndpointsAllocatedInternal(callback: (arg: ResourceEndpointsAllocatedEvent) => Promise<void>): Promise<PgWebContainerResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ResourceEndpointsAllocatedEventHandle;
+            const arg = new ResourceEndpointsAllocatedEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<PgWebContainerResourceHandle>(
+            'Aspire.Hosting/onResourceEndpointsAllocated',
+            rpcArgs
+        );
+        return new PgWebContainerResource(result, this._client);
+    }
+
+    /** Subscribes to the ResourceEndpointsAllocated event */
+    onResourceEndpointsAllocated(callback: (arg: ResourceEndpointsAllocatedEvent) => Promise<void>): PgWebContainerResourcePromise {
+        return new PgWebContainerResourcePromise(this._onResourceEndpointsAllocatedInternal(callback));
+    }
+
+    /** @internal */
+    private async _onResourceReadyInternal(callback: (arg: ResourceReadyEvent) => Promise<void>): Promise<PgWebContainerResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ResourceReadyEventHandle;
+            const arg = new ResourceReadyEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<PgWebContainerResourceHandle>(
+            'Aspire.Hosting/onResourceReady',
+            rpcArgs
+        );
+        return new PgWebContainerResource(result, this._client);
+    }
+
+    /** Subscribes to the ResourceReady event */
+    onResourceReady(callback: (arg: ResourceReadyEvent) => Promise<void>): PgWebContainerResourcePromise {
+        return new PgWebContainerResourcePromise(this._onResourceReadyInternal(callback));
+    }
+
+    /** @internal */
     private async _withHostPortInternal(port?: number): Promise<PgWebContainerResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle };
         if (port !== undefined) rpcArgs.port = port;
@@ -15768,29 +22778,19 @@ export class PgWebContainerResourcePromise implements PromiseLike<PgWebContainer
         return new PgWebContainerResourcePromise(this._promise.then(obj => obj.withRequiredCommand(command, options)));
     }
 
-    /** Sets an environment variable */
-    withEnvironment(name: string, value: string): PgWebContainerResourcePromise {
-        return new PgWebContainerResourcePromise(this._promise.then(obj => obj.withEnvironment(name, value)));
-    }
-
-    /** Adds an environment variable with a reference expression */
-    withEnvironmentExpression(name: string, value: ReferenceExpression): PgWebContainerResourcePromise {
-        return new PgWebContainerResourcePromise(this._promise.then(obj => obj.withEnvironmentExpression(name, value)));
-    }
-
     /** Sets environment variables via callback */
-    withEnvironmentCallback(callback: (obj: EnvironmentCallbackContext) => Promise<void>): PgWebContainerResourcePromise {
+    withEnvironmentCallback(callback: (arg: EnvironmentCallbackContext) => Promise<void>): PgWebContainerResourcePromise {
         return new PgWebContainerResourcePromise(this._promise.then(obj => obj.withEnvironmentCallback(callback)));
-    }
-
-    /** Sets environment variables via async callback */
-    withEnvironmentCallbackAsync(callback: (arg: EnvironmentCallbackContext) => Promise<void>): PgWebContainerResourcePromise {
-        return new PgWebContainerResourcePromise(this._promise.then(obj => obj.withEnvironmentCallbackAsync(callback)));
     }
 
     /** Sets an environment variable from an endpoint reference */
     withEnvironmentEndpoint(name: string, endpointReference: EndpointReference): PgWebContainerResourcePromise {
         return new PgWebContainerResourcePromise(this._promise.then(obj => obj.withEnvironmentEndpoint(name, endpointReference)));
+    }
+
+    /** Sets an environment variable on the resource */
+    withEnvironment(name: string, value: string | ReferenceExpression | EndpointReference | ParameterResource | ResourceWithConnectionString): PgWebContainerResourcePromise {
+        return new PgWebContainerResourcePromise(this._promise.then(obj => obj.withEnvironment(name, value)));
     }
 
     /** Sets an environment variable from a parameter resource */
@@ -15821,16 +22821,6 @@ export class PgWebContainerResourcePromise implements PromiseLike<PgWebContainer
     /** Adds a reference to another resource */
     withReference(source: ResourceBuilderBase, options?: WithReferenceOptions): PgWebContainerResourcePromise {
         return new PgWebContainerResourcePromise(this._promise.then(obj => obj.withReference(source, options)));
-    }
-
-    /** Adds a service discovery reference to another resource */
-    withServiceReference(source: ResourceBuilderBase): PgWebContainerResourcePromise {
-        return new PgWebContainerResourcePromise(this._promise.then(obj => obj.withServiceReference(source)));
-    }
-
-    /** Adds a named service discovery reference */
-    withServiceReferenceNamed(source: ResourceBuilderBase, name: string): PgWebContainerResourcePromise {
-        return new PgWebContainerResourcePromise(this._promise.then(obj => obj.withServiceReferenceNamed(source, name)));
     }
 
     /** Adds a reference to a URI */
@@ -16036,6 +23026,31 @@ export class PgWebContainerResourcePromise implements PromiseLike<PgWebContainer
     /** Gets the resource name */
     getResourceName(): Promise<string> {
         return this._promise.then(obj => obj.getResourceName());
+    }
+
+    /** Subscribes to the BeforeResourceStarted event */
+    onBeforeResourceStarted(callback: (arg: BeforeResourceStartedEvent) => Promise<void>): PgWebContainerResourcePromise {
+        return new PgWebContainerResourcePromise(this._promise.then(obj => obj.onBeforeResourceStarted(callback)));
+    }
+
+    /** Subscribes to the ResourceStopped event */
+    onResourceStopped(callback: (arg: ResourceStoppedEvent) => Promise<void>): PgWebContainerResourcePromise {
+        return new PgWebContainerResourcePromise(this._promise.then(obj => obj.onResourceStopped(callback)));
+    }
+
+    /** Subscribes to the InitializeResource event */
+    onInitializeResource(callback: (arg: InitializeResourceEvent) => Promise<void>): PgWebContainerResourcePromise {
+        return new PgWebContainerResourcePromise(this._promise.then(obj => obj.onInitializeResource(callback)));
+    }
+
+    /** Subscribes to the ResourceEndpointsAllocated event */
+    onResourceEndpointsAllocated(callback: (arg: ResourceEndpointsAllocatedEvent) => Promise<void>): PgWebContainerResourcePromise {
+        return new PgWebContainerResourcePromise(this._promise.then(obj => obj.onResourceEndpointsAllocated(callback)));
+    }
+
+    /** Subscribes to the ResourceReady event */
+    onResourceReady(callback: (arg: ResourceReadyEvent) => Promise<void>): PgWebContainerResourcePromise {
+        return new PgWebContainerResourcePromise(this._promise.then(obj => obj.onResourceReady(callback)));
     }
 
     /** Sets the host port for pgweb */
@@ -16261,7 +23276,7 @@ export class PhpMyAdminContainerResource extends ResourceBuilderBase<PhpMyAdminC
     private async _withBuildArgInternal(name: string, value: ParameterResource): Promise<PhpMyAdminContainerResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, name, value };
         const result = await this._client.invokeCapability<PhpMyAdminContainerResourceHandle>(
-            'Aspire.Hosting/withBuildArg',
+            'Aspire.Hosting/withParameterBuildArg',
             rpcArgs
         );
         return new PhpMyAdminContainerResource(result, this._client);
@@ -16276,7 +23291,7 @@ export class PhpMyAdminContainerResource extends ResourceBuilderBase<PhpMyAdminC
     private async _withBuildSecretInternal(name: string, value: ParameterResource): Promise<PhpMyAdminContainerResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, name, value };
         const result = await this._client.invokeCapability<PhpMyAdminContainerResourceHandle>(
-            'Aspire.Hosting/withBuildSecret',
+            'Aspire.Hosting/withParameterBuildSecret',
             rpcArgs
         );
         return new PhpMyAdminContainerResource(result, this._client);
@@ -16418,41 +23433,11 @@ export class PhpMyAdminContainerResource extends ResourceBuilderBase<PhpMyAdminC
     }
 
     /** @internal */
-    private async _withEnvironmentInternal(name: string, value: string): Promise<PhpMyAdminContainerResource> {
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, name, value };
-        const result = await this._client.invokeCapability<PhpMyAdminContainerResourceHandle>(
-            'Aspire.Hosting/withEnvironment',
-            rpcArgs
-        );
-        return new PhpMyAdminContainerResource(result, this._client);
-    }
-
-    /** Sets an environment variable */
-    withEnvironment(name: string, value: string): PhpMyAdminContainerResourcePromise {
-        return new PhpMyAdminContainerResourcePromise(this._withEnvironmentInternal(name, value));
-    }
-
-    /** @internal */
-    private async _withEnvironmentExpressionInternal(name: string, value: ReferenceExpression): Promise<PhpMyAdminContainerResource> {
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, name, value };
-        const result = await this._client.invokeCapability<PhpMyAdminContainerResourceHandle>(
-            'Aspire.Hosting/withEnvironmentExpression',
-            rpcArgs
-        );
-        return new PhpMyAdminContainerResource(result, this._client);
-    }
-
-    /** Adds an environment variable with a reference expression */
-    withEnvironmentExpression(name: string, value: ReferenceExpression): PhpMyAdminContainerResourcePromise {
-        return new PhpMyAdminContainerResourcePromise(this._withEnvironmentExpressionInternal(name, value));
-    }
-
-    /** @internal */
-    private async _withEnvironmentCallbackInternal(callback: (obj: EnvironmentCallbackContext) => Promise<void>): Promise<PhpMyAdminContainerResource> {
-        const callbackId = registerCallback(async (objData: unknown) => {
-            const objHandle = wrapIfHandle(objData) as EnvironmentCallbackContextHandle;
-            const obj = new EnvironmentCallbackContext(objHandle, this._client);
-            await callback(obj);
+    private async _withEnvironmentCallbackInternal(callback: (arg: EnvironmentCallbackContext) => Promise<void>): Promise<PhpMyAdminContainerResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as EnvironmentCallbackContextHandle;
+            const arg = new EnvironmentCallbackContext(argHandle, this._client);
+            await callback(arg);
         });
         const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
         const result = await this._client.invokeCapability<PhpMyAdminContainerResourceHandle>(
@@ -16463,28 +23448,8 @@ export class PhpMyAdminContainerResource extends ResourceBuilderBase<PhpMyAdminC
     }
 
     /** Sets environment variables via callback */
-    withEnvironmentCallback(callback: (obj: EnvironmentCallbackContext) => Promise<void>): PhpMyAdminContainerResourcePromise {
+    withEnvironmentCallback(callback: (arg: EnvironmentCallbackContext) => Promise<void>): PhpMyAdminContainerResourcePromise {
         return new PhpMyAdminContainerResourcePromise(this._withEnvironmentCallbackInternal(callback));
-    }
-
-    /** @internal */
-    private async _withEnvironmentCallbackAsyncInternal(callback: (arg: EnvironmentCallbackContext) => Promise<void>): Promise<PhpMyAdminContainerResource> {
-        const callbackId = registerCallback(async (argData: unknown) => {
-            const argHandle = wrapIfHandle(argData) as EnvironmentCallbackContextHandle;
-            const arg = new EnvironmentCallbackContext(argHandle, this._client);
-            await callback(arg);
-        });
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
-        const result = await this._client.invokeCapability<PhpMyAdminContainerResourceHandle>(
-            'Aspire.Hosting/withEnvironmentCallbackAsync',
-            rpcArgs
-        );
-        return new PhpMyAdminContainerResource(result, this._client);
-    }
-
-    /** Sets environment variables via async callback */
-    withEnvironmentCallbackAsync(callback: (arg: EnvironmentCallbackContext) => Promise<void>): PhpMyAdminContainerResourcePromise {
-        return new PhpMyAdminContainerResourcePromise(this._withEnvironmentCallbackAsyncInternal(callback));
     }
 
     /** @internal */
@@ -16500,6 +23465,21 @@ export class PhpMyAdminContainerResource extends ResourceBuilderBase<PhpMyAdminC
     /** Sets an environment variable from an endpoint reference */
     withEnvironmentEndpoint(name: string, endpointReference: EndpointReference): PhpMyAdminContainerResourcePromise {
         return new PhpMyAdminContainerResourcePromise(this._withEnvironmentEndpointInternal(name, endpointReference));
+    }
+
+    /** @internal */
+    private async _withEnvironmentInternal(name: string, value: string | ReferenceExpression | EndpointReference | ParameterResource | ResourceWithConnectionString): Promise<PhpMyAdminContainerResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, name, value };
+        const result = await this._client.invokeCapability<PhpMyAdminContainerResourceHandle>(
+            'Aspire.Hosting/withEnvironment',
+            rpcArgs
+        );
+        return new PhpMyAdminContainerResource(result, this._client);
+    }
+
+    /** Sets an environment variable on the resource */
+    withEnvironment(name: string, value: string | ReferenceExpression | EndpointReference | ParameterResource | ResourceWithConnectionString): PhpMyAdminContainerResourcePromise {
+        return new PhpMyAdminContainerResourcePromise(this._withEnvironmentInternal(name, value));
     }
 
     /** @internal */
@@ -16588,10 +23568,11 @@ export class PhpMyAdminContainerResource extends ResourceBuilderBase<PhpMyAdminC
     }
 
     /** @internal */
-    private async _withReferenceInternal(source: ResourceBuilderBase, connectionName?: string, optional?: boolean): Promise<PhpMyAdminContainerResource> {
+    private async _withReferenceInternal(source: ResourceBuilderBase, connectionName?: string, optional?: boolean, name?: string): Promise<PhpMyAdminContainerResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, source };
         if (connectionName !== undefined) rpcArgs.connectionName = connectionName;
         if (optional !== undefined) rpcArgs.optional = optional;
+        if (name !== undefined) rpcArgs.name = name;
         const result = await this._client.invokeCapability<PhpMyAdminContainerResourceHandle>(
             'Aspire.Hosting/withReference',
             rpcArgs
@@ -16603,37 +23584,8 @@ export class PhpMyAdminContainerResource extends ResourceBuilderBase<PhpMyAdminC
     withReference(source: ResourceBuilderBase, options?: WithReferenceOptions): PhpMyAdminContainerResourcePromise {
         const connectionName = options?.connectionName;
         const optional = options?.optional;
-        return new PhpMyAdminContainerResourcePromise(this._withReferenceInternal(source, connectionName, optional));
-    }
-
-    /** @internal */
-    private async _withServiceReferenceInternal(source: ResourceBuilderBase): Promise<PhpMyAdminContainerResource> {
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, source };
-        const result = await this._client.invokeCapability<PhpMyAdminContainerResourceHandle>(
-            'Aspire.Hosting/withServiceReference',
-            rpcArgs
-        );
-        return new PhpMyAdminContainerResource(result, this._client);
-    }
-
-    /** Adds a service discovery reference to another resource */
-    withServiceReference(source: ResourceBuilderBase): PhpMyAdminContainerResourcePromise {
-        return new PhpMyAdminContainerResourcePromise(this._withServiceReferenceInternal(source));
-    }
-
-    /** @internal */
-    private async _withServiceReferenceNamedInternal(source: ResourceBuilderBase, name: string): Promise<PhpMyAdminContainerResource> {
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, source, name };
-        const result = await this._client.invokeCapability<PhpMyAdminContainerResourceHandle>(
-            'Aspire.Hosting/withServiceReferenceNamed',
-            rpcArgs
-        );
-        return new PhpMyAdminContainerResource(result, this._client);
-    }
-
-    /** Adds a named service discovery reference */
-    withServiceReferenceNamed(source: ResourceBuilderBase, name: string): PhpMyAdminContainerResourcePromise {
-        return new PhpMyAdminContainerResourcePromise(this._withServiceReferenceNamedInternal(source, name));
+        const name = options?.name;
+        return new PhpMyAdminContainerResourcePromise(this._withReferenceInternal(source, connectionName, optional, name));
     }
 
     /** @internal */
@@ -16933,7 +23885,7 @@ export class PhpMyAdminContainerResource extends ResourceBuilderBase<PhpMyAdminC
     private async _waitForInternal(dependency: ResourceBuilderBase): Promise<PhpMyAdminContainerResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, dependency };
         const result = await this._client.invokeCapability<PhpMyAdminContainerResourceHandle>(
-            'Aspire.Hosting/waitFor',
+            'Aspire.Hosting/waitForResource',
             rpcArgs
         );
         return new PhpMyAdminContainerResource(result, this._client);
@@ -16963,7 +23915,7 @@ export class PhpMyAdminContainerResource extends ResourceBuilderBase<PhpMyAdminC
     private async _waitForStartInternal(dependency: ResourceBuilderBase): Promise<PhpMyAdminContainerResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, dependency };
         const result = await this._client.invokeCapability<PhpMyAdminContainerResourceHandle>(
-            'Aspire.Hosting/waitForStart',
+            'Aspire.Hosting/waitForResourceStart',
             rpcArgs
         );
         return new PhpMyAdminContainerResource(result, this._client);
@@ -17009,7 +23961,7 @@ export class PhpMyAdminContainerResource extends ResourceBuilderBase<PhpMyAdminC
         const rpcArgs: Record<string, unknown> = { builder: this._handle, dependency };
         if (exitCode !== undefined) rpcArgs.exitCode = exitCode;
         const result = await this._client.invokeCapability<PhpMyAdminContainerResourceHandle>(
-            'Aspire.Hosting/waitForCompletion',
+            'Aspire.Hosting/waitForResourceCompletion',
             rpcArgs
         );
         return new PhpMyAdminContainerResource(result, this._client);
@@ -17114,7 +24066,7 @@ export class PhpMyAdminContainerResource extends ResourceBuilderBase<PhpMyAdminC
         const rpcArgs: Record<string, unknown> = { builder: this._handle };
         if (password !== undefined) rpcArgs.password = password;
         const result = await this._client.invokeCapability<PhpMyAdminContainerResourceHandle>(
-            'Aspire.Hosting/withHttpsDeveloperCertificate',
+            'Aspire.Hosting/withParameterHttpsDeveloperCertificate',
             rpcArgs
         );
         return new PhpMyAdminContainerResource(result, this._client);
@@ -17145,7 +24097,7 @@ export class PhpMyAdminContainerResource extends ResourceBuilderBase<PhpMyAdminC
     private async _withParentRelationshipInternal(parent: ResourceBuilderBase): Promise<PhpMyAdminContainerResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, parent };
         const result = await this._client.invokeCapability<PhpMyAdminContainerResourceHandle>(
-            'Aspire.Hosting/withParentRelationship',
+            'Aspire.Hosting/withBuilderParentRelationship',
             rpcArgs
         );
         return new PhpMyAdminContainerResource(result, this._client);
@@ -17160,7 +24112,7 @@ export class PhpMyAdminContainerResource extends ResourceBuilderBase<PhpMyAdminC
     private async _withChildRelationshipInternal(child: ResourceBuilderBase): Promise<PhpMyAdminContainerResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, child };
         const result = await this._client.invokeCapability<PhpMyAdminContainerResourceHandle>(
-            'Aspire.Hosting/withChildRelationship',
+            'Aspire.Hosting/withBuilderChildRelationship',
             rpcArgs
         );
         return new PhpMyAdminContainerResource(result, this._client);
@@ -17359,6 +24311,106 @@ export class PhpMyAdminContainerResource extends ResourceBuilderBase<PhpMyAdminC
     }
 
     /** @internal */
+    private async _onBeforeResourceStartedInternal(callback: (arg: BeforeResourceStartedEvent) => Promise<void>): Promise<PhpMyAdminContainerResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as BeforeResourceStartedEventHandle;
+            const arg = new BeforeResourceStartedEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<PhpMyAdminContainerResourceHandle>(
+            'Aspire.Hosting/onBeforeResourceStarted',
+            rpcArgs
+        );
+        return new PhpMyAdminContainerResource(result, this._client);
+    }
+
+    /** Subscribes to the BeforeResourceStarted event */
+    onBeforeResourceStarted(callback: (arg: BeforeResourceStartedEvent) => Promise<void>): PhpMyAdminContainerResourcePromise {
+        return new PhpMyAdminContainerResourcePromise(this._onBeforeResourceStartedInternal(callback));
+    }
+
+    /** @internal */
+    private async _onResourceStoppedInternal(callback: (arg: ResourceStoppedEvent) => Promise<void>): Promise<PhpMyAdminContainerResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ResourceStoppedEventHandle;
+            const arg = new ResourceStoppedEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<PhpMyAdminContainerResourceHandle>(
+            'Aspire.Hosting/onResourceStopped',
+            rpcArgs
+        );
+        return new PhpMyAdminContainerResource(result, this._client);
+    }
+
+    /** Subscribes to the ResourceStopped event */
+    onResourceStopped(callback: (arg: ResourceStoppedEvent) => Promise<void>): PhpMyAdminContainerResourcePromise {
+        return new PhpMyAdminContainerResourcePromise(this._onResourceStoppedInternal(callback));
+    }
+
+    /** @internal */
+    private async _onInitializeResourceInternal(callback: (arg: InitializeResourceEvent) => Promise<void>): Promise<PhpMyAdminContainerResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as InitializeResourceEventHandle;
+            const arg = new InitializeResourceEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<PhpMyAdminContainerResourceHandle>(
+            'Aspire.Hosting/onInitializeResource',
+            rpcArgs
+        );
+        return new PhpMyAdminContainerResource(result, this._client);
+    }
+
+    /** Subscribes to the InitializeResource event */
+    onInitializeResource(callback: (arg: InitializeResourceEvent) => Promise<void>): PhpMyAdminContainerResourcePromise {
+        return new PhpMyAdminContainerResourcePromise(this._onInitializeResourceInternal(callback));
+    }
+
+    /** @internal */
+    private async _onResourceEndpointsAllocatedInternal(callback: (arg: ResourceEndpointsAllocatedEvent) => Promise<void>): Promise<PhpMyAdminContainerResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ResourceEndpointsAllocatedEventHandle;
+            const arg = new ResourceEndpointsAllocatedEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<PhpMyAdminContainerResourceHandle>(
+            'Aspire.Hosting/onResourceEndpointsAllocated',
+            rpcArgs
+        );
+        return new PhpMyAdminContainerResource(result, this._client);
+    }
+
+    /** Subscribes to the ResourceEndpointsAllocated event */
+    onResourceEndpointsAllocated(callback: (arg: ResourceEndpointsAllocatedEvent) => Promise<void>): PhpMyAdminContainerResourcePromise {
+        return new PhpMyAdminContainerResourcePromise(this._onResourceEndpointsAllocatedInternal(callback));
+    }
+
+    /** @internal */
+    private async _onResourceReadyInternal(callback: (arg: ResourceReadyEvent) => Promise<void>): Promise<PhpMyAdminContainerResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ResourceReadyEventHandle;
+            const arg = new ResourceReadyEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<PhpMyAdminContainerResourceHandle>(
+            'Aspire.Hosting/onResourceReady',
+            rpcArgs
+        );
+        return new PhpMyAdminContainerResource(result, this._client);
+    }
+
+    /** Subscribes to the ResourceReady event */
+    onResourceReady(callback: (arg: ResourceReadyEvent) => Promise<void>): PhpMyAdminContainerResourcePromise {
+        return new PhpMyAdminContainerResourcePromise(this._onResourceReadyInternal(callback));
+    }
+
+    /** @internal */
     private async _withHostPortInternal(port?: number): Promise<PhpMyAdminContainerResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle };
         if (port !== undefined) rpcArgs.port = port;
@@ -17507,29 +24559,19 @@ export class PhpMyAdminContainerResourcePromise implements PromiseLike<PhpMyAdmi
         return new PhpMyAdminContainerResourcePromise(this._promise.then(obj => obj.withRequiredCommand(command, options)));
     }
 
-    /** Sets an environment variable */
-    withEnvironment(name: string, value: string): PhpMyAdminContainerResourcePromise {
-        return new PhpMyAdminContainerResourcePromise(this._promise.then(obj => obj.withEnvironment(name, value)));
-    }
-
-    /** Adds an environment variable with a reference expression */
-    withEnvironmentExpression(name: string, value: ReferenceExpression): PhpMyAdminContainerResourcePromise {
-        return new PhpMyAdminContainerResourcePromise(this._promise.then(obj => obj.withEnvironmentExpression(name, value)));
-    }
-
     /** Sets environment variables via callback */
-    withEnvironmentCallback(callback: (obj: EnvironmentCallbackContext) => Promise<void>): PhpMyAdminContainerResourcePromise {
+    withEnvironmentCallback(callback: (arg: EnvironmentCallbackContext) => Promise<void>): PhpMyAdminContainerResourcePromise {
         return new PhpMyAdminContainerResourcePromise(this._promise.then(obj => obj.withEnvironmentCallback(callback)));
-    }
-
-    /** Sets environment variables via async callback */
-    withEnvironmentCallbackAsync(callback: (arg: EnvironmentCallbackContext) => Promise<void>): PhpMyAdminContainerResourcePromise {
-        return new PhpMyAdminContainerResourcePromise(this._promise.then(obj => obj.withEnvironmentCallbackAsync(callback)));
     }
 
     /** Sets an environment variable from an endpoint reference */
     withEnvironmentEndpoint(name: string, endpointReference: EndpointReference): PhpMyAdminContainerResourcePromise {
         return new PhpMyAdminContainerResourcePromise(this._promise.then(obj => obj.withEnvironmentEndpoint(name, endpointReference)));
+    }
+
+    /** Sets an environment variable on the resource */
+    withEnvironment(name: string, value: string | ReferenceExpression | EndpointReference | ParameterResource | ResourceWithConnectionString): PhpMyAdminContainerResourcePromise {
+        return new PhpMyAdminContainerResourcePromise(this._promise.then(obj => obj.withEnvironment(name, value)));
     }
 
     /** Sets an environment variable from a parameter resource */
@@ -17560,16 +24602,6 @@ export class PhpMyAdminContainerResourcePromise implements PromiseLike<PhpMyAdmi
     /** Adds a reference to another resource */
     withReference(source: ResourceBuilderBase, options?: WithReferenceOptions): PhpMyAdminContainerResourcePromise {
         return new PhpMyAdminContainerResourcePromise(this._promise.then(obj => obj.withReference(source, options)));
-    }
-
-    /** Adds a service discovery reference to another resource */
-    withServiceReference(source: ResourceBuilderBase): PhpMyAdminContainerResourcePromise {
-        return new PhpMyAdminContainerResourcePromise(this._promise.then(obj => obj.withServiceReference(source)));
-    }
-
-    /** Adds a named service discovery reference */
-    withServiceReferenceNamed(source: ResourceBuilderBase, name: string): PhpMyAdminContainerResourcePromise {
-        return new PhpMyAdminContainerResourcePromise(this._promise.then(obj => obj.withServiceReferenceNamed(source, name)));
     }
 
     /** Adds a reference to a URI */
@@ -17777,6 +24809,31 @@ export class PhpMyAdminContainerResourcePromise implements PromiseLike<PhpMyAdmi
         return this._promise.then(obj => obj.getResourceName());
     }
 
+    /** Subscribes to the BeforeResourceStarted event */
+    onBeforeResourceStarted(callback: (arg: BeforeResourceStartedEvent) => Promise<void>): PhpMyAdminContainerResourcePromise {
+        return new PhpMyAdminContainerResourcePromise(this._promise.then(obj => obj.onBeforeResourceStarted(callback)));
+    }
+
+    /** Subscribes to the ResourceStopped event */
+    onResourceStopped(callback: (arg: ResourceStoppedEvent) => Promise<void>): PhpMyAdminContainerResourcePromise {
+        return new PhpMyAdminContainerResourcePromise(this._promise.then(obj => obj.onResourceStopped(callback)));
+    }
+
+    /** Subscribes to the InitializeResource event */
+    onInitializeResource(callback: (arg: InitializeResourceEvent) => Promise<void>): PhpMyAdminContainerResourcePromise {
+        return new PhpMyAdminContainerResourcePromise(this._promise.then(obj => obj.onInitializeResource(callback)));
+    }
+
+    /** Subscribes to the ResourceEndpointsAllocated event */
+    onResourceEndpointsAllocated(callback: (arg: ResourceEndpointsAllocatedEvent) => Promise<void>): PhpMyAdminContainerResourcePromise {
+        return new PhpMyAdminContainerResourcePromise(this._promise.then(obj => obj.onResourceEndpointsAllocated(callback)));
+    }
+
+    /** Subscribes to the ResourceReady event */
+    onResourceReady(callback: (arg: ResourceReadyEvent) => Promise<void>): PhpMyAdminContainerResourcePromise {
+        return new PhpMyAdminContainerResourcePromise(this._promise.then(obj => obj.onResourceReady(callback)));
+    }
+
     /** Sets the host port for phpMyAdmin */
     withHostPort(options?: WithHostPortOptions): PhpMyAdminContainerResourcePromise {
         return new PhpMyAdminContainerResourcePromise(this._promise.then(obj => obj.withHostPort(options)));
@@ -17933,6 +24990,15 @@ export class PostgresDatabaseResource extends ResourceBuilderBase<PostgresDataba
     /** Adds a connection property with a string value */
     withConnectionPropertyValue(name: string, value: string): PostgresDatabaseResourcePromise {
         return new PostgresDatabaseResourcePromise(this._withConnectionPropertyValueInternal(name, value));
+    }
+
+    /** Gets a connection property by key */
+    async getConnectionProperty(key: string): Promise<ReferenceExpression> {
+        const rpcArgs: Record<string, unknown> = { resource: this._handle, key };
+        return await this._client.invokeCapability<ReferenceExpression>(
+            'Aspire.Hosting/getConnectionProperty',
+            rpcArgs
+        );
     }
 
     /** @internal */
@@ -18099,7 +25165,7 @@ export class PostgresDatabaseResource extends ResourceBuilderBase<PostgresDataba
     private async _withParentRelationshipInternal(parent: ResourceBuilderBase): Promise<PostgresDatabaseResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, parent };
         const result = await this._client.invokeCapability<PostgresDatabaseResourceHandle>(
-            'Aspire.Hosting/withParentRelationship',
+            'Aspire.Hosting/withBuilderParentRelationship',
             rpcArgs
         );
         return new PostgresDatabaseResource(result, this._client);
@@ -18114,7 +25180,7 @@ export class PostgresDatabaseResource extends ResourceBuilderBase<PostgresDataba
     private async _withChildRelationshipInternal(child: ResourceBuilderBase): Promise<PostgresDatabaseResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, child };
         const result = await this._client.invokeCapability<PostgresDatabaseResourceHandle>(
-            'Aspire.Hosting/withChildRelationship',
+            'Aspire.Hosting/withBuilderChildRelationship',
             rpcArgs
         );
         return new PostgresDatabaseResource(result, this._client);
@@ -18155,36 +25221,6 @@ export class PostgresDatabaseResource extends ResourceBuilderBase<PostgresDataba
     /** Excludes the resource from MCP server exposure */
     excludeFromMcp(): PostgresDatabaseResourcePromise {
         return new PostgresDatabaseResourcePromise(this._excludeFromMcpInternal());
-    }
-
-    /** @internal */
-    private async _withRemoteImageNameInternal(remoteImageName: string): Promise<PostgresDatabaseResource> {
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, remoteImageName };
-        const result = await this._client.invokeCapability<PostgresDatabaseResourceHandle>(
-            'Aspire.Hosting/withRemoteImageName',
-            rpcArgs
-        );
-        return new PostgresDatabaseResource(result, this._client);
-    }
-
-    /** Sets the remote image name for publishing */
-    withRemoteImageName(remoteImageName: string): PostgresDatabaseResourcePromise {
-        return new PostgresDatabaseResourcePromise(this._withRemoteImageNameInternal(remoteImageName));
-    }
-
-    /** @internal */
-    private async _withRemoteImageTagInternal(remoteImageTag: string): Promise<PostgresDatabaseResource> {
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, remoteImageTag };
-        const result = await this._client.invokeCapability<PostgresDatabaseResourceHandle>(
-            'Aspire.Hosting/withRemoteImageTag',
-            rpcArgs
-        );
-        return new PostgresDatabaseResource(result, this._client);
-    }
-
-    /** Sets the remote image tag for publishing */
-    withRemoteImageTag(remoteImageTag: string): PostgresDatabaseResourcePromise {
-        return new PostgresDatabaseResourcePromise(this._withRemoteImageTagInternal(remoteImageTag));
     }
 
     /** @internal */
@@ -18262,6 +25298,106 @@ export class PostgresDatabaseResource extends ResourceBuilderBase<PostgresDataba
             'Aspire.Hosting/getResourceName',
             rpcArgs
         );
+    }
+
+    /** @internal */
+    private async _onBeforeResourceStartedInternal(callback: (arg: BeforeResourceStartedEvent) => Promise<void>): Promise<PostgresDatabaseResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as BeforeResourceStartedEventHandle;
+            const arg = new BeforeResourceStartedEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<PostgresDatabaseResourceHandle>(
+            'Aspire.Hosting/onBeforeResourceStarted',
+            rpcArgs
+        );
+        return new PostgresDatabaseResource(result, this._client);
+    }
+
+    /** Subscribes to the BeforeResourceStarted event */
+    onBeforeResourceStarted(callback: (arg: BeforeResourceStartedEvent) => Promise<void>): PostgresDatabaseResourcePromise {
+        return new PostgresDatabaseResourcePromise(this._onBeforeResourceStartedInternal(callback));
+    }
+
+    /** @internal */
+    private async _onResourceStoppedInternal(callback: (arg: ResourceStoppedEvent) => Promise<void>): Promise<PostgresDatabaseResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ResourceStoppedEventHandle;
+            const arg = new ResourceStoppedEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<PostgresDatabaseResourceHandle>(
+            'Aspire.Hosting/onResourceStopped',
+            rpcArgs
+        );
+        return new PostgresDatabaseResource(result, this._client);
+    }
+
+    /** Subscribes to the ResourceStopped event */
+    onResourceStopped(callback: (arg: ResourceStoppedEvent) => Promise<void>): PostgresDatabaseResourcePromise {
+        return new PostgresDatabaseResourcePromise(this._onResourceStoppedInternal(callback));
+    }
+
+    /** @internal */
+    private async _onConnectionStringAvailableInternal(callback: (arg: ConnectionStringAvailableEvent) => Promise<void>): Promise<PostgresDatabaseResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ConnectionStringAvailableEventHandle;
+            const arg = new ConnectionStringAvailableEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<PostgresDatabaseResourceHandle>(
+            'Aspire.Hosting/onConnectionStringAvailable',
+            rpcArgs
+        );
+        return new PostgresDatabaseResource(result, this._client);
+    }
+
+    /** Subscribes to the ConnectionStringAvailable event */
+    onConnectionStringAvailable(callback: (arg: ConnectionStringAvailableEvent) => Promise<void>): PostgresDatabaseResourcePromise {
+        return new PostgresDatabaseResourcePromise(this._onConnectionStringAvailableInternal(callback));
+    }
+
+    /** @internal */
+    private async _onInitializeResourceInternal(callback: (arg: InitializeResourceEvent) => Promise<void>): Promise<PostgresDatabaseResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as InitializeResourceEventHandle;
+            const arg = new InitializeResourceEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<PostgresDatabaseResourceHandle>(
+            'Aspire.Hosting/onInitializeResource',
+            rpcArgs
+        );
+        return new PostgresDatabaseResource(result, this._client);
+    }
+
+    /** Subscribes to the InitializeResource event */
+    onInitializeResource(callback: (arg: InitializeResourceEvent) => Promise<void>): PostgresDatabaseResourcePromise {
+        return new PostgresDatabaseResourcePromise(this._onInitializeResourceInternal(callback));
+    }
+
+    /** @internal */
+    private async _onResourceReadyInternal(callback: (arg: ResourceReadyEvent) => Promise<void>): Promise<PostgresDatabaseResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ResourceReadyEventHandle;
+            const arg = new ResourceReadyEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<PostgresDatabaseResourceHandle>(
+            'Aspire.Hosting/onResourceReady',
+            rpcArgs
+        );
+        return new PostgresDatabaseResource(result, this._client);
+    }
+
+    /** Subscribes to the ResourceReady event */
+    onResourceReady(callback: (arg: ResourceReadyEvent) => Promise<void>): PostgresDatabaseResourcePromise {
+        return new PostgresDatabaseResourcePromise(this._onResourceReadyInternal(callback));
     }
 
     /** @internal */
@@ -18345,6 +25481,11 @@ export class PostgresDatabaseResourcePromise implements PromiseLike<PostgresData
         return new PostgresDatabaseResourcePromise(this._promise.then(obj => obj.withConnectionPropertyValue(name, value)));
     }
 
+    /** Gets a connection property by key */
+    getConnectionProperty(key: string): Promise<ReferenceExpression> {
+        return this._promise.then(obj => obj.getConnectionProperty(key));
+    }
+
     /** Customizes displayed URLs via callback */
     withUrlsCallback(callback: (obj: ResourceUrlsCallbackContext) => Promise<void>): PostgresDatabaseResourcePromise {
         return new PostgresDatabaseResourcePromise(this._promise.then(obj => obj.withUrlsCallback(callback)));
@@ -18410,16 +25551,6 @@ export class PostgresDatabaseResourcePromise implements PromiseLike<PostgresData
         return new PostgresDatabaseResourcePromise(this._promise.then(obj => obj.excludeFromMcp()));
     }
 
-    /** Sets the remote image name for publishing */
-    withRemoteImageName(remoteImageName: string): PostgresDatabaseResourcePromise {
-        return new PostgresDatabaseResourcePromise(this._promise.then(obj => obj.withRemoteImageName(remoteImageName)));
-    }
-
-    /** Sets the remote image tag for publishing */
-    withRemoteImageTag(remoteImageTag: string): PostgresDatabaseResourcePromise {
-        return new PostgresDatabaseResourcePromise(this._promise.then(obj => obj.withRemoteImageTag(remoteImageTag)));
-    }
-
     /** Adds a pipeline step to the resource */
     withPipelineStepFactory(stepName: string, callback: (arg: PipelineStepContext) => Promise<void>, options?: WithPipelineStepFactoryOptions): PostgresDatabaseResourcePromise {
         return new PostgresDatabaseResourcePromise(this._promise.then(obj => obj.withPipelineStepFactory(stepName, callback, options)));
@@ -18438,6 +25569,31 @@ export class PostgresDatabaseResourcePromise implements PromiseLike<PostgresData
     /** Gets the resource name */
     getResourceName(): Promise<string> {
         return this._promise.then(obj => obj.getResourceName());
+    }
+
+    /** Subscribes to the BeforeResourceStarted event */
+    onBeforeResourceStarted(callback: (arg: BeforeResourceStartedEvent) => Promise<void>): PostgresDatabaseResourcePromise {
+        return new PostgresDatabaseResourcePromise(this._promise.then(obj => obj.onBeforeResourceStarted(callback)));
+    }
+
+    /** Subscribes to the ResourceStopped event */
+    onResourceStopped(callback: (arg: ResourceStoppedEvent) => Promise<void>): PostgresDatabaseResourcePromise {
+        return new PostgresDatabaseResourcePromise(this._promise.then(obj => obj.onResourceStopped(callback)));
+    }
+
+    /** Subscribes to the ConnectionStringAvailable event */
+    onConnectionStringAvailable(callback: (arg: ConnectionStringAvailableEvent) => Promise<void>): PostgresDatabaseResourcePromise {
+        return new PostgresDatabaseResourcePromise(this._promise.then(obj => obj.onConnectionStringAvailable(callback)));
+    }
+
+    /** Subscribes to the InitializeResource event */
+    onInitializeResource(callback: (arg: InitializeResourceEvent) => Promise<void>): PostgresDatabaseResourcePromise {
+        return new PostgresDatabaseResourcePromise(this._promise.then(obj => obj.onInitializeResource(callback)));
+    }
+
+    /** Subscribes to the ResourceReady event */
+    onResourceReady(callback: (arg: ResourceReadyEvent) => Promise<void>): PostgresDatabaseResourcePromise {
+        return new PostgresDatabaseResourcePromise(this._promise.then(obj => obj.onResourceReady(callback)));
     }
 
     /** Adds Postgres MCP server */
@@ -18668,7 +25824,7 @@ export class PostgresMcpContainerResource extends ResourceBuilderBase<PostgresMc
     private async _withBuildArgInternal(name: string, value: ParameterResource): Promise<PostgresMcpContainerResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, name, value };
         const result = await this._client.invokeCapability<PostgresMcpContainerResourceHandle>(
-            'Aspire.Hosting/withBuildArg',
+            'Aspire.Hosting/withParameterBuildArg',
             rpcArgs
         );
         return new PostgresMcpContainerResource(result, this._client);
@@ -18683,7 +25839,7 @@ export class PostgresMcpContainerResource extends ResourceBuilderBase<PostgresMc
     private async _withBuildSecretInternal(name: string, value: ParameterResource): Promise<PostgresMcpContainerResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, name, value };
         const result = await this._client.invokeCapability<PostgresMcpContainerResourceHandle>(
-            'Aspire.Hosting/withBuildSecret',
+            'Aspire.Hosting/withParameterBuildSecret',
             rpcArgs
         );
         return new PostgresMcpContainerResource(result, this._client);
@@ -18825,41 +25981,11 @@ export class PostgresMcpContainerResource extends ResourceBuilderBase<PostgresMc
     }
 
     /** @internal */
-    private async _withEnvironmentInternal(name: string, value: string): Promise<PostgresMcpContainerResource> {
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, name, value };
-        const result = await this._client.invokeCapability<PostgresMcpContainerResourceHandle>(
-            'Aspire.Hosting/withEnvironment',
-            rpcArgs
-        );
-        return new PostgresMcpContainerResource(result, this._client);
-    }
-
-    /** Sets an environment variable */
-    withEnvironment(name: string, value: string): PostgresMcpContainerResourcePromise {
-        return new PostgresMcpContainerResourcePromise(this._withEnvironmentInternal(name, value));
-    }
-
-    /** @internal */
-    private async _withEnvironmentExpressionInternal(name: string, value: ReferenceExpression): Promise<PostgresMcpContainerResource> {
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, name, value };
-        const result = await this._client.invokeCapability<PostgresMcpContainerResourceHandle>(
-            'Aspire.Hosting/withEnvironmentExpression',
-            rpcArgs
-        );
-        return new PostgresMcpContainerResource(result, this._client);
-    }
-
-    /** Adds an environment variable with a reference expression */
-    withEnvironmentExpression(name: string, value: ReferenceExpression): PostgresMcpContainerResourcePromise {
-        return new PostgresMcpContainerResourcePromise(this._withEnvironmentExpressionInternal(name, value));
-    }
-
-    /** @internal */
-    private async _withEnvironmentCallbackInternal(callback: (obj: EnvironmentCallbackContext) => Promise<void>): Promise<PostgresMcpContainerResource> {
-        const callbackId = registerCallback(async (objData: unknown) => {
-            const objHandle = wrapIfHandle(objData) as EnvironmentCallbackContextHandle;
-            const obj = new EnvironmentCallbackContext(objHandle, this._client);
-            await callback(obj);
+    private async _withEnvironmentCallbackInternal(callback: (arg: EnvironmentCallbackContext) => Promise<void>): Promise<PostgresMcpContainerResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as EnvironmentCallbackContextHandle;
+            const arg = new EnvironmentCallbackContext(argHandle, this._client);
+            await callback(arg);
         });
         const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
         const result = await this._client.invokeCapability<PostgresMcpContainerResourceHandle>(
@@ -18870,28 +25996,8 @@ export class PostgresMcpContainerResource extends ResourceBuilderBase<PostgresMc
     }
 
     /** Sets environment variables via callback */
-    withEnvironmentCallback(callback: (obj: EnvironmentCallbackContext) => Promise<void>): PostgresMcpContainerResourcePromise {
+    withEnvironmentCallback(callback: (arg: EnvironmentCallbackContext) => Promise<void>): PostgresMcpContainerResourcePromise {
         return new PostgresMcpContainerResourcePromise(this._withEnvironmentCallbackInternal(callback));
-    }
-
-    /** @internal */
-    private async _withEnvironmentCallbackAsyncInternal(callback: (arg: EnvironmentCallbackContext) => Promise<void>): Promise<PostgresMcpContainerResource> {
-        const callbackId = registerCallback(async (argData: unknown) => {
-            const argHandle = wrapIfHandle(argData) as EnvironmentCallbackContextHandle;
-            const arg = new EnvironmentCallbackContext(argHandle, this._client);
-            await callback(arg);
-        });
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
-        const result = await this._client.invokeCapability<PostgresMcpContainerResourceHandle>(
-            'Aspire.Hosting/withEnvironmentCallbackAsync',
-            rpcArgs
-        );
-        return new PostgresMcpContainerResource(result, this._client);
-    }
-
-    /** Sets environment variables via async callback */
-    withEnvironmentCallbackAsync(callback: (arg: EnvironmentCallbackContext) => Promise<void>): PostgresMcpContainerResourcePromise {
-        return new PostgresMcpContainerResourcePromise(this._withEnvironmentCallbackAsyncInternal(callback));
     }
 
     /** @internal */
@@ -18907,6 +26013,21 @@ export class PostgresMcpContainerResource extends ResourceBuilderBase<PostgresMc
     /** Sets an environment variable from an endpoint reference */
     withEnvironmentEndpoint(name: string, endpointReference: EndpointReference): PostgresMcpContainerResourcePromise {
         return new PostgresMcpContainerResourcePromise(this._withEnvironmentEndpointInternal(name, endpointReference));
+    }
+
+    /** @internal */
+    private async _withEnvironmentInternal(name: string, value: string | ReferenceExpression | EndpointReference | ParameterResource | ResourceWithConnectionString): Promise<PostgresMcpContainerResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, name, value };
+        const result = await this._client.invokeCapability<PostgresMcpContainerResourceHandle>(
+            'Aspire.Hosting/withEnvironment',
+            rpcArgs
+        );
+        return new PostgresMcpContainerResource(result, this._client);
+    }
+
+    /** Sets an environment variable on the resource */
+    withEnvironment(name: string, value: string | ReferenceExpression | EndpointReference | ParameterResource | ResourceWithConnectionString): PostgresMcpContainerResourcePromise {
+        return new PostgresMcpContainerResourcePromise(this._withEnvironmentInternal(name, value));
     }
 
     /** @internal */
@@ -18995,10 +26116,11 @@ export class PostgresMcpContainerResource extends ResourceBuilderBase<PostgresMc
     }
 
     /** @internal */
-    private async _withReferenceInternal(source: ResourceBuilderBase, connectionName?: string, optional?: boolean): Promise<PostgresMcpContainerResource> {
+    private async _withReferenceInternal(source: ResourceBuilderBase, connectionName?: string, optional?: boolean, name?: string): Promise<PostgresMcpContainerResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, source };
         if (connectionName !== undefined) rpcArgs.connectionName = connectionName;
         if (optional !== undefined) rpcArgs.optional = optional;
+        if (name !== undefined) rpcArgs.name = name;
         const result = await this._client.invokeCapability<PostgresMcpContainerResourceHandle>(
             'Aspire.Hosting/withReference',
             rpcArgs
@@ -19010,37 +26132,8 @@ export class PostgresMcpContainerResource extends ResourceBuilderBase<PostgresMc
     withReference(source: ResourceBuilderBase, options?: WithReferenceOptions): PostgresMcpContainerResourcePromise {
         const connectionName = options?.connectionName;
         const optional = options?.optional;
-        return new PostgresMcpContainerResourcePromise(this._withReferenceInternal(source, connectionName, optional));
-    }
-
-    /** @internal */
-    private async _withServiceReferenceInternal(source: ResourceBuilderBase): Promise<PostgresMcpContainerResource> {
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, source };
-        const result = await this._client.invokeCapability<PostgresMcpContainerResourceHandle>(
-            'Aspire.Hosting/withServiceReference',
-            rpcArgs
-        );
-        return new PostgresMcpContainerResource(result, this._client);
-    }
-
-    /** Adds a service discovery reference to another resource */
-    withServiceReference(source: ResourceBuilderBase): PostgresMcpContainerResourcePromise {
-        return new PostgresMcpContainerResourcePromise(this._withServiceReferenceInternal(source));
-    }
-
-    /** @internal */
-    private async _withServiceReferenceNamedInternal(source: ResourceBuilderBase, name: string): Promise<PostgresMcpContainerResource> {
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, source, name };
-        const result = await this._client.invokeCapability<PostgresMcpContainerResourceHandle>(
-            'Aspire.Hosting/withServiceReferenceNamed',
-            rpcArgs
-        );
-        return new PostgresMcpContainerResource(result, this._client);
-    }
-
-    /** Adds a named service discovery reference */
-    withServiceReferenceNamed(source: ResourceBuilderBase, name: string): PostgresMcpContainerResourcePromise {
-        return new PostgresMcpContainerResourcePromise(this._withServiceReferenceNamedInternal(source, name));
+        const name = options?.name;
+        return new PostgresMcpContainerResourcePromise(this._withReferenceInternal(source, connectionName, optional, name));
     }
 
     /** @internal */
@@ -19340,7 +26433,7 @@ export class PostgresMcpContainerResource extends ResourceBuilderBase<PostgresMc
     private async _waitForInternal(dependency: ResourceBuilderBase): Promise<PostgresMcpContainerResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, dependency };
         const result = await this._client.invokeCapability<PostgresMcpContainerResourceHandle>(
-            'Aspire.Hosting/waitFor',
+            'Aspire.Hosting/waitForResource',
             rpcArgs
         );
         return new PostgresMcpContainerResource(result, this._client);
@@ -19370,7 +26463,7 @@ export class PostgresMcpContainerResource extends ResourceBuilderBase<PostgresMc
     private async _waitForStartInternal(dependency: ResourceBuilderBase): Promise<PostgresMcpContainerResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, dependency };
         const result = await this._client.invokeCapability<PostgresMcpContainerResourceHandle>(
-            'Aspire.Hosting/waitForStart',
+            'Aspire.Hosting/waitForResourceStart',
             rpcArgs
         );
         return new PostgresMcpContainerResource(result, this._client);
@@ -19416,7 +26509,7 @@ export class PostgresMcpContainerResource extends ResourceBuilderBase<PostgresMc
         const rpcArgs: Record<string, unknown> = { builder: this._handle, dependency };
         if (exitCode !== undefined) rpcArgs.exitCode = exitCode;
         const result = await this._client.invokeCapability<PostgresMcpContainerResourceHandle>(
-            'Aspire.Hosting/waitForCompletion',
+            'Aspire.Hosting/waitForResourceCompletion',
             rpcArgs
         );
         return new PostgresMcpContainerResource(result, this._client);
@@ -19521,7 +26614,7 @@ export class PostgresMcpContainerResource extends ResourceBuilderBase<PostgresMc
         const rpcArgs: Record<string, unknown> = { builder: this._handle };
         if (password !== undefined) rpcArgs.password = password;
         const result = await this._client.invokeCapability<PostgresMcpContainerResourceHandle>(
-            'Aspire.Hosting/withHttpsDeveloperCertificate',
+            'Aspire.Hosting/withParameterHttpsDeveloperCertificate',
             rpcArgs
         );
         return new PostgresMcpContainerResource(result, this._client);
@@ -19552,7 +26645,7 @@ export class PostgresMcpContainerResource extends ResourceBuilderBase<PostgresMc
     private async _withParentRelationshipInternal(parent: ResourceBuilderBase): Promise<PostgresMcpContainerResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, parent };
         const result = await this._client.invokeCapability<PostgresMcpContainerResourceHandle>(
-            'Aspire.Hosting/withParentRelationship',
+            'Aspire.Hosting/withBuilderParentRelationship',
             rpcArgs
         );
         return new PostgresMcpContainerResource(result, this._client);
@@ -19567,7 +26660,7 @@ export class PostgresMcpContainerResource extends ResourceBuilderBase<PostgresMc
     private async _withChildRelationshipInternal(child: ResourceBuilderBase): Promise<PostgresMcpContainerResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, child };
         const result = await this._client.invokeCapability<PostgresMcpContainerResourceHandle>(
-            'Aspire.Hosting/withChildRelationship',
+            'Aspire.Hosting/withBuilderChildRelationship',
             rpcArgs
         );
         return new PostgresMcpContainerResource(result, this._client);
@@ -19765,6 +26858,106 @@ export class PostgresMcpContainerResource extends ResourceBuilderBase<PostgresMc
         );
     }
 
+    /** @internal */
+    private async _onBeforeResourceStartedInternal(callback: (arg: BeforeResourceStartedEvent) => Promise<void>): Promise<PostgresMcpContainerResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as BeforeResourceStartedEventHandle;
+            const arg = new BeforeResourceStartedEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<PostgresMcpContainerResourceHandle>(
+            'Aspire.Hosting/onBeforeResourceStarted',
+            rpcArgs
+        );
+        return new PostgresMcpContainerResource(result, this._client);
+    }
+
+    /** Subscribes to the BeforeResourceStarted event */
+    onBeforeResourceStarted(callback: (arg: BeforeResourceStartedEvent) => Promise<void>): PostgresMcpContainerResourcePromise {
+        return new PostgresMcpContainerResourcePromise(this._onBeforeResourceStartedInternal(callback));
+    }
+
+    /** @internal */
+    private async _onResourceStoppedInternal(callback: (arg: ResourceStoppedEvent) => Promise<void>): Promise<PostgresMcpContainerResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ResourceStoppedEventHandle;
+            const arg = new ResourceStoppedEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<PostgresMcpContainerResourceHandle>(
+            'Aspire.Hosting/onResourceStopped',
+            rpcArgs
+        );
+        return new PostgresMcpContainerResource(result, this._client);
+    }
+
+    /** Subscribes to the ResourceStopped event */
+    onResourceStopped(callback: (arg: ResourceStoppedEvent) => Promise<void>): PostgresMcpContainerResourcePromise {
+        return new PostgresMcpContainerResourcePromise(this._onResourceStoppedInternal(callback));
+    }
+
+    /** @internal */
+    private async _onInitializeResourceInternal(callback: (arg: InitializeResourceEvent) => Promise<void>): Promise<PostgresMcpContainerResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as InitializeResourceEventHandle;
+            const arg = new InitializeResourceEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<PostgresMcpContainerResourceHandle>(
+            'Aspire.Hosting/onInitializeResource',
+            rpcArgs
+        );
+        return new PostgresMcpContainerResource(result, this._client);
+    }
+
+    /** Subscribes to the InitializeResource event */
+    onInitializeResource(callback: (arg: InitializeResourceEvent) => Promise<void>): PostgresMcpContainerResourcePromise {
+        return new PostgresMcpContainerResourcePromise(this._onInitializeResourceInternal(callback));
+    }
+
+    /** @internal */
+    private async _onResourceEndpointsAllocatedInternal(callback: (arg: ResourceEndpointsAllocatedEvent) => Promise<void>): Promise<PostgresMcpContainerResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ResourceEndpointsAllocatedEventHandle;
+            const arg = new ResourceEndpointsAllocatedEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<PostgresMcpContainerResourceHandle>(
+            'Aspire.Hosting/onResourceEndpointsAllocated',
+            rpcArgs
+        );
+        return new PostgresMcpContainerResource(result, this._client);
+    }
+
+    /** Subscribes to the ResourceEndpointsAllocated event */
+    onResourceEndpointsAllocated(callback: (arg: ResourceEndpointsAllocatedEvent) => Promise<void>): PostgresMcpContainerResourcePromise {
+        return new PostgresMcpContainerResourcePromise(this._onResourceEndpointsAllocatedInternal(callback));
+    }
+
+    /** @internal */
+    private async _onResourceReadyInternal(callback: (arg: ResourceReadyEvent) => Promise<void>): Promise<PostgresMcpContainerResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ResourceReadyEventHandle;
+            const arg = new ResourceReadyEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<PostgresMcpContainerResourceHandle>(
+            'Aspire.Hosting/onResourceReady',
+            rpcArgs
+        );
+        return new PostgresMcpContainerResource(result, this._client);
+    }
+
+    /** Subscribes to the ResourceReady event */
+    onResourceReady(callback: (arg: ResourceReadyEvent) => Promise<void>): PostgresMcpContainerResourcePromise {
+        return new PostgresMcpContainerResourcePromise(this._onResourceReadyInternal(callback));
+    }
+
 }
 
 /**
@@ -19897,29 +27090,19 @@ export class PostgresMcpContainerResourcePromise implements PromiseLike<Postgres
         return new PostgresMcpContainerResourcePromise(this._promise.then(obj => obj.withRequiredCommand(command, options)));
     }
 
-    /** Sets an environment variable */
-    withEnvironment(name: string, value: string): PostgresMcpContainerResourcePromise {
-        return new PostgresMcpContainerResourcePromise(this._promise.then(obj => obj.withEnvironment(name, value)));
-    }
-
-    /** Adds an environment variable with a reference expression */
-    withEnvironmentExpression(name: string, value: ReferenceExpression): PostgresMcpContainerResourcePromise {
-        return new PostgresMcpContainerResourcePromise(this._promise.then(obj => obj.withEnvironmentExpression(name, value)));
-    }
-
     /** Sets environment variables via callback */
-    withEnvironmentCallback(callback: (obj: EnvironmentCallbackContext) => Promise<void>): PostgresMcpContainerResourcePromise {
+    withEnvironmentCallback(callback: (arg: EnvironmentCallbackContext) => Promise<void>): PostgresMcpContainerResourcePromise {
         return new PostgresMcpContainerResourcePromise(this._promise.then(obj => obj.withEnvironmentCallback(callback)));
-    }
-
-    /** Sets environment variables via async callback */
-    withEnvironmentCallbackAsync(callback: (arg: EnvironmentCallbackContext) => Promise<void>): PostgresMcpContainerResourcePromise {
-        return new PostgresMcpContainerResourcePromise(this._promise.then(obj => obj.withEnvironmentCallbackAsync(callback)));
     }
 
     /** Sets an environment variable from an endpoint reference */
     withEnvironmentEndpoint(name: string, endpointReference: EndpointReference): PostgresMcpContainerResourcePromise {
         return new PostgresMcpContainerResourcePromise(this._promise.then(obj => obj.withEnvironmentEndpoint(name, endpointReference)));
+    }
+
+    /** Sets an environment variable on the resource */
+    withEnvironment(name: string, value: string | ReferenceExpression | EndpointReference | ParameterResource | ResourceWithConnectionString): PostgresMcpContainerResourcePromise {
+        return new PostgresMcpContainerResourcePromise(this._promise.then(obj => obj.withEnvironment(name, value)));
     }
 
     /** Sets an environment variable from a parameter resource */
@@ -19950,16 +27133,6 @@ export class PostgresMcpContainerResourcePromise implements PromiseLike<Postgres
     /** Adds a reference to another resource */
     withReference(source: ResourceBuilderBase, options?: WithReferenceOptions): PostgresMcpContainerResourcePromise {
         return new PostgresMcpContainerResourcePromise(this._promise.then(obj => obj.withReference(source, options)));
-    }
-
-    /** Adds a service discovery reference to another resource */
-    withServiceReference(source: ResourceBuilderBase): PostgresMcpContainerResourcePromise {
-        return new PostgresMcpContainerResourcePromise(this._promise.then(obj => obj.withServiceReference(source)));
-    }
-
-    /** Adds a named service discovery reference */
-    withServiceReferenceNamed(source: ResourceBuilderBase, name: string): PostgresMcpContainerResourcePromise {
-        return new PostgresMcpContainerResourcePromise(this._promise.then(obj => obj.withServiceReferenceNamed(source, name)));
     }
 
     /** Adds a reference to a URI */
@@ -20167,6 +27340,31 @@ export class PostgresMcpContainerResourcePromise implements PromiseLike<Postgres
         return this._promise.then(obj => obj.getResourceName());
     }
 
+    /** Subscribes to the BeforeResourceStarted event */
+    onBeforeResourceStarted(callback: (arg: BeforeResourceStartedEvent) => Promise<void>): PostgresMcpContainerResourcePromise {
+        return new PostgresMcpContainerResourcePromise(this._promise.then(obj => obj.onBeforeResourceStarted(callback)));
+    }
+
+    /** Subscribes to the ResourceStopped event */
+    onResourceStopped(callback: (arg: ResourceStoppedEvent) => Promise<void>): PostgresMcpContainerResourcePromise {
+        return new PostgresMcpContainerResourcePromise(this._promise.then(obj => obj.onResourceStopped(callback)));
+    }
+
+    /** Subscribes to the InitializeResource event */
+    onInitializeResource(callback: (arg: InitializeResourceEvent) => Promise<void>): PostgresMcpContainerResourcePromise {
+        return new PostgresMcpContainerResourcePromise(this._promise.then(obj => obj.onInitializeResource(callback)));
+    }
+
+    /** Subscribes to the ResourceEndpointsAllocated event */
+    onResourceEndpointsAllocated(callback: (arg: ResourceEndpointsAllocatedEvent) => Promise<void>): PostgresMcpContainerResourcePromise {
+        return new PostgresMcpContainerResourcePromise(this._promise.then(obj => obj.onResourceEndpointsAllocated(callback)));
+    }
+
+    /** Subscribes to the ResourceReady event */
+    onResourceReady(callback: (arg: ResourceReadyEvent) => Promise<void>): PostgresMcpContainerResourcePromise {
+        return new PostgresMcpContainerResourcePromise(this._promise.then(obj => obj.onResourceReady(callback)));
+    }
+
 }
 
 // ============================================================================
@@ -20189,6 +27387,17 @@ export class PostgresServerResource extends ResourceBuilderBase<PostgresServerRe
         },
     };
 
+    /** Gets the UserNameParameter property */
+    userNameParameter = {
+        get: async (): Promise<ParameterResource> => {
+            const handle = await this._client.invokeCapability<ParameterResourceHandle>(
+                'Aspire.Hosting.ApplicationModel/PostgresServerResource.userNameParameter',
+                { context: this._handle }
+            );
+            return new ParameterResource(handle, this._client);
+        },
+    };
+
     /** Gets the UserNameReference property */
     userNameReference = {
         get: async (): Promise<ReferenceExpression> => {
@@ -20196,6 +27405,17 @@ export class PostgresServerResource extends ResourceBuilderBase<PostgresServerRe
                 'Aspire.Hosting.ApplicationModel/PostgresServerResource.userNameReference',
                 { context: this._handle }
             );
+        },
+    };
+
+    /** Gets the PasswordParameter property */
+    passwordParameter = {
+        get: async (): Promise<ParameterResource> => {
+            const handle = await this._client.invokeCapability<ParameterResourceHandle>(
+                'Aspire.Hosting.ApplicationModel/PostgresServerResource.passwordParameter',
+                { context: this._handle }
+            );
+            return new ParameterResource(handle, this._client);
         },
     };
 
@@ -20514,7 +27734,7 @@ export class PostgresServerResource extends ResourceBuilderBase<PostgresServerRe
     private async _withBuildArgInternal(name: string, value: ParameterResource): Promise<PostgresServerResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, name, value };
         const result = await this._client.invokeCapability<PostgresServerResourceHandle>(
-            'Aspire.Hosting/withBuildArg',
+            'Aspire.Hosting/withParameterBuildArg',
             rpcArgs
         );
         return new PostgresServerResource(result, this._client);
@@ -20529,7 +27749,7 @@ export class PostgresServerResource extends ResourceBuilderBase<PostgresServerRe
     private async _withBuildSecretInternal(name: string, value: ParameterResource): Promise<PostgresServerResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, name, value };
         const result = await this._client.invokeCapability<PostgresServerResourceHandle>(
-            'Aspire.Hosting/withBuildSecret',
+            'Aspire.Hosting/withParameterBuildSecret',
             rpcArgs
         );
         return new PostgresServerResource(result, this._client);
@@ -20671,41 +27891,11 @@ export class PostgresServerResource extends ResourceBuilderBase<PostgresServerRe
     }
 
     /** @internal */
-    private async _withEnvironmentInternal(name: string, value: string): Promise<PostgresServerResource> {
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, name, value };
-        const result = await this._client.invokeCapability<PostgresServerResourceHandle>(
-            'Aspire.Hosting/withEnvironment',
-            rpcArgs
-        );
-        return new PostgresServerResource(result, this._client);
-    }
-
-    /** Sets an environment variable */
-    withEnvironment(name: string, value: string): PostgresServerResourcePromise {
-        return new PostgresServerResourcePromise(this._withEnvironmentInternal(name, value));
-    }
-
-    /** @internal */
-    private async _withEnvironmentExpressionInternal(name: string, value: ReferenceExpression): Promise<PostgresServerResource> {
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, name, value };
-        const result = await this._client.invokeCapability<PostgresServerResourceHandle>(
-            'Aspire.Hosting/withEnvironmentExpression',
-            rpcArgs
-        );
-        return new PostgresServerResource(result, this._client);
-    }
-
-    /** Adds an environment variable with a reference expression */
-    withEnvironmentExpression(name: string, value: ReferenceExpression): PostgresServerResourcePromise {
-        return new PostgresServerResourcePromise(this._withEnvironmentExpressionInternal(name, value));
-    }
-
-    /** @internal */
-    private async _withEnvironmentCallbackInternal(callback: (obj: EnvironmentCallbackContext) => Promise<void>): Promise<PostgresServerResource> {
-        const callbackId = registerCallback(async (objData: unknown) => {
-            const objHandle = wrapIfHandle(objData) as EnvironmentCallbackContextHandle;
-            const obj = new EnvironmentCallbackContext(objHandle, this._client);
-            await callback(obj);
+    private async _withEnvironmentCallbackInternal(callback: (arg: EnvironmentCallbackContext) => Promise<void>): Promise<PostgresServerResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as EnvironmentCallbackContextHandle;
+            const arg = new EnvironmentCallbackContext(argHandle, this._client);
+            await callback(arg);
         });
         const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
         const result = await this._client.invokeCapability<PostgresServerResourceHandle>(
@@ -20716,28 +27906,8 @@ export class PostgresServerResource extends ResourceBuilderBase<PostgresServerRe
     }
 
     /** Sets environment variables via callback */
-    withEnvironmentCallback(callback: (obj: EnvironmentCallbackContext) => Promise<void>): PostgresServerResourcePromise {
+    withEnvironmentCallback(callback: (arg: EnvironmentCallbackContext) => Promise<void>): PostgresServerResourcePromise {
         return new PostgresServerResourcePromise(this._withEnvironmentCallbackInternal(callback));
-    }
-
-    /** @internal */
-    private async _withEnvironmentCallbackAsyncInternal(callback: (arg: EnvironmentCallbackContext) => Promise<void>): Promise<PostgresServerResource> {
-        const callbackId = registerCallback(async (argData: unknown) => {
-            const argHandle = wrapIfHandle(argData) as EnvironmentCallbackContextHandle;
-            const arg = new EnvironmentCallbackContext(argHandle, this._client);
-            await callback(arg);
-        });
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
-        const result = await this._client.invokeCapability<PostgresServerResourceHandle>(
-            'Aspire.Hosting/withEnvironmentCallbackAsync',
-            rpcArgs
-        );
-        return new PostgresServerResource(result, this._client);
-    }
-
-    /** Sets environment variables via async callback */
-    withEnvironmentCallbackAsync(callback: (arg: EnvironmentCallbackContext) => Promise<void>): PostgresServerResourcePromise {
-        return new PostgresServerResourcePromise(this._withEnvironmentCallbackAsyncInternal(callback));
     }
 
     /** @internal */
@@ -20753,6 +27923,21 @@ export class PostgresServerResource extends ResourceBuilderBase<PostgresServerRe
     /** Sets an environment variable from an endpoint reference */
     withEnvironmentEndpoint(name: string, endpointReference: EndpointReference): PostgresServerResourcePromise {
         return new PostgresServerResourcePromise(this._withEnvironmentEndpointInternal(name, endpointReference));
+    }
+
+    /** @internal */
+    private async _withEnvironmentInternal(name: string, value: string | ReferenceExpression | EndpointReference | ParameterResource | ResourceWithConnectionString): Promise<PostgresServerResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, name, value };
+        const result = await this._client.invokeCapability<PostgresServerResourceHandle>(
+            'Aspire.Hosting/withEnvironment',
+            rpcArgs
+        );
+        return new PostgresServerResource(result, this._client);
+    }
+
+    /** Sets an environment variable on the resource */
+    withEnvironment(name: string, value: string | ReferenceExpression | EndpointReference | ParameterResource | ResourceWithConnectionString): PostgresServerResourcePromise {
+        return new PostgresServerResourcePromise(this._withEnvironmentInternal(name, value));
     }
 
     /** @internal */
@@ -20871,10 +28056,11 @@ export class PostgresServerResource extends ResourceBuilderBase<PostgresServerRe
     }
 
     /** @internal */
-    private async _withReferenceInternal(source: ResourceBuilderBase, connectionName?: string, optional?: boolean): Promise<PostgresServerResource> {
+    private async _withReferenceInternal(source: ResourceBuilderBase, connectionName?: string, optional?: boolean, name?: string): Promise<PostgresServerResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, source };
         if (connectionName !== undefined) rpcArgs.connectionName = connectionName;
         if (optional !== undefined) rpcArgs.optional = optional;
+        if (name !== undefined) rpcArgs.name = name;
         const result = await this._client.invokeCapability<PostgresServerResourceHandle>(
             'Aspire.Hosting/withReference',
             rpcArgs
@@ -20886,37 +28072,17 @@ export class PostgresServerResource extends ResourceBuilderBase<PostgresServerRe
     withReference(source: ResourceBuilderBase, options?: WithReferenceOptions): PostgresServerResourcePromise {
         const connectionName = options?.connectionName;
         const optional = options?.optional;
-        return new PostgresServerResourcePromise(this._withReferenceInternal(source, connectionName, optional));
+        const name = options?.name;
+        return new PostgresServerResourcePromise(this._withReferenceInternal(source, connectionName, optional, name));
     }
 
-    /** @internal */
-    private async _withServiceReferenceInternal(source: ResourceBuilderBase): Promise<PostgresServerResource> {
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, source };
-        const result = await this._client.invokeCapability<PostgresServerResourceHandle>(
-            'Aspire.Hosting/withServiceReference',
+    /** Gets a connection property by key */
+    async getConnectionProperty(key: string): Promise<ReferenceExpression> {
+        const rpcArgs: Record<string, unknown> = { resource: this._handle, key };
+        return await this._client.invokeCapability<ReferenceExpression>(
+            'Aspire.Hosting/getConnectionProperty',
             rpcArgs
         );
-        return new PostgresServerResource(result, this._client);
-    }
-
-    /** Adds a service discovery reference to another resource */
-    withServiceReference(source: ResourceBuilderBase): PostgresServerResourcePromise {
-        return new PostgresServerResourcePromise(this._withServiceReferenceInternal(source));
-    }
-
-    /** @internal */
-    private async _withServiceReferenceNamedInternal(source: ResourceBuilderBase, name: string): Promise<PostgresServerResource> {
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, source, name };
-        const result = await this._client.invokeCapability<PostgresServerResourceHandle>(
-            'Aspire.Hosting/withServiceReferenceNamed',
-            rpcArgs
-        );
-        return new PostgresServerResource(result, this._client);
-    }
-
-    /** Adds a named service discovery reference */
-    withServiceReferenceNamed(source: ResourceBuilderBase, name: string): PostgresServerResourcePromise {
-        return new PostgresServerResourcePromise(this._withServiceReferenceNamedInternal(source, name));
     }
 
     /** @internal */
@@ -21216,7 +28382,7 @@ export class PostgresServerResource extends ResourceBuilderBase<PostgresServerRe
     private async _waitForInternal(dependency: ResourceBuilderBase): Promise<PostgresServerResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, dependency };
         const result = await this._client.invokeCapability<PostgresServerResourceHandle>(
-            'Aspire.Hosting/waitFor',
+            'Aspire.Hosting/waitForResource',
             rpcArgs
         );
         return new PostgresServerResource(result, this._client);
@@ -21246,7 +28412,7 @@ export class PostgresServerResource extends ResourceBuilderBase<PostgresServerRe
     private async _waitForStartInternal(dependency: ResourceBuilderBase): Promise<PostgresServerResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, dependency };
         const result = await this._client.invokeCapability<PostgresServerResourceHandle>(
-            'Aspire.Hosting/waitForStart',
+            'Aspire.Hosting/waitForResourceStart',
             rpcArgs
         );
         return new PostgresServerResource(result, this._client);
@@ -21292,7 +28458,7 @@ export class PostgresServerResource extends ResourceBuilderBase<PostgresServerRe
         const rpcArgs: Record<string, unknown> = { builder: this._handle, dependency };
         if (exitCode !== undefined) rpcArgs.exitCode = exitCode;
         const result = await this._client.invokeCapability<PostgresServerResourceHandle>(
-            'Aspire.Hosting/waitForCompletion',
+            'Aspire.Hosting/waitForResourceCompletion',
             rpcArgs
         );
         return new PostgresServerResource(result, this._client);
@@ -21397,7 +28563,7 @@ export class PostgresServerResource extends ResourceBuilderBase<PostgresServerRe
         const rpcArgs: Record<string, unknown> = { builder: this._handle };
         if (password !== undefined) rpcArgs.password = password;
         const result = await this._client.invokeCapability<PostgresServerResourceHandle>(
-            'Aspire.Hosting/withHttpsDeveloperCertificate',
+            'Aspire.Hosting/withParameterHttpsDeveloperCertificate',
             rpcArgs
         );
         return new PostgresServerResource(result, this._client);
@@ -21428,7 +28594,7 @@ export class PostgresServerResource extends ResourceBuilderBase<PostgresServerRe
     private async _withParentRelationshipInternal(parent: ResourceBuilderBase): Promise<PostgresServerResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, parent };
         const result = await this._client.invokeCapability<PostgresServerResourceHandle>(
-            'Aspire.Hosting/withParentRelationship',
+            'Aspire.Hosting/withBuilderParentRelationship',
             rpcArgs
         );
         return new PostgresServerResource(result, this._client);
@@ -21443,7 +28609,7 @@ export class PostgresServerResource extends ResourceBuilderBase<PostgresServerRe
     private async _withChildRelationshipInternal(child: ResourceBuilderBase): Promise<PostgresServerResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, child };
         const result = await this._client.invokeCapability<PostgresServerResourceHandle>(
-            'Aspire.Hosting/withChildRelationship',
+            'Aspire.Hosting/withBuilderChildRelationship',
             rpcArgs
         );
         return new PostgresServerResource(result, this._client);
@@ -21639,6 +28805,126 @@ export class PostgresServerResource extends ResourceBuilderBase<PostgresServerRe
             'Aspire.Hosting/getResourceName',
             rpcArgs
         );
+    }
+
+    /** @internal */
+    private async _onBeforeResourceStartedInternal(callback: (arg: BeforeResourceStartedEvent) => Promise<void>): Promise<PostgresServerResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as BeforeResourceStartedEventHandle;
+            const arg = new BeforeResourceStartedEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<PostgresServerResourceHandle>(
+            'Aspire.Hosting/onBeforeResourceStarted',
+            rpcArgs
+        );
+        return new PostgresServerResource(result, this._client);
+    }
+
+    /** Subscribes to the BeforeResourceStarted event */
+    onBeforeResourceStarted(callback: (arg: BeforeResourceStartedEvent) => Promise<void>): PostgresServerResourcePromise {
+        return new PostgresServerResourcePromise(this._onBeforeResourceStartedInternal(callback));
+    }
+
+    /** @internal */
+    private async _onResourceStoppedInternal(callback: (arg: ResourceStoppedEvent) => Promise<void>): Promise<PostgresServerResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ResourceStoppedEventHandle;
+            const arg = new ResourceStoppedEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<PostgresServerResourceHandle>(
+            'Aspire.Hosting/onResourceStopped',
+            rpcArgs
+        );
+        return new PostgresServerResource(result, this._client);
+    }
+
+    /** Subscribes to the ResourceStopped event */
+    onResourceStopped(callback: (arg: ResourceStoppedEvent) => Promise<void>): PostgresServerResourcePromise {
+        return new PostgresServerResourcePromise(this._onResourceStoppedInternal(callback));
+    }
+
+    /** @internal */
+    private async _onConnectionStringAvailableInternal(callback: (arg: ConnectionStringAvailableEvent) => Promise<void>): Promise<PostgresServerResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ConnectionStringAvailableEventHandle;
+            const arg = new ConnectionStringAvailableEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<PostgresServerResourceHandle>(
+            'Aspire.Hosting/onConnectionStringAvailable',
+            rpcArgs
+        );
+        return new PostgresServerResource(result, this._client);
+    }
+
+    /** Subscribes to the ConnectionStringAvailable event */
+    onConnectionStringAvailable(callback: (arg: ConnectionStringAvailableEvent) => Promise<void>): PostgresServerResourcePromise {
+        return new PostgresServerResourcePromise(this._onConnectionStringAvailableInternal(callback));
+    }
+
+    /** @internal */
+    private async _onInitializeResourceInternal(callback: (arg: InitializeResourceEvent) => Promise<void>): Promise<PostgresServerResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as InitializeResourceEventHandle;
+            const arg = new InitializeResourceEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<PostgresServerResourceHandle>(
+            'Aspire.Hosting/onInitializeResource',
+            rpcArgs
+        );
+        return new PostgresServerResource(result, this._client);
+    }
+
+    /** Subscribes to the InitializeResource event */
+    onInitializeResource(callback: (arg: InitializeResourceEvent) => Promise<void>): PostgresServerResourcePromise {
+        return new PostgresServerResourcePromise(this._onInitializeResourceInternal(callback));
+    }
+
+    /** @internal */
+    private async _onResourceEndpointsAllocatedInternal(callback: (arg: ResourceEndpointsAllocatedEvent) => Promise<void>): Promise<PostgresServerResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ResourceEndpointsAllocatedEventHandle;
+            const arg = new ResourceEndpointsAllocatedEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<PostgresServerResourceHandle>(
+            'Aspire.Hosting/onResourceEndpointsAllocated',
+            rpcArgs
+        );
+        return new PostgresServerResource(result, this._client);
+    }
+
+    /** Subscribes to the ResourceEndpointsAllocated event */
+    onResourceEndpointsAllocated(callback: (arg: ResourceEndpointsAllocatedEvent) => Promise<void>): PostgresServerResourcePromise {
+        return new PostgresServerResourcePromise(this._onResourceEndpointsAllocatedInternal(callback));
+    }
+
+    /** @internal */
+    private async _onResourceReadyInternal(callback: (arg: ResourceReadyEvent) => Promise<void>): Promise<PostgresServerResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ResourceReadyEventHandle;
+            const arg = new ResourceReadyEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<PostgresServerResourceHandle>(
+            'Aspire.Hosting/onResourceReady',
+            rpcArgs
+        );
+        return new PostgresServerResource(result, this._client);
+    }
+
+    /** Subscribes to the ResourceReady event */
+    onResourceReady(callback: (arg: ResourceReadyEvent) => Promise<void>): PostgresServerResourcePromise {
+        return new PostgresServerResourcePromise(this._onResourceReadyInternal(callback));
     }
 
     /** @internal */
@@ -21936,29 +29222,19 @@ export class PostgresServerResourcePromise implements PromiseLike<PostgresServer
         return new PostgresServerResourcePromise(this._promise.then(obj => obj.withRequiredCommand(command, options)));
     }
 
-    /** Sets an environment variable */
-    withEnvironment(name: string, value: string): PostgresServerResourcePromise {
-        return new PostgresServerResourcePromise(this._promise.then(obj => obj.withEnvironment(name, value)));
-    }
-
-    /** Adds an environment variable with a reference expression */
-    withEnvironmentExpression(name: string, value: ReferenceExpression): PostgresServerResourcePromise {
-        return new PostgresServerResourcePromise(this._promise.then(obj => obj.withEnvironmentExpression(name, value)));
-    }
-
     /** Sets environment variables via callback */
-    withEnvironmentCallback(callback: (obj: EnvironmentCallbackContext) => Promise<void>): PostgresServerResourcePromise {
+    withEnvironmentCallback(callback: (arg: EnvironmentCallbackContext) => Promise<void>): PostgresServerResourcePromise {
         return new PostgresServerResourcePromise(this._promise.then(obj => obj.withEnvironmentCallback(callback)));
-    }
-
-    /** Sets environment variables via async callback */
-    withEnvironmentCallbackAsync(callback: (arg: EnvironmentCallbackContext) => Promise<void>): PostgresServerResourcePromise {
-        return new PostgresServerResourcePromise(this._promise.then(obj => obj.withEnvironmentCallbackAsync(callback)));
     }
 
     /** Sets an environment variable from an endpoint reference */
     withEnvironmentEndpoint(name: string, endpointReference: EndpointReference): PostgresServerResourcePromise {
         return new PostgresServerResourcePromise(this._promise.then(obj => obj.withEnvironmentEndpoint(name, endpointReference)));
+    }
+
+    /** Sets an environment variable on the resource */
+    withEnvironment(name: string, value: string | ReferenceExpression | EndpointReference | ParameterResource | ResourceWithConnectionString): PostgresServerResourcePromise {
+        return new PostgresServerResourcePromise(this._promise.then(obj => obj.withEnvironment(name, value)));
     }
 
     /** Sets an environment variable from a parameter resource */
@@ -22001,14 +29277,9 @@ export class PostgresServerResourcePromise implements PromiseLike<PostgresServer
         return new PostgresServerResourcePromise(this._promise.then(obj => obj.withReference(source, options)));
     }
 
-    /** Adds a service discovery reference to another resource */
-    withServiceReference(source: ResourceBuilderBase): PostgresServerResourcePromise {
-        return new PostgresServerResourcePromise(this._promise.then(obj => obj.withServiceReference(source)));
-    }
-
-    /** Adds a named service discovery reference */
-    withServiceReferenceNamed(source: ResourceBuilderBase, name: string): PostgresServerResourcePromise {
-        return new PostgresServerResourcePromise(this._promise.then(obj => obj.withServiceReferenceNamed(source, name)));
+    /** Gets a connection property by key */
+    getConnectionProperty(key: string): Promise<ReferenceExpression> {
+        return this._promise.then(obj => obj.getConnectionProperty(key));
     }
 
     /** Adds a reference to a URI */
@@ -22216,6 +29487,36 @@ export class PostgresServerResourcePromise implements PromiseLike<PostgresServer
         return this._promise.then(obj => obj.getResourceName());
     }
 
+    /** Subscribes to the BeforeResourceStarted event */
+    onBeforeResourceStarted(callback: (arg: BeforeResourceStartedEvent) => Promise<void>): PostgresServerResourcePromise {
+        return new PostgresServerResourcePromise(this._promise.then(obj => obj.onBeforeResourceStarted(callback)));
+    }
+
+    /** Subscribes to the ResourceStopped event */
+    onResourceStopped(callback: (arg: ResourceStoppedEvent) => Promise<void>): PostgresServerResourcePromise {
+        return new PostgresServerResourcePromise(this._promise.then(obj => obj.onResourceStopped(callback)));
+    }
+
+    /** Subscribes to the ConnectionStringAvailable event */
+    onConnectionStringAvailable(callback: (arg: ConnectionStringAvailableEvent) => Promise<void>): PostgresServerResourcePromise {
+        return new PostgresServerResourcePromise(this._promise.then(obj => obj.onConnectionStringAvailable(callback)));
+    }
+
+    /** Subscribes to the InitializeResource event */
+    onInitializeResource(callback: (arg: InitializeResourceEvent) => Promise<void>): PostgresServerResourcePromise {
+        return new PostgresServerResourcePromise(this._promise.then(obj => obj.onInitializeResource(callback)));
+    }
+
+    /** Subscribes to the ResourceEndpointsAllocated event */
+    onResourceEndpointsAllocated(callback: (arg: ResourceEndpointsAllocatedEvent) => Promise<void>): PostgresServerResourcePromise {
+        return new PostgresServerResourcePromise(this._promise.then(obj => obj.onResourceEndpointsAllocated(callback)));
+    }
+
+    /** Subscribes to the ResourceReady event */
+    onResourceReady(callback: (arg: ResourceReadyEvent) => Promise<void>): PostgresServerResourcePromise {
+        return new PostgresServerResourcePromise(this._promise.then(obj => obj.onResourceReady(callback)));
+    }
+
     /** Adds a PostgreSQL database */
     addDatabase(name: string, options?: AddDatabaseOptions): PostgresDatabaseResourcePromise {
         return new PostgresDatabaseResourcePromise(this._promise.then(obj => obj.addDatabase(name, options)));
@@ -22356,6 +29657,58 @@ export class ProjectResource extends ResourceBuilderBase<ProjectResourceHandle> 
     }
 
     /** @internal */
+    private async _withReplicasInternal(replicas: number): Promise<ProjectResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, replicas };
+        const result = await this._client.invokeCapability<ProjectResourceHandle>(
+            'Aspire.Hosting/withReplicas',
+            rpcArgs
+        );
+        return new ProjectResource(result, this._client);
+    }
+
+    /** Sets the number of replicas */
+    withReplicas(replicas: number): ProjectResourcePromise {
+        return new ProjectResourcePromise(this._withReplicasInternal(replicas));
+    }
+
+    /** @internal */
+    private async _disableForwardedHeadersInternal(): Promise<ProjectResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle };
+        const result = await this._client.invokeCapability<ProjectResourceHandle>(
+            'Aspire.Hosting/disableForwardedHeaders',
+            rpcArgs
+        );
+        return new ProjectResource(result, this._client);
+    }
+
+    /** Disables forwarded headers for the project */
+    disableForwardedHeaders(): ProjectResourcePromise {
+        return new ProjectResourcePromise(this._disableForwardedHeadersInternal());
+    }
+
+    /** @internal */
+    private async _publishAsDockerFileInternal(configure?: (obj: ContainerResource) => Promise<void>): Promise<ProjectResource> {
+        const configureId = configure ? registerCallback(async (objData: unknown) => {
+            const objHandle = wrapIfHandle(objData) as ContainerResourceHandle;
+            const obj = new ContainerResource(objHandle, this._client);
+            await configure(obj);
+        }) : undefined;
+        const rpcArgs: Record<string, unknown> = { builder: this._handle };
+        if (configure !== undefined) rpcArgs.configure = configureId;
+        const result = await this._client.invokeCapability<ProjectResourceHandle>(
+            'Aspire.Hosting/publishProjectAsDockerFileWithConfigure',
+            rpcArgs
+        );
+        return new ProjectResource(result, this._client);
+    }
+
+    /** Publishes a project as a Docker file with optional container configuration */
+    publishAsDockerFile(options?: PublishAsDockerFileOptions): ProjectResourcePromise {
+        const configure = options?.configure;
+        return new ProjectResourcePromise(this._publishAsDockerFileInternal(configure));
+    }
+
+    /** @internal */
     private async _withRequiredCommandInternal(command: string, helpLink?: string): Promise<ProjectResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, command };
         if (helpLink !== undefined) rpcArgs.helpLink = helpLink;
@@ -22373,41 +29726,11 @@ export class ProjectResource extends ResourceBuilderBase<ProjectResourceHandle> 
     }
 
     /** @internal */
-    private async _withEnvironmentInternal(name: string, value: string): Promise<ProjectResource> {
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, name, value };
-        const result = await this._client.invokeCapability<ProjectResourceHandle>(
-            'Aspire.Hosting/withEnvironment',
-            rpcArgs
-        );
-        return new ProjectResource(result, this._client);
-    }
-
-    /** Sets an environment variable */
-    withEnvironment(name: string, value: string): ProjectResourcePromise {
-        return new ProjectResourcePromise(this._withEnvironmentInternal(name, value));
-    }
-
-    /** @internal */
-    private async _withEnvironmentExpressionInternal(name: string, value: ReferenceExpression): Promise<ProjectResource> {
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, name, value };
-        const result = await this._client.invokeCapability<ProjectResourceHandle>(
-            'Aspire.Hosting/withEnvironmentExpression',
-            rpcArgs
-        );
-        return new ProjectResource(result, this._client);
-    }
-
-    /** Adds an environment variable with a reference expression */
-    withEnvironmentExpression(name: string, value: ReferenceExpression): ProjectResourcePromise {
-        return new ProjectResourcePromise(this._withEnvironmentExpressionInternal(name, value));
-    }
-
-    /** @internal */
-    private async _withEnvironmentCallbackInternal(callback: (obj: EnvironmentCallbackContext) => Promise<void>): Promise<ProjectResource> {
-        const callbackId = registerCallback(async (objData: unknown) => {
-            const objHandle = wrapIfHandle(objData) as EnvironmentCallbackContextHandle;
-            const obj = new EnvironmentCallbackContext(objHandle, this._client);
-            await callback(obj);
+    private async _withEnvironmentCallbackInternal(callback: (arg: EnvironmentCallbackContext) => Promise<void>): Promise<ProjectResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as EnvironmentCallbackContextHandle;
+            const arg = new EnvironmentCallbackContext(argHandle, this._client);
+            await callback(arg);
         });
         const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
         const result = await this._client.invokeCapability<ProjectResourceHandle>(
@@ -22418,28 +29741,8 @@ export class ProjectResource extends ResourceBuilderBase<ProjectResourceHandle> 
     }
 
     /** Sets environment variables via callback */
-    withEnvironmentCallback(callback: (obj: EnvironmentCallbackContext) => Promise<void>): ProjectResourcePromise {
+    withEnvironmentCallback(callback: (arg: EnvironmentCallbackContext) => Promise<void>): ProjectResourcePromise {
         return new ProjectResourcePromise(this._withEnvironmentCallbackInternal(callback));
-    }
-
-    /** @internal */
-    private async _withEnvironmentCallbackAsyncInternal(callback: (arg: EnvironmentCallbackContext) => Promise<void>): Promise<ProjectResource> {
-        const callbackId = registerCallback(async (argData: unknown) => {
-            const argHandle = wrapIfHandle(argData) as EnvironmentCallbackContextHandle;
-            const arg = new EnvironmentCallbackContext(argHandle, this._client);
-            await callback(arg);
-        });
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
-        const result = await this._client.invokeCapability<ProjectResourceHandle>(
-            'Aspire.Hosting/withEnvironmentCallbackAsync',
-            rpcArgs
-        );
-        return new ProjectResource(result, this._client);
-    }
-
-    /** Sets environment variables via async callback */
-    withEnvironmentCallbackAsync(callback: (arg: EnvironmentCallbackContext) => Promise<void>): ProjectResourcePromise {
-        return new ProjectResourcePromise(this._withEnvironmentCallbackAsyncInternal(callback));
     }
 
     /** @internal */
@@ -22455,6 +29758,21 @@ export class ProjectResource extends ResourceBuilderBase<ProjectResourceHandle> 
     /** Sets an environment variable from an endpoint reference */
     withEnvironmentEndpoint(name: string, endpointReference: EndpointReference): ProjectResourcePromise {
         return new ProjectResourcePromise(this._withEnvironmentEndpointInternal(name, endpointReference));
+    }
+
+    /** @internal */
+    private async _withEnvironmentInternal(name: string, value: string | ReferenceExpression | EndpointReference | ParameterResource | ResourceWithConnectionString): Promise<ProjectResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, name, value };
+        const result = await this._client.invokeCapability<ProjectResourceHandle>(
+            'Aspire.Hosting/withEnvironment',
+            rpcArgs
+        );
+        return new ProjectResource(result, this._client);
+    }
+
+    /** Sets an environment variable on the resource */
+    withEnvironment(name: string, value: string | ReferenceExpression | EndpointReference | ParameterResource | ResourceWithConnectionString): ProjectResourcePromise {
+        return new ProjectResourcePromise(this._withEnvironmentInternal(name, value));
     }
 
     /** @internal */
@@ -22543,10 +29861,11 @@ export class ProjectResource extends ResourceBuilderBase<ProjectResourceHandle> 
     }
 
     /** @internal */
-    private async _withReferenceInternal(source: ResourceBuilderBase, connectionName?: string, optional?: boolean): Promise<ProjectResource> {
+    private async _withReferenceInternal(source: ResourceBuilderBase, connectionName?: string, optional?: boolean, name?: string): Promise<ProjectResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, source };
         if (connectionName !== undefined) rpcArgs.connectionName = connectionName;
         if (optional !== undefined) rpcArgs.optional = optional;
+        if (name !== undefined) rpcArgs.name = name;
         const result = await this._client.invokeCapability<ProjectResourceHandle>(
             'Aspire.Hosting/withReference',
             rpcArgs
@@ -22558,37 +29877,8 @@ export class ProjectResource extends ResourceBuilderBase<ProjectResourceHandle> 
     withReference(source: ResourceBuilderBase, options?: WithReferenceOptions): ProjectResourcePromise {
         const connectionName = options?.connectionName;
         const optional = options?.optional;
-        return new ProjectResourcePromise(this._withReferenceInternal(source, connectionName, optional));
-    }
-
-    /** @internal */
-    private async _withServiceReferenceInternal(source: ResourceBuilderBase): Promise<ProjectResource> {
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, source };
-        const result = await this._client.invokeCapability<ProjectResourceHandle>(
-            'Aspire.Hosting/withServiceReference',
-            rpcArgs
-        );
-        return new ProjectResource(result, this._client);
-    }
-
-    /** Adds a service discovery reference to another resource */
-    withServiceReference(source: ResourceBuilderBase): ProjectResourcePromise {
-        return new ProjectResourcePromise(this._withServiceReferenceInternal(source));
-    }
-
-    /** @internal */
-    private async _withServiceReferenceNamedInternal(source: ResourceBuilderBase, name: string): Promise<ProjectResource> {
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, source, name };
-        const result = await this._client.invokeCapability<ProjectResourceHandle>(
-            'Aspire.Hosting/withServiceReferenceNamed',
-            rpcArgs
-        );
-        return new ProjectResource(result, this._client);
-    }
-
-    /** Adds a named service discovery reference */
-    withServiceReferenceNamed(source: ResourceBuilderBase, name: string): ProjectResourcePromise {
-        return new ProjectResourcePromise(this._withServiceReferenceNamedInternal(source, name));
+        const name = options?.name;
+        return new ProjectResourcePromise(this._withReferenceInternal(source, connectionName, optional, name));
     }
 
     /** @internal */
@@ -22873,7 +30163,7 @@ export class ProjectResource extends ResourceBuilderBase<ProjectResourceHandle> 
     private async _publishWithContainerFilesInternal(source: ResourceBuilderBase, destinationPath: string): Promise<ProjectResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, source, destinationPath };
         const result = await this._client.invokeCapability<ProjectResourceHandle>(
-            'Aspire.Hosting/publishWithContainerFiles',
+            'Aspire.Hosting/publishWithContainerFilesFromResource',
             rpcArgs
         );
         return new ProjectResource(result, this._client);
@@ -22903,7 +30193,7 @@ export class ProjectResource extends ResourceBuilderBase<ProjectResourceHandle> 
     private async _waitForInternal(dependency: ResourceBuilderBase): Promise<ProjectResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, dependency };
         const result = await this._client.invokeCapability<ProjectResourceHandle>(
-            'Aspire.Hosting/waitFor',
+            'Aspire.Hosting/waitForResource',
             rpcArgs
         );
         return new ProjectResource(result, this._client);
@@ -22933,7 +30223,7 @@ export class ProjectResource extends ResourceBuilderBase<ProjectResourceHandle> 
     private async _waitForStartInternal(dependency: ResourceBuilderBase): Promise<ProjectResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, dependency };
         const result = await this._client.invokeCapability<ProjectResourceHandle>(
-            'Aspire.Hosting/waitForStart',
+            'Aspire.Hosting/waitForResourceStart',
             rpcArgs
         );
         return new ProjectResource(result, this._client);
@@ -22979,7 +30269,7 @@ export class ProjectResource extends ResourceBuilderBase<ProjectResourceHandle> 
         const rpcArgs: Record<string, unknown> = { builder: this._handle, dependency };
         if (exitCode !== undefined) rpcArgs.exitCode = exitCode;
         const result = await this._client.invokeCapability<ProjectResourceHandle>(
-            'Aspire.Hosting/waitForCompletion',
+            'Aspire.Hosting/waitForResourceCompletion',
             rpcArgs
         );
         return new ProjectResource(result, this._client);
@@ -23084,7 +30374,7 @@ export class ProjectResource extends ResourceBuilderBase<ProjectResourceHandle> 
         const rpcArgs: Record<string, unknown> = { builder: this._handle };
         if (password !== undefined) rpcArgs.password = password;
         const result = await this._client.invokeCapability<ProjectResourceHandle>(
-            'Aspire.Hosting/withHttpsDeveloperCertificate',
+            'Aspire.Hosting/withParameterHttpsDeveloperCertificate',
             rpcArgs
         );
         return new ProjectResource(result, this._client);
@@ -23115,7 +30405,7 @@ export class ProjectResource extends ResourceBuilderBase<ProjectResourceHandle> 
     private async _withParentRelationshipInternal(parent: ResourceBuilderBase): Promise<ProjectResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, parent };
         const result = await this._client.invokeCapability<ProjectResourceHandle>(
-            'Aspire.Hosting/withParentRelationship',
+            'Aspire.Hosting/withBuilderParentRelationship',
             rpcArgs
         );
         return new ProjectResource(result, this._client);
@@ -23130,7 +30420,7 @@ export class ProjectResource extends ResourceBuilderBase<ProjectResourceHandle> 
     private async _withChildRelationshipInternal(child: ResourceBuilderBase): Promise<ProjectResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, child };
         const result = await this._client.invokeCapability<ProjectResourceHandle>(
-            'Aspire.Hosting/withChildRelationship',
+            'Aspire.Hosting/withBuilderChildRelationship',
             rpcArgs
         );
         return new ProjectResource(result, this._client);
@@ -23309,6 +30599,106 @@ export class ProjectResource extends ResourceBuilderBase<ProjectResourceHandle> 
         );
     }
 
+    /** @internal */
+    private async _onBeforeResourceStartedInternal(callback: (arg: BeforeResourceStartedEvent) => Promise<void>): Promise<ProjectResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as BeforeResourceStartedEventHandle;
+            const arg = new BeforeResourceStartedEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<ProjectResourceHandle>(
+            'Aspire.Hosting/onBeforeResourceStarted',
+            rpcArgs
+        );
+        return new ProjectResource(result, this._client);
+    }
+
+    /** Subscribes to the BeforeResourceStarted event */
+    onBeforeResourceStarted(callback: (arg: BeforeResourceStartedEvent) => Promise<void>): ProjectResourcePromise {
+        return new ProjectResourcePromise(this._onBeforeResourceStartedInternal(callback));
+    }
+
+    /** @internal */
+    private async _onResourceStoppedInternal(callback: (arg: ResourceStoppedEvent) => Promise<void>): Promise<ProjectResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ResourceStoppedEventHandle;
+            const arg = new ResourceStoppedEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<ProjectResourceHandle>(
+            'Aspire.Hosting/onResourceStopped',
+            rpcArgs
+        );
+        return new ProjectResource(result, this._client);
+    }
+
+    /** Subscribes to the ResourceStopped event */
+    onResourceStopped(callback: (arg: ResourceStoppedEvent) => Promise<void>): ProjectResourcePromise {
+        return new ProjectResourcePromise(this._onResourceStoppedInternal(callback));
+    }
+
+    /** @internal */
+    private async _onInitializeResourceInternal(callback: (arg: InitializeResourceEvent) => Promise<void>): Promise<ProjectResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as InitializeResourceEventHandle;
+            const arg = new InitializeResourceEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<ProjectResourceHandle>(
+            'Aspire.Hosting/onInitializeResource',
+            rpcArgs
+        );
+        return new ProjectResource(result, this._client);
+    }
+
+    /** Subscribes to the InitializeResource event */
+    onInitializeResource(callback: (arg: InitializeResourceEvent) => Promise<void>): ProjectResourcePromise {
+        return new ProjectResourcePromise(this._onInitializeResourceInternal(callback));
+    }
+
+    /** @internal */
+    private async _onResourceEndpointsAllocatedInternal(callback: (arg: ResourceEndpointsAllocatedEvent) => Promise<void>): Promise<ProjectResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ResourceEndpointsAllocatedEventHandle;
+            const arg = new ResourceEndpointsAllocatedEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<ProjectResourceHandle>(
+            'Aspire.Hosting/onResourceEndpointsAllocated',
+            rpcArgs
+        );
+        return new ProjectResource(result, this._client);
+    }
+
+    /** Subscribes to the ResourceEndpointsAllocated event */
+    onResourceEndpointsAllocated(callback: (arg: ResourceEndpointsAllocatedEvent) => Promise<void>): ProjectResourcePromise {
+        return new ProjectResourcePromise(this._onResourceEndpointsAllocatedInternal(callback));
+    }
+
+    /** @internal */
+    private async _onResourceReadyInternal(callback: (arg: ResourceReadyEvent) => Promise<void>): Promise<ProjectResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ResourceReadyEventHandle;
+            const arg = new ResourceReadyEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<ProjectResourceHandle>(
+            'Aspire.Hosting/onResourceReady',
+            rpcArgs
+        );
+        return new ProjectResource(result, this._client);
+    }
+
+    /** Subscribes to the ResourceReady event */
+    onResourceReady(callback: (arg: ResourceReadyEvent) => Promise<void>): ProjectResourcePromise {
+        return new ProjectResourcePromise(this._onResourceReadyInternal(callback));
+    }
+
 }
 
 /**
@@ -23351,34 +30741,39 @@ export class ProjectResourcePromise implements PromiseLike<ProjectResource> {
         return new ProjectResourcePromise(this._promise.then(obj => obj.withOtlpExporterProtocol(protocol)));
     }
 
+    /** Sets the number of replicas */
+    withReplicas(replicas: number): ProjectResourcePromise {
+        return new ProjectResourcePromise(this._promise.then(obj => obj.withReplicas(replicas)));
+    }
+
+    /** Disables forwarded headers for the project */
+    disableForwardedHeaders(): ProjectResourcePromise {
+        return new ProjectResourcePromise(this._promise.then(obj => obj.disableForwardedHeaders()));
+    }
+
+    /** Publishes a project as a Docker file with optional container configuration */
+    publishAsDockerFile(options?: PublishAsDockerFileOptions): ProjectResourcePromise {
+        return new ProjectResourcePromise(this._promise.then(obj => obj.publishAsDockerFile(options)));
+    }
+
     /** Adds a required command dependency */
     withRequiredCommand(command: string, options?: WithRequiredCommandOptions): ProjectResourcePromise {
         return new ProjectResourcePromise(this._promise.then(obj => obj.withRequiredCommand(command, options)));
     }
 
-    /** Sets an environment variable */
-    withEnvironment(name: string, value: string): ProjectResourcePromise {
-        return new ProjectResourcePromise(this._promise.then(obj => obj.withEnvironment(name, value)));
-    }
-
-    /** Adds an environment variable with a reference expression */
-    withEnvironmentExpression(name: string, value: ReferenceExpression): ProjectResourcePromise {
-        return new ProjectResourcePromise(this._promise.then(obj => obj.withEnvironmentExpression(name, value)));
-    }
-
     /** Sets environment variables via callback */
-    withEnvironmentCallback(callback: (obj: EnvironmentCallbackContext) => Promise<void>): ProjectResourcePromise {
+    withEnvironmentCallback(callback: (arg: EnvironmentCallbackContext) => Promise<void>): ProjectResourcePromise {
         return new ProjectResourcePromise(this._promise.then(obj => obj.withEnvironmentCallback(callback)));
-    }
-
-    /** Sets environment variables via async callback */
-    withEnvironmentCallbackAsync(callback: (arg: EnvironmentCallbackContext) => Promise<void>): ProjectResourcePromise {
-        return new ProjectResourcePromise(this._promise.then(obj => obj.withEnvironmentCallbackAsync(callback)));
     }
 
     /** Sets an environment variable from an endpoint reference */
     withEnvironmentEndpoint(name: string, endpointReference: EndpointReference): ProjectResourcePromise {
         return new ProjectResourcePromise(this._promise.then(obj => obj.withEnvironmentEndpoint(name, endpointReference)));
+    }
+
+    /** Sets an environment variable on the resource */
+    withEnvironment(name: string, value: string | ReferenceExpression | EndpointReference | ParameterResource | ResourceWithConnectionString): ProjectResourcePromise {
+        return new ProjectResourcePromise(this._promise.then(obj => obj.withEnvironment(name, value)));
     }
 
     /** Sets an environment variable from a parameter resource */
@@ -23409,16 +30804,6 @@ export class ProjectResourcePromise implements PromiseLike<ProjectResource> {
     /** Adds a reference to another resource */
     withReference(source: ResourceBuilderBase, options?: WithReferenceOptions): ProjectResourcePromise {
         return new ProjectResourcePromise(this._promise.then(obj => obj.withReference(source, options)));
-    }
-
-    /** Adds a service discovery reference to another resource */
-    withServiceReference(source: ResourceBuilderBase): ProjectResourcePromise {
-        return new ProjectResourcePromise(this._promise.then(obj => obj.withServiceReference(source)));
-    }
-
-    /** Adds a named service discovery reference */
-    withServiceReferenceNamed(source: ResourceBuilderBase, name: string): ProjectResourcePromise {
-        return new ProjectResourcePromise(this._promise.then(obj => obj.withServiceReferenceNamed(source, name)));
     }
 
     /** Adds a reference to a URI */
@@ -23626,6 +31011,31 @@ export class ProjectResourcePromise implements PromiseLike<ProjectResource> {
         return this._promise.then(obj => obj.getResourceName());
     }
 
+    /** Subscribes to the BeforeResourceStarted event */
+    onBeforeResourceStarted(callback: (arg: BeforeResourceStartedEvent) => Promise<void>): ProjectResourcePromise {
+        return new ProjectResourcePromise(this._promise.then(obj => obj.onBeforeResourceStarted(callback)));
+    }
+
+    /** Subscribes to the ResourceStopped event */
+    onResourceStopped(callback: (arg: ResourceStoppedEvent) => Promise<void>): ProjectResourcePromise {
+        return new ProjectResourcePromise(this._promise.then(obj => obj.onResourceStopped(callback)));
+    }
+
+    /** Subscribes to the InitializeResource event */
+    onInitializeResource(callback: (arg: InitializeResourceEvent) => Promise<void>): ProjectResourcePromise {
+        return new ProjectResourcePromise(this._promise.then(obj => obj.onInitializeResource(callback)));
+    }
+
+    /** Subscribes to the ResourceEndpointsAllocated event */
+    onResourceEndpointsAllocated(callback: (arg: ResourceEndpointsAllocatedEvent) => Promise<void>): ProjectResourcePromise {
+        return new ProjectResourcePromise(this._promise.then(obj => obj.onResourceEndpointsAllocated(callback)));
+    }
+
+    /** Subscribes to the ResourceReady event */
+    onResourceReady(callback: (arg: ResourceReadyEvent) => Promise<void>): ProjectResourcePromise {
+        return new ProjectResourcePromise(this._promise.then(obj => obj.onResourceReady(callback)));
+    }
+
 }
 
 // ============================================================================
@@ -23777,6 +31187,15 @@ export class SqlServerDatabaseResource extends ResourceBuilderBase<SqlServerData
     /** Adds a connection property with a string value */
     withConnectionPropertyValue(name: string, value: string): SqlServerDatabaseResourcePromise {
         return new SqlServerDatabaseResourcePromise(this._withConnectionPropertyValueInternal(name, value));
+    }
+
+    /** Gets a connection property by key */
+    async getConnectionProperty(key: string): Promise<ReferenceExpression> {
+        const rpcArgs: Record<string, unknown> = { resource: this._handle, key };
+        return await this._client.invokeCapability<ReferenceExpression>(
+            'Aspire.Hosting/getConnectionProperty',
+            rpcArgs
+        );
     }
 
     /** @internal */
@@ -23943,7 +31362,7 @@ export class SqlServerDatabaseResource extends ResourceBuilderBase<SqlServerData
     private async _withParentRelationshipInternal(parent: ResourceBuilderBase): Promise<SqlServerDatabaseResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, parent };
         const result = await this._client.invokeCapability<SqlServerDatabaseResourceHandle>(
-            'Aspire.Hosting/withParentRelationship',
+            'Aspire.Hosting/withBuilderParentRelationship',
             rpcArgs
         );
         return new SqlServerDatabaseResource(result, this._client);
@@ -23958,7 +31377,7 @@ export class SqlServerDatabaseResource extends ResourceBuilderBase<SqlServerData
     private async _withChildRelationshipInternal(child: ResourceBuilderBase): Promise<SqlServerDatabaseResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, child };
         const result = await this._client.invokeCapability<SqlServerDatabaseResourceHandle>(
-            'Aspire.Hosting/withChildRelationship',
+            'Aspire.Hosting/withBuilderChildRelationship',
             rpcArgs
         );
         return new SqlServerDatabaseResource(result, this._client);
@@ -23999,36 +31418,6 @@ export class SqlServerDatabaseResource extends ResourceBuilderBase<SqlServerData
     /** Excludes the resource from MCP server exposure */
     excludeFromMcp(): SqlServerDatabaseResourcePromise {
         return new SqlServerDatabaseResourcePromise(this._excludeFromMcpInternal());
-    }
-
-    /** @internal */
-    private async _withRemoteImageNameInternal(remoteImageName: string): Promise<SqlServerDatabaseResource> {
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, remoteImageName };
-        const result = await this._client.invokeCapability<SqlServerDatabaseResourceHandle>(
-            'Aspire.Hosting/withRemoteImageName',
-            rpcArgs
-        );
-        return new SqlServerDatabaseResource(result, this._client);
-    }
-
-    /** Sets the remote image name for publishing */
-    withRemoteImageName(remoteImageName: string): SqlServerDatabaseResourcePromise {
-        return new SqlServerDatabaseResourcePromise(this._withRemoteImageNameInternal(remoteImageName));
-    }
-
-    /** @internal */
-    private async _withRemoteImageTagInternal(remoteImageTag: string): Promise<SqlServerDatabaseResource> {
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, remoteImageTag };
-        const result = await this._client.invokeCapability<SqlServerDatabaseResourceHandle>(
-            'Aspire.Hosting/withRemoteImageTag',
-            rpcArgs
-        );
-        return new SqlServerDatabaseResource(result, this._client);
-    }
-
-    /** Sets the remote image tag for publishing */
-    withRemoteImageTag(remoteImageTag: string): SqlServerDatabaseResourcePromise {
-        return new SqlServerDatabaseResourcePromise(this._withRemoteImageTagInternal(remoteImageTag));
     }
 
     /** @internal */
@@ -24109,6 +31498,106 @@ export class SqlServerDatabaseResource extends ResourceBuilderBase<SqlServerData
     }
 
     /** @internal */
+    private async _onBeforeResourceStartedInternal(callback: (arg: BeforeResourceStartedEvent) => Promise<void>): Promise<SqlServerDatabaseResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as BeforeResourceStartedEventHandle;
+            const arg = new BeforeResourceStartedEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<SqlServerDatabaseResourceHandle>(
+            'Aspire.Hosting/onBeforeResourceStarted',
+            rpcArgs
+        );
+        return new SqlServerDatabaseResource(result, this._client);
+    }
+
+    /** Subscribes to the BeforeResourceStarted event */
+    onBeforeResourceStarted(callback: (arg: BeforeResourceStartedEvent) => Promise<void>): SqlServerDatabaseResourcePromise {
+        return new SqlServerDatabaseResourcePromise(this._onBeforeResourceStartedInternal(callback));
+    }
+
+    /** @internal */
+    private async _onResourceStoppedInternal(callback: (arg: ResourceStoppedEvent) => Promise<void>): Promise<SqlServerDatabaseResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ResourceStoppedEventHandle;
+            const arg = new ResourceStoppedEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<SqlServerDatabaseResourceHandle>(
+            'Aspire.Hosting/onResourceStopped',
+            rpcArgs
+        );
+        return new SqlServerDatabaseResource(result, this._client);
+    }
+
+    /** Subscribes to the ResourceStopped event */
+    onResourceStopped(callback: (arg: ResourceStoppedEvent) => Promise<void>): SqlServerDatabaseResourcePromise {
+        return new SqlServerDatabaseResourcePromise(this._onResourceStoppedInternal(callback));
+    }
+
+    /** @internal */
+    private async _onConnectionStringAvailableInternal(callback: (arg: ConnectionStringAvailableEvent) => Promise<void>): Promise<SqlServerDatabaseResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ConnectionStringAvailableEventHandle;
+            const arg = new ConnectionStringAvailableEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<SqlServerDatabaseResourceHandle>(
+            'Aspire.Hosting/onConnectionStringAvailable',
+            rpcArgs
+        );
+        return new SqlServerDatabaseResource(result, this._client);
+    }
+
+    /** Subscribes to the ConnectionStringAvailable event */
+    onConnectionStringAvailable(callback: (arg: ConnectionStringAvailableEvent) => Promise<void>): SqlServerDatabaseResourcePromise {
+        return new SqlServerDatabaseResourcePromise(this._onConnectionStringAvailableInternal(callback));
+    }
+
+    /** @internal */
+    private async _onInitializeResourceInternal(callback: (arg: InitializeResourceEvent) => Promise<void>): Promise<SqlServerDatabaseResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as InitializeResourceEventHandle;
+            const arg = new InitializeResourceEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<SqlServerDatabaseResourceHandle>(
+            'Aspire.Hosting/onInitializeResource',
+            rpcArgs
+        );
+        return new SqlServerDatabaseResource(result, this._client);
+    }
+
+    /** Subscribes to the InitializeResource event */
+    onInitializeResource(callback: (arg: InitializeResourceEvent) => Promise<void>): SqlServerDatabaseResourcePromise {
+        return new SqlServerDatabaseResourcePromise(this._onInitializeResourceInternal(callback));
+    }
+
+    /** @internal */
+    private async _onResourceReadyInternal(callback: (arg: ResourceReadyEvent) => Promise<void>): Promise<SqlServerDatabaseResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ResourceReadyEventHandle;
+            const arg = new ResourceReadyEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<SqlServerDatabaseResourceHandle>(
+            'Aspire.Hosting/onResourceReady',
+            rpcArgs
+        );
+        return new SqlServerDatabaseResource(result, this._client);
+    }
+
+    /** Subscribes to the ResourceReady event */
+    onResourceReady(callback: (arg: ResourceReadyEvent) => Promise<void>): SqlServerDatabaseResourcePromise {
+        return new SqlServerDatabaseResourcePromise(this._onResourceReadyInternal(callback));
+    }
+
+    /** @internal */
     private async _withCreationScriptInternal(script: string): Promise<SqlServerDatabaseResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, script };
         const result = await this._client.invokeCapability<SqlServerDatabaseResourceHandle>(
@@ -24163,6 +31652,11 @@ export class SqlServerDatabaseResourcePromise implements PromiseLike<SqlServerDa
     /** Adds a connection property with a string value */
     withConnectionPropertyValue(name: string, value: string): SqlServerDatabaseResourcePromise {
         return new SqlServerDatabaseResourcePromise(this._promise.then(obj => obj.withConnectionPropertyValue(name, value)));
+    }
+
+    /** Gets a connection property by key */
+    getConnectionProperty(key: string): Promise<ReferenceExpression> {
+        return this._promise.then(obj => obj.getConnectionProperty(key));
     }
 
     /** Customizes displayed URLs via callback */
@@ -24230,16 +31724,6 @@ export class SqlServerDatabaseResourcePromise implements PromiseLike<SqlServerDa
         return new SqlServerDatabaseResourcePromise(this._promise.then(obj => obj.excludeFromMcp()));
     }
 
-    /** Sets the remote image name for publishing */
-    withRemoteImageName(remoteImageName: string): SqlServerDatabaseResourcePromise {
-        return new SqlServerDatabaseResourcePromise(this._promise.then(obj => obj.withRemoteImageName(remoteImageName)));
-    }
-
-    /** Sets the remote image tag for publishing */
-    withRemoteImageTag(remoteImageTag: string): SqlServerDatabaseResourcePromise {
-        return new SqlServerDatabaseResourcePromise(this._promise.then(obj => obj.withRemoteImageTag(remoteImageTag)));
-    }
-
     /** Adds a pipeline step to the resource */
     withPipelineStepFactory(stepName: string, callback: (arg: PipelineStepContext) => Promise<void>, options?: WithPipelineStepFactoryOptions): SqlServerDatabaseResourcePromise {
         return new SqlServerDatabaseResourcePromise(this._promise.then(obj => obj.withPipelineStepFactory(stepName, callback, options)));
@@ -24258,6 +31742,31 @@ export class SqlServerDatabaseResourcePromise implements PromiseLike<SqlServerDa
     /** Gets the resource name */
     getResourceName(): Promise<string> {
         return this._promise.then(obj => obj.getResourceName());
+    }
+
+    /** Subscribes to the BeforeResourceStarted event */
+    onBeforeResourceStarted(callback: (arg: BeforeResourceStartedEvent) => Promise<void>): SqlServerDatabaseResourcePromise {
+        return new SqlServerDatabaseResourcePromise(this._promise.then(obj => obj.onBeforeResourceStarted(callback)));
+    }
+
+    /** Subscribes to the ResourceStopped event */
+    onResourceStopped(callback: (arg: ResourceStoppedEvent) => Promise<void>): SqlServerDatabaseResourcePromise {
+        return new SqlServerDatabaseResourcePromise(this._promise.then(obj => obj.onResourceStopped(callback)));
+    }
+
+    /** Subscribes to the ConnectionStringAvailable event */
+    onConnectionStringAvailable(callback: (arg: ConnectionStringAvailableEvent) => Promise<void>): SqlServerDatabaseResourcePromise {
+        return new SqlServerDatabaseResourcePromise(this._promise.then(obj => obj.onConnectionStringAvailable(callback)));
+    }
+
+    /** Subscribes to the InitializeResource event */
+    onInitializeResource(callback: (arg: InitializeResourceEvent) => Promise<void>): SqlServerDatabaseResourcePromise {
+        return new SqlServerDatabaseResourcePromise(this._promise.then(obj => obj.onInitializeResource(callback)));
+    }
+
+    /** Subscribes to the ResourceReady event */
+    onResourceReady(callback: (arg: ResourceReadyEvent) => Promise<void>): SqlServerDatabaseResourcePromise {
+        return new SqlServerDatabaseResourcePromise(this._promise.then(obj => obj.onResourceReady(callback)));
     }
 
     /** Defines the SQL script used to create the database */
@@ -24306,6 +31815,17 @@ export class SqlServerServerResource extends ResourceBuilderBase<SqlServerServer
                 { context: this._handle }
             );
             return new EndpointReferenceExpression(handle, this._client);
+        },
+    };
+
+    /** Gets the PasswordParameter property */
+    passwordParameter = {
+        get: async (): Promise<ParameterResource> => {
+            const handle = await this._client.invokeCapability<ParameterResourceHandle>(
+                'Aspire.Hosting.ApplicationModel/SqlServerServerResource.passwordParameter',
+                { context: this._handle }
+            );
+            return new ParameterResource(handle, this._client);
         },
     };
 
@@ -24612,7 +32132,7 @@ export class SqlServerServerResource extends ResourceBuilderBase<SqlServerServer
     private async _withBuildArgInternal(name: string, value: ParameterResource): Promise<SqlServerServerResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, name, value };
         const result = await this._client.invokeCapability<SqlServerServerResourceHandle>(
-            'Aspire.Hosting/withBuildArg',
+            'Aspire.Hosting/withParameterBuildArg',
             rpcArgs
         );
         return new SqlServerServerResource(result, this._client);
@@ -24627,7 +32147,7 @@ export class SqlServerServerResource extends ResourceBuilderBase<SqlServerServer
     private async _withBuildSecretInternal(name: string, value: ParameterResource): Promise<SqlServerServerResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, name, value };
         const result = await this._client.invokeCapability<SqlServerServerResourceHandle>(
-            'Aspire.Hosting/withBuildSecret',
+            'Aspire.Hosting/withParameterBuildSecret',
             rpcArgs
         );
         return new SqlServerServerResource(result, this._client);
@@ -24769,41 +32289,11 @@ export class SqlServerServerResource extends ResourceBuilderBase<SqlServerServer
     }
 
     /** @internal */
-    private async _withEnvironmentInternal(name: string, value: string): Promise<SqlServerServerResource> {
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, name, value };
-        const result = await this._client.invokeCapability<SqlServerServerResourceHandle>(
-            'Aspire.Hosting/withEnvironment',
-            rpcArgs
-        );
-        return new SqlServerServerResource(result, this._client);
-    }
-
-    /** Sets an environment variable */
-    withEnvironment(name: string, value: string): SqlServerServerResourcePromise {
-        return new SqlServerServerResourcePromise(this._withEnvironmentInternal(name, value));
-    }
-
-    /** @internal */
-    private async _withEnvironmentExpressionInternal(name: string, value: ReferenceExpression): Promise<SqlServerServerResource> {
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, name, value };
-        const result = await this._client.invokeCapability<SqlServerServerResourceHandle>(
-            'Aspire.Hosting/withEnvironmentExpression',
-            rpcArgs
-        );
-        return new SqlServerServerResource(result, this._client);
-    }
-
-    /** Adds an environment variable with a reference expression */
-    withEnvironmentExpression(name: string, value: ReferenceExpression): SqlServerServerResourcePromise {
-        return new SqlServerServerResourcePromise(this._withEnvironmentExpressionInternal(name, value));
-    }
-
-    /** @internal */
-    private async _withEnvironmentCallbackInternal(callback: (obj: EnvironmentCallbackContext) => Promise<void>): Promise<SqlServerServerResource> {
-        const callbackId = registerCallback(async (objData: unknown) => {
-            const objHandle = wrapIfHandle(objData) as EnvironmentCallbackContextHandle;
-            const obj = new EnvironmentCallbackContext(objHandle, this._client);
-            await callback(obj);
+    private async _withEnvironmentCallbackInternal(callback: (arg: EnvironmentCallbackContext) => Promise<void>): Promise<SqlServerServerResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as EnvironmentCallbackContextHandle;
+            const arg = new EnvironmentCallbackContext(argHandle, this._client);
+            await callback(arg);
         });
         const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
         const result = await this._client.invokeCapability<SqlServerServerResourceHandle>(
@@ -24814,28 +32304,8 @@ export class SqlServerServerResource extends ResourceBuilderBase<SqlServerServer
     }
 
     /** Sets environment variables via callback */
-    withEnvironmentCallback(callback: (obj: EnvironmentCallbackContext) => Promise<void>): SqlServerServerResourcePromise {
+    withEnvironmentCallback(callback: (arg: EnvironmentCallbackContext) => Promise<void>): SqlServerServerResourcePromise {
         return new SqlServerServerResourcePromise(this._withEnvironmentCallbackInternal(callback));
-    }
-
-    /** @internal */
-    private async _withEnvironmentCallbackAsyncInternal(callback: (arg: EnvironmentCallbackContext) => Promise<void>): Promise<SqlServerServerResource> {
-        const callbackId = registerCallback(async (argData: unknown) => {
-            const argHandle = wrapIfHandle(argData) as EnvironmentCallbackContextHandle;
-            const arg = new EnvironmentCallbackContext(argHandle, this._client);
-            await callback(arg);
-        });
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
-        const result = await this._client.invokeCapability<SqlServerServerResourceHandle>(
-            'Aspire.Hosting/withEnvironmentCallbackAsync',
-            rpcArgs
-        );
-        return new SqlServerServerResource(result, this._client);
-    }
-
-    /** Sets environment variables via async callback */
-    withEnvironmentCallbackAsync(callback: (arg: EnvironmentCallbackContext) => Promise<void>): SqlServerServerResourcePromise {
-        return new SqlServerServerResourcePromise(this._withEnvironmentCallbackAsyncInternal(callback));
     }
 
     /** @internal */
@@ -24851,6 +32321,21 @@ export class SqlServerServerResource extends ResourceBuilderBase<SqlServerServer
     /** Sets an environment variable from an endpoint reference */
     withEnvironmentEndpoint(name: string, endpointReference: EndpointReference): SqlServerServerResourcePromise {
         return new SqlServerServerResourcePromise(this._withEnvironmentEndpointInternal(name, endpointReference));
+    }
+
+    /** @internal */
+    private async _withEnvironmentInternal(name: string, value: string | ReferenceExpression | EndpointReference | ParameterResource | ResourceWithConnectionString): Promise<SqlServerServerResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, name, value };
+        const result = await this._client.invokeCapability<SqlServerServerResourceHandle>(
+            'Aspire.Hosting/withEnvironment',
+            rpcArgs
+        );
+        return new SqlServerServerResource(result, this._client);
+    }
+
+    /** Sets an environment variable on the resource */
+    withEnvironment(name: string, value: string | ReferenceExpression | EndpointReference | ParameterResource | ResourceWithConnectionString): SqlServerServerResourcePromise {
+        return new SqlServerServerResourcePromise(this._withEnvironmentInternal(name, value));
     }
 
     /** @internal */
@@ -24969,10 +32454,11 @@ export class SqlServerServerResource extends ResourceBuilderBase<SqlServerServer
     }
 
     /** @internal */
-    private async _withReferenceInternal(source: ResourceBuilderBase, connectionName?: string, optional?: boolean): Promise<SqlServerServerResource> {
+    private async _withReferenceInternal(source: ResourceBuilderBase, connectionName?: string, optional?: boolean, name?: string): Promise<SqlServerServerResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, source };
         if (connectionName !== undefined) rpcArgs.connectionName = connectionName;
         if (optional !== undefined) rpcArgs.optional = optional;
+        if (name !== undefined) rpcArgs.name = name;
         const result = await this._client.invokeCapability<SqlServerServerResourceHandle>(
             'Aspire.Hosting/withReference',
             rpcArgs
@@ -24984,37 +32470,17 @@ export class SqlServerServerResource extends ResourceBuilderBase<SqlServerServer
     withReference(source: ResourceBuilderBase, options?: WithReferenceOptions): SqlServerServerResourcePromise {
         const connectionName = options?.connectionName;
         const optional = options?.optional;
-        return new SqlServerServerResourcePromise(this._withReferenceInternal(source, connectionName, optional));
+        const name = options?.name;
+        return new SqlServerServerResourcePromise(this._withReferenceInternal(source, connectionName, optional, name));
     }
 
-    /** @internal */
-    private async _withServiceReferenceInternal(source: ResourceBuilderBase): Promise<SqlServerServerResource> {
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, source };
-        const result = await this._client.invokeCapability<SqlServerServerResourceHandle>(
-            'Aspire.Hosting/withServiceReference',
+    /** Gets a connection property by key */
+    async getConnectionProperty(key: string): Promise<ReferenceExpression> {
+        const rpcArgs: Record<string, unknown> = { resource: this._handle, key };
+        return await this._client.invokeCapability<ReferenceExpression>(
+            'Aspire.Hosting/getConnectionProperty',
             rpcArgs
         );
-        return new SqlServerServerResource(result, this._client);
-    }
-
-    /** Adds a service discovery reference to another resource */
-    withServiceReference(source: ResourceBuilderBase): SqlServerServerResourcePromise {
-        return new SqlServerServerResourcePromise(this._withServiceReferenceInternal(source));
-    }
-
-    /** @internal */
-    private async _withServiceReferenceNamedInternal(source: ResourceBuilderBase, name: string): Promise<SqlServerServerResource> {
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, source, name };
-        const result = await this._client.invokeCapability<SqlServerServerResourceHandle>(
-            'Aspire.Hosting/withServiceReferenceNamed',
-            rpcArgs
-        );
-        return new SqlServerServerResource(result, this._client);
-    }
-
-    /** Adds a named service discovery reference */
-    withServiceReferenceNamed(source: ResourceBuilderBase, name: string): SqlServerServerResourcePromise {
-        return new SqlServerServerResourcePromise(this._withServiceReferenceNamedInternal(source, name));
     }
 
     /** @internal */
@@ -25314,7 +32780,7 @@ export class SqlServerServerResource extends ResourceBuilderBase<SqlServerServer
     private async _waitForInternal(dependency: ResourceBuilderBase): Promise<SqlServerServerResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, dependency };
         const result = await this._client.invokeCapability<SqlServerServerResourceHandle>(
-            'Aspire.Hosting/waitFor',
+            'Aspire.Hosting/waitForResource',
             rpcArgs
         );
         return new SqlServerServerResource(result, this._client);
@@ -25344,7 +32810,7 @@ export class SqlServerServerResource extends ResourceBuilderBase<SqlServerServer
     private async _waitForStartInternal(dependency: ResourceBuilderBase): Promise<SqlServerServerResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, dependency };
         const result = await this._client.invokeCapability<SqlServerServerResourceHandle>(
-            'Aspire.Hosting/waitForStart',
+            'Aspire.Hosting/waitForResourceStart',
             rpcArgs
         );
         return new SqlServerServerResource(result, this._client);
@@ -25390,7 +32856,7 @@ export class SqlServerServerResource extends ResourceBuilderBase<SqlServerServer
         const rpcArgs: Record<string, unknown> = { builder: this._handle, dependency };
         if (exitCode !== undefined) rpcArgs.exitCode = exitCode;
         const result = await this._client.invokeCapability<SqlServerServerResourceHandle>(
-            'Aspire.Hosting/waitForCompletion',
+            'Aspire.Hosting/waitForResourceCompletion',
             rpcArgs
         );
         return new SqlServerServerResource(result, this._client);
@@ -25495,7 +32961,7 @@ export class SqlServerServerResource extends ResourceBuilderBase<SqlServerServer
         const rpcArgs: Record<string, unknown> = { builder: this._handle };
         if (password !== undefined) rpcArgs.password = password;
         const result = await this._client.invokeCapability<SqlServerServerResourceHandle>(
-            'Aspire.Hosting/withHttpsDeveloperCertificate',
+            'Aspire.Hosting/withParameterHttpsDeveloperCertificate',
             rpcArgs
         );
         return new SqlServerServerResource(result, this._client);
@@ -25526,7 +32992,7 @@ export class SqlServerServerResource extends ResourceBuilderBase<SqlServerServer
     private async _withParentRelationshipInternal(parent: ResourceBuilderBase): Promise<SqlServerServerResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, parent };
         const result = await this._client.invokeCapability<SqlServerServerResourceHandle>(
-            'Aspire.Hosting/withParentRelationship',
+            'Aspire.Hosting/withBuilderParentRelationship',
             rpcArgs
         );
         return new SqlServerServerResource(result, this._client);
@@ -25541,7 +33007,7 @@ export class SqlServerServerResource extends ResourceBuilderBase<SqlServerServer
     private async _withChildRelationshipInternal(child: ResourceBuilderBase): Promise<SqlServerServerResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, child };
         const result = await this._client.invokeCapability<SqlServerServerResourceHandle>(
-            'Aspire.Hosting/withChildRelationship',
+            'Aspire.Hosting/withBuilderChildRelationship',
             rpcArgs
         );
         return new SqlServerServerResource(result, this._client);
@@ -25737,6 +33203,126 @@ export class SqlServerServerResource extends ResourceBuilderBase<SqlServerServer
             'Aspire.Hosting/getResourceName',
             rpcArgs
         );
+    }
+
+    /** @internal */
+    private async _onBeforeResourceStartedInternal(callback: (arg: BeforeResourceStartedEvent) => Promise<void>): Promise<SqlServerServerResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as BeforeResourceStartedEventHandle;
+            const arg = new BeforeResourceStartedEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<SqlServerServerResourceHandle>(
+            'Aspire.Hosting/onBeforeResourceStarted',
+            rpcArgs
+        );
+        return new SqlServerServerResource(result, this._client);
+    }
+
+    /** Subscribes to the BeforeResourceStarted event */
+    onBeforeResourceStarted(callback: (arg: BeforeResourceStartedEvent) => Promise<void>): SqlServerServerResourcePromise {
+        return new SqlServerServerResourcePromise(this._onBeforeResourceStartedInternal(callback));
+    }
+
+    /** @internal */
+    private async _onResourceStoppedInternal(callback: (arg: ResourceStoppedEvent) => Promise<void>): Promise<SqlServerServerResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ResourceStoppedEventHandle;
+            const arg = new ResourceStoppedEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<SqlServerServerResourceHandle>(
+            'Aspire.Hosting/onResourceStopped',
+            rpcArgs
+        );
+        return new SqlServerServerResource(result, this._client);
+    }
+
+    /** Subscribes to the ResourceStopped event */
+    onResourceStopped(callback: (arg: ResourceStoppedEvent) => Promise<void>): SqlServerServerResourcePromise {
+        return new SqlServerServerResourcePromise(this._onResourceStoppedInternal(callback));
+    }
+
+    /** @internal */
+    private async _onConnectionStringAvailableInternal(callback: (arg: ConnectionStringAvailableEvent) => Promise<void>): Promise<SqlServerServerResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ConnectionStringAvailableEventHandle;
+            const arg = new ConnectionStringAvailableEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<SqlServerServerResourceHandle>(
+            'Aspire.Hosting/onConnectionStringAvailable',
+            rpcArgs
+        );
+        return new SqlServerServerResource(result, this._client);
+    }
+
+    /** Subscribes to the ConnectionStringAvailable event */
+    onConnectionStringAvailable(callback: (arg: ConnectionStringAvailableEvent) => Promise<void>): SqlServerServerResourcePromise {
+        return new SqlServerServerResourcePromise(this._onConnectionStringAvailableInternal(callback));
+    }
+
+    /** @internal */
+    private async _onInitializeResourceInternal(callback: (arg: InitializeResourceEvent) => Promise<void>): Promise<SqlServerServerResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as InitializeResourceEventHandle;
+            const arg = new InitializeResourceEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<SqlServerServerResourceHandle>(
+            'Aspire.Hosting/onInitializeResource',
+            rpcArgs
+        );
+        return new SqlServerServerResource(result, this._client);
+    }
+
+    /** Subscribes to the InitializeResource event */
+    onInitializeResource(callback: (arg: InitializeResourceEvent) => Promise<void>): SqlServerServerResourcePromise {
+        return new SqlServerServerResourcePromise(this._onInitializeResourceInternal(callback));
+    }
+
+    /** @internal */
+    private async _onResourceEndpointsAllocatedInternal(callback: (arg: ResourceEndpointsAllocatedEvent) => Promise<void>): Promise<SqlServerServerResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ResourceEndpointsAllocatedEventHandle;
+            const arg = new ResourceEndpointsAllocatedEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<SqlServerServerResourceHandle>(
+            'Aspire.Hosting/onResourceEndpointsAllocated',
+            rpcArgs
+        );
+        return new SqlServerServerResource(result, this._client);
+    }
+
+    /** Subscribes to the ResourceEndpointsAllocated event */
+    onResourceEndpointsAllocated(callback: (arg: ResourceEndpointsAllocatedEvent) => Promise<void>): SqlServerServerResourcePromise {
+        return new SqlServerServerResourcePromise(this._onResourceEndpointsAllocatedInternal(callback));
+    }
+
+    /** @internal */
+    private async _onResourceReadyInternal(callback: (arg: ResourceReadyEvent) => Promise<void>): Promise<SqlServerServerResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ResourceReadyEventHandle;
+            const arg = new ResourceReadyEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<SqlServerServerResourceHandle>(
+            'Aspire.Hosting/onResourceReady',
+            rpcArgs
+        );
+        return new SqlServerServerResource(result, this._client);
+    }
+
+    /** Subscribes to the ResourceReady event */
+    onResourceReady(callback: (arg: ResourceReadyEvent) => Promise<void>): SqlServerServerResourcePromise {
+        return new SqlServerServerResourcePromise(this._onResourceReadyInternal(callback));
     }
 
     /** @internal */
@@ -25956,29 +33542,19 @@ export class SqlServerServerResourcePromise implements PromiseLike<SqlServerServ
         return new SqlServerServerResourcePromise(this._promise.then(obj => obj.withRequiredCommand(command, options)));
     }
 
-    /** Sets an environment variable */
-    withEnvironment(name: string, value: string): SqlServerServerResourcePromise {
-        return new SqlServerServerResourcePromise(this._promise.then(obj => obj.withEnvironment(name, value)));
-    }
-
-    /** Adds an environment variable with a reference expression */
-    withEnvironmentExpression(name: string, value: ReferenceExpression): SqlServerServerResourcePromise {
-        return new SqlServerServerResourcePromise(this._promise.then(obj => obj.withEnvironmentExpression(name, value)));
-    }
-
     /** Sets environment variables via callback */
-    withEnvironmentCallback(callback: (obj: EnvironmentCallbackContext) => Promise<void>): SqlServerServerResourcePromise {
+    withEnvironmentCallback(callback: (arg: EnvironmentCallbackContext) => Promise<void>): SqlServerServerResourcePromise {
         return new SqlServerServerResourcePromise(this._promise.then(obj => obj.withEnvironmentCallback(callback)));
-    }
-
-    /** Sets environment variables via async callback */
-    withEnvironmentCallbackAsync(callback: (arg: EnvironmentCallbackContext) => Promise<void>): SqlServerServerResourcePromise {
-        return new SqlServerServerResourcePromise(this._promise.then(obj => obj.withEnvironmentCallbackAsync(callback)));
     }
 
     /** Sets an environment variable from an endpoint reference */
     withEnvironmentEndpoint(name: string, endpointReference: EndpointReference): SqlServerServerResourcePromise {
         return new SqlServerServerResourcePromise(this._promise.then(obj => obj.withEnvironmentEndpoint(name, endpointReference)));
+    }
+
+    /** Sets an environment variable on the resource */
+    withEnvironment(name: string, value: string | ReferenceExpression | EndpointReference | ParameterResource | ResourceWithConnectionString): SqlServerServerResourcePromise {
+        return new SqlServerServerResourcePromise(this._promise.then(obj => obj.withEnvironment(name, value)));
     }
 
     /** Sets an environment variable from a parameter resource */
@@ -26021,14 +33597,9 @@ export class SqlServerServerResourcePromise implements PromiseLike<SqlServerServ
         return new SqlServerServerResourcePromise(this._promise.then(obj => obj.withReference(source, options)));
     }
 
-    /** Adds a service discovery reference to another resource */
-    withServiceReference(source: ResourceBuilderBase): SqlServerServerResourcePromise {
-        return new SqlServerServerResourcePromise(this._promise.then(obj => obj.withServiceReference(source)));
-    }
-
-    /** Adds a named service discovery reference */
-    withServiceReferenceNamed(source: ResourceBuilderBase, name: string): SqlServerServerResourcePromise {
-        return new SqlServerServerResourcePromise(this._promise.then(obj => obj.withServiceReferenceNamed(source, name)));
+    /** Gets a connection property by key */
+    getConnectionProperty(key: string): Promise<ReferenceExpression> {
+        return this._promise.then(obj => obj.getConnectionProperty(key));
     }
 
     /** Adds a reference to a URI */
@@ -26236,6 +33807,36 @@ export class SqlServerServerResourcePromise implements PromiseLike<SqlServerServ
         return this._promise.then(obj => obj.getResourceName());
     }
 
+    /** Subscribes to the BeforeResourceStarted event */
+    onBeforeResourceStarted(callback: (arg: BeforeResourceStartedEvent) => Promise<void>): SqlServerServerResourcePromise {
+        return new SqlServerServerResourcePromise(this._promise.then(obj => obj.onBeforeResourceStarted(callback)));
+    }
+
+    /** Subscribes to the ResourceStopped event */
+    onResourceStopped(callback: (arg: ResourceStoppedEvent) => Promise<void>): SqlServerServerResourcePromise {
+        return new SqlServerServerResourcePromise(this._promise.then(obj => obj.onResourceStopped(callback)));
+    }
+
+    /** Subscribes to the ConnectionStringAvailable event */
+    onConnectionStringAvailable(callback: (arg: ConnectionStringAvailableEvent) => Promise<void>): SqlServerServerResourcePromise {
+        return new SqlServerServerResourcePromise(this._promise.then(obj => obj.onConnectionStringAvailable(callback)));
+    }
+
+    /** Subscribes to the InitializeResource event */
+    onInitializeResource(callback: (arg: InitializeResourceEvent) => Promise<void>): SqlServerServerResourcePromise {
+        return new SqlServerServerResourcePromise(this._promise.then(obj => obj.onInitializeResource(callback)));
+    }
+
+    /** Subscribes to the ResourceEndpointsAllocated event */
+    onResourceEndpointsAllocated(callback: (arg: ResourceEndpointsAllocatedEvent) => Promise<void>): SqlServerServerResourcePromise {
+        return new SqlServerServerResourcePromise(this._promise.then(obj => obj.onResourceEndpointsAllocated(callback)));
+    }
+
+    /** Subscribes to the ResourceReady event */
+    onResourceReady(callback: (arg: ResourceReadyEvent) => Promise<void>): SqlServerServerResourcePromise {
+        return new SqlServerServerResourcePromise(this._promise.then(obj => obj.onResourceReady(callback)));
+    }
+
     /** Adds a SQL Server database resource */
     addDatabase(name: string, options?: AddDatabaseOptions): SqlServerDatabaseResourcePromise {
         return new SqlServerDatabaseResourcePromise(this._promise.then(obj => obj.addDatabase(name, options)));
@@ -26264,6 +33865,1800 @@ export class SqlServerServerResourcePromise implements PromiseLike<SqlServerServ
 }
 
 // ============================================================================
+// ViteAppResource
+// ============================================================================
+
+export class ViteAppResource extends ResourceBuilderBase<ViteAppResourceHandle> {
+    constructor(handle: ViteAppResourceHandle, client: AspireClientRpc) {
+        super(handle, client);
+    }
+
+    /** Gets the Command property */
+    command = {
+        get: async (): Promise<string> => {
+            return await this._client.invokeCapability<string>(
+                'Aspire.Hosting.JavaScript/JavaScriptAppResource.command',
+                { context: this._handle }
+            );
+        },
+    };
+
+    /** Gets the WorkingDirectory property */
+    workingDirectory = {
+        get: async (): Promise<string> => {
+            return await this._client.invokeCapability<string>(
+                'Aspire.Hosting.JavaScript/JavaScriptAppResource.workingDirectory',
+                { context: this._handle }
+            );
+        },
+    };
+
+    /** Gets the Name property */
+    name = {
+        get: async (): Promise<string> => {
+            return await this._client.invokeCapability<string>(
+                'Aspire.Hosting.JavaScript/JavaScriptAppResource.name',
+                { context: this._handle }
+            );
+        },
+    };
+
+    /** @internal */
+    private async _withContainerRegistryInternal(registry: ResourceBuilderBase): Promise<ViteAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, registry };
+        const result = await this._client.invokeCapability<ViteAppResourceHandle>(
+            'Aspire.Hosting/withContainerRegistry',
+            rpcArgs
+        );
+        return new ViteAppResource(result, this._client);
+    }
+
+    /** Configures a resource to use a container registry */
+    withContainerRegistry(registry: ResourceBuilderBase): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._withContainerRegistryInternal(registry));
+    }
+
+    /** @internal */
+    private async _withDockerfileBaseImageInternal(buildImage?: string, runtimeImage?: string): Promise<ViteAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle };
+        if (buildImage !== undefined) rpcArgs.buildImage = buildImage;
+        if (runtimeImage !== undefined) rpcArgs.runtimeImage = runtimeImage;
+        const result = await this._client.invokeCapability<ViteAppResourceHandle>(
+            'Aspire.Hosting/withDockerfileBaseImage',
+            rpcArgs
+        );
+        return new ViteAppResource(result, this._client);
+    }
+
+    /** Sets the base image for a Dockerfile build */
+    withDockerfileBaseImage(options?: WithDockerfileBaseImageOptions): ViteAppResourcePromise {
+        const buildImage = options?.buildImage;
+        const runtimeImage = options?.runtimeImage;
+        return new ViteAppResourcePromise(this._withDockerfileBaseImageInternal(buildImage, runtimeImage));
+    }
+
+    /** @internal */
+    private async _publishAsDockerFileInternal(): Promise<ViteAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle };
+        const result = await this._client.invokeCapability<ViteAppResourceHandle>(
+            'Aspire.Hosting/publishAsDockerFile',
+            rpcArgs
+        );
+        return new ViteAppResource(result, this._client);
+    }
+
+    /** Publishes the executable as a Docker container */
+    publishAsDockerFile(): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._publishAsDockerFileInternal());
+    }
+
+    /** @internal */
+    private async _publishAsDockerFileWithConfigureInternal(configure: (obj: ContainerResource) => Promise<void>): Promise<ViteAppResource> {
+        const configureId = registerCallback(async (objData: unknown) => {
+            const objHandle = wrapIfHandle(objData) as ContainerResourceHandle;
+            const obj = new ContainerResource(objHandle, this._client);
+            await configure(obj);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, configure: configureId };
+        const result = await this._client.invokeCapability<ViteAppResourceHandle>(
+            'Aspire.Hosting/publishAsDockerFileWithConfigure',
+            rpcArgs
+        );
+        return new ViteAppResource(result, this._client);
+    }
+
+    /** Publishes an executable as a Docker file with optional container configuration */
+    publishAsDockerFileWithConfigure(configure: (obj: ContainerResource) => Promise<void>): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._publishAsDockerFileWithConfigureInternal(configure));
+    }
+
+    /** @internal */
+    private async _withExecutableCommandInternal(command: string): Promise<ViteAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, command };
+        const result = await this._client.invokeCapability<ViteAppResourceHandle>(
+            'Aspire.Hosting/withExecutableCommand',
+            rpcArgs
+        );
+        return new ViteAppResource(result, this._client);
+    }
+
+    /** Sets the executable command */
+    withExecutableCommand(command: string): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._withExecutableCommandInternal(command));
+    }
+
+    /** @internal */
+    private async _withWorkingDirectoryInternal(workingDirectory: string): Promise<ViteAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, workingDirectory };
+        const result = await this._client.invokeCapability<ViteAppResourceHandle>(
+            'Aspire.Hosting/withWorkingDirectory',
+            rpcArgs
+        );
+        return new ViteAppResource(result, this._client);
+    }
+
+    /** Sets the executable working directory */
+    withWorkingDirectory(workingDirectory: string): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._withWorkingDirectoryInternal(workingDirectory));
+    }
+
+    /** @internal */
+    private async _withMcpServerInternal(path?: string, endpointName?: string): Promise<ViteAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle };
+        if (path !== undefined) rpcArgs.path = path;
+        if (endpointName !== undefined) rpcArgs.endpointName = endpointName;
+        const result = await this._client.invokeCapability<ViteAppResourceHandle>(
+            'Aspire.Hosting/withMcpServer',
+            rpcArgs
+        );
+        return new ViteAppResource(result, this._client);
+    }
+
+    /** Configures an MCP server endpoint on the resource */
+    withMcpServer(options?: WithMcpServerOptions): ViteAppResourcePromise {
+        const path = options?.path;
+        const endpointName = options?.endpointName;
+        return new ViteAppResourcePromise(this._withMcpServerInternal(path, endpointName));
+    }
+
+    /** @internal */
+    private async _withOtlpExporterInternal(): Promise<ViteAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle };
+        const result = await this._client.invokeCapability<ViteAppResourceHandle>(
+            'Aspire.Hosting/withOtlpExporter',
+            rpcArgs
+        );
+        return new ViteAppResource(result, this._client);
+    }
+
+    /** Configures OTLP telemetry export */
+    withOtlpExporter(): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._withOtlpExporterInternal());
+    }
+
+    /** @internal */
+    private async _withOtlpExporterProtocolInternal(protocol: OtlpProtocol): Promise<ViteAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, protocol };
+        const result = await this._client.invokeCapability<ViteAppResourceHandle>(
+            'Aspire.Hosting/withOtlpExporterProtocol',
+            rpcArgs
+        );
+        return new ViteAppResource(result, this._client);
+    }
+
+    /** Configures OTLP telemetry export with specific protocol */
+    withOtlpExporterProtocol(protocol: OtlpProtocol): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._withOtlpExporterProtocolInternal(protocol));
+    }
+
+    /** @internal */
+    private async _withRequiredCommandInternal(command: string, helpLink?: string): Promise<ViteAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, command };
+        if (helpLink !== undefined) rpcArgs.helpLink = helpLink;
+        const result = await this._client.invokeCapability<ViteAppResourceHandle>(
+            'Aspire.Hosting/withRequiredCommand',
+            rpcArgs
+        );
+        return new ViteAppResource(result, this._client);
+    }
+
+    /** Adds a required command dependency */
+    withRequiredCommand(command: string, options?: WithRequiredCommandOptions): ViteAppResourcePromise {
+        const helpLink = options?.helpLink;
+        return new ViteAppResourcePromise(this._withRequiredCommandInternal(command, helpLink));
+    }
+
+    /** @internal */
+    private async _withEnvironmentCallbackInternal(callback: (arg: EnvironmentCallbackContext) => Promise<void>): Promise<ViteAppResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as EnvironmentCallbackContextHandle;
+            const arg = new EnvironmentCallbackContext(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<ViteAppResourceHandle>(
+            'Aspire.Hosting/withEnvironmentCallback',
+            rpcArgs
+        );
+        return new ViteAppResource(result, this._client);
+    }
+
+    /** Sets environment variables via callback */
+    withEnvironmentCallback(callback: (arg: EnvironmentCallbackContext) => Promise<void>): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._withEnvironmentCallbackInternal(callback));
+    }
+
+    /** @internal */
+    private async _withEnvironmentEndpointInternal(name: string, endpointReference: EndpointReference): Promise<ViteAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, name, endpointReference };
+        const result = await this._client.invokeCapability<ViteAppResourceHandle>(
+            'Aspire.Hosting/withEnvironmentEndpoint',
+            rpcArgs
+        );
+        return new ViteAppResource(result, this._client);
+    }
+
+    /** Sets an environment variable from an endpoint reference */
+    withEnvironmentEndpoint(name: string, endpointReference: EndpointReference): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._withEnvironmentEndpointInternal(name, endpointReference));
+    }
+
+    /** @internal */
+    private async _withEnvironmentInternal(name: string, value: string | ReferenceExpression | EndpointReference | ParameterResource | ResourceWithConnectionString): Promise<ViteAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, name, value };
+        const result = await this._client.invokeCapability<ViteAppResourceHandle>(
+            'Aspire.Hosting/withEnvironment',
+            rpcArgs
+        );
+        return new ViteAppResource(result, this._client);
+    }
+
+    /** Sets an environment variable on the resource */
+    withEnvironment(name: string, value: string | ReferenceExpression | EndpointReference | ParameterResource | ResourceWithConnectionString): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._withEnvironmentInternal(name, value));
+    }
+
+    /** @internal */
+    private async _withEnvironmentParameterInternal(name: string, parameter: ParameterResource): Promise<ViteAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, name, parameter };
+        const result = await this._client.invokeCapability<ViteAppResourceHandle>(
+            'Aspire.Hosting/withEnvironmentParameter',
+            rpcArgs
+        );
+        return new ViteAppResource(result, this._client);
+    }
+
+    /** Sets an environment variable from a parameter resource */
+    withEnvironmentParameter(name: string, parameter: ParameterResource): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._withEnvironmentParameterInternal(name, parameter));
+    }
+
+    /** @internal */
+    private async _withEnvironmentConnectionStringInternal(envVarName: string, resource: ResourceBuilderBase): Promise<ViteAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, envVarName, resource };
+        const result = await this._client.invokeCapability<ViteAppResourceHandle>(
+            'Aspire.Hosting/withEnvironmentConnectionString',
+            rpcArgs
+        );
+        return new ViteAppResource(result, this._client);
+    }
+
+    /** Sets an environment variable from a connection string resource */
+    withEnvironmentConnectionString(envVarName: string, resource: ResourceBuilderBase): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._withEnvironmentConnectionStringInternal(envVarName, resource));
+    }
+
+    /** @internal */
+    private async _withArgsInternal(args: string[]): Promise<ViteAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, args };
+        const result = await this._client.invokeCapability<ViteAppResourceHandle>(
+            'Aspire.Hosting/withArgs',
+            rpcArgs
+        );
+        return new ViteAppResource(result, this._client);
+    }
+
+    /** Adds arguments */
+    withArgs(args: string[]): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._withArgsInternal(args));
+    }
+
+    /** @internal */
+    private async _withArgsCallbackInternal(callback: (obj: CommandLineArgsCallbackContext) => Promise<void>): Promise<ViteAppResource> {
+        const callbackId = registerCallback(async (objData: unknown) => {
+            const objHandle = wrapIfHandle(objData) as CommandLineArgsCallbackContextHandle;
+            const obj = new CommandLineArgsCallbackContext(objHandle, this._client);
+            await callback(obj);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<ViteAppResourceHandle>(
+            'Aspire.Hosting/withArgsCallback',
+            rpcArgs
+        );
+        return new ViteAppResource(result, this._client);
+    }
+
+    /** Sets command-line arguments via callback */
+    withArgsCallback(callback: (obj: CommandLineArgsCallbackContext) => Promise<void>): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._withArgsCallbackInternal(callback));
+    }
+
+    /** @internal */
+    private async _withArgsCallbackAsyncInternal(callback: (arg: CommandLineArgsCallbackContext) => Promise<void>): Promise<ViteAppResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as CommandLineArgsCallbackContextHandle;
+            const arg = new CommandLineArgsCallbackContext(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<ViteAppResourceHandle>(
+            'Aspire.Hosting/withArgsCallbackAsync',
+            rpcArgs
+        );
+        return new ViteAppResource(result, this._client);
+    }
+
+    /** Sets command-line arguments via async callback */
+    withArgsCallbackAsync(callback: (arg: CommandLineArgsCallbackContext) => Promise<void>): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._withArgsCallbackAsyncInternal(callback));
+    }
+
+    /** @internal */
+    private async _withReferenceInternal(source: ResourceBuilderBase, connectionName?: string, optional?: boolean, name?: string): Promise<ViteAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, source };
+        if (connectionName !== undefined) rpcArgs.connectionName = connectionName;
+        if (optional !== undefined) rpcArgs.optional = optional;
+        if (name !== undefined) rpcArgs.name = name;
+        const result = await this._client.invokeCapability<ViteAppResourceHandle>(
+            'Aspire.Hosting/withReference',
+            rpcArgs
+        );
+        return new ViteAppResource(result, this._client);
+    }
+
+    /** Adds a reference to another resource */
+    withReference(source: ResourceBuilderBase, options?: WithReferenceOptions): ViteAppResourcePromise {
+        const connectionName = options?.connectionName;
+        const optional = options?.optional;
+        const name = options?.name;
+        return new ViteAppResourcePromise(this._withReferenceInternal(source, connectionName, optional, name));
+    }
+
+    /** @internal */
+    private async _withReferenceUriInternal(name: string, uri: string): Promise<ViteAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, name, uri };
+        const result = await this._client.invokeCapability<ViteAppResourceHandle>(
+            'Aspire.Hosting/withReferenceUri',
+            rpcArgs
+        );
+        return new ViteAppResource(result, this._client);
+    }
+
+    /** Adds a reference to a URI */
+    withReferenceUri(name: string, uri: string): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._withReferenceUriInternal(name, uri));
+    }
+
+    /** @internal */
+    private async _withReferenceExternalServiceInternal(externalService: ExternalServiceResource): Promise<ViteAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, externalService };
+        const result = await this._client.invokeCapability<ViteAppResourceHandle>(
+            'Aspire.Hosting/withReferenceExternalService',
+            rpcArgs
+        );
+        return new ViteAppResource(result, this._client);
+    }
+
+    /** Adds a reference to an external service */
+    withReferenceExternalService(externalService: ExternalServiceResource): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._withReferenceExternalServiceInternal(externalService));
+    }
+
+    /** @internal */
+    private async _withReferenceEndpointInternal(endpointReference: EndpointReference): Promise<ViteAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, endpointReference };
+        const result = await this._client.invokeCapability<ViteAppResourceHandle>(
+            'Aspire.Hosting/withReferenceEndpoint',
+            rpcArgs
+        );
+        return new ViteAppResource(result, this._client);
+    }
+
+    /** Adds a reference to an endpoint */
+    withReferenceEndpoint(endpointReference: EndpointReference): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._withReferenceEndpointInternal(endpointReference));
+    }
+
+    /** @internal */
+    private async _withEndpointInternal(port?: number, targetPort?: number, scheme?: string, name?: string, env?: string, isProxied?: boolean, isExternal?: boolean, protocol?: ProtocolType): Promise<ViteAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle };
+        if (port !== undefined) rpcArgs.port = port;
+        if (targetPort !== undefined) rpcArgs.targetPort = targetPort;
+        if (scheme !== undefined) rpcArgs.scheme = scheme;
+        if (name !== undefined) rpcArgs.name = name;
+        if (env !== undefined) rpcArgs.env = env;
+        if (isProxied !== undefined) rpcArgs.isProxied = isProxied;
+        if (isExternal !== undefined) rpcArgs.isExternal = isExternal;
+        if (protocol !== undefined) rpcArgs.protocol = protocol;
+        const result = await this._client.invokeCapability<ViteAppResourceHandle>(
+            'Aspire.Hosting/withEndpoint',
+            rpcArgs
+        );
+        return new ViteAppResource(result, this._client);
+    }
+
+    /** Adds a network endpoint */
+    withEndpoint(options?: WithEndpointOptions): ViteAppResourcePromise {
+        const port = options?.port;
+        const targetPort = options?.targetPort;
+        const scheme = options?.scheme;
+        const name = options?.name;
+        const env = options?.env;
+        const isProxied = options?.isProxied;
+        const isExternal = options?.isExternal;
+        const protocol = options?.protocol;
+        return new ViteAppResourcePromise(this._withEndpointInternal(port, targetPort, scheme, name, env, isProxied, isExternal, protocol));
+    }
+
+    /** @internal */
+    private async _withHttpEndpointInternal(port?: number, targetPort?: number, name?: string, env?: string, isProxied?: boolean): Promise<ViteAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle };
+        if (port !== undefined) rpcArgs.port = port;
+        if (targetPort !== undefined) rpcArgs.targetPort = targetPort;
+        if (name !== undefined) rpcArgs.name = name;
+        if (env !== undefined) rpcArgs.env = env;
+        if (isProxied !== undefined) rpcArgs.isProxied = isProxied;
+        const result = await this._client.invokeCapability<ViteAppResourceHandle>(
+            'Aspire.Hosting/withHttpEndpoint',
+            rpcArgs
+        );
+        return new ViteAppResource(result, this._client);
+    }
+
+    /** Adds an HTTP endpoint */
+    withHttpEndpoint(options?: WithHttpEndpointOptions): ViteAppResourcePromise {
+        const port = options?.port;
+        const targetPort = options?.targetPort;
+        const name = options?.name;
+        const env = options?.env;
+        const isProxied = options?.isProxied;
+        return new ViteAppResourcePromise(this._withHttpEndpointInternal(port, targetPort, name, env, isProxied));
+    }
+
+    /** @internal */
+    private async _withHttpsEndpointInternal(port?: number, targetPort?: number, name?: string, env?: string, isProxied?: boolean): Promise<ViteAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle };
+        if (port !== undefined) rpcArgs.port = port;
+        if (targetPort !== undefined) rpcArgs.targetPort = targetPort;
+        if (name !== undefined) rpcArgs.name = name;
+        if (env !== undefined) rpcArgs.env = env;
+        if (isProxied !== undefined) rpcArgs.isProxied = isProxied;
+        const result = await this._client.invokeCapability<ViteAppResourceHandle>(
+            'Aspire.Hosting/withHttpsEndpoint',
+            rpcArgs
+        );
+        return new ViteAppResource(result, this._client);
+    }
+
+    /** Adds an HTTPS endpoint */
+    withHttpsEndpoint(options?: WithHttpsEndpointOptions): ViteAppResourcePromise {
+        const port = options?.port;
+        const targetPort = options?.targetPort;
+        const name = options?.name;
+        const env = options?.env;
+        const isProxied = options?.isProxied;
+        return new ViteAppResourcePromise(this._withHttpsEndpointInternal(port, targetPort, name, env, isProxied));
+    }
+
+    /** @internal */
+    private async _withExternalHttpEndpointsInternal(): Promise<ViteAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle };
+        const result = await this._client.invokeCapability<ViteAppResourceHandle>(
+            'Aspire.Hosting/withExternalHttpEndpoints',
+            rpcArgs
+        );
+        return new ViteAppResource(result, this._client);
+    }
+
+    /** Makes HTTP endpoints externally accessible */
+    withExternalHttpEndpoints(): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._withExternalHttpEndpointsInternal());
+    }
+
+    /** Gets an endpoint reference */
+    async getEndpoint(name: string): Promise<EndpointReference> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, name };
+        return await this._client.invokeCapability<EndpointReference>(
+            'Aspire.Hosting/getEndpoint',
+            rpcArgs
+        );
+    }
+
+    /** @internal */
+    private async _asHttp2ServiceInternal(): Promise<ViteAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle };
+        const result = await this._client.invokeCapability<ViteAppResourceHandle>(
+            'Aspire.Hosting/asHttp2Service',
+            rpcArgs
+        );
+        return new ViteAppResource(result, this._client);
+    }
+
+    /** Configures resource for HTTP/2 */
+    asHttp2Service(): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._asHttp2ServiceInternal());
+    }
+
+    /** @internal */
+    private async _withUrlsCallbackInternal(callback: (obj: ResourceUrlsCallbackContext) => Promise<void>): Promise<ViteAppResource> {
+        const callbackId = registerCallback(async (objData: unknown) => {
+            const objHandle = wrapIfHandle(objData) as ResourceUrlsCallbackContextHandle;
+            const obj = new ResourceUrlsCallbackContext(objHandle, this._client);
+            await callback(obj);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<ViteAppResourceHandle>(
+            'Aspire.Hosting/withUrlsCallback',
+            rpcArgs
+        );
+        return new ViteAppResource(result, this._client);
+    }
+
+    /** Customizes displayed URLs via callback */
+    withUrlsCallback(callback: (obj: ResourceUrlsCallbackContext) => Promise<void>): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._withUrlsCallbackInternal(callback));
+    }
+
+    /** @internal */
+    private async _withUrlsCallbackAsyncInternal(callback: (arg: ResourceUrlsCallbackContext) => Promise<void>): Promise<ViteAppResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ResourceUrlsCallbackContextHandle;
+            const arg = new ResourceUrlsCallbackContext(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<ViteAppResourceHandle>(
+            'Aspire.Hosting/withUrlsCallbackAsync',
+            rpcArgs
+        );
+        return new ViteAppResource(result, this._client);
+    }
+
+    /** Customizes displayed URLs via async callback */
+    withUrlsCallbackAsync(callback: (arg: ResourceUrlsCallbackContext) => Promise<void>): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._withUrlsCallbackAsyncInternal(callback));
+    }
+
+    /** @internal */
+    private async _withUrlInternal(url: string, displayText?: string): Promise<ViteAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, url };
+        if (displayText !== undefined) rpcArgs.displayText = displayText;
+        const result = await this._client.invokeCapability<ViteAppResourceHandle>(
+            'Aspire.Hosting/withUrl',
+            rpcArgs
+        );
+        return new ViteAppResource(result, this._client);
+    }
+
+    /** Adds or modifies displayed URLs */
+    withUrl(url: string, options?: WithUrlOptions): ViteAppResourcePromise {
+        const displayText = options?.displayText;
+        return new ViteAppResourcePromise(this._withUrlInternal(url, displayText));
+    }
+
+    /** @internal */
+    private async _withUrlExpressionInternal(url: ReferenceExpression, displayText?: string): Promise<ViteAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, url };
+        if (displayText !== undefined) rpcArgs.displayText = displayText;
+        const result = await this._client.invokeCapability<ViteAppResourceHandle>(
+            'Aspire.Hosting/withUrlExpression',
+            rpcArgs
+        );
+        return new ViteAppResource(result, this._client);
+    }
+
+    /** Adds a URL using a reference expression */
+    withUrlExpression(url: ReferenceExpression, options?: WithUrlExpressionOptions): ViteAppResourcePromise {
+        const displayText = options?.displayText;
+        return new ViteAppResourcePromise(this._withUrlExpressionInternal(url, displayText));
+    }
+
+    /** @internal */
+    private async _withUrlForEndpointInternal(endpointName: string, callback: (obj: ResourceUrlAnnotation) => Promise<void>): Promise<ViteAppResource> {
+        const callbackId = registerCallback(async (objData: unknown) => {
+            const obj = wrapIfHandle(objData) as ResourceUrlAnnotation;
+            await callback(obj);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, endpointName, callback: callbackId };
+        const result = await this._client.invokeCapability<ViteAppResourceHandle>(
+            'Aspire.Hosting/withUrlForEndpoint',
+            rpcArgs
+        );
+        return new ViteAppResource(result, this._client);
+    }
+
+    /** Customizes the URL for a specific endpoint via callback */
+    withUrlForEndpoint(endpointName: string, callback: (obj: ResourceUrlAnnotation) => Promise<void>): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._withUrlForEndpointInternal(endpointName, callback));
+    }
+
+    /** @internal */
+    private async _withUrlForEndpointFactoryInternal(endpointName: string, callback: (arg: EndpointReference) => Promise<ResourceUrlAnnotation>): Promise<ViteAppResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as EndpointReferenceHandle;
+            const arg = new EndpointReference(argHandle, this._client);
+            return await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, endpointName, callback: callbackId };
+        const result = await this._client.invokeCapability<ViteAppResourceHandle>(
+            'Aspire.Hosting/withUrlForEndpointFactory',
+            rpcArgs
+        );
+        return new ViteAppResource(result, this._client);
+    }
+
+    /** Adds a URL for a specific endpoint via factory callback */
+    withUrlForEndpointFactory(endpointName: string, callback: (arg: EndpointReference) => Promise<ResourceUrlAnnotation>): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._withUrlForEndpointFactoryInternal(endpointName, callback));
+    }
+
+    /** @internal */
+    private async _withContainerFilesSourceInternal(sourcePath: string): Promise<ViteAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, sourcePath };
+        const result = await this._client.invokeCapability<ViteAppResourceHandle>(
+            'Aspire.Hosting/withContainerFilesSource',
+            rpcArgs
+        );
+        return new ViteAppResource(result, this._client);
+    }
+
+    /** Sets the source directory for container files */
+    withContainerFilesSource(sourcePath: string): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._withContainerFilesSourceInternal(sourcePath));
+    }
+
+    /** @internal */
+    private async _clearContainerFilesSourcesInternal(): Promise<ViteAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle };
+        const result = await this._client.invokeCapability<ViteAppResourceHandle>(
+            'Aspire.Hosting/clearContainerFilesSources',
+            rpcArgs
+        );
+        return new ViteAppResource(result, this._client);
+    }
+
+    /** Clears all container file sources */
+    clearContainerFilesSources(): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._clearContainerFilesSourcesInternal());
+    }
+
+    /** @internal */
+    private async _excludeFromManifestInternal(): Promise<ViteAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle };
+        const result = await this._client.invokeCapability<ViteAppResourceHandle>(
+            'Aspire.Hosting/excludeFromManifest',
+            rpcArgs
+        );
+        return new ViteAppResource(result, this._client);
+    }
+
+    /** Excludes the resource from the deployment manifest */
+    excludeFromManifest(): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._excludeFromManifestInternal());
+    }
+
+    /** @internal */
+    private async _waitForInternal(dependency: ResourceBuilderBase): Promise<ViteAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, dependency };
+        const result = await this._client.invokeCapability<ViteAppResourceHandle>(
+            'Aspire.Hosting/waitForResource',
+            rpcArgs
+        );
+        return new ViteAppResource(result, this._client);
+    }
+
+    /** Waits for another resource to be ready */
+    waitFor(dependency: ResourceBuilderBase): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._waitForInternal(dependency));
+    }
+
+    /** @internal */
+    private async _waitForWithBehaviorInternal(dependency: ResourceBuilderBase, waitBehavior: WaitBehavior): Promise<ViteAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, dependency, waitBehavior };
+        const result = await this._client.invokeCapability<ViteAppResourceHandle>(
+            'Aspire.Hosting/waitForWithBehavior',
+            rpcArgs
+        );
+        return new ViteAppResource(result, this._client);
+    }
+
+    /** Waits for another resource with specific behavior */
+    waitForWithBehavior(dependency: ResourceBuilderBase, waitBehavior: WaitBehavior): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._waitForWithBehaviorInternal(dependency, waitBehavior));
+    }
+
+    /** @internal */
+    private async _waitForStartInternal(dependency: ResourceBuilderBase): Promise<ViteAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, dependency };
+        const result = await this._client.invokeCapability<ViteAppResourceHandle>(
+            'Aspire.Hosting/waitForResourceStart',
+            rpcArgs
+        );
+        return new ViteAppResource(result, this._client);
+    }
+
+    /** Waits for another resource to start */
+    waitForStart(dependency: ResourceBuilderBase): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._waitForStartInternal(dependency));
+    }
+
+    /** @internal */
+    private async _waitForStartWithBehaviorInternal(dependency: ResourceBuilderBase, waitBehavior: WaitBehavior): Promise<ViteAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, dependency, waitBehavior };
+        const result = await this._client.invokeCapability<ViteAppResourceHandle>(
+            'Aspire.Hosting/waitForStartWithBehavior',
+            rpcArgs
+        );
+        return new ViteAppResource(result, this._client);
+    }
+
+    /** Waits for another resource to start with specific behavior */
+    waitForStartWithBehavior(dependency: ResourceBuilderBase, waitBehavior: WaitBehavior): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._waitForStartWithBehaviorInternal(dependency, waitBehavior));
+    }
+
+    /** @internal */
+    private async _withExplicitStartInternal(): Promise<ViteAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle };
+        const result = await this._client.invokeCapability<ViteAppResourceHandle>(
+            'Aspire.Hosting/withExplicitStart',
+            rpcArgs
+        );
+        return new ViteAppResource(result, this._client);
+    }
+
+    /** Prevents resource from starting automatically */
+    withExplicitStart(): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._withExplicitStartInternal());
+    }
+
+    /** @internal */
+    private async _waitForCompletionInternal(dependency: ResourceBuilderBase, exitCode?: number): Promise<ViteAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, dependency };
+        if (exitCode !== undefined) rpcArgs.exitCode = exitCode;
+        const result = await this._client.invokeCapability<ViteAppResourceHandle>(
+            'Aspire.Hosting/waitForResourceCompletion',
+            rpcArgs
+        );
+        return new ViteAppResource(result, this._client);
+    }
+
+    /** Waits for resource completion */
+    waitForCompletion(dependency: ResourceBuilderBase, options?: WaitForCompletionOptions): ViteAppResourcePromise {
+        const exitCode = options?.exitCode;
+        return new ViteAppResourcePromise(this._waitForCompletionInternal(dependency, exitCode));
+    }
+
+    /** @internal */
+    private async _withHealthCheckInternal(key: string): Promise<ViteAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, key };
+        const result = await this._client.invokeCapability<ViteAppResourceHandle>(
+            'Aspire.Hosting/withHealthCheck',
+            rpcArgs
+        );
+        return new ViteAppResource(result, this._client);
+    }
+
+    /** Adds a health check by key */
+    withHealthCheck(key: string): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._withHealthCheckInternal(key));
+    }
+
+    /** @internal */
+    private async _withHttpHealthCheckInternal(path?: string, statusCode?: number, endpointName?: string): Promise<ViteAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle };
+        if (path !== undefined) rpcArgs.path = path;
+        if (statusCode !== undefined) rpcArgs.statusCode = statusCode;
+        if (endpointName !== undefined) rpcArgs.endpointName = endpointName;
+        const result = await this._client.invokeCapability<ViteAppResourceHandle>(
+            'Aspire.Hosting/withHttpHealthCheck',
+            rpcArgs
+        );
+        return new ViteAppResource(result, this._client);
+    }
+
+    /** Adds an HTTP health check */
+    withHttpHealthCheck(options?: WithHttpHealthCheckOptions): ViteAppResourcePromise {
+        const path = options?.path;
+        const statusCode = options?.statusCode;
+        const endpointName = options?.endpointName;
+        return new ViteAppResourcePromise(this._withHttpHealthCheckInternal(path, statusCode, endpointName));
+    }
+
+    /** @internal */
+    private async _withCommandInternal(name: string, displayName: string, executeCommand: (arg: ExecuteCommandContext) => Promise<ExecuteCommandResult>, commandOptions?: CommandOptions): Promise<ViteAppResource> {
+        const executeCommandId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ExecuteCommandContextHandle;
+            const arg = new ExecuteCommandContext(argHandle, this._client);
+            return await executeCommand(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, name, displayName, executeCommand: executeCommandId };
+        if (commandOptions !== undefined) rpcArgs.commandOptions = commandOptions;
+        const result = await this._client.invokeCapability<ViteAppResourceHandle>(
+            'Aspire.Hosting/withCommand',
+            rpcArgs
+        );
+        return new ViteAppResource(result, this._client);
+    }
+
+    /** Adds a resource command */
+    withCommand(name: string, displayName: string, executeCommand: (arg: ExecuteCommandContext) => Promise<ExecuteCommandResult>, options?: WithCommandOptions): ViteAppResourcePromise {
+        const commandOptions = options?.commandOptions;
+        return new ViteAppResourcePromise(this._withCommandInternal(name, displayName, executeCommand, commandOptions));
+    }
+
+    /** @internal */
+    private async _withDeveloperCertificateTrustInternal(trust: boolean): Promise<ViteAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, trust };
+        const result = await this._client.invokeCapability<ViteAppResourceHandle>(
+            'Aspire.Hosting/withDeveloperCertificateTrust',
+            rpcArgs
+        );
+        return new ViteAppResource(result, this._client);
+    }
+
+    /** Configures developer certificate trust */
+    withDeveloperCertificateTrust(trust: boolean): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._withDeveloperCertificateTrustInternal(trust));
+    }
+
+    /** @internal */
+    private async _withCertificateTrustScopeInternal(scope: CertificateTrustScope): Promise<ViteAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, scope };
+        const result = await this._client.invokeCapability<ViteAppResourceHandle>(
+            'Aspire.Hosting/withCertificateTrustScope',
+            rpcArgs
+        );
+        return new ViteAppResource(result, this._client);
+    }
+
+    /** Sets the certificate trust scope */
+    withCertificateTrustScope(scope: CertificateTrustScope): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._withCertificateTrustScopeInternal(scope));
+    }
+
+    /** @internal */
+    private async _withHttpsDeveloperCertificateInternal(password?: ParameterResource): Promise<ViteAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle };
+        if (password !== undefined) rpcArgs.password = password;
+        const result = await this._client.invokeCapability<ViteAppResourceHandle>(
+            'Aspire.Hosting/withParameterHttpsDeveloperCertificate',
+            rpcArgs
+        );
+        return new ViteAppResource(result, this._client);
+    }
+
+    /** Configures HTTPS with a developer certificate */
+    withHttpsDeveloperCertificate(options?: WithHttpsDeveloperCertificateOptions): ViteAppResourcePromise {
+        const password = options?.password;
+        return new ViteAppResourcePromise(this._withHttpsDeveloperCertificateInternal(password));
+    }
+
+    /** @internal */
+    private async _withoutHttpsCertificateInternal(): Promise<ViteAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle };
+        const result = await this._client.invokeCapability<ViteAppResourceHandle>(
+            'Aspire.Hosting/withoutHttpsCertificate',
+            rpcArgs
+        );
+        return new ViteAppResource(result, this._client);
+    }
+
+    /** Removes HTTPS certificate configuration */
+    withoutHttpsCertificate(): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._withoutHttpsCertificateInternal());
+    }
+
+    /** @internal */
+    private async _withParentRelationshipInternal(parent: ResourceBuilderBase): Promise<ViteAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, parent };
+        const result = await this._client.invokeCapability<ViteAppResourceHandle>(
+            'Aspire.Hosting/withBuilderParentRelationship',
+            rpcArgs
+        );
+        return new ViteAppResource(result, this._client);
+    }
+
+    /** Sets the parent relationship */
+    withParentRelationship(parent: ResourceBuilderBase): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._withParentRelationshipInternal(parent));
+    }
+
+    /** @internal */
+    private async _withChildRelationshipInternal(child: ResourceBuilderBase): Promise<ViteAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, child };
+        const result = await this._client.invokeCapability<ViteAppResourceHandle>(
+            'Aspire.Hosting/withBuilderChildRelationship',
+            rpcArgs
+        );
+        return new ViteAppResource(result, this._client);
+    }
+
+    /** Sets a child relationship */
+    withChildRelationship(child: ResourceBuilderBase): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._withChildRelationshipInternal(child));
+    }
+
+    /** @internal */
+    private async _withIconNameInternal(iconName: string, iconVariant?: IconVariant): Promise<ViteAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, iconName };
+        if (iconVariant !== undefined) rpcArgs.iconVariant = iconVariant;
+        const result = await this._client.invokeCapability<ViteAppResourceHandle>(
+            'Aspire.Hosting/withIconName',
+            rpcArgs
+        );
+        return new ViteAppResource(result, this._client);
+    }
+
+    /** Sets the icon for the resource */
+    withIconName(iconName: string, options?: WithIconNameOptions): ViteAppResourcePromise {
+        const iconVariant = options?.iconVariant;
+        return new ViteAppResourcePromise(this._withIconNameInternal(iconName, iconVariant));
+    }
+
+    /** @internal */
+    private async _withHttpProbeInternal(probeType: ProbeType, path?: string, initialDelaySeconds?: number, periodSeconds?: number, timeoutSeconds?: number, failureThreshold?: number, successThreshold?: number, endpointName?: string): Promise<ViteAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, probeType };
+        if (path !== undefined) rpcArgs.path = path;
+        if (initialDelaySeconds !== undefined) rpcArgs.initialDelaySeconds = initialDelaySeconds;
+        if (periodSeconds !== undefined) rpcArgs.periodSeconds = periodSeconds;
+        if (timeoutSeconds !== undefined) rpcArgs.timeoutSeconds = timeoutSeconds;
+        if (failureThreshold !== undefined) rpcArgs.failureThreshold = failureThreshold;
+        if (successThreshold !== undefined) rpcArgs.successThreshold = successThreshold;
+        if (endpointName !== undefined) rpcArgs.endpointName = endpointName;
+        const result = await this._client.invokeCapability<ViteAppResourceHandle>(
+            'Aspire.Hosting/withHttpProbe',
+            rpcArgs
+        );
+        return new ViteAppResource(result, this._client);
+    }
+
+    /** Adds an HTTP health probe to the resource */
+    withHttpProbe(probeType: ProbeType, options?: WithHttpProbeOptions): ViteAppResourcePromise {
+        const path = options?.path;
+        const initialDelaySeconds = options?.initialDelaySeconds;
+        const periodSeconds = options?.periodSeconds;
+        const timeoutSeconds = options?.timeoutSeconds;
+        const failureThreshold = options?.failureThreshold;
+        const successThreshold = options?.successThreshold;
+        const endpointName = options?.endpointName;
+        return new ViteAppResourcePromise(this._withHttpProbeInternal(probeType, path, initialDelaySeconds, periodSeconds, timeoutSeconds, failureThreshold, successThreshold, endpointName));
+    }
+
+    /** @internal */
+    private async _excludeFromMcpInternal(): Promise<ViteAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle };
+        const result = await this._client.invokeCapability<ViteAppResourceHandle>(
+            'Aspire.Hosting/excludeFromMcp',
+            rpcArgs
+        );
+        return new ViteAppResource(result, this._client);
+    }
+
+    /** Excludes the resource from MCP server exposure */
+    excludeFromMcp(): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._excludeFromMcpInternal());
+    }
+
+    /** @internal */
+    private async _withRemoteImageNameInternal(remoteImageName: string): Promise<ViteAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, remoteImageName };
+        const result = await this._client.invokeCapability<ViteAppResourceHandle>(
+            'Aspire.Hosting/withRemoteImageName',
+            rpcArgs
+        );
+        return new ViteAppResource(result, this._client);
+    }
+
+    /** Sets the remote image name for publishing */
+    withRemoteImageName(remoteImageName: string): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._withRemoteImageNameInternal(remoteImageName));
+    }
+
+    /** @internal */
+    private async _withRemoteImageTagInternal(remoteImageTag: string): Promise<ViteAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, remoteImageTag };
+        const result = await this._client.invokeCapability<ViteAppResourceHandle>(
+            'Aspire.Hosting/withRemoteImageTag',
+            rpcArgs
+        );
+        return new ViteAppResource(result, this._client);
+    }
+
+    /** Sets the remote image tag for publishing */
+    withRemoteImageTag(remoteImageTag: string): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._withRemoteImageTagInternal(remoteImageTag));
+    }
+
+    /** @internal */
+    private async _withPipelineStepFactoryInternal(stepName: string, callback: (arg: PipelineStepContext) => Promise<void>, dependsOn?: string[], requiredBy?: string[], tags?: string[], description?: string): Promise<ViteAppResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as PipelineStepContextHandle;
+            const arg = new PipelineStepContext(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, stepName, callback: callbackId };
+        if (dependsOn !== undefined) rpcArgs.dependsOn = dependsOn;
+        if (requiredBy !== undefined) rpcArgs.requiredBy = requiredBy;
+        if (tags !== undefined) rpcArgs.tags = tags;
+        if (description !== undefined) rpcArgs.description = description;
+        const result = await this._client.invokeCapability<ViteAppResourceHandle>(
+            'Aspire.Hosting/withPipelineStepFactory',
+            rpcArgs
+        );
+        return new ViteAppResource(result, this._client);
+    }
+
+    /** Adds a pipeline step to the resource */
+    withPipelineStepFactory(stepName: string, callback: (arg: PipelineStepContext) => Promise<void>, options?: WithPipelineStepFactoryOptions): ViteAppResourcePromise {
+        const dependsOn = options?.dependsOn;
+        const requiredBy = options?.requiredBy;
+        const tags = options?.tags;
+        const description = options?.description;
+        return new ViteAppResourcePromise(this._withPipelineStepFactoryInternal(stepName, callback, dependsOn, requiredBy, tags, description));
+    }
+
+    /** @internal */
+    private async _withPipelineConfigurationAsyncInternal(callback: (arg: PipelineConfigurationContext) => Promise<void>): Promise<ViteAppResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as PipelineConfigurationContextHandle;
+            const arg = new PipelineConfigurationContext(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<ViteAppResourceHandle>(
+            'Aspire.Hosting/withPipelineConfigurationAsync',
+            rpcArgs
+        );
+        return new ViteAppResource(result, this._client);
+    }
+
+    /** Configures pipeline step dependencies via an async callback */
+    withPipelineConfigurationAsync(callback: (arg: PipelineConfigurationContext) => Promise<void>): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._withPipelineConfigurationAsyncInternal(callback));
+    }
+
+    /** @internal */
+    private async _withPipelineConfigurationInternal(callback: (obj: PipelineConfigurationContext) => Promise<void>): Promise<ViteAppResource> {
+        const callbackId = registerCallback(async (objData: unknown) => {
+            const objHandle = wrapIfHandle(objData) as PipelineConfigurationContextHandle;
+            const obj = new PipelineConfigurationContext(objHandle, this._client);
+            await callback(obj);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<ViteAppResourceHandle>(
+            'Aspire.Hosting/withPipelineConfiguration',
+            rpcArgs
+        );
+        return new ViteAppResource(result, this._client);
+    }
+
+    /** Configures pipeline step dependencies via a callback */
+    withPipelineConfiguration(callback: (obj: PipelineConfigurationContext) => Promise<void>): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._withPipelineConfigurationInternal(callback));
+    }
+
+    /** Gets the resource name */
+    async getResourceName(): Promise<string> {
+        const rpcArgs: Record<string, unknown> = { resource: this._handle };
+        return await this._client.invokeCapability<string>(
+            'Aspire.Hosting/getResourceName',
+            rpcArgs
+        );
+    }
+
+    /** @internal */
+    private async _onBeforeResourceStartedInternal(callback: (arg: BeforeResourceStartedEvent) => Promise<void>): Promise<ViteAppResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as BeforeResourceStartedEventHandle;
+            const arg = new BeforeResourceStartedEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<ViteAppResourceHandle>(
+            'Aspire.Hosting/onBeforeResourceStarted',
+            rpcArgs
+        );
+        return new ViteAppResource(result, this._client);
+    }
+
+    /** Subscribes to the BeforeResourceStarted event */
+    onBeforeResourceStarted(callback: (arg: BeforeResourceStartedEvent) => Promise<void>): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._onBeforeResourceStartedInternal(callback));
+    }
+
+    /** @internal */
+    private async _onResourceStoppedInternal(callback: (arg: ResourceStoppedEvent) => Promise<void>): Promise<ViteAppResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ResourceStoppedEventHandle;
+            const arg = new ResourceStoppedEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<ViteAppResourceHandle>(
+            'Aspire.Hosting/onResourceStopped',
+            rpcArgs
+        );
+        return new ViteAppResource(result, this._client);
+    }
+
+    /** Subscribes to the ResourceStopped event */
+    onResourceStopped(callback: (arg: ResourceStoppedEvent) => Promise<void>): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._onResourceStoppedInternal(callback));
+    }
+
+    /** @internal */
+    private async _onInitializeResourceInternal(callback: (arg: InitializeResourceEvent) => Promise<void>): Promise<ViteAppResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as InitializeResourceEventHandle;
+            const arg = new InitializeResourceEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<ViteAppResourceHandle>(
+            'Aspire.Hosting/onInitializeResource',
+            rpcArgs
+        );
+        return new ViteAppResource(result, this._client);
+    }
+
+    /** Subscribes to the InitializeResource event */
+    onInitializeResource(callback: (arg: InitializeResourceEvent) => Promise<void>): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._onInitializeResourceInternal(callback));
+    }
+
+    /** @internal */
+    private async _onResourceEndpointsAllocatedInternal(callback: (arg: ResourceEndpointsAllocatedEvent) => Promise<void>): Promise<ViteAppResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ResourceEndpointsAllocatedEventHandle;
+            const arg = new ResourceEndpointsAllocatedEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<ViteAppResourceHandle>(
+            'Aspire.Hosting/onResourceEndpointsAllocated',
+            rpcArgs
+        );
+        return new ViteAppResource(result, this._client);
+    }
+
+    /** Subscribes to the ResourceEndpointsAllocated event */
+    onResourceEndpointsAllocated(callback: (arg: ResourceEndpointsAllocatedEvent) => Promise<void>): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._onResourceEndpointsAllocatedInternal(callback));
+    }
+
+    /** @internal */
+    private async _onResourceReadyInternal(callback: (arg: ResourceReadyEvent) => Promise<void>): Promise<ViteAppResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ResourceReadyEventHandle;
+            const arg = new ResourceReadyEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<ViteAppResourceHandle>(
+            'Aspire.Hosting/onResourceReady',
+            rpcArgs
+        );
+        return new ViteAppResource(result, this._client);
+    }
+
+    /** Subscribes to the ResourceReady event */
+    onResourceReady(callback: (arg: ResourceReadyEvent) => Promise<void>): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._onResourceReadyInternal(callback));
+    }
+
+    /** @internal */
+    private async _withViteConfigInternal(configPath: string): Promise<ViteAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, configPath };
+        const result = await this._client.invokeCapability<ViteAppResourceHandle>(
+            'Aspire.Hosting.JavaScript/withViteConfig',
+            rpcArgs
+        );
+        return new ViteAppResource(result, this._client);
+    }
+
+    /** Configures a custom Vite configuration file */
+    withViteConfig(configPath: string): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._withViteConfigInternal(configPath));
+    }
+
+    /** @internal */
+    private async _withNpmInternal(install?: boolean, installCommand?: string, installArgs?: string[]): Promise<ViteAppResource> {
+        const rpcArgs: Record<string, unknown> = { resource: this._handle };
+        if (install !== undefined) rpcArgs.install = install;
+        if (installCommand !== undefined) rpcArgs.installCommand = installCommand;
+        if (installArgs !== undefined) rpcArgs.installArgs = installArgs;
+        const result = await this._client.invokeCapability<ViteAppResourceHandle>(
+            'Aspire.Hosting.JavaScript/withNpm',
+            rpcArgs
+        );
+        return new ViteAppResource(result, this._client);
+    }
+
+    /** Configures npm as the package manager */
+    withNpm(options?: WithNpmOptions): ViteAppResourcePromise {
+        const install = options?.install;
+        const installCommand = options?.installCommand;
+        const installArgs = options?.installArgs;
+        return new ViteAppResourcePromise(this._withNpmInternal(install, installCommand, installArgs));
+    }
+
+    /** @internal */
+    private async _withBunInternal(install?: boolean, installArgs?: string[]): Promise<ViteAppResource> {
+        const rpcArgs: Record<string, unknown> = { resource: this._handle };
+        if (install !== undefined) rpcArgs.install = install;
+        if (installArgs !== undefined) rpcArgs.installArgs = installArgs;
+        const result = await this._client.invokeCapability<ViteAppResourceHandle>(
+            'Aspire.Hosting.JavaScript/withBun',
+            rpcArgs
+        );
+        return new ViteAppResource(result, this._client);
+    }
+
+    /** Configures Bun as the package manager */
+    withBun(options?: WithBunOptions): ViteAppResourcePromise {
+        const install = options?.install;
+        const installArgs = options?.installArgs;
+        return new ViteAppResourcePromise(this._withBunInternal(install, installArgs));
+    }
+
+    /** @internal */
+    private async _withYarnInternal(install?: boolean, installArgs?: string[]): Promise<ViteAppResource> {
+        const rpcArgs: Record<string, unknown> = { resource: this._handle };
+        if (install !== undefined) rpcArgs.install = install;
+        if (installArgs !== undefined) rpcArgs.installArgs = installArgs;
+        const result = await this._client.invokeCapability<ViteAppResourceHandle>(
+            'Aspire.Hosting.JavaScript/withYarn',
+            rpcArgs
+        );
+        return new ViteAppResource(result, this._client);
+    }
+
+    /** Configures yarn as the package manager */
+    withYarn(options?: WithYarnOptions): ViteAppResourcePromise {
+        const install = options?.install;
+        const installArgs = options?.installArgs;
+        return new ViteAppResourcePromise(this._withYarnInternal(install, installArgs));
+    }
+
+    /** @internal */
+    private async _withPnpmInternal(install?: boolean, installArgs?: string[]): Promise<ViteAppResource> {
+        const rpcArgs: Record<string, unknown> = { resource: this._handle };
+        if (install !== undefined) rpcArgs.install = install;
+        if (installArgs !== undefined) rpcArgs.installArgs = installArgs;
+        const result = await this._client.invokeCapability<ViteAppResourceHandle>(
+            'Aspire.Hosting.JavaScript/withPnpm',
+            rpcArgs
+        );
+        return new ViteAppResource(result, this._client);
+    }
+
+    /** Configures pnpm as the package manager */
+    withPnpm(options?: WithPnpmOptions): ViteAppResourcePromise {
+        const install = options?.install;
+        const installArgs = options?.installArgs;
+        return new ViteAppResourcePromise(this._withPnpmInternal(install, installArgs));
+    }
+
+    /** @internal */
+    private async _withBuildScriptInternal(scriptName: string, args?: string[]): Promise<ViteAppResource> {
+        const rpcArgs: Record<string, unknown> = { resource: this._handle, scriptName };
+        if (args !== undefined) rpcArgs.args = args;
+        const result = await this._client.invokeCapability<ViteAppResourceHandle>(
+            'Aspire.Hosting.JavaScript/withBuildScript',
+            rpcArgs
+        );
+        return new ViteAppResource(result, this._client);
+    }
+
+    /** Specifies an npm script to run before starting the application */
+    withBuildScript(scriptName: string, options?: WithBuildScriptOptions): ViteAppResourcePromise {
+        const args = options?.args;
+        return new ViteAppResourcePromise(this._withBuildScriptInternal(scriptName, args));
+    }
+
+    /** @internal */
+    private async _withRunScriptInternal(scriptName: string, args?: string[]): Promise<ViteAppResource> {
+        const rpcArgs: Record<string, unknown> = { resource: this._handle, scriptName };
+        if (args !== undefined) rpcArgs.args = args;
+        const result = await this._client.invokeCapability<ViteAppResourceHandle>(
+            'Aspire.Hosting.JavaScript/withRunScript',
+            rpcArgs
+        );
+        return new ViteAppResource(result, this._client);
+    }
+
+    /** Specifies an npm script to run during development */
+    withRunScript(scriptName: string, options?: WithRunScriptOptions): ViteAppResourcePromise {
+        const args = options?.args;
+        return new ViteAppResourcePromise(this._withRunScriptInternal(scriptName, args));
+    }
+
+    /** @internal */
+    private async _withBrowserDebuggerInternal(browser?: string): Promise<ViteAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle };
+        if (browser !== undefined) rpcArgs.browser = browser;
+        const result = await this._client.invokeCapability<ViteAppResourceHandle>(
+            'Aspire.Hosting.JavaScript/withBrowserDebugger',
+            rpcArgs
+        );
+        return new ViteAppResource(result, this._client);
+    }
+
+    /** Configures a browser debugger for the JavaScript application */
+    withBrowserDebugger(options?: WithBrowserDebuggerOptions): ViteAppResourcePromise {
+        const browser = options?.browser;
+        return new ViteAppResourcePromise(this._withBrowserDebuggerInternal(browser));
+    }
+
+}
+
+/**
+ * Thenable wrapper for ViteAppResource that enables fluent chaining.
+ * @example
+ * await builder.addSomething().withX().withY();
+ */
+export class ViteAppResourcePromise implements PromiseLike<ViteAppResource> {
+    constructor(private _promise: Promise<ViteAppResource>) {}
+
+    then<TResult1 = ViteAppResource, TResult2 = never>(
+        onfulfilled?: ((value: ViteAppResource) => TResult1 | PromiseLike<TResult1>) | null,
+        onrejected?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null
+    ): PromiseLike<TResult1 | TResult2> {
+        return this._promise.then(onfulfilled, onrejected);
+    }
+
+    /** Configures a resource to use a container registry */
+    withContainerRegistry(registry: ResourceBuilderBase): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._promise.then(obj => obj.withContainerRegistry(registry)));
+    }
+
+    /** Sets the base image for a Dockerfile build */
+    withDockerfileBaseImage(options?: WithDockerfileBaseImageOptions): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._promise.then(obj => obj.withDockerfileBaseImage(options)));
+    }
+
+    /** Publishes the executable as a Docker container */
+    publishAsDockerFile(): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._promise.then(obj => obj.publishAsDockerFile()));
+    }
+
+    /** Publishes an executable as a Docker file with optional container configuration */
+    publishAsDockerFileWithConfigure(configure: (obj: ContainerResource) => Promise<void>): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._promise.then(obj => obj.publishAsDockerFileWithConfigure(configure)));
+    }
+
+    /** Sets the executable command */
+    withExecutableCommand(command: string): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._promise.then(obj => obj.withExecutableCommand(command)));
+    }
+
+    /** Sets the executable working directory */
+    withWorkingDirectory(workingDirectory: string): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._promise.then(obj => obj.withWorkingDirectory(workingDirectory)));
+    }
+
+    /** Configures an MCP server endpoint on the resource */
+    withMcpServer(options?: WithMcpServerOptions): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._promise.then(obj => obj.withMcpServer(options)));
+    }
+
+    /** Configures OTLP telemetry export */
+    withOtlpExporter(): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._promise.then(obj => obj.withOtlpExporter()));
+    }
+
+    /** Configures OTLP telemetry export with specific protocol */
+    withOtlpExporterProtocol(protocol: OtlpProtocol): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._promise.then(obj => obj.withOtlpExporterProtocol(protocol)));
+    }
+
+    /** Adds a required command dependency */
+    withRequiredCommand(command: string, options?: WithRequiredCommandOptions): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._promise.then(obj => obj.withRequiredCommand(command, options)));
+    }
+
+    /** Sets environment variables via callback */
+    withEnvironmentCallback(callback: (arg: EnvironmentCallbackContext) => Promise<void>): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._promise.then(obj => obj.withEnvironmentCallback(callback)));
+    }
+
+    /** Sets an environment variable from an endpoint reference */
+    withEnvironmentEndpoint(name: string, endpointReference: EndpointReference): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._promise.then(obj => obj.withEnvironmentEndpoint(name, endpointReference)));
+    }
+
+    /** Sets an environment variable on the resource */
+    withEnvironment(name: string, value: string | ReferenceExpression | EndpointReference | ParameterResource | ResourceWithConnectionString): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._promise.then(obj => obj.withEnvironment(name, value)));
+    }
+
+    /** Sets an environment variable from a parameter resource */
+    withEnvironmentParameter(name: string, parameter: ParameterResource): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._promise.then(obj => obj.withEnvironmentParameter(name, parameter)));
+    }
+
+    /** Sets an environment variable from a connection string resource */
+    withEnvironmentConnectionString(envVarName: string, resource: ResourceBuilderBase): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._promise.then(obj => obj.withEnvironmentConnectionString(envVarName, resource)));
+    }
+
+    /** Adds arguments */
+    withArgs(args: string[]): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._promise.then(obj => obj.withArgs(args)));
+    }
+
+    /** Sets command-line arguments via callback */
+    withArgsCallback(callback: (obj: CommandLineArgsCallbackContext) => Promise<void>): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._promise.then(obj => obj.withArgsCallback(callback)));
+    }
+
+    /** Sets command-line arguments via async callback */
+    withArgsCallbackAsync(callback: (arg: CommandLineArgsCallbackContext) => Promise<void>): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._promise.then(obj => obj.withArgsCallbackAsync(callback)));
+    }
+
+    /** Adds a reference to another resource */
+    withReference(source: ResourceBuilderBase, options?: WithReferenceOptions): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._promise.then(obj => obj.withReference(source, options)));
+    }
+
+    /** Adds a reference to a URI */
+    withReferenceUri(name: string, uri: string): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._promise.then(obj => obj.withReferenceUri(name, uri)));
+    }
+
+    /** Adds a reference to an external service */
+    withReferenceExternalService(externalService: ExternalServiceResource): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._promise.then(obj => obj.withReferenceExternalService(externalService)));
+    }
+
+    /** Adds a reference to an endpoint */
+    withReferenceEndpoint(endpointReference: EndpointReference): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._promise.then(obj => obj.withReferenceEndpoint(endpointReference)));
+    }
+
+    /** Adds a network endpoint */
+    withEndpoint(options?: WithEndpointOptions): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._promise.then(obj => obj.withEndpoint(options)));
+    }
+
+    /** Adds an HTTP endpoint */
+    withHttpEndpoint(options?: WithHttpEndpointOptions): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._promise.then(obj => obj.withHttpEndpoint(options)));
+    }
+
+    /** Adds an HTTPS endpoint */
+    withHttpsEndpoint(options?: WithHttpsEndpointOptions): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._promise.then(obj => obj.withHttpsEndpoint(options)));
+    }
+
+    /** Makes HTTP endpoints externally accessible */
+    withExternalHttpEndpoints(): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._promise.then(obj => obj.withExternalHttpEndpoints()));
+    }
+
+    /** Gets an endpoint reference */
+    getEndpoint(name: string): Promise<EndpointReference> {
+        return this._promise.then(obj => obj.getEndpoint(name));
+    }
+
+    /** Configures resource for HTTP/2 */
+    asHttp2Service(): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._promise.then(obj => obj.asHttp2Service()));
+    }
+
+    /** Customizes displayed URLs via callback */
+    withUrlsCallback(callback: (obj: ResourceUrlsCallbackContext) => Promise<void>): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._promise.then(obj => obj.withUrlsCallback(callback)));
+    }
+
+    /** Customizes displayed URLs via async callback */
+    withUrlsCallbackAsync(callback: (arg: ResourceUrlsCallbackContext) => Promise<void>): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._promise.then(obj => obj.withUrlsCallbackAsync(callback)));
+    }
+
+    /** Adds or modifies displayed URLs */
+    withUrl(url: string, options?: WithUrlOptions): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._promise.then(obj => obj.withUrl(url, options)));
+    }
+
+    /** Adds a URL using a reference expression */
+    withUrlExpression(url: ReferenceExpression, options?: WithUrlExpressionOptions): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._promise.then(obj => obj.withUrlExpression(url, options)));
+    }
+
+    /** Customizes the URL for a specific endpoint via callback */
+    withUrlForEndpoint(endpointName: string, callback: (obj: ResourceUrlAnnotation) => Promise<void>): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._promise.then(obj => obj.withUrlForEndpoint(endpointName, callback)));
+    }
+
+    /** Adds a URL for a specific endpoint via factory callback */
+    withUrlForEndpointFactory(endpointName: string, callback: (arg: EndpointReference) => Promise<ResourceUrlAnnotation>): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._promise.then(obj => obj.withUrlForEndpointFactory(endpointName, callback)));
+    }
+
+    /** Sets the source directory for container files */
+    withContainerFilesSource(sourcePath: string): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._promise.then(obj => obj.withContainerFilesSource(sourcePath)));
+    }
+
+    /** Clears all container file sources */
+    clearContainerFilesSources(): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._promise.then(obj => obj.clearContainerFilesSources()));
+    }
+
+    /** Excludes the resource from the deployment manifest */
+    excludeFromManifest(): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._promise.then(obj => obj.excludeFromManifest()));
+    }
+
+    /** Waits for another resource to be ready */
+    waitFor(dependency: ResourceBuilderBase): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._promise.then(obj => obj.waitFor(dependency)));
+    }
+
+    /** Waits for another resource with specific behavior */
+    waitForWithBehavior(dependency: ResourceBuilderBase, waitBehavior: WaitBehavior): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._promise.then(obj => obj.waitForWithBehavior(dependency, waitBehavior)));
+    }
+
+    /** Waits for another resource to start */
+    waitForStart(dependency: ResourceBuilderBase): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._promise.then(obj => obj.waitForStart(dependency)));
+    }
+
+    /** Waits for another resource to start with specific behavior */
+    waitForStartWithBehavior(dependency: ResourceBuilderBase, waitBehavior: WaitBehavior): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._promise.then(obj => obj.waitForStartWithBehavior(dependency, waitBehavior)));
+    }
+
+    /** Prevents resource from starting automatically */
+    withExplicitStart(): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._promise.then(obj => obj.withExplicitStart()));
+    }
+
+    /** Waits for resource completion */
+    waitForCompletion(dependency: ResourceBuilderBase, options?: WaitForCompletionOptions): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._promise.then(obj => obj.waitForCompletion(dependency, options)));
+    }
+
+    /** Adds a health check by key */
+    withHealthCheck(key: string): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._promise.then(obj => obj.withHealthCheck(key)));
+    }
+
+    /** Adds an HTTP health check */
+    withHttpHealthCheck(options?: WithHttpHealthCheckOptions): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._promise.then(obj => obj.withHttpHealthCheck(options)));
+    }
+
+    /** Adds a resource command */
+    withCommand(name: string, displayName: string, executeCommand: (arg: ExecuteCommandContext) => Promise<ExecuteCommandResult>, options?: WithCommandOptions): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._promise.then(obj => obj.withCommand(name, displayName, executeCommand, options)));
+    }
+
+    /** Configures developer certificate trust */
+    withDeveloperCertificateTrust(trust: boolean): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._promise.then(obj => obj.withDeveloperCertificateTrust(trust)));
+    }
+
+    /** Sets the certificate trust scope */
+    withCertificateTrustScope(scope: CertificateTrustScope): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._promise.then(obj => obj.withCertificateTrustScope(scope)));
+    }
+
+    /** Configures HTTPS with a developer certificate */
+    withHttpsDeveloperCertificate(options?: WithHttpsDeveloperCertificateOptions): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._promise.then(obj => obj.withHttpsDeveloperCertificate(options)));
+    }
+
+    /** Removes HTTPS certificate configuration */
+    withoutHttpsCertificate(): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._promise.then(obj => obj.withoutHttpsCertificate()));
+    }
+
+    /** Sets the parent relationship */
+    withParentRelationship(parent: ResourceBuilderBase): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._promise.then(obj => obj.withParentRelationship(parent)));
+    }
+
+    /** Sets a child relationship */
+    withChildRelationship(child: ResourceBuilderBase): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._promise.then(obj => obj.withChildRelationship(child)));
+    }
+
+    /** Sets the icon for the resource */
+    withIconName(iconName: string, options?: WithIconNameOptions): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._promise.then(obj => obj.withIconName(iconName, options)));
+    }
+
+    /** Adds an HTTP health probe to the resource */
+    withHttpProbe(probeType: ProbeType, options?: WithHttpProbeOptions): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._promise.then(obj => obj.withHttpProbe(probeType, options)));
+    }
+
+    /** Excludes the resource from MCP server exposure */
+    excludeFromMcp(): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._promise.then(obj => obj.excludeFromMcp()));
+    }
+
+    /** Sets the remote image name for publishing */
+    withRemoteImageName(remoteImageName: string): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._promise.then(obj => obj.withRemoteImageName(remoteImageName)));
+    }
+
+    /** Sets the remote image tag for publishing */
+    withRemoteImageTag(remoteImageTag: string): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._promise.then(obj => obj.withRemoteImageTag(remoteImageTag)));
+    }
+
+    /** Adds a pipeline step to the resource */
+    withPipelineStepFactory(stepName: string, callback: (arg: PipelineStepContext) => Promise<void>, options?: WithPipelineStepFactoryOptions): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._promise.then(obj => obj.withPipelineStepFactory(stepName, callback, options)));
+    }
+
+    /** Configures pipeline step dependencies via an async callback */
+    withPipelineConfigurationAsync(callback: (arg: PipelineConfigurationContext) => Promise<void>): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._promise.then(obj => obj.withPipelineConfigurationAsync(callback)));
+    }
+
+    /** Configures pipeline step dependencies via a callback */
+    withPipelineConfiguration(callback: (obj: PipelineConfigurationContext) => Promise<void>): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._promise.then(obj => obj.withPipelineConfiguration(callback)));
+    }
+
+    /** Gets the resource name */
+    getResourceName(): Promise<string> {
+        return this._promise.then(obj => obj.getResourceName());
+    }
+
+    /** Subscribes to the BeforeResourceStarted event */
+    onBeforeResourceStarted(callback: (arg: BeforeResourceStartedEvent) => Promise<void>): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._promise.then(obj => obj.onBeforeResourceStarted(callback)));
+    }
+
+    /** Subscribes to the ResourceStopped event */
+    onResourceStopped(callback: (arg: ResourceStoppedEvent) => Promise<void>): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._promise.then(obj => obj.onResourceStopped(callback)));
+    }
+
+    /** Subscribes to the InitializeResource event */
+    onInitializeResource(callback: (arg: InitializeResourceEvent) => Promise<void>): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._promise.then(obj => obj.onInitializeResource(callback)));
+    }
+
+    /** Subscribes to the ResourceEndpointsAllocated event */
+    onResourceEndpointsAllocated(callback: (arg: ResourceEndpointsAllocatedEvent) => Promise<void>): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._promise.then(obj => obj.onResourceEndpointsAllocated(callback)));
+    }
+
+    /** Subscribes to the ResourceReady event */
+    onResourceReady(callback: (arg: ResourceReadyEvent) => Promise<void>): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._promise.then(obj => obj.onResourceReady(callback)));
+    }
+
+    /** Configures a custom Vite configuration file */
+    withViteConfig(configPath: string): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._promise.then(obj => obj.withViteConfig(configPath)));
+    }
+
+    /** Configures npm as the package manager */
+    withNpm(options?: WithNpmOptions): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._promise.then(obj => obj.withNpm(options)));
+    }
+
+    /** Configures Bun as the package manager */
+    withBun(options?: WithBunOptions): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._promise.then(obj => obj.withBun(options)));
+    }
+
+    /** Configures yarn as the package manager */
+    withYarn(options?: WithYarnOptions): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._promise.then(obj => obj.withYarn(options)));
+    }
+
+    /** Configures pnpm as the package manager */
+    withPnpm(options?: WithPnpmOptions): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._promise.then(obj => obj.withPnpm(options)));
+    }
+
+    /** Specifies an npm script to run before starting the application */
+    withBuildScript(scriptName: string, options?: WithBuildScriptOptions): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._promise.then(obj => obj.withBuildScript(scriptName, options)));
+    }
+
+    /** Specifies an npm script to run during development */
+    withRunScript(scriptName: string, options?: WithRunScriptOptions): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._promise.then(obj => obj.withRunScript(scriptName, options)));
+    }
+
+    /** Configures a browser debugger for the JavaScript application */
+    withBrowserDebugger(options?: WithBrowserDebuggerOptions): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._promise.then(obj => obj.withBrowserDebugger(options)));
+    }
+
+}
+
+// ============================================================================
+// ComputeResource
+// ============================================================================
+
+export class ComputeResource extends ResourceBuilderBase<IComputeResourceHandle> {
+    constructor(handle: IComputeResourceHandle, client: AspireClientRpc) {
+        super(handle, client);
+    }
+
+    /** @internal */
+    private async _withRemoteImageNameInternal(remoteImageName: string): Promise<ComputeResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, remoteImageName };
+        const result = await this._client.invokeCapability<IComputeResourceHandle>(
+            'Aspire.Hosting/withRemoteImageName',
+            rpcArgs
+        );
+        return new ComputeResource(result, this._client);
+    }
+
+    /** Sets the remote image name for publishing */
+    withRemoteImageName(remoteImageName: string): ComputeResourcePromise {
+        return new ComputeResourcePromise(this._withRemoteImageNameInternal(remoteImageName));
+    }
+
+    /** @internal */
+    private async _withRemoteImageTagInternal(remoteImageTag: string): Promise<ComputeResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, remoteImageTag };
+        const result = await this._client.invokeCapability<IComputeResourceHandle>(
+            'Aspire.Hosting/withRemoteImageTag',
+            rpcArgs
+        );
+        return new ComputeResource(result, this._client);
+    }
+
+    /** Sets the remote image tag for publishing */
+    withRemoteImageTag(remoteImageTag: string): ComputeResourcePromise {
+        return new ComputeResourcePromise(this._withRemoteImageTagInternal(remoteImageTag));
+    }
+
+}
+
+/**
+ * Thenable wrapper for ComputeResource that enables fluent chaining.
+ * @example
+ * await builder.addSomething().withX().withY();
+ */
+export class ComputeResourcePromise implements PromiseLike<ComputeResource> {
+    constructor(private _promise: Promise<ComputeResource>) {}
+
+    then<TResult1 = ComputeResource, TResult2 = never>(
+        onfulfilled?: ((value: ComputeResource) => TResult1 | PromiseLike<TResult1>) | null,
+        onrejected?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null
+    ): PromiseLike<TResult1 | TResult2> {
+        return this._promise.then(onfulfilled, onrejected);
+    }
+
+    /** Sets the remote image name for publishing */
+    withRemoteImageName(remoteImageName: string): ComputeResourcePromise {
+        return new ComputeResourcePromise(this._promise.then(obj => obj.withRemoteImageName(remoteImageName)));
+    }
+
+    /** Sets the remote image tag for publishing */
+    withRemoteImageTag(remoteImageTag: string): ComputeResourcePromise {
+        return new ComputeResourcePromise(this._promise.then(obj => obj.withRemoteImageTag(remoteImageTag)));
+    }
+
+}
+
+// ============================================================================
 // ContainerFilesDestinationResource
 // ============================================================================
 
@@ -26276,7 +35671,7 @@ export class ContainerFilesDestinationResource extends ResourceBuilderBase<ICont
     private async _publishWithContainerFilesInternal(source: ResourceBuilderBase, destinationPath: string): Promise<ContainerFilesDestinationResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, source, destinationPath };
         const result = await this._client.invokeCapability<IContainerFilesDestinationResourceHandle>(
-            'Aspire.Hosting/publishWithContainerFiles',
+            'Aspire.Hosting/publishWithContainerFilesFromResource',
             rpcArgs
         );
         return new ContainerFilesDestinationResource(result, this._client);
@@ -26535,7 +35930,7 @@ export class Resource extends ResourceBuilderBase<IResourceHandle> {
     private async _withParentRelationshipInternal(parent: ResourceBuilderBase): Promise<Resource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, parent };
         const result = await this._client.invokeCapability<IResourceHandle>(
-            'Aspire.Hosting/withParentRelationship',
+            'Aspire.Hosting/withBuilderParentRelationship',
             rpcArgs
         );
         return new Resource(result, this._client);
@@ -26550,7 +35945,7 @@ export class Resource extends ResourceBuilderBase<IResourceHandle> {
     private async _withChildRelationshipInternal(child: ResourceBuilderBase): Promise<Resource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, child };
         const result = await this._client.invokeCapability<IResourceHandle>(
-            'Aspire.Hosting/withChildRelationship',
+            'Aspire.Hosting/withBuilderChildRelationship',
             rpcArgs
         );
         return new Resource(result, this._client);
@@ -26591,36 +35986,6 @@ export class Resource extends ResourceBuilderBase<IResourceHandle> {
     /** Excludes the resource from MCP server exposure */
     excludeFromMcp(): ResourcePromise {
         return new ResourcePromise(this._excludeFromMcpInternal());
-    }
-
-    /** @internal */
-    private async _withRemoteImageNameInternal(remoteImageName: string): Promise<Resource> {
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, remoteImageName };
-        const result = await this._client.invokeCapability<IResourceHandle>(
-            'Aspire.Hosting/withRemoteImageName',
-            rpcArgs
-        );
-        return new Resource(result, this._client);
-    }
-
-    /** Sets the remote image name for publishing */
-    withRemoteImageName(remoteImageName: string): ResourcePromise {
-        return new ResourcePromise(this._withRemoteImageNameInternal(remoteImageName));
-    }
-
-    /** @internal */
-    private async _withRemoteImageTagInternal(remoteImageTag: string): Promise<Resource> {
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, remoteImageTag };
-        const result = await this._client.invokeCapability<IResourceHandle>(
-            'Aspire.Hosting/withRemoteImageTag',
-            rpcArgs
-        );
-        return new Resource(result, this._client);
-    }
-
-    /** Sets the remote image tag for publishing */
-    withRemoteImageTag(remoteImageTag: string): ResourcePromise {
-        return new ResourcePromise(this._withRemoteImageTagInternal(remoteImageTag));
     }
 
     /** @internal */
@@ -26698,6 +36063,86 @@ export class Resource extends ResourceBuilderBase<IResourceHandle> {
             'Aspire.Hosting/getResourceName',
             rpcArgs
         );
+    }
+
+    /** @internal */
+    private async _onBeforeResourceStartedInternal(callback: (arg: BeforeResourceStartedEvent) => Promise<void>): Promise<Resource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as BeforeResourceStartedEventHandle;
+            const arg = new BeforeResourceStartedEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<IResourceHandle>(
+            'Aspire.Hosting/onBeforeResourceStarted',
+            rpcArgs
+        );
+        return new Resource(result, this._client);
+    }
+
+    /** Subscribes to the BeforeResourceStarted event */
+    onBeforeResourceStarted(callback: (arg: BeforeResourceStartedEvent) => Promise<void>): ResourcePromise {
+        return new ResourcePromise(this._onBeforeResourceStartedInternal(callback));
+    }
+
+    /** @internal */
+    private async _onResourceStoppedInternal(callback: (arg: ResourceStoppedEvent) => Promise<void>): Promise<Resource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ResourceStoppedEventHandle;
+            const arg = new ResourceStoppedEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<IResourceHandle>(
+            'Aspire.Hosting/onResourceStopped',
+            rpcArgs
+        );
+        return new Resource(result, this._client);
+    }
+
+    /** Subscribes to the ResourceStopped event */
+    onResourceStopped(callback: (arg: ResourceStoppedEvent) => Promise<void>): ResourcePromise {
+        return new ResourcePromise(this._onResourceStoppedInternal(callback));
+    }
+
+    /** @internal */
+    private async _onInitializeResourceInternal(callback: (arg: InitializeResourceEvent) => Promise<void>): Promise<Resource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as InitializeResourceEventHandle;
+            const arg = new InitializeResourceEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<IResourceHandle>(
+            'Aspire.Hosting/onInitializeResource',
+            rpcArgs
+        );
+        return new Resource(result, this._client);
+    }
+
+    /** Subscribes to the InitializeResource event */
+    onInitializeResource(callback: (arg: InitializeResourceEvent) => Promise<void>): ResourcePromise {
+        return new ResourcePromise(this._onInitializeResourceInternal(callback));
+    }
+
+    /** @internal */
+    private async _onResourceReadyInternal(callback: (arg: ResourceReadyEvent) => Promise<void>): Promise<Resource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ResourceReadyEventHandle;
+            const arg = new ResourceReadyEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<IResourceHandle>(
+            'Aspire.Hosting/onResourceReady',
+            rpcArgs
+        );
+        return new Resource(result, this._client);
+    }
+
+    /** Subscribes to the ResourceReady event */
+    onResourceReady(callback: (arg: ResourceReadyEvent) => Promise<void>): ResourcePromise {
+        return new ResourcePromise(this._onResourceReadyInternal(callback));
     }
 
 }
@@ -26797,16 +36242,6 @@ export class ResourcePromise implements PromiseLike<Resource> {
         return new ResourcePromise(this._promise.then(obj => obj.excludeFromMcp()));
     }
 
-    /** Sets the remote image name for publishing */
-    withRemoteImageName(remoteImageName: string): ResourcePromise {
-        return new ResourcePromise(this._promise.then(obj => obj.withRemoteImageName(remoteImageName)));
-    }
-
-    /** Sets the remote image tag for publishing */
-    withRemoteImageTag(remoteImageTag: string): ResourcePromise {
-        return new ResourcePromise(this._promise.then(obj => obj.withRemoteImageTag(remoteImageTag)));
-    }
-
     /** Adds a pipeline step to the resource */
     withPipelineStepFactory(stepName: string, callback: (arg: PipelineStepContext) => Promise<void>, options?: WithPipelineStepFactoryOptions): ResourcePromise {
         return new ResourcePromise(this._promise.then(obj => obj.withPipelineStepFactory(stepName, callback, options)));
@@ -26825,6 +36260,26 @@ export class ResourcePromise implements PromiseLike<Resource> {
     /** Gets the resource name */
     getResourceName(): Promise<string> {
         return this._promise.then(obj => obj.getResourceName());
+    }
+
+    /** Subscribes to the BeforeResourceStarted event */
+    onBeforeResourceStarted(callback: (arg: BeforeResourceStartedEvent) => Promise<void>): ResourcePromise {
+        return new ResourcePromise(this._promise.then(obj => obj.onBeforeResourceStarted(callback)));
+    }
+
+    /** Subscribes to the ResourceStopped event */
+    onResourceStopped(callback: (arg: ResourceStoppedEvent) => Promise<void>): ResourcePromise {
+        return new ResourcePromise(this._promise.then(obj => obj.onResourceStopped(callback)));
+    }
+
+    /** Subscribes to the InitializeResource event */
+    onInitializeResource(callback: (arg: InitializeResourceEvent) => Promise<void>): ResourcePromise {
+        return new ResourcePromise(this._promise.then(obj => obj.onInitializeResource(callback)));
+    }
+
+    /** Subscribes to the ResourceReady event */
+    onResourceReady(callback: (arg: ResourceReadyEvent) => Promise<void>): ResourcePromise {
+        return new ResourcePromise(this._promise.then(obj => obj.onResourceReady(callback)));
     }
 
 }
@@ -26966,6 +36421,35 @@ export class ResourceWithConnectionString extends ResourceBuilderBase<IResourceW
         return new ResourceWithConnectionStringPromise(this._withConnectionPropertyValueInternal(name, value));
     }
 
+    /** Gets a connection property by key */
+    async getConnectionProperty(key: string): Promise<ReferenceExpression> {
+        const rpcArgs: Record<string, unknown> = { resource: this._handle, key };
+        return await this._client.invokeCapability<ReferenceExpression>(
+            'Aspire.Hosting/getConnectionProperty',
+            rpcArgs
+        );
+    }
+
+    /** @internal */
+    private async _onConnectionStringAvailableInternal(callback: (arg: ConnectionStringAvailableEvent) => Promise<void>): Promise<ResourceWithConnectionString> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ConnectionStringAvailableEventHandle;
+            const arg = new ConnectionStringAvailableEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<IResourceWithConnectionStringHandle>(
+            'Aspire.Hosting/onConnectionStringAvailable',
+            rpcArgs
+        );
+        return new ResourceWithConnectionString(result, this._client);
+    }
+
+    /** Subscribes to the ConnectionStringAvailable event */
+    onConnectionStringAvailable(callback: (arg: ConnectionStringAvailableEvent) => Promise<void>): ResourceWithConnectionStringPromise {
+        return new ResourceWithConnectionStringPromise(this._onConnectionStringAvailableInternal(callback));
+    }
+
 }
 
 /**
@@ -26991,6 +36475,16 @@ export class ResourceWithConnectionStringPromise implements PromiseLike<Resource
     /** Adds a connection property with a string value */
     withConnectionPropertyValue(name: string, value: string): ResourceWithConnectionStringPromise {
         return new ResourceWithConnectionStringPromise(this._promise.then(obj => obj.withConnectionPropertyValue(name, value)));
+    }
+
+    /** Gets a connection property by key */
+    getConnectionProperty(key: string): Promise<ReferenceExpression> {
+        return this._promise.then(obj => obj.getConnectionProperty(key));
+    }
+
+    /** Subscribes to the ConnectionStringAvailable event */
+    onConnectionStringAvailable(callback: (arg: ConnectionStringAvailableEvent) => Promise<void>): ResourceWithConnectionStringPromise {
+        return new ResourceWithConnectionStringPromise(this._promise.then(obj => obj.onConnectionStringAvailable(callback)));
     }
 
 }
@@ -27281,6 +36775,26 @@ export class ResourceWithEndpoints extends ResourceBuilderBase<IResourceWithEndp
         return new ResourceWithEndpointsPromise(this._withHttpProbeInternal(probeType, path, initialDelaySeconds, periodSeconds, timeoutSeconds, failureThreshold, successThreshold, endpointName));
     }
 
+    /** @internal */
+    private async _onResourceEndpointsAllocatedInternal(callback: (arg: ResourceEndpointsAllocatedEvent) => Promise<void>): Promise<ResourceWithEndpoints> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ResourceEndpointsAllocatedEventHandle;
+            const arg = new ResourceEndpointsAllocatedEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<IResourceWithEndpointsHandle>(
+            'Aspire.Hosting/onResourceEndpointsAllocated',
+            rpcArgs
+        );
+        return new ResourceWithEndpoints(result, this._client);
+    }
+
+    /** Subscribes to the ResourceEndpointsAllocated event */
+    onResourceEndpointsAllocated(callback: (arg: ResourceEndpointsAllocatedEvent) => Promise<void>): ResourceWithEndpointsPromise {
+        return new ResourceWithEndpointsPromise(this._onResourceEndpointsAllocatedInternal(callback));
+    }
+
 }
 
 /**
@@ -27348,6 +36862,11 @@ export class ResourceWithEndpointsPromise implements PromiseLike<ResourceWithEnd
         return new ResourceWithEndpointsPromise(this._promise.then(obj => obj.withHttpProbe(probeType, options)));
     }
 
+    /** Subscribes to the ResourceEndpointsAllocated event */
+    onResourceEndpointsAllocated(callback: (arg: ResourceEndpointsAllocatedEvent) => Promise<void>): ResourceWithEndpointsPromise {
+        return new ResourceWithEndpointsPromise(this._promise.then(obj => obj.onResourceEndpointsAllocated(callback)));
+    }
+
 }
 
 // ============================================================================
@@ -27390,41 +36909,11 @@ export class ResourceWithEnvironment extends ResourceBuilderBase<IResourceWithEn
     }
 
     /** @internal */
-    private async _withEnvironmentInternal(name: string, value: string): Promise<ResourceWithEnvironment> {
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, name, value };
-        const result = await this._client.invokeCapability<IResourceWithEnvironmentHandle>(
-            'Aspire.Hosting/withEnvironment',
-            rpcArgs
-        );
-        return new ResourceWithEnvironment(result, this._client);
-    }
-
-    /** Sets an environment variable */
-    withEnvironment(name: string, value: string): ResourceWithEnvironmentPromise {
-        return new ResourceWithEnvironmentPromise(this._withEnvironmentInternal(name, value));
-    }
-
-    /** @internal */
-    private async _withEnvironmentExpressionInternal(name: string, value: ReferenceExpression): Promise<ResourceWithEnvironment> {
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, name, value };
-        const result = await this._client.invokeCapability<IResourceWithEnvironmentHandle>(
-            'Aspire.Hosting/withEnvironmentExpression',
-            rpcArgs
-        );
-        return new ResourceWithEnvironment(result, this._client);
-    }
-
-    /** Adds an environment variable with a reference expression */
-    withEnvironmentExpression(name: string, value: ReferenceExpression): ResourceWithEnvironmentPromise {
-        return new ResourceWithEnvironmentPromise(this._withEnvironmentExpressionInternal(name, value));
-    }
-
-    /** @internal */
-    private async _withEnvironmentCallbackInternal(callback: (obj: EnvironmentCallbackContext) => Promise<void>): Promise<ResourceWithEnvironment> {
-        const callbackId = registerCallback(async (objData: unknown) => {
-            const objHandle = wrapIfHandle(objData) as EnvironmentCallbackContextHandle;
-            const obj = new EnvironmentCallbackContext(objHandle, this._client);
-            await callback(obj);
+    private async _withEnvironmentCallbackInternal(callback: (arg: EnvironmentCallbackContext) => Promise<void>): Promise<ResourceWithEnvironment> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as EnvironmentCallbackContextHandle;
+            const arg = new EnvironmentCallbackContext(argHandle, this._client);
+            await callback(arg);
         });
         const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
         const result = await this._client.invokeCapability<IResourceWithEnvironmentHandle>(
@@ -27435,28 +36924,8 @@ export class ResourceWithEnvironment extends ResourceBuilderBase<IResourceWithEn
     }
 
     /** Sets environment variables via callback */
-    withEnvironmentCallback(callback: (obj: EnvironmentCallbackContext) => Promise<void>): ResourceWithEnvironmentPromise {
+    withEnvironmentCallback(callback: (arg: EnvironmentCallbackContext) => Promise<void>): ResourceWithEnvironmentPromise {
         return new ResourceWithEnvironmentPromise(this._withEnvironmentCallbackInternal(callback));
-    }
-
-    /** @internal */
-    private async _withEnvironmentCallbackAsyncInternal(callback: (arg: EnvironmentCallbackContext) => Promise<void>): Promise<ResourceWithEnvironment> {
-        const callbackId = registerCallback(async (argData: unknown) => {
-            const argHandle = wrapIfHandle(argData) as EnvironmentCallbackContextHandle;
-            const arg = new EnvironmentCallbackContext(argHandle, this._client);
-            await callback(arg);
-        });
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
-        const result = await this._client.invokeCapability<IResourceWithEnvironmentHandle>(
-            'Aspire.Hosting/withEnvironmentCallbackAsync',
-            rpcArgs
-        );
-        return new ResourceWithEnvironment(result, this._client);
-    }
-
-    /** Sets environment variables via async callback */
-    withEnvironmentCallbackAsync(callback: (arg: EnvironmentCallbackContext) => Promise<void>): ResourceWithEnvironmentPromise {
-        return new ResourceWithEnvironmentPromise(this._withEnvironmentCallbackAsyncInternal(callback));
     }
 
     /** @internal */
@@ -27472,6 +36941,21 @@ export class ResourceWithEnvironment extends ResourceBuilderBase<IResourceWithEn
     /** Sets an environment variable from an endpoint reference */
     withEnvironmentEndpoint(name: string, endpointReference: EndpointReference): ResourceWithEnvironmentPromise {
         return new ResourceWithEnvironmentPromise(this._withEnvironmentEndpointInternal(name, endpointReference));
+    }
+
+    /** @internal */
+    private async _withEnvironmentInternal(name: string, value: string | ReferenceExpression | EndpointReference | ParameterResource | ResourceWithConnectionString): Promise<ResourceWithEnvironment> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, name, value };
+        const result = await this._client.invokeCapability<IResourceWithEnvironmentHandle>(
+            'Aspire.Hosting/withEnvironment',
+            rpcArgs
+        );
+        return new ResourceWithEnvironment(result, this._client);
+    }
+
+    /** Sets an environment variable on the resource */
+    withEnvironment(name: string, value: string | ReferenceExpression | EndpointReference | ParameterResource | ResourceWithConnectionString): ResourceWithEnvironmentPromise {
+        return new ResourceWithEnvironmentPromise(this._withEnvironmentInternal(name, value));
     }
 
     /** @internal */
@@ -27505,10 +36989,11 @@ export class ResourceWithEnvironment extends ResourceBuilderBase<IResourceWithEn
     }
 
     /** @internal */
-    private async _withReferenceInternal(source: ResourceBuilderBase, connectionName?: string, optional?: boolean): Promise<ResourceWithEnvironment> {
+    private async _withReferenceInternal(source: ResourceBuilderBase, connectionName?: string, optional?: boolean, name?: string): Promise<ResourceWithEnvironment> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, source };
         if (connectionName !== undefined) rpcArgs.connectionName = connectionName;
         if (optional !== undefined) rpcArgs.optional = optional;
+        if (name !== undefined) rpcArgs.name = name;
         const result = await this._client.invokeCapability<IResourceWithEnvironmentHandle>(
             'Aspire.Hosting/withReference',
             rpcArgs
@@ -27520,37 +37005,8 @@ export class ResourceWithEnvironment extends ResourceBuilderBase<IResourceWithEn
     withReference(source: ResourceBuilderBase, options?: WithReferenceOptions): ResourceWithEnvironmentPromise {
         const connectionName = options?.connectionName;
         const optional = options?.optional;
-        return new ResourceWithEnvironmentPromise(this._withReferenceInternal(source, connectionName, optional));
-    }
-
-    /** @internal */
-    private async _withServiceReferenceInternal(source: ResourceBuilderBase): Promise<ResourceWithEnvironment> {
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, source };
-        const result = await this._client.invokeCapability<IResourceWithEnvironmentHandle>(
-            'Aspire.Hosting/withServiceReference',
-            rpcArgs
-        );
-        return new ResourceWithEnvironment(result, this._client);
-    }
-
-    /** Adds a service discovery reference to another resource */
-    withServiceReference(source: ResourceBuilderBase): ResourceWithEnvironmentPromise {
-        return new ResourceWithEnvironmentPromise(this._withServiceReferenceInternal(source));
-    }
-
-    /** @internal */
-    private async _withServiceReferenceNamedInternal(source: ResourceBuilderBase, name: string): Promise<ResourceWithEnvironment> {
-        const rpcArgs: Record<string, unknown> = { builder: this._handle, source, name };
-        const result = await this._client.invokeCapability<IResourceWithEnvironmentHandle>(
-            'Aspire.Hosting/withServiceReferenceNamed',
-            rpcArgs
-        );
-        return new ResourceWithEnvironment(result, this._client);
-    }
-
-    /** Adds a named service discovery reference */
-    withServiceReferenceNamed(source: ResourceBuilderBase, name: string): ResourceWithEnvironmentPromise {
-        return new ResourceWithEnvironmentPromise(this._withServiceReferenceNamedInternal(source, name));
+        const name = options?.name;
+        return new ResourceWithEnvironmentPromise(this._withReferenceInternal(source, connectionName, optional, name));
     }
 
     /** @internal */
@@ -27633,7 +37089,7 @@ export class ResourceWithEnvironment extends ResourceBuilderBase<IResourceWithEn
         const rpcArgs: Record<string, unknown> = { builder: this._handle };
         if (password !== undefined) rpcArgs.password = password;
         const result = await this._client.invokeCapability<IResourceWithEnvironmentHandle>(
-            'Aspire.Hosting/withHttpsDeveloperCertificate',
+            'Aspire.Hosting/withParameterHttpsDeveloperCertificate',
             rpcArgs
         );
         return new ResourceWithEnvironment(result, this._client);
@@ -27687,29 +37143,19 @@ export class ResourceWithEnvironmentPromise implements PromiseLike<ResourceWithE
         return new ResourceWithEnvironmentPromise(this._promise.then(obj => obj.withOtlpExporterProtocol(protocol)));
     }
 
-    /** Sets an environment variable */
-    withEnvironment(name: string, value: string): ResourceWithEnvironmentPromise {
-        return new ResourceWithEnvironmentPromise(this._promise.then(obj => obj.withEnvironment(name, value)));
-    }
-
-    /** Adds an environment variable with a reference expression */
-    withEnvironmentExpression(name: string, value: ReferenceExpression): ResourceWithEnvironmentPromise {
-        return new ResourceWithEnvironmentPromise(this._promise.then(obj => obj.withEnvironmentExpression(name, value)));
-    }
-
     /** Sets environment variables via callback */
-    withEnvironmentCallback(callback: (obj: EnvironmentCallbackContext) => Promise<void>): ResourceWithEnvironmentPromise {
+    withEnvironmentCallback(callback: (arg: EnvironmentCallbackContext) => Promise<void>): ResourceWithEnvironmentPromise {
         return new ResourceWithEnvironmentPromise(this._promise.then(obj => obj.withEnvironmentCallback(callback)));
-    }
-
-    /** Sets environment variables via async callback */
-    withEnvironmentCallbackAsync(callback: (arg: EnvironmentCallbackContext) => Promise<void>): ResourceWithEnvironmentPromise {
-        return new ResourceWithEnvironmentPromise(this._promise.then(obj => obj.withEnvironmentCallbackAsync(callback)));
     }
 
     /** Sets an environment variable from an endpoint reference */
     withEnvironmentEndpoint(name: string, endpointReference: EndpointReference): ResourceWithEnvironmentPromise {
         return new ResourceWithEnvironmentPromise(this._promise.then(obj => obj.withEnvironmentEndpoint(name, endpointReference)));
+    }
+
+    /** Sets an environment variable on the resource */
+    withEnvironment(name: string, value: string | ReferenceExpression | EndpointReference | ParameterResource | ResourceWithConnectionString): ResourceWithEnvironmentPromise {
+        return new ResourceWithEnvironmentPromise(this._promise.then(obj => obj.withEnvironment(name, value)));
     }
 
     /** Sets an environment variable from a parameter resource */
@@ -27725,16 +37171,6 @@ export class ResourceWithEnvironmentPromise implements PromiseLike<ResourceWithE
     /** Adds a reference to another resource */
     withReference(source: ResourceBuilderBase, options?: WithReferenceOptions): ResourceWithEnvironmentPromise {
         return new ResourceWithEnvironmentPromise(this._promise.then(obj => obj.withReference(source, options)));
-    }
-
-    /** Adds a service discovery reference to another resource */
-    withServiceReference(source: ResourceBuilderBase): ResourceWithEnvironmentPromise {
-        return new ResourceWithEnvironmentPromise(this._promise.then(obj => obj.withServiceReference(source)));
-    }
-
-    /** Adds a named service discovery reference */
-    withServiceReferenceNamed(source: ResourceBuilderBase, name: string): ResourceWithEnvironmentPromise {
-        return new ResourceWithEnvironmentPromise(this._promise.then(obj => obj.withServiceReferenceNamed(source, name)));
     }
 
     /** Adds a reference to a URI */
@@ -27775,34 +37211,6 @@ export class ResourceWithEnvironmentPromise implements PromiseLike<ResourceWithE
 }
 
 // ============================================================================
-// ResourceWithServiceDiscovery
-// ============================================================================
-
-export class ResourceWithServiceDiscovery extends ResourceBuilderBase<IResourceWithServiceDiscoveryHandle> {
-    constructor(handle: IResourceWithServiceDiscoveryHandle, client: AspireClientRpc) {
-        super(handle, client);
-    }
-
-}
-
-/**
- * Thenable wrapper for ResourceWithServiceDiscovery that enables fluent chaining.
- * @example
- * await builder.addSomething().withX().withY();
- */
-export class ResourceWithServiceDiscoveryPromise implements PromiseLike<ResourceWithServiceDiscovery> {
-    constructor(private _promise: Promise<ResourceWithServiceDiscovery>) {}
-
-    then<TResult1 = ResourceWithServiceDiscovery, TResult2 = never>(
-        onfulfilled?: ((value: ResourceWithServiceDiscovery) => TResult1 | PromiseLike<TResult1>) | null,
-        onrejected?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null
-    ): PromiseLike<TResult1 | TResult2> {
-        return this._promise.then(onfulfilled, onrejected);
-    }
-
-}
-
-// ============================================================================
 // ResourceWithWaitSupport
 // ============================================================================
 
@@ -27815,7 +37223,7 @@ export class ResourceWithWaitSupport extends ResourceBuilderBase<IResourceWithWa
     private async _waitForInternal(dependency: ResourceBuilderBase): Promise<ResourceWithWaitSupport> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, dependency };
         const result = await this._client.invokeCapability<IResourceWithWaitSupportHandle>(
-            'Aspire.Hosting/waitFor',
+            'Aspire.Hosting/waitForResource',
             rpcArgs
         );
         return new ResourceWithWaitSupport(result, this._client);
@@ -27845,7 +37253,7 @@ export class ResourceWithWaitSupport extends ResourceBuilderBase<IResourceWithWa
     private async _waitForStartInternal(dependency: ResourceBuilderBase): Promise<ResourceWithWaitSupport> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, dependency };
         const result = await this._client.invokeCapability<IResourceWithWaitSupportHandle>(
-            'Aspire.Hosting/waitForStart',
+            'Aspire.Hosting/waitForResourceStart',
             rpcArgs
         );
         return new ResourceWithWaitSupport(result, this._client);
@@ -27876,7 +37284,7 @@ export class ResourceWithWaitSupport extends ResourceBuilderBase<IResourceWithWa
         const rpcArgs: Record<string, unknown> = { builder: this._handle, dependency };
         if (exitCode !== undefined) rpcArgs.exitCode = exitCode;
         const result = await this._client.invokeCapability<IResourceWithWaitSupportHandle>(
-            'Aspire.Hosting/waitForCompletion',
+            'Aspire.Hosting/waitForResourceCompletion',
             rpcArgs
         );
         return new ResourceWithWaitSupport(result, this._client);
@@ -27995,7 +37403,7 @@ export async function createBuilder(options?: CreateBuilderOptions): Promise<Dis
 }
 
 // Re-export commonly used types
-export { Handle, CapabilityError, registerCallback } from './transport.js';
+export { Handle, AppHostUsageError, CancellationToken, CapabilityError, registerCallback } from './transport.js';
 export { refExpr, ReferenceExpression } from './base.js';
 
 // ============================================================================
@@ -28009,7 +37417,9 @@ export { refExpr, ReferenceExpression } from './base.js';
 process.on('unhandledRejection', (reason: unknown) => {
     const error = reason instanceof Error ? reason : new Error(String(reason));
 
-    if (reason instanceof CapabilityError) {
+    if (reason instanceof AppHostUsageError) {
+        console.error(`\n❌ AppHost Error: ${error.message}`);
+    } else if (reason instanceof CapabilityError) {
         console.error(`\n❌ Capability Error: ${error.message}`);
         console.error(`   Code: ${(reason as CapabilityError).code}`);
         if ((reason as CapabilityError).capability) {
@@ -28026,8 +37436,12 @@ process.on('unhandledRejection', (reason: unknown) => {
 });
 
 process.on('uncaughtException', (error: Error) => {
-    console.error(`\n❌ Uncaught Exception: ${error.message}`);
-    if (error.stack) {
+    if (error instanceof AppHostUsageError) {
+        console.error(`\n❌ AppHost Error: ${error.message}`);
+    } else {
+        console.error(`\n❌ Uncaught Exception: ${error.message}`);
+    }
+    if (!(error instanceof AppHostUsageError) && error.stack) {
         console.error(error.stack);
     }
     process.exit(1);
@@ -28038,21 +37452,44 @@ process.on('uncaughtException', (error: Error) => {
 // ============================================================================
 
 // Register wrapper factories for typed handle wrapping in callbacks
+registerHandleWrapper('Aspire.Hosting/Aspire.Hosting.ApplicationModel.AfterResourcesCreatedEvent', (handle, client) => new AfterResourcesCreatedEvent(handle as AfterResourcesCreatedEventHandle, client));
+registerHandleWrapper('Aspire.Hosting/Aspire.Hosting.ApplicationModel.BeforeResourceStartedEvent', (handle, client) => new BeforeResourceStartedEvent(handle as BeforeResourceStartedEventHandle, client));
+registerHandleWrapper('Aspire.Hosting/Aspire.Hosting.ApplicationModel.BeforeStartEvent', (handle, client) => new BeforeStartEvent(handle as BeforeStartEventHandle, client));
 registerHandleWrapper('Aspire.Hosting/Aspire.Hosting.ApplicationModel.CommandLineArgsCallbackContext', (handle, client) => new CommandLineArgsCallbackContext(handle as CommandLineArgsCallbackContextHandle, client));
+registerHandleWrapper('Aspire.Hosting/Aspire.Hosting.ApplicationModel.ConnectionStringAvailableEvent', (handle, client) => new ConnectionStringAvailableEvent(handle as ConnectionStringAvailableEventHandle, client));
 registerHandleWrapper('Aspire.Hosting/Aspire.Hosting.DistributedApplication', (handle, client) => new DistributedApplication(handle as DistributedApplicationHandle, client));
 registerHandleWrapper('Aspire.Hosting/Aspire.Hosting.DistributedApplicationExecutionContext', (handle, client) => new DistributedApplicationExecutionContext(handle as DistributedApplicationExecutionContextHandle, client));
+registerHandleWrapper('Aspire.Hosting/Aspire.Hosting.ApplicationModel.DistributedApplicationModel', (handle, client) => new DistributedApplicationModel(handle as DistributedApplicationModelHandle, client));
 registerHandleWrapper('Aspire.Hosting/Aspire.Hosting.ApplicationModel.EndpointReference', (handle, client) => new EndpointReference(handle as EndpointReferenceHandle, client));
 registerHandleWrapper('Aspire.Hosting/Aspire.Hosting.ApplicationModel.EndpointReferenceExpression', (handle, client) => new EndpointReferenceExpression(handle as EndpointReferenceExpressionHandle, client));
 registerHandleWrapper('Aspire.Hosting/Aspire.Hosting.ApplicationModel.EnvironmentCallbackContext', (handle, client) => new EnvironmentCallbackContext(handle as EnvironmentCallbackContextHandle, client));
 registerHandleWrapper('Aspire.Hosting/Aspire.Hosting.ApplicationModel.ExecuteCommandContext', (handle, client) => new ExecuteCommandContext(handle as ExecuteCommandContextHandle, client));
+registerHandleWrapper('Aspire.Hosting/Aspire.Hosting.ApplicationModel.InitializeResourceEvent', (handle, client) => new InitializeResourceEvent(handle as InitializeResourceEventHandle, client));
 registerHandleWrapper('Aspire.Hosting/Aspire.Hosting.Pipelines.PipelineConfigurationContext', (handle, client) => new PipelineConfigurationContext(handle as PipelineConfigurationContextHandle, client));
+registerHandleWrapper('Aspire.Hosting/Aspire.Hosting.Pipelines.PipelineContext', (handle, client) => new PipelineContext(handle as PipelineContextHandle, client));
 registerHandleWrapper('Aspire.Hosting/Aspire.Hosting.Pipelines.PipelineStep', (handle, client) => new PipelineStep(handle as PipelineStepHandle, client));
 registerHandleWrapper('Aspire.Hosting/Aspire.Hosting.Pipelines.PipelineStepContext', (handle, client) => new PipelineStepContext(handle as PipelineStepContextHandle, client));
+registerHandleWrapper('Aspire.Hosting/Aspire.Hosting.Pipelines.PipelineStepFactoryContext', (handle, client) => new PipelineStepFactoryContext(handle as PipelineStepFactoryContextHandle, client));
+registerHandleWrapper('Aspire.Hosting/Aspire.Hosting.Pipelines.PipelineSummary', (handle, client) => new PipelineSummary(handle as PipelineSummaryHandle, client));
 registerHandleWrapper('Aspire.Hosting/Aspire.Hosting.ProjectResourceOptions', (handle, client) => new ProjectResourceOptions(handle as ProjectResourceOptionsHandle, client));
 registerHandleWrapper('Aspire.Hosting/Aspire.Hosting.ApplicationModel.ReferenceExpressionBuilder', (handle, client) => new ReferenceExpressionBuilder(handle as ReferenceExpressionBuilderHandle, client));
+registerHandleWrapper('Aspire.Hosting/Aspire.Hosting.ApplicationModel.ResourceEndpointsAllocatedEvent', (handle, client) => new ResourceEndpointsAllocatedEvent(handle as ResourceEndpointsAllocatedEventHandle, client));
+registerHandleWrapper('Aspire.Hosting/Aspire.Hosting.ApplicationModel.ResourceLoggerService', (handle, client) => new ResourceLoggerService(handle as ResourceLoggerServiceHandle, client));
+registerHandleWrapper('Aspire.Hosting/Aspire.Hosting.ApplicationModel.ResourceNotificationService', (handle, client) => new ResourceNotificationService(handle as ResourceNotificationServiceHandle, client));
+registerHandleWrapper('Aspire.Hosting/Aspire.Hosting.ApplicationModel.ResourceReadyEvent', (handle, client) => new ResourceReadyEvent(handle as ResourceReadyEventHandle, client));
+registerHandleWrapper('Aspire.Hosting/Aspire.Hosting.ApplicationModel.ResourceStoppedEvent', (handle, client) => new ResourceStoppedEvent(handle as ResourceStoppedEventHandle, client));
 registerHandleWrapper('Aspire.Hosting/Aspire.Hosting.ApplicationModel.ResourceUrlsCallbackContext', (handle, client) => new ResourceUrlsCallbackContext(handle as ResourceUrlsCallbackContextHandle, client));
+registerHandleWrapper('Aspire.Hosting/Aspire.Hosting.ApplicationModel.UpdateCommandStateContext', (handle, client) => new UpdateCommandStateContext(handle as UpdateCommandStateContextHandle, client));
+registerHandleWrapper('Microsoft.Extensions.Configuration.Abstractions/Microsoft.Extensions.Configuration.IConfiguration', (handle, client) => new Configuration(handle as IConfigurationHandle, client));
 registerHandleWrapper('Aspire.Hosting/Aspire.Hosting.IDistributedApplicationBuilder', (handle, client) => new DistributedApplicationBuilder(handle as IDistributedApplicationBuilderHandle, client));
 registerHandleWrapper('Aspire.Hosting/Aspire.Hosting.Eventing.IDistributedApplicationEventing', (handle, client) => new DistributedApplicationEventing(handle as IDistributedApplicationEventingHandle, client));
+registerHandleWrapper('Microsoft.Extensions.Hosting.Abstractions/Microsoft.Extensions.Hosting.IHostEnvironment', (handle, client) => new HostEnvironment(handle as IHostEnvironmentHandle, client));
+registerHandleWrapper('Microsoft.Extensions.Logging.Abstractions/Microsoft.Extensions.Logging.ILogger', (handle, client) => new Logger(handle as ILoggerHandle, client));
+registerHandleWrapper('Microsoft.Extensions.Logging.Abstractions/Microsoft.Extensions.Logging.ILoggerFactory', (handle, client) => new LoggerFactory(handle as ILoggerFactoryHandle, client));
+registerHandleWrapper('Aspire.Hosting/Aspire.Hosting.Pipelines.IReportingStep', (handle, client) => new ReportingStep(handle as IReportingStepHandle, client));
+registerHandleWrapper('Aspire.Hosting/Aspire.Hosting.Pipelines.IReportingTask', (handle, client) => new ReportingTask(handle as IReportingTaskHandle, client));
+registerHandleWrapper('System.ComponentModel/System.IServiceProvider', (handle, client) => new ServiceProvider(handle as IServiceProviderHandle, client));
+registerHandleWrapper('Aspire.Hosting/Aspire.Hosting.IUserSecretsManager', (handle, client) => new UserSecretsManager(handle as IUserSecretsManagerHandle, client));
 registerHandleWrapper('Aspire.Hosting/Aspire.Hosting.ConnectionStringResource', (handle, client) => new ConnectionStringResource(handle as ConnectionStringResourceHandle, client));
 registerHandleWrapper('Aspire.Hosting/Aspire.Hosting.ApplicationModel.ContainerRegistryResource', (handle, client) => new ContainerRegistryResource(handle as ContainerRegistryResourceHandle, client));
 registerHandleWrapper('Aspire.Hosting/Aspire.Hosting.ApplicationModel.ContainerResource', (handle, client) => new ContainerResource(handle as ContainerResourceHandle, client));
@@ -28060,8 +37497,10 @@ registerHandleWrapper('Aspire.Hosting/Aspire.Hosting.ApplicationModel.CSharpAppR
 registerHandleWrapper('Aspire.Hosting/Aspire.Hosting.ApplicationModel.DotnetToolResource', (handle, client) => new DotnetToolResource(handle as DotnetToolResourceHandle, client));
 registerHandleWrapper('Aspire.Hosting/Aspire.Hosting.ApplicationModel.ExecutableResource', (handle, client) => new ExecutableResource(handle as ExecutableResourceHandle, client));
 registerHandleWrapper('Aspire.Hosting/Aspire.Hosting.ExternalServiceResource', (handle, client) => new ExternalServiceResource(handle as ExternalServiceResourceHandle, client));
+registerHandleWrapper('Aspire.Hosting.JavaScript/Aspire.Hosting.JavaScript.JavaScriptAppResource', (handle, client) => new JavaScriptAppResource(handle as JavaScriptAppResourceHandle, client));
 registerHandleWrapper('Aspire.Hosting.MySql/Aspire.Hosting.ApplicationModel.MySqlDatabaseResource', (handle, client) => new MySqlDatabaseResource(handle as MySqlDatabaseResourceHandle, client));
 registerHandleWrapper('Aspire.Hosting.MySql/Aspire.Hosting.ApplicationModel.MySqlServerResource', (handle, client) => new MySqlServerResource(handle as MySqlServerResourceHandle, client));
+registerHandleWrapper('Aspire.Hosting.JavaScript/Aspire.Hosting.JavaScript.NodeAppResource', (handle, client) => new NodeAppResource(handle as NodeAppResourceHandle, client));
 registerHandleWrapper('Aspire.Hosting/Aspire.Hosting.ApplicationModel.ParameterResource', (handle, client) => new ParameterResource(handle as ParameterResourceHandle, client));
 registerHandleWrapper('Aspire.Hosting.PostgreSQL/Aspire.Hosting.Postgres.PgAdminContainerResource', (handle, client) => new PgAdminContainerResource(handle as PgAdminContainerResourceHandle, client));
 registerHandleWrapper('Aspire.Hosting.PostgreSQL/Aspire.Hosting.Postgres.PgWebContainerResource', (handle, client) => new PgWebContainerResource(handle as PgWebContainerResourceHandle, client));
@@ -28072,6 +37511,8 @@ registerHandleWrapper('Aspire.Hosting.PostgreSQL/Aspire.Hosting.ApplicationModel
 registerHandleWrapper('Aspire.Hosting/Aspire.Hosting.ApplicationModel.ProjectResource', (handle, client) => new ProjectResource(handle as ProjectResourceHandle, client));
 registerHandleWrapper('Aspire.Hosting.SqlServer/Aspire.Hosting.ApplicationModel.SqlServerDatabaseResource', (handle, client) => new SqlServerDatabaseResource(handle as SqlServerDatabaseResourceHandle, client));
 registerHandleWrapper('Aspire.Hosting.SqlServer/Aspire.Hosting.ApplicationModel.SqlServerServerResource', (handle, client) => new SqlServerServerResource(handle as SqlServerServerResourceHandle, client));
+registerHandleWrapper('Aspire.Hosting.JavaScript/Aspire.Hosting.JavaScript.ViteAppResource', (handle, client) => new ViteAppResource(handle as ViteAppResourceHandle, client));
+registerHandleWrapper('Aspire.Hosting/Aspire.Hosting.ApplicationModel.IComputeResource', (handle, client) => new ComputeResource(handle as IComputeResourceHandle, client));
 registerHandleWrapper('Aspire.Hosting/Aspire.Hosting.ApplicationModel.IContainerFilesDestinationResource', (handle, client) => new ContainerFilesDestinationResource(handle as IContainerFilesDestinationResourceHandle, client));
 registerHandleWrapper('Aspire.Hosting/Aspire.Hosting.ApplicationModel.IResource', (handle, client) => new Resource(handle as IResourceHandle, client));
 registerHandleWrapper('Aspire.Hosting/Aspire.Hosting.ApplicationModel.IResourceWithArgs', (handle, client) => new ResourceWithArgs(handle as IResourceWithArgsHandle, client));
@@ -28079,6 +37520,5 @@ registerHandleWrapper('Aspire.Hosting/Aspire.Hosting.ApplicationModel.IResourceW
 registerHandleWrapper('Aspire.Hosting/Aspire.Hosting.IResourceWithContainerFiles', (handle, client) => new ResourceWithContainerFiles(handle as IResourceWithContainerFilesHandle, client));
 registerHandleWrapper('Aspire.Hosting/Aspire.Hosting.ApplicationModel.IResourceWithEndpoints', (handle, client) => new ResourceWithEndpoints(handle as IResourceWithEndpointsHandle, client));
 registerHandleWrapper('Aspire.Hosting/Aspire.Hosting.ApplicationModel.IResourceWithEnvironment', (handle, client) => new ResourceWithEnvironment(handle as IResourceWithEnvironmentHandle, client));
-registerHandleWrapper('Aspire.Hosting/Aspire.Hosting.IResourceWithServiceDiscovery', (handle, client) => new ResourceWithServiceDiscovery(handle as IResourceWithServiceDiscoveryHandle, client));
 registerHandleWrapper('Aspire.Hosting/Aspire.Hosting.ApplicationModel.IResourceWithWaitSupport', (handle, client) => new ResourceWithWaitSupport(handle as IResourceWithWaitSupportHandle, client));
 

@@ -40,8 +40,8 @@ const frontend = await builder.addProject("frontend", "../AspireShop.Frontend/As
     .withHttpHealthCheck({
         path: "/health"
     })
-    .withServiceReference(basketService)
-    .withServiceReference(catalogService)
+    .withReference(basketService)
+    .withReference(catalogService)
     .waitFor(catalogService);
 
 await builder.build().run();

@@ -8,7 +8,7 @@ const goVersion = await builder.addParameter("goversion", { secret: true });
 const context = await builder.executionContext.get();
 const isPublish = await context.isPublishMode.get();
 
-const ginapp = builder.executionContext.isPublishMode
+const ginapp = isPublish
     ? builder.addDockerfile("ginapp", "../ginapp")
         .withBuildArg("GO_VERSION", goVersion)
     : builder.addDockerfile("ginapp", "../ginapp", { dockerfilePath: "Dockerfile.dev" })

@@ -18,7 +18,7 @@ await builder.addNodeApp("frontend", "../NodeFrontend", "./app.js")
     .withHttpHealthCheck({
         path: "/health"
     })
-    .withServiceReference(weatherapi).waitFor(weatherapi)
+    .withReference(weatherapi).waitFor(weatherapi)
     .withReference(cache).waitFor(cache);
 
 await builder.build().run();

@@ -14,7 +14,7 @@ const app = await builder.addUvicornApp("app", "../app", "main:app")
     });
 
 const frontend = await builder.addViteApp("frontend", "../frontend")
-    .withServiceReference(app)
+    .withReference(app)
     .waitFor(app);
 
 await app.publishWithContainerFiles(frontend, "./static");

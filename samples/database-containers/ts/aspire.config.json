@@ -1,4 +1,14 @@
 {
+  "appHost": {
+    "path": "apphost.ts",
+    "language": "typescript/nodejs"
+  },
+  "packages": {
+    "Aspire.Hosting.JavaScript": "13.2.0",
+    "Aspire.Hosting.MySql": "13.2.0",
+    "Aspire.Hosting.SqlServer": "13.2.0",
+    "Aspire.Hosting.PostgreSQL": "13.2.0"
+  },
   "profiles": {
     "https": {
       "applicationUrl": "https://localhost:11848;http://localhost:15340",

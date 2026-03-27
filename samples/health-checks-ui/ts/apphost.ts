@@ -14,7 +14,7 @@ const apiService = await builder.addProject("apiservice", "../HealthChecksUI.Api
 const webFrontend = await builder.addProject("webfrontend", "../HealthChecksUI.Web/HealthChecksUI.Web.csproj", "https")
     .withReference(cache)
     .waitFor(cache)
-    .withServiceReference(apiService)
+    .withReference(apiService)
     .waitFor(apiService)
     .withHttpHealthCheck({
         path: "/health"
