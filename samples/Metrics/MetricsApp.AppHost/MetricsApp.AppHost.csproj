@@ -9,6 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Aspire.Hosting.AppHost" Version="13.2.0" />
     <ProjectReference Include="..\MetricsApp\MetricsApp.csproj" />
   </ItemGroup>
 
