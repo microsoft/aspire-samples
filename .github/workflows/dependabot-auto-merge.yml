@@ -35,13 +35,24 @@ jobs:
           app-id: ${{ secrets.ASPIRE_BOT_APP_ID }}
           private-key: ${{ secrets.ASPIRE_BOT_PRIVATE_KEY }}
 
-      - name: Approve PR
+      - name: Approve PR (if not already approved for this commit)
         if: steps.pr.outputs.number != ''
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
           GH_REPO: ${{ github.repository }}
           PR_NUMBER: ${{ steps.pr.outputs.number }}
-        run: gh pr review "$PR_NUMBER" --approve --body "Auto-approving dependabot PR after successful CI."
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          # Check whether the bot has already left an APPROVED review on the current head SHA.
+          # This prevents duplicate approval entries when CI is re-run on the same commit
+          # (e.g. manual re-run), while still re-approving correctly after a rebase (new SHA).
+          ALREADY_APPROVED=$(gh api "repos/$GH_REPO/pulls/$PR_NUMBER/reviews" \
+            --jq "[.[] | select(.state == \"APPROVED\" and .commit_id == \"$HEAD_SHA\")] | length")
+          if [[ "$ALREADY_APPROVED" -gt 0 ]]; then
+            echo "PR #$PR_NUMBER already approved for commit $HEAD_SHA. Skipping."
+          else
+            gh pr review "$PR_NUMBER" --approve --body "Auto-approving dependabot PR after successful CI."
+          fi
 
       - name: Squash merge PR
         if: steps.pr.outputs.number != ''
