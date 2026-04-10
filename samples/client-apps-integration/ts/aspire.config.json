@@ -1,0 +1,18 @@
+{
+  "appHost": {
+    "path": "apphost.ts",
+    "language": "typescript/nodejs"
+  },
+  "sdk": {
+    "version": "13.2.2"
+  },
+  "profiles": {
+    "https": {
+      "applicationUrl": "https://localhost:31556;http://localhost:10153",
+      "environmentVariables": {
+        "ASPIRE_DASHBOARD_OTLP_ENDPOINT_URL": "https://localhost:42094",
+        "ASPIRE_RESOURCE_SERVICE_ENDPOINT_URL": "https://localhost:49505"
+      }
+    }
+  }
+}

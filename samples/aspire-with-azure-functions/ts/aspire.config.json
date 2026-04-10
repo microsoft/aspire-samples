@@ -1,0 +1,23 @@
+{
+  "appHost": {
+    "path": "apphost.ts",
+    "language": "typescript/nodejs"
+  },
+  "sdk": {
+    "version": "13.2.2"
+  },
+  "profiles": {
+    "https": {
+      "applicationUrl": "https://localhost:61014;http://localhost:25953",
+      "environmentVariables": {
+        "ASPIRE_DASHBOARD_OTLP_ENDPOINT_URL": "https://localhost:23749",
+        "ASPIRE_RESOURCE_SERVICE_ENDPOINT_URL": "https://localhost:42346"
+      }
+    }
+  },
+  "packages": {
+    "Aspire.Hosting.Azure.AppContainers": "13.2.2",
+    "Aspire.Hosting.Azure.Storage": "13.2.2",
+    "Aspire.Hosting.Azure.Functions": "13.2.2"
+  }
+}
