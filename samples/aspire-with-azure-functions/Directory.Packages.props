@@ -5,25 +5,27 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageVersion Include="Aspire.Hosting.AppHost" Version="13.2.1" />
     <!-- Aspire Hosting -->
-    <PackageVersion Include="Aspire.Hosting.Azure.AppContainers" Version="13.1.0" />
-    <PackageVersion Include="Aspire.Hosting.Azure.Storage" Version="13.1.0" />
-    <PackageVersion Include="Aspire.Hosting.Azure.Functions" Version="13.1.0" />
+    <PackageVersion Include="Aspire.Hosting.Azure.AppContainers" Version="13.2.1" />
+    <PackageVersion Include="Aspire.Hosting.Azure.Storage" Version="13.2.1" />
+    <PackageVersion Include="Aspire.Hosting.Azure.Functions" Version="13.2.1" />
     
     <!-- Aspire Azure -->
-    <PackageVersion Include="Aspire.Azure.Storage.Queues" Version="13.1.0" />
-    <PackageVersion Include="Aspire.Azure.Storage.Blobs" Version="13.1.0" />
+    <PackageVersion Include="Aspire.Azure.Storage.Queues" Version="13.2.1" />
+    <PackageVersion Include="Aspire.Azure.Storage.Blobs" Version="13.2.1" />
     
     <!-- Azure Functions -->
     <PackageVersion Include="Microsoft.Azure.Functions.Worker" Version="2.51.0" />
     <PackageVersion Include="Microsoft.Azure.Functions.Worker.Extensions.Http.AspNetCore" Version="2.1.0" />
-    <PackageVersion Include="Microsoft.Azure.Functions.Worker.Extensions.Storage.Blobs" Version="6.8.0" />
-    <PackageVersion Include="Microsoft.Azure.Functions.Worker.Extensions.Storage.Queues" Version="5.5.3" />
+    <PackageVersion Include="Microsoft.Azure.Functions.Worker.Extensions.Storage.Blobs" Version="6.8.1" />
+    <PackageVersion Include="Microsoft.Azure.Functions.Worker.Extensions.Storage.Queues" Version="5.5.4" />
     <PackageVersion Include="Microsoft.Azure.Functions.Worker.Sdk" Version="2.0.7" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.5" />
     
     <!-- Microsoft Extensions -->
-    <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="10.1.0" />
-    <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery" Version="10.1.0" />
+    <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="10.4.0" />
+    <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery" Version="10.4.0" />
     
     <!-- OpenTelemetry -->
     <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.14.0" />

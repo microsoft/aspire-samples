@@ -32,11 +32,11 @@ jobs:
       SuppressNETCoreSdkPreviewMessage: true
       DCP_DIAGNOSTICS_LOG_LEVEL: 'debug'
     steps:
-    - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
   
     - name: Install Docker (latest version)
       if: matrix.os == 'ubuntu-latest'
-      uses: docker/setup-docker-action@e61617a16c407a86262fb923c35a616ddbe070b3 #v4.6.0
+      uses: docker/setup-docker-action@1a6edb0ba9ac496f6850236981f15d8f9a82254d #v5.0.0
 
     - name: Install Azure Functions Core Tools
       if: matrix.os == 'ubuntu-latest'
@@ -47,14 +47,14 @@ jobs:
         sudo apt-get install azure-functions-core-tools-4
 
     - name: Install .NET SDK (global.json)
-      uses: actions/setup-dotnet@2016bd2012dba4e32de620c46fe006a3ac9f0602 # v5.0.1
+      uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5.2.0
       with:
         global-json-file: ${{ matrix.os == 'ubuntu-latest' && './build/global.json' || '.\build\global.json' }}
     
     - name: Print .NET info
       run: dotnet --info
 
-    - uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
+    - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
       with:
         node-version: '24.x'
 
@@ -84,7 +84,7 @@ jobs:
 
     - name: Publish binlog files
       if: always()
-      uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
+      uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
       with:
         name: BuildLogs_${{ matrix.os }}
         path: ./BuildLogs
@@ -111,7 +111,7 @@ jobs:
     
     - name: Publish Test Results
       if: (success() || steps.test.conclusion == 'failure') && matrix.os == 'ubuntu-latest'
-      uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
+      uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
       with:
         name: TestResults_${{ matrix.os }}
         path: ./TestResults
