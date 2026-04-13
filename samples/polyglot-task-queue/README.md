@@ -95,7 +95,7 @@ const rabbitmq = await builder.addRabbitMQ("messaging")
 ```ts
 const api = await builder.addNodeApp("api", "./api", "index.js")
     .waitFor(rabbitmq)
-    .withReference(rabbitmq); // Injects RABBITMQ_URI
+    .withReference(rabbitmq); // Injects MESSAGING_URI
 ```
 
 **Trace Context Propagation** - OpenTelemetry context through message headers:

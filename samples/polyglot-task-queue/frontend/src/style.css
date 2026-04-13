@@ -189,6 +189,17 @@ button:disabled {
   color: #155724;
 }
 
+.status-processing {
+  background: #d1ecf1;
+  color: #0c5460;
+}
+
+.status-skipped {
+  background: #e2e3e5;
+  color: #383d41;
+}
+
+.status-error,
 .status-failed {
   background: #f8d7da;
   color: #721c24;
@@ -215,12 +226,14 @@ button:disabled {
 }
 
 .task-data,
-.task-result {
+.task-result,
+.task-error {
   margin-bottom: 1rem;
 }
 
 .task-data strong,
-.task-result strong {
+.task-result strong,
+.task-error strong {
   display: block;
   margin-bottom: 0.5rem;
   color: #555;

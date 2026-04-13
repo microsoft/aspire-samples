@@ -9,7 +9,18 @@ interface Task {
   completedAt?: string;
   result?: any;
   worker?: string;
+  error?: string;
 }
+
+const statusDisplayOrder = ['queued', 'processing', 'completed', 'skipped', 'error'] as const;
+const statusBadgeClasses: Record<string, string> = {
+  queued: 'status-badge status-queued',
+  processing: 'status-badge status-processing',
+  completed: 'status-badge status-completed',
+  skipped: 'status-badge status-skipped',
+  error: 'status-badge status-error',
+  failed: 'status-badge status-error'
+};
 
 function App() {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -70,14 +81,14 @@ function App() {
     }
   };
 
-  const getStatusBadge = (status: string) => {
-    const classes = {
-      queued: 'status-badge status-queued',
-      completed: 'status-badge status-completed',
-      failed: 'status-badge status-failed'
-    };
-    return classes[status as keyof typeof classes] || 'status-badge';
-  };
+  const getStatusBadge = (status: string) => statusBadgeClasses[status] || 'status-badge';
+
+  const statusSummary = statusDisplayOrder
+    .map((status) => ({
+      status,
+      count: tasks.filter((task) => task.status === status).length
+    }))
+    .filter(({ count }) => count > 0);
 
   return (
     <div className="container">
@@ -132,8 +143,9 @@ function App() {
         <div className="section-header">
           <h2>Tasks</h2>
           <span className="task-count">
-            {tasks.filter(t => t.status === 'queued').length} queued,{' '}
-            {tasks.filter(t => t.status === 'completed').length} completed
+            {statusSummary.length > 0
+              ? statusSummary.map(({ status, count }) => `${count} ${status}`).join(', ')
+              : 'No active task statuses'}
           </span>
         </div>
 
@@ -166,6 +178,13 @@ function App() {
                     <div className="task-result">
                       <strong>Result:</strong>
                       <pre>{JSON.stringify(task.result, null, 2)}</pre>
+                    </div>
+                  )}
+
+                  {task.error && (
+                    <div className="task-error">
+                      <strong>Error:</strong>
+                      <pre>{task.error}</pre>
                     </div>
                   )}
                 </div>

@@ -19,13 +19,18 @@ public class DatabaseInitializer(IServiceProvider serviceProvider, ILogger<Datab
 
         try
         {
-            _logger.LogInformation("[1/2] Ensuring database is created...");
-            await db.Database.EnsureCreatedAsync(cancellationToken);
-            _logger.LogInformation("  ✓ Database ready");
-
-            _logger.LogInformation("[2/2] Applying migrations...");
-            await db.Database.MigrateAsync(cancellationToken);
-            _logger.LogInformation("  ✓ Migrations applied");
+            if ((await db.Database.GetMigrationsAsync(cancellationToken)).Any())
+            {
+                _logger.LogInformation("[1/1] Applying migrations...");
+                await db.Database.MigrateAsync(cancellationToken);
+                _logger.LogInformation("  ✓ Migrations applied");
+            }
+            else
+            {
+                _logger.LogInformation("[1/1] Ensuring database is created...");
+                await db.Database.EnsureCreatedAsync(cancellationToken);
+                _logger.LogInformation("  ✓ Database ready");
+            }
 
             _logger.LogInformation("============================================================");
             _logger.LogInformation("✓ Database initialization completed successfully");

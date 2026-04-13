@@ -1,4 +1,5 @@
 using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
 using Azure.Storage.Queues;
 using Azure.Storage.Queues.Models;
 using SixLabors.ImageSharp;
@@ -16,6 +17,7 @@ public class ThumbnailWorker(
     IConfiguration configuration,
     ILogger<ThumbnailWorker> logger) : BackgroundService
 {
+    private const string ThumbnailContentType = "image/jpeg";
 
     private readonly IServiceProvider _serviceProvider = serviceProvider;
     private readonly BlobContainerClient _containerClient = containerClient;
@@ -207,6 +209,9 @@ public class ThumbnailWorker(
         await image.SaveAsJpegAsync(thumbnailStream, cancellationToken);
         thumbnailStream.Position = 0;
         await thumbnailBlobClient.UploadAsync(thumbnailStream, overwrite: true, cancellationToken: cancellationToken);
+        await thumbnailBlobClient.SetHttpHeadersAsync(
+            new BlobHttpHeaders { ContentType = ThumbnailContentType },
+            cancellationToken: cancellationToken);
 
         // Update database
         using var scope = _serviceProvider.CreateScope();

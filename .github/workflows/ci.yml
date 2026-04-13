@@ -58,6 +58,20 @@ jobs:
       with:
         node-version: '24.x'
 
+    - name: Install Aspire CLI
+      shell: pwsh
+      run: |
+        $installScript = Join-Path $env:RUNNER_TEMP 'aspire-install.ps1'
+        $installPath = Join-Path $env:RUNNER_TEMP 'aspire-cli'
+
+        Invoke-RestMethod 'https://aspire.dev/install.ps1' -OutFile $installScript
+        & $installScript -InstallPath $installPath -Version '13.2.2' -SkipPath
+
+        $installPath | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+        $aspireExecutable = if ($IsWindows) { 'aspire.exe' } else { 'aspire' }
+        & (Join-Path $installPath $aspireExecutable) --version
+
     - name: Install & trust dev-certs
       id: install-dev-certs
       # Trusting certs on Windows throws a prompt so will halt the build

@@ -17,6 +17,15 @@ redis.on('connect', () => console.log('✓ Connected to Redis'));
 // Connect to Redis
 await redis.connect();
 
+async function getVisitKeys() {
+  const keys = [];
+  for await (const key of redis.scanIterator({ MATCH: 'visits:*', COUNT: 100 })) {
+    keys.push(key);
+  }
+
+  return keys;
+}
+
 // Root endpoint
 app.get('/', (req, res) => {
   res.json({
@@ -60,14 +69,15 @@ app.get('/visit/:page', async (req, res) => {
 
 // Get stats for all pages
 app.get('/stats', async (req, res) => {
-  const keys = await redis.keys('visits:*');
+  const keys = await getVisitKeys();
+  const counts = keys.length > 0 ? await redis.mGet(keys) : [];
   const stats = {};
 
-  for (const key of keys) {
+  keys.forEach((key, index) => {
     const page = key.replace('visits:', '');
-    const count = await redis.get(key);
-    stats[page] = parseInt(count);
-  }
+    const count = counts[index];
+    stats[page] = count ? parseInt(count, 10) : 0;
+  });
 
   res.json({
     totalPages: keys.length,
@@ -77,9 +87,9 @@ app.get('/stats', async (req, res) => {
 
 // Reset all stats
 app.delete('/stats', async (req, res) => {
-  const keys = await redis.keys('visits:*');
+  const keys = await getVisitKeys();
   if (keys.length > 0) {
-    await redis.del(keys);
+    await redis.del(...keys);
   }
 
   res.json({

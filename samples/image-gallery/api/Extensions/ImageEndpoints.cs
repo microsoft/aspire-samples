@@ -12,6 +12,7 @@ namespace Api.Extensions;
 public static class ImageEndpoints
 {
     private const long MaxFileSizeBytes = 10 * 1024 * 1024; // 10 MB
+    private const string ThumbnailContentType = "image/jpeg";
     private static readonly string[] AllowedImageFormats = [".jpg", ".jpeg", ".png", ".gif", ".webp"];
 
     public static WebApplication MapImages(this WebApplication app)
@@ -84,17 +85,29 @@ public static class ImageEndpoints
             var blobClient = containerClient.GetBlobClient(thumbnailName);
             
             var download = await blobClient.DownloadStreamingAsync();
-            return Results.Stream(download.Value.Content, image.ContentType);
+            return Results.Stream(
+                download.Value.Content,
+                string.IsNullOrWhiteSpace(download.Value.Details.ContentType)
+                    ? ThumbnailContentType
+                    : download.Value.Details.ContentType);
         });
 
         // Upload image
         group.MapPost("/images", async (
             IFormFile file,
+            IAntiforgery antiforgery,
+            HttpContext context,
             ImageDbContext db,
             BlobContainerClient containerClient,
             QueueServiceClient queueService,
             ILogger<Program> logger) =>
         {
+            var antiforgeryValidationResult = await ValidateAntiforgeryAsync(antiforgery, context);
+            if (antiforgeryValidationResult is not null)
+            {
+                return antiforgeryValidationResult;
+            }
+
             if (file == null || file.Length == 0)
             {
                 return Results.BadRequest(new { error = "No file uploaded" });
@@ -170,10 +183,18 @@ public static class ImageEndpoints
         // Delete image
         group.MapDelete("/images/{id}", async (
             int id,
+            IAntiforgery antiforgery,
+            HttpContext context,
             ImageDbContext db,
             BlobContainerClient containerClient,
             ILogger<Program> logger) =>
         {
+            var antiforgeryValidationResult = await ValidateAntiforgeryAsync(antiforgery, context);
+            if (antiforgeryValidationResult is not null)
+            {
+                return antiforgeryValidationResult;
+            }
+
             var image = await db.Images.FindAsync(id);
             if (image is null)
             {
@@ -209,6 +230,19 @@ public static class ImageEndpoints
         });
 
         return app;
+    }
+
+    private static async Task<IResult?> ValidateAntiforgeryAsync(IAntiforgery antiforgery, HttpContext context)
+    {
+        try
+        {
+            await antiforgery.ValidateRequestAsync(context);
+            return null;
+        }
+        catch (AntiforgeryValidationException)
+        {
+            return Results.BadRequest(new { error = "Invalid or missing antiforgery token" });
+        }
     }
 
     private static string SanitizeFileName(string fileName)
