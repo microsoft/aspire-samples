@@ -64,9 +64,9 @@
     <Message Text="Restoring sample %(SampleToBuild.Identity)" Importance="High" />
     <Exec Condition="%(SampleToBuild.Extension) != '.ts'" Command="@(RestoreArgs, ' ')" WorkingDirectory="%(SampleToBuild.RootDir)%(SampleToBuild.Directory)"
           StandardOutputImportance="Normal" StandardErrorImportance="Normal" />
-    <Exec Condition="%(SampleToBuild.Extension) == '.ts'" Command="&quot;$(AspireCliCommand)&quot; restore --apphost %(SampleToBuild.Filename)%(SampleToBuild.Extension) --non-interactive" WorkingDirectory="%(SampleToBuild.RootDir)%(SampleToBuild.Directory)"
+    <Exec Condition="%(SampleToBuild.Extension) == '.ts' and '$(SkipTypeScriptRestore)' != 'true'" Command="&quot;$(AspireCliCommand)&quot; restore --apphost %(SampleToBuild.Filename)%(SampleToBuild.Extension) --non-interactive" WorkingDirectory="%(SampleToBuild.RootDir)%(SampleToBuild.Directory)"
           StandardOutputImportance="Normal" StandardErrorImportance="Normal" />
-    <Exec Condition="%(SampleToBuild.Extension) == '.ts'" Command="npm ci --no-audit --no-fund" WorkingDirectory="%(SampleToBuild.RootDir)%(SampleToBuild.Directory)"
+    <Exec Condition="%(SampleToBuild.Extension) == '.ts' and '$(SkipTypeScriptRestore)' != 'true'" Command="npm ci --no-audit --no-fund" WorkingDirectory="%(SampleToBuild.RootDir)%(SampleToBuild.Directory)"
           StandardOutputImportance="Normal" StandardErrorImportance="Normal" />
   </Target>
 

@@ -90,8 +90,31 @@ jobs:
       if: matrix.os == 'ubuntu-latest'
       run: dotnet dev-certs https --trust
 
-    - name: Build
-      run: ${{ matrix.os == 'ubuntu-latest' && './build/build.sh' || '.\build\build.cmd' }}
+    - name: Restore TypeScript AppHosts
+      if: matrix.os == 'ubuntu-latest'
+      shell: bash
+      run: |
+        set -euo pipefail
+
+        while IFS= read -r apphost; do
+          sample_dir="$(dirname "$apphost")"
+          sample_name="${apphost#./samples/}"
+          echo "::group::Restore $sample_name"
+          (
+            cd "$sample_dir"
+            "$ASPIRE_CLI" restore --apphost apphost.ts --non-interactive
+            npm ci --no-audit --no-fund
+          )
+          echo "::endgroup::"
+        done < <(find ./samples -name apphost.ts | sort)
+
+    - name: Build (Ubuntu)
+      if: matrix.os == 'ubuntu-latest'
+      run: ./build/build.sh -p:SkipTypeScriptRestore=true
+
+    - name: Build (Windows)
+      if: matrix.os == 'windows-latest'
+      run: .\build\build.cmd
 
     - name: Copy binlog files
       if: always()
