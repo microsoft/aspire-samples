@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk.Worker">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Needed because we link in shared/Extensions.cs which depends on ASP.NET Core types like WebApplication -->
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="../shared/Extensions.cs" LinkBase="Shared" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.0" />
+    <PackageReference Include="Aspire.Microsoft.EntityFrameworkCore.SqlServer" Version="9.5.2" />
+    <PackageReference Include="Aspire.Azure.Storage.Blobs" Version="9.5.2" />
+    <PackageReference Include="Aspire.Azure.Storage.Queues" Version="9.5.2" />
+    <!-- Upgrade ImageSharp to address known vulnerabilities in 3.1.5 (GHSA-2cmq-823j-5qj8, GHSA-rxmq-m78w-7wmc) -->
+    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.6" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Extensions.ServiceDiscovery" Version="10.0.0" />
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.13.1" />
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.13.1" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.13.0" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" Version="1.13.0" />
+    <!-- Added for AddAspNetCoreInstrumentation() used in shared/Extensions.cs -->
+    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.13.0" />
+  </ItemGroup>
+
+</Project>

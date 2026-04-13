@@ -25,6 +25,17 @@ Samples for [Aspire](https://aspire.dev).
 | [Custom Aspire hosting resources](./samples/custom-resources) | C# | Aspire AppHost | Demonstrates authoring custom hosting resources with Aspire. |
 | [HealthChecksUI](./samples/health-checks-ui) | C# | ASP.NET Core, Containers, Docker Compose | Demonstrates resources with separate isolated endpoints for health checks. |
 | [Azure Functions](./samples/aspire-with-azure-functions) | C# | ASP.NET Core, Blazor, Azure Functions, Azure Blob Storage | Shows how to integrate [Azure Functions](https://learn.microsoft.com/azure/azure-functions/functions-overview) with Aspire. |
+| [Image Gallery](./samples/image-gallery) | C#, JavaScript, TypeScript | Azure Blob Storage, Azure Queues, Azure SQL, Container Apps Jobs | Upload and process images with event-triggered thumbnail generation using Azure resources and local emulators. |
+| [Go API](./samples/golang-api) | Go, C# | Go, chi, Containers | Shows a custom Go integration for running and publishing a Go API with Aspire. |
+| [Node + Redis + Vite](./samples/node-express-redis) | JavaScript, TypeScript, C# | Express, Redis, React, YARP | Visit counter sample with an Express API, Redis, and a Vite frontend served through YARP. |
+| [Polyglot Task Queue](./samples/polyglot-task-queue) | JavaScript, Python, C# | RabbitMQ, OpenTelemetry, React | Distributed task queue with Node, Python, and C# workers coordinated through RabbitMQ. |
+| [Python FastAPI + PostgreSQL](./samples/python-fastapi-postgres) | Python, C# | FastAPI, PostgreSQL, pgAdmin | CRUD API sample wiring FastAPI to PostgreSQL and pgAdmin with Aspire. |
+| [Python OpenAI Agent](./samples/python-openai-agent) | Python, C# | FastAPI, OpenAI | AI chat agent sample showing OpenAI integration and Python uv workflows with Aspire. |
+| [Python Script](./samples/python-script) | Python, C# | Python | Smallest possible Python script sample using a file-based AppHost. |
+| [RAG Document Q&A](./samples/rag-document-qa-svelte) | Python, JavaScript, C# | OpenAI, Qdrant, Svelte | Retrieval-augmented document Q&A sample with FastAPI, Svelte, and Qdrant. |
+| [Vite + C# + PostgreSQL](./samples/vite-csharp-postgres) | C#, JavaScript, TypeScript | Minimal API, PostgreSQL, React, Vite | Todo app sample pairing a C# API and PostgreSQL with a Vite React frontend. |
+| [Vite + React + FastAPI](./samples/vite-react-fastapi) | Python, JavaScript, TypeScript, C# | FastAPI, React, Vite, YARP | Fullstack sample combining FastAPI and a Vite React frontend behind YARP. |
+| [Vite + YARP Static Files](./samples/vite-yarp-static) | JavaScript, TypeScript, C# | Vite, YARP | Demonstrates serving a Vite frontend through YARP in run and publish modes. |
 
 ## eShop
 

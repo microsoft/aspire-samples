@@ -1,0 +1,140 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.container {
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 900px;
+  padding: 2rem;
+}
+
+h1 {
+  color: #333;
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.subtitle {
+  color: #666;
+  margin-bottom: 2rem;
+}
+
+.stats-section {
+  margin-top: 2rem;
+}
+
+.stats-header {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.reset-button {
+  background: #f44336;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  transition: background 0.2s;
+}
+
+.reset-button:hover:not(:disabled) {
+  background: #d32f2f;
+}
+
+.reset-button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.empty-state {
+  text-align: center;
+  color: #999;
+  padding: 3rem 1rem;
+  font-size: 1.1rem;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  grid-auto-flow: row;
+}
+
+.stat-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 1.5rem;
+  border-radius: 8px;
+  text-align: center;
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  width: 100%;
+}
+
+.stat-card:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.stat-card:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.stat-card:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.stat-page {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  word-break: break-word;
+}
+
+.stat-count {
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin-bottom: 0.25rem;
+}
+
+.stat-label {
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+@media (max-width: 768px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 500px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .stats-header {
+    justify-content: center;
+  }
+}
