@@ -58,13 +58,23 @@ jobs:
       with:
         node-version: '24.x'
 
-    - name: Install Aspire CLI
+    - name: Install Aspire CLI (Ubuntu)
+      if: matrix.os == 'ubuntu-latest'
+      shell: bash
+      run: |
+        install_path="$RUNNER_TEMP/aspire-cli"
+        curl -sSL https://aspire.dev/install.sh | bash -s -- --install-path "$install_path" --skip-path
+        echo "$install_path" >> "$GITHUB_PATH"
+        echo "ASPIRE_CLI=$install_path/aspire" >> "$GITHUB_ENV"
+        "$install_path/aspire" --version
+
+    - name: Install Aspire CLI (Windows)
+      if: matrix.os == 'windows-latest'
       shell: pwsh
       run: |
         $installScript = Join-Path $env:RUNNER_TEMP 'aspire-install.ps1'
         $installPath = Join-Path $env:RUNNER_TEMP 'aspire-cli'
-        $aspireExecutable = if ($IsWindows) { 'aspire.exe' } else { 'aspire' }
-        $aspirePath = Join-Path $installPath $aspireExecutable
+        $aspirePath = Join-Path $installPath 'aspire.exe'
 
         Invoke-RestMethod 'https://aspire.dev/install.ps1' -OutFile $installScript
         & $installScript -InstallPath $installPath -SkipPath
