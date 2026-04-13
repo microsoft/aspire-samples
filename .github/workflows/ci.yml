@@ -63,14 +63,16 @@ jobs:
       run: |
         $installScript = Join-Path $env:RUNNER_TEMP 'aspire-install.ps1'
         $installPath = Join-Path $env:RUNNER_TEMP 'aspire-cli'
+        $aspireExecutable = if ($IsWindows) { 'aspire.exe' } else { 'aspire' }
+        $aspirePath = Join-Path $installPath $aspireExecutable
 
         Invoke-RestMethod 'https://aspire.dev/install.ps1' -OutFile $installScript
         & $installScript -InstallPath $installPath -SkipPath
 
         $installPath | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+        "ASPIRE_CLI=$aspirePath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
-        $aspireExecutable = if ($IsWindows) { 'aspire.exe' } else { 'aspire' }
-        & (Join-Path $installPath $aspireExecutable) --version
+        & $aspirePath --version
 
     - name: Install & trust dev-certs
       id: install-dev-certs

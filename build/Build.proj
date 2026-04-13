@@ -4,6 +4,8 @@
     <TargetFramework>net10.0</TargetFramework>
     <SamplesDir>$(MSBuildThisFileDirectory)../samples/</SamplesDir>
     <NodeModules>$(SamplesDir)**/node_modules/**/*.*</NodeModules>
+    <AspireCliCommand Condition="'$(AspireCliCommand)' == '' and '$(ASPIRE_CLI)' != ''">$(ASPIRE_CLI)</AspireCliCommand>
+    <AspireCliCommand Condition="'$(AspireCliCommand)' == ''">aspire</AspireCliCommand>
   </PropertyGroup>
 
   <ItemGroup>
@@ -28,6 +30,7 @@
     </ItemGroup>
 
     <Message Text="Building @(SampleSolutions->Count()) solution samples, @(SingleFileCSharpAppHostFiles->Count()) single-file C# AppHosts, and @(SingleFileTypeScriptAppHostFiles->Count()) single-file TypeScript AppHosts" Importance="High" />
+    <Message Text="Using Aspire CLI command: $(AspireCliCommand)" Importance="High" Condition="'@(SingleFileTypeScriptAppHostFiles)' != ''" />
 
     <ItemGroup>
       <!-- Build up list of samples to build -->
@@ -58,9 +61,10 @@
       <RestoreArgs Include="-bl:$([System.IO.Path]::GetFileNameWithoutExtension($([System.IO.Path]::GetDirectoryName(%(SampleToBuild.Identity)))))-restore-{}.binlog" Condition="%(SampleToBuild.Extension) == '.cs'" />
       <RestoreArgs Include="-bl:%(SampleToBuild.Filename)-restore-{}.binlog" Condition="%(SampleToBuild.Extension) != '.cs'" />
     </ItemGroup>
+    <Message Text="Restoring sample %(SampleToBuild.Identity)" Importance="High" />
     <Exec Condition="%(SampleToBuild.Extension) != '.ts'" Command="@(RestoreArgs, ' ')" WorkingDirectory="%(SampleToBuild.RootDir)%(SampleToBuild.Directory)"
           StandardOutputImportance="Normal" StandardErrorImportance="Normal" />
-    <Exec Condition="%(SampleToBuild.Extension) == '.ts'" Command="aspire restore --apphost %(SampleToBuild.Filename)%(SampleToBuild.Extension) --non-interactive" WorkingDirectory="%(SampleToBuild.RootDir)%(SampleToBuild.Directory)"
+    <Exec Condition="%(SampleToBuild.Extension) == '.ts'" Command="&quot;$(AspireCliCommand)&quot; restore --apphost %(SampleToBuild.Filename)%(SampleToBuild.Extension) --non-interactive" WorkingDirectory="%(SampleToBuild.RootDir)%(SampleToBuild.Directory)"
           StandardOutputImportance="Normal" StandardErrorImportance="Normal" />
     <Exec Condition="%(SampleToBuild.Extension) == '.ts'" Command="npm ci --no-audit --no-fund" WorkingDirectory="%(SampleToBuild.RootDir)%(SampleToBuild.Directory)"
           StandardOutputImportance="Normal" StandardErrorImportance="Normal" />
@@ -77,6 +81,7 @@
       <BuildArgs Include="-bl:$([System.IO.Path]::GetFileNameWithoutExtension($([System.IO.Path]::GetDirectoryName(%(SampleToBuild.Identity)))))-build-{}.binlog" Condition="%(SampleToBuild.Extension) == '.cs'" />
       <BuildArgs Include="-bl:%(SampleToBuild.Filename)-build-{}.binlog" Condition="%(SampleToBuild.Extension) != '.cs'" />
     </ItemGroup>
+    <Message Text="Building sample %(SampleToBuild.Identity)" Importance="High" />
     <Exec Condition="%(SampleToBuild.Extension) != '.ts'" Command="@(BuildArgs, ' ')" WorkingDirectory="%(SampleToBuild.RootDir)%(SampleToBuild.Directory)"
           StandardOutputImportance="Normal" StandardErrorImportance="Normal" />
     <Exec Condition="%(SampleToBuild.Extension) == '.ts'" Command="npm run aspire:build" WorkingDirectory="%(SampleToBuild.RootDir)%(SampleToBuild.Directory)"
