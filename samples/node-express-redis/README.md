@@ -1,5 +1,7 @@
 # Node.js Express + Redis + Vite Frontend
 
+![Screenshot of the visit counter UI for the Node.js Express + Redis + Vite sample](./images/node-express-redis-primary-page.png)
+
 Visit counter with Express backend, Redis caching, and React TypeScript frontend using YARP.
 
 ## Architecture

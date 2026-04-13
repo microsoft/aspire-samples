@@ -1,5 +1,7 @@
 # Python OpenAI Agent Sample
 
+![Screenshot of the AI chat UI for the Python OpenAI Agent sample](./images/python-openai-agent-primary-page.png)
+
 **Python FastAPI AI agent with OpenAI integration demonstrating AI workloads with Aspire.**
 
 This sample demonstrates Aspire 13's Python support combined with AI workloads, showcasing a Python-based AI chat agent powered by OpenAI.

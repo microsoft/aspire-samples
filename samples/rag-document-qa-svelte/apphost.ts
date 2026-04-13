@@ -18,7 +18,6 @@ const api = await builder.addUvicornApp("api", "./api", "main:app")
     .withExternalHttpEndpoints();
 
 const frontend = await builder.addViteApp("frontend", "./frontend")
-    .withEndpoint({ name: "http", port: 8092 })
     .withReference(api)
     .withUrl("", { displayText: "RAG UI" });
 

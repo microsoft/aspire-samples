@@ -1,5 +1,7 @@
 # Vite React + FastAPI
 
+![Screenshot of the Todo App UI for the Vite React + FastAPI sample](./images/vite-react-fastapi-primary-page.png)
+
 Todo app with React frontend and Python FastAPI backend using YARP for unified routing.
 
 ## Architecture

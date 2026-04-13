@@ -1,5 +1,7 @@
 # RAG Document Q&A with Svelte
 
+![Screenshot of the RAG Document Q&A sample UI](./images/rag-document-qa-svelte-primary-page.png)
+
 Upload documents and ask questions using Retrieval Augmented Generation with vector search.
 
 ## Architecture
@@ -63,7 +65,6 @@ const api = await builder.addUvicornApp("api", "./api", "main:app")
     .withEnvironment("OPENAI_APIKEY", openAiApiKey);
 
 const frontend = await builder.addViteApp("frontend", "./frontend")
-    .withEndpoint({ name: "http", port: 8092 })
     .withReference(api)
     .withUrl("", { displayText: "RAG UI" });
 

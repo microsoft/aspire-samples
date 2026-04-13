@@ -39,7 +39,6 @@ const api = await builder.addCSharpApp("api", "./api")
     });
 
 const frontend = await builder.addViteApp("frontend", "./frontend")
-    .withEndpoint({ name: "http", port: 9081 })
     .withReference(api)
     .withUrl("", { displayText: "Todo UI" });
 

@@ -1,5 +1,7 @@
 # YARP Serving Static Files
 
+![Screenshot of the Vite primary page served through YARP in the YARP Serving Static Files sample](./images/vite-yarp-static-primary-page.png)
+
 YARP reverse proxy serving a Vite frontend with dual-mode operation (dev HMR + production static files).
 
 ## Architecture
