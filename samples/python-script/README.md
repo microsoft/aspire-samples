@@ -26,14 +26,16 @@ The application consists of:
 
 ## Key Code
 
-The AppHost configuration shows the minimal setup for Python scripts:
+The `apphost.ts` configuration shows the minimal setup for Python scripts:
 
-```csharp
-var builder = DistributedApplication.CreateBuilder(args);
+```ts
+import { createBuilder } from "./.modules/aspire.js";
 
-builder.AddPythonApp("script", "./script", "main.py");
+const builder = await createBuilder();
 
-builder.Build().Run();
+await builder.addPythonApp("script", "./script", "main.py");
+
+await builder.build().run();
 ```
 
 ## What Aspire's Python Integration Does

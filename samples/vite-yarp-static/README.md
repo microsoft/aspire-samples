@@ -19,10 +19,10 @@ flowchart LR
 
 ## What This Demonstrates
 
-- **AddViteApp**: Vite-based frontend application
-- **AddYarp**: Reverse proxy with dual-mode routing
-- **PublishWithStaticFiles**: Automatic static file serving in production
-- **ExecutionContext.IsRunMode**: Different behavior for dev vs production
+- **addViteApp**: Vite-based frontend application
+- **addYarp**: Reverse proxy with dual-mode routing
+- **publishWithStaticFiles**: Automatic static file serving in production
+- **executionContext.isRunMode**: Different behavior for dev vs production
 - **Minimal AppHost**: Single-file orchestration
 
 ## Running
@@ -42,16 +42,23 @@ aspire do docker-compose-down-dc  # Teardown deployment
 ## Key Aspire Patterns
 
 **Dual-Mode YARP** - Run mode proxies to Vite, publish mode serves static files:
-```csharp
-var frontend = builder.AddViteApp("frontend", "./frontend");
+```ts
+import { createBuilder } from "./.modules/aspire.js";
 
-builder.AddYarp("app")
-    .WithConfiguration(c =>
+const builder = await createBuilder();
+const executionContext = await builder.executionContext.get();
+const frontend = await builder.addViteApp("frontend", "./frontend");
+
+await builder.addYarp("app")
+    .withConfiguration(async (yarp) =>
     {
-        if (builder.ExecutionContext.IsRunMode)
-            c.AddRoute("{**catch-all}", frontend); // Run: proxy to Vite HMR
+        if (await executionContext.isRunMode.get())
+        {
+            const frontendCluster = await yarp.addClusterFromResource(frontend);
+            await yarp.addRoute("{**catch-all}", frontendCluster);
+        }
     })
-    .PublishWithStaticFiles(frontend); // Publish: serve static files
+    .publishWithStaticFiles(frontend);
 ```
 
 **Single Entry Point** - YARP provides one external endpoint for the entire application

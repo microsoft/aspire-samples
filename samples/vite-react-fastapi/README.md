@@ -21,11 +21,11 @@ flowchart LR
 
 ## What This Demonstrates
 
-- **AddUvicornApp**: Python FastAPI backend with uv package manager
-- **AddViteApp**: React + TypeScript frontend with Vite
-- **AddYarp**: Single endpoint with path-based routing
-- **WithTransformPathRemovePrefix**: Strip `/api` prefix before forwarding
-- **PublishWithStaticFiles**: Frontend embedded in YARP for publish mode
+- **addUvicornApp**: Python FastAPI backend with uv package manager
+- **addViteApp**: React + TypeScript frontend with Vite
+- **addYarp**: Single endpoint with path-based routing
+- **withTransformPathRemovePrefix**: Strip `/api` prefix before forwarding
+- **publishWithStaticFiles**: Frontend embedded in YARP for publish mode
 - **Dual-Mode Operation**: Vite HMR in run mode, Vite build output in publish mode
 - **Polyglot Fullstack**: JavaScript + Python working together
 
@@ -46,24 +46,27 @@ aspire do docker-compose-down-dc  # Teardown deployment
 ## Key Aspire Patterns
 
 **YARP with Path Transform** - Strip `/api` prefix before forwarding to FastAPI:
-```csharp
-var api = builder.AddUvicornApp("api", "./api", "main:app")
-    .WithUv()
-    .WithHttpHealthCheck("/health");
+```ts
+const api = await builder.addUvicornApp("api", "./api", "main:app")
+    .withHttpHealthCheck({ path: "/health" });
 
-var frontend = builder.AddViteApp("frontend", "./frontend")
-    .WithReference(api);
+const frontend = await builder.addViteApp("frontend", "./frontend")
+    .withReference(api);
 
-builder.AddYarp("app")
-    .WithConfiguration(c =>
+await builder.addYarp("app")
+    .withConfiguration(async (yarp) =>
     {
-        c.AddRoute("api/{**catch-all}", api)
-         .WithTransformPathRemovePrefix("/api"); // /api/todos → /todos
+        const apiCluster = await yarp.addClusterFromResource(api);
+        await (await yarp.addRoute("api/{**catch-all}", apiCluster))
+            .withTransformPathRemovePrefix("/api");
 
-        if (builder.ExecutionContext.IsRunMode)
-            c.AddRoute("{**catch-all}", frontend); // Run: proxy to Vite
+        if (await executionContext.isRunMode.get())
+        {
+            const frontendCluster = await yarp.addClusterFromResource(frontend);
+            await yarp.addRoute("{**catch-all}", frontendCluster);
+        }
     })
-    .PublishWithStaticFiles(frontend); // Publish: serve static files
+    .publishWithStaticFiles(frontend);
 ```
 
 **Path Transform Example**:

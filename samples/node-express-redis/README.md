@@ -23,11 +23,11 @@ flowchart LR
 
 ## What This Demonstrates
 
-- **AddNodeApp**: Express backend with Redis integration
-- **AddViteApp**: React + TypeScript frontend with Vite
-- **AddYarp**: Single endpoint for frontend and API with path transforms
-- **AddRedis**: In-memory data store with automatic connection injection
-- **PublishWithStaticFiles**: Frontend embedded in YARP for publish mode
+- **addNodeApp**: Express backend with Redis integration
+- **addViteApp**: React + TypeScript frontend with Vite
+- **addYarp**: Single endpoint for frontend and API with path transforms
+- **addRedis**: In-memory data store with automatic connection injection
+- **publishWithStaticFiles**: Frontend embedded in YARP for publish mode
 - **Dual-Mode Operation**: Vite HMR in run mode, Vite build output in publish mode
 
 ## Running
@@ -47,17 +47,21 @@ aspire do docker-compose-down-dc  # Teardown deployment
 ## Key Aspire Patterns
 
 **YARP Routing** - Single endpoint with path-based routing:
-```csharp
-builder.AddYarp("app")
-    .WithConfiguration(c =>
+```ts
+await builder.addYarp("app")
+    .withConfiguration(async (yarp) =>
     {
-        c.AddRoute("api/{**catch-all}", api)
-         .WithTransformPathRemovePrefix("/api");
+        const apiCluster = await yarp.addClusterFromResource(api);
+        await (await yarp.addRoute("api/{**catch-all}", apiCluster))
+            .withTransformPathRemovePrefix("/api");
 
-        if (builder.ExecutionContext.IsRunMode)
-            c.AddRoute("{**catch-all}", frontend); // Run: proxy to Vite
+        if (await executionContext.isRunMode.get())
+        {
+            const frontendCluster = await yarp.addClusterFromResource(frontend);
+            await yarp.addRoute("{**catch-all}", frontendCluster);
+        }
     })
-    .PublishWithStaticFiles(frontend); // Publish: serve static files
+    .publishWithStaticFiles(frontend);
 ```
 
 **Redis Connection** - Automatic connection string injection via `REDIS_URI` environment variable

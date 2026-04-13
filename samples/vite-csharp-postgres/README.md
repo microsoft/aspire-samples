@@ -21,13 +21,13 @@ flowchart LR
 
 ## What This Demonstrates
 
-- **AddCSharpApp**: ASP.NET Core Minimal API with EF Core
-- **AddViteApp**: React + TypeScript frontend with Vite
-- **AddPostgres**: PostgreSQL database with pgAdmin
-- **PublishWithContainerFiles**: Frontend embedded in API's wwwroot for publish mode
+- **addCSharpApp**: ASP.NET Core Minimal API with EF Core
+- **addViteApp**: React + TypeScript frontend with Vite
+- **addPostgres**: PostgreSQL database with pgAdmin
+- **publishWithContainerFiles**: Frontend embedded in API's wwwroot for publish mode
 - **AddNpgsqlDbContext**: Automatic PostgreSQL connection injection
-- **WithUrls**: Custom dashboard links (Scalar API docs, Todo UI)
-- **WaitFor**: Ensures PostgreSQL starts before API
+- **withUrlForEndpointFactory**: Custom dashboard links (Scalar API docs, Todo UI)
+- **waitFor**: Ensures PostgreSQL starts before API
 
 ## Running
 
@@ -46,30 +46,35 @@ aspire do docker-compose-down-dc  # Teardown deployment
 ## Key Aspire Patterns
 
 **Container Files Publishing** - Frontend embedded in API's wwwroot:
-```csharp
-var postgres = builder.AddPostgres("postgres")
-    .WithPgAdmin()
-    .AddDatabase("db");
-
-var api = builder.AddCSharpApp("api", "./api")
-    .WithHttpHealthCheck("/health")
-    .WaitFor(postgres)
-    .WithReference(postgres)
-    .WithUrls(context =>
-    {
-        context.Urls.Add(new()
+```ts
+const postgres = await builder.addPostgres("postgres")
+    .withDataVolume()
+    .withLifetime(ContainerLifetime.Persistent)
+    .withPgAdmin({
+        configureContainer: async (pgAdmin) =>
         {
-            Url = "/scalar",
-            DisplayText = "API Reference",
-            Endpoint = context.GetEndpoint("https")
-        });
+            await pgAdmin.withLifetime(ContainerLifetime.Persistent);
+        }
     });
 
-var frontend = builder.AddViteApp("frontend", "./frontend")
-    .WithReference(api)
-    .WithUrl("", "Todo UI");
+const db = await postgres.addDatabase("db");
 
-api.PublishWithContainerFiles(frontend, "wwwroot");
+const api = await builder.addCSharpApp("api", "./api")
+    .withHttpHealthCheck({ path: "/health" })
+    .withExternalHttpEndpoints()
+    .waitFor(db)
+    .withReference(db)
+    .withUrlForEndpointFactory("https", async (endpoint) => ({
+        url: `${await endpoint.url.get()}/scalar`,
+        displayText: "API Reference"
+    }));
+
+const frontend = await builder.addViteApp("frontend", "./frontend")
+    .withEndpoint({ name: "http", port: 9081 })
+    .withReference(api)
+    .withUrl("", { displayText: "Todo UI" });
+
+await api.publishWithContainerFiles(frontend, "wwwroot");
 ```
 
 **EF Core Integration** - Automatic connection string injection:

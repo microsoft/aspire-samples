@@ -31,30 +31,33 @@ The application consists of:
 
 ## Key Code
 
-The AppHost configuration demonstrates Aspire 13's Python support:
+The `apphost.ts` configuration demonstrates Aspire 13's Python support:
 
-```csharp
-var builder = DistributedApplication.CreateBuilder(args);
+```ts
+import { createBuilder } from "./.modules/aspire.js";
 
-builder.AddDockerComposeEnvironment("dc");
+const builder = await createBuilder();
 
-var postgres = builder.AddPostgres("postgres")
-                      .WithPgAdmin()
-                      .AddDatabase("db");
+await builder.addDockerComposeEnvironment("dc");
 
-builder.AddUvicornApp("api", "./api", "main:app")
-       .WithExternalHttpEndpoints()
-       .WaitFor(postgres)
-       .WithReference(postgres);
+const postgres = await builder.addPostgres("postgres")
+    .withPgAdmin();
+const db = await postgres.addDatabase("db");
 
-builder.Build().Run();
+await builder.addUvicornApp("api", "./api", "main:app")
+    .withExternalHttpEndpoints()
+    .waitFor(db)
+    .withReference(db)
+    .withReference(postgres);
+
+await builder.build().run();
 ```
 
 Key features:
 
-- **Python Polyglot Support**: Uses `AddUvicornApp` to run FastAPI applications
-- **PgAdmin Integration**: `.WithPgAdmin()` adds a web-based database management tool
-- **Startup Dependencies**: `.WaitFor(postgres)` ensures the database is ready before starting the API
+- **Python Polyglot Support**: Uses `addUvicornApp` to run FastAPI applications
+- **PgAdmin Integration**: `.withPgAdmin()` adds a web-based database management tool
+- **Startup Dependencies**: `.waitFor(db)` ensures the database is ready before starting the API
 - **Database Connection**: Aspire provides connection properties via `POSTGRES_*` environment variables
 - **External HTTP Endpoints**: Enables external access to the API
 - **Docker Compose Deployment**: Ready for containerized deployment

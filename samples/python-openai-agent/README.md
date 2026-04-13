@@ -34,31 +34,34 @@ The application consists of:
 
 ## Key Code
 
-The AppHost configuration demonstrates AI workloads with Aspire:
+The `apphost.ts` configuration demonstrates AI workloads with Aspire:
 
-```csharp
-var builder = DistributedApplication.CreateBuilder(args);
+```ts
+import { createBuilder } from "./.modules/aspire.js";
 
-builder.AddDockerComposeEnvironment("dc");
+const builder = await createBuilder();
 
-// Add OpenAI connection - prompts for API key if not configured
-var openai = builder.AddOpenAI("openai");
+await builder.addDockerComposeEnvironment("dc");
 
-// Add Python AI agent using FastAPI
-builder.AddUvicornApp("ai-agent", "./agent", "main:app")
-    .WithUv()
-    .WithExternalHttpEndpoints()
-    .WithEnvironment("OPENAI_API_KEY", openai.Resource.Key);
+const openAiApiKey = await builder.addParameter("openai-api-key", { secret: true });
 
-builder.Build().Run();
+await builder.addOpenAI("openai")
+    .withApiKey(openAiApiKey);
+
+await builder.addUvicornApp("ai-agent", "./agent", "main:app")
+    .withUv()
+    .withExternalHttpEndpoints()
+    .withEnvironment("OPENAI_API_KEY", openAiApiKey);
+
+await builder.build().run();
 ```
 
 Key features:
 
-- **Python AI Integration**: Uses `AddUvicornApp` to run FastAPI with OpenAI SDK
-- **OpenAI Integration**: `AddOpenAI` prompts for API key on first run and securely stores it
+- **Python AI Integration**: Uses `addUvicornApp` to run FastAPI with OpenAI SDK
+- **OpenAI Integration**: `addOpenAI` prompts for API key on first run and securely stores it
 - **Direct Key Injection**: The OpenAI API key is passed directly to the Python app as `OPENAI_API_KEY`
-- **uv Package Manager**: Uses `.WithUv()` for fast dependency installation from `pyproject.toml`
+- **uv Package Manager**: Uses `.withUv()` for fast dependency installation from `pyproject.toml`
 - **Web UI**: Clean, modern chat interface for interacting with the AI
 - **Automatic Virtual Environment**: Aspire creates `.venv` and installs dependencies with uv
 - **External HTTP Endpoints**: AI agent accessible externally for testing

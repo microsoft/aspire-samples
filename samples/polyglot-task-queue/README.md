@@ -48,11 +48,11 @@ graph TB
 
 ## What This Demonstrates
 
-- **AddRabbitMQ**: Message queue with management plugin
-- **AddNodeApp**: Express API with dual RabbitMQ channels (publisher + consumer)
-- **AddPythonApp**: Python worker with pandas/numpy for data analysis
-- **AddCSharpApp**: C# worker with strong typing for reports
-- **AddViteApp**: React + TypeScript frontend
+- **addRabbitMQ**: Message queue with management plugin
+- **addNodeApp**: Express API with dual RabbitMQ channels (publisher + consumer)
+- **addPythonApp**: Python worker with pandas/numpy for data analysis
+- **addCSharpApp**: C# worker with strong typing for reports
+- **addViteApp**: React + TypeScript frontend
 - **OpenTelemetry**: End-to-end distributed tracing across all services
 - **Trace Context Propagation**: OpenTelemetry context through RabbitMQ headers
 - **Messaging Semantic Conventions**: Standardized span attributes for queue operations
@@ -75,9 +75,14 @@ aspire do docker-compose-down-dc  # Teardown deployment
 ## Key Aspire Patterns
 
 **RabbitMQ Setup** - Message queue with management UI:
-```csharp
-var rabbitmq = builder.AddRabbitMQ("rabbitmq")
-    .WithManagementPlugin();
+```ts
+const rabbitmq = await builder.addRabbitMQ("messaging")
+    .withManagementPlugin()
+    .withLifetime(ContainerLifetime.Persistent)
+    .withUrlForEndpoint("management", async (url) =>
+    {
+        url.displayText = "RabbitMQ Management UI";
+    });
 ```
 
 **OpenTelemetry** - Automatic configuration via environment variables:
@@ -85,9 +90,10 @@ var rabbitmq = builder.AddRabbitMQ("rabbitmq")
 - `OTEL_SERVICE_NAME`: Service identifier for traces
 
 **Service References** - Automatic connection injection:
-```csharp
-var api = builder.AddNodeApp("api", "./api", scriptPath: "index.js")
-    .WithReference(rabbitmq); // Injects RABBITMQ_URI
+```ts
+const api = await builder.addNodeApp("api", "./api", "index.js")
+    .waitFor(rabbitmq)
+    .withReference(rabbitmq); // Injects RABBITMQ_URI
 ```
 
 **Trace Context Propagation** - OpenTelemetry context through message headers:

@@ -2,7 +2,7 @@
 
 REST API built with Go and chi router, using in-memory storage with thread-safe operations.
 
-This sample demonstrates a **custom Go integration** that automatically downloads Go modules, runs Go applications in development, and builds Go containers for production deployment.
+This sample demonstrates a **TypeScript AppHost** that runs the Go API directly during local development and switches to a checked-in Dockerfile for Docker Compose publishing.
 
 ## Architecture
 
@@ -14,12 +14,10 @@ flowchart LR
 
 ## What This Demonstrates
 
-- **Custom Go Integration**: `AddGoApp` builds a custom integration that:
-  - Automatically runs `go mod download` to install dependencies
-  - Executes Go applications during development with `go run`
-  - Builds containerized Go applications for production deployment
-- **WithHttpEndpoint**: HTTP endpoint with PORT environment variable
-- **WithHttpHealthCheck**: Health check endpoint at `/health`
+- **addExecutable**: Runs `go mod tidy` and `go run main.go` during local development
+- **addDockerfile**: Builds a production container image from `api/Dockerfile`
+- **withHttpEndpoint**: HTTP endpoint with PORT environment variable
+- **withHttpHealthCheck**: Health check endpoint at `/health`
 - **In-Memory Storage**: Thread-safe CRUD operations with sync.RWMutex
 - **Chi Router**: Lightweight, idiomatic HTTP router for Go
 
@@ -39,12 +37,29 @@ aspire do docker-compose-down-dc  # Teardown deployment
 
 ## Key Aspire Patterns
 
-**Go Application** - Automatic `go mod download` and build:
-```csharp
-builder.AddGoApp("api", "./api")
-    .WithHttpEndpoint(env: "PORT")
-    .WithHttpHealthCheck("/health")
-    .WithExternalHttpEndpoints();
+**Go Application** - Run with `go` locally, publish with a Dockerfile:
+```ts
+const executionContext = await builder.executionContext.get();
+
+if (await executionContext.isPublishMode.get())
+{
+    await builder.addDockerfile("api", "./api")
+        .withHttpEndpoint({ env: "PORT" })
+        .withHttpHealthCheck({ path: "/health" })
+        .withExternalHttpEndpoints();
+}
+else
+{
+    const api = await builder.addExecutable("api", "go", "./api", ["run", "main.go"])
+        .withHttpEndpoint({ env: "PORT" })
+        .withHttpHealthCheck({ path: "/health" })
+        .withExternalHttpEndpoints();
+
+    const goModInstaller = await builder.addExecutable("api-go-mod-installer", "go", "./api", ["mod", "tidy"])
+        .withParentRelationship(api);
+
+    await api.waitForCompletion(goModInstaller);
+}
 ```
 
 **Environment Variables** - Aspire injects `PORT` for HTTP endpoint configuration
