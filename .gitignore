@@ -63,6 +63,7 @@ bld/
 
 # Aspire output directory
 aspire-output/
+**/.aspire/settings.json
 **/.modules/
 **/dist/apphost/
 
