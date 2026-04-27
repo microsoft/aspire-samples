@@ -58,11 +58,9 @@
 
         var result = await SignInManager.TwoFactorRecoveryCodeSignInAsync(recoveryCode);
 
-        var userId = await UserManager.GetUserIdAsync(user);
-
         if (result.Succeeded)
         {
-            Logger.LogInformation("User with ID '{UserId}' logged in with a recovery code.", userId);
+            Logger.LogInformation("User logged in with a recovery code.");
             RedirectManager.RedirectTo(ReturnUrl);
         }
         else if (result.IsLockedOut)
@@ -72,7 +70,7 @@
         }
         else
         {
-            Logger.LogWarning("Invalid recovery code entered for user with ID '{UserId}' ", userId);
+            Logger.LogWarning("Invalid recovery code entered.");
             message = "Error: Invalid recovery code entered.";
         }
     }

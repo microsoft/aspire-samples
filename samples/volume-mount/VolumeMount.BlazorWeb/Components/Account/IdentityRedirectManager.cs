@@ -12,6 +12,7 @@ internal sealed class IdentityRedirectManager(NavigationManager navigationManage
     {
         SameSite = SameSiteMode.Strict,
         HttpOnly = true,
+        SecurePolicy = CookieSecurePolicy.Always,
         IsEssential = true,
         MaxAge = TimeSpan.FromSeconds(5),
     };
@@ -38,7 +39,9 @@ internal sealed class IdentityRedirectManager(NavigationManager navigationManage
 
     public void RedirectToWithStatus(string uri, string message, HttpContext context)
     {
-        context.Response.Cookies.Append(StatusCookieName, message, StatusCookieBuilder.Build(context));
+        var cookieOptions = StatusCookieBuilder.Build(context);
+        cookieOptions.Secure = true;
+        context.Response.Cookies.Append(StatusCookieName, message, cookieOptions);
         RedirectTo(uri);
     }
 
