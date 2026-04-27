@@ -16,7 +16,7 @@
     <PackageReference Include="Aspire.Hosting.JavaScript" Version="13.2.2" />
     <PackageReference Include="Aspire.Hosting.Python" Version="13.2.2" />
 
-    <PackageReference Include="coverlet.collector" Version="8.0.1">
+    <PackageReference Include="coverlet.collector" Version="10.0.0">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
