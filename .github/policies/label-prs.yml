@@ -1,0 +1,42 @@
+id: label.prs
+name: GitOps.PullRequestIssueManagement
+description: Label management for pull requests
+owner:
+resource: repository
+disabled: false
+where:
+configuration:
+  resourceManagementConfiguration:
+    eventResponderTasks:
+
+      - description: >-
+          Label Dependabot pull requests with 'dependencies' and 'auto-merge'
+        if:
+          - payloadType: Pull_Request
+          - isAction:
+              action: Opened
+          - or:
+            - isActivitySender:
+                user: dependabot
+            - isActivitySender:
+                user: dependabot[bot]
+        then:
+          - addLabel:
+              label: dependencies
+          - addLabel:
+              label: auto-merge
+
+      - description: >-
+          Label Dependabot issues with 'dependencies'
+        if:
+          - payloadType: Issues
+          - isAction:
+              action: Opened
+          - or:
+            - isActivitySender:
+                user: dependabot
+            - isActivitySender:
+                user: dependabot[bot]
+        then:
+          - addLabel:
+              label: dependencies
