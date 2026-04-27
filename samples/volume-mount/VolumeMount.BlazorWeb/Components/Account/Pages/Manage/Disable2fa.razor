@@ -64,11 +64,10 @@
             throw new InvalidOperationException("Unexpected error occurred disabling 2FA.");
         }
 
-        var userId = await UserManager.GetUserIdAsync(user);
-        Logger.LogInformation("User with ID '{UserId}' has disabled 2fa.", userId);
+        Logger.LogInformation("User has disabled 2FA.");
         RedirectManager.RedirectToWithStatus(
             "Account/Manage/TwoFactorAuthentication",
-            "2fa has been disabled. You can reenable 2fa when you setup an authenticator app",
+            "2FA has been disabled. You can reenable 2FA when you setup an authenticator app",
             HttpContext);
     }
 }

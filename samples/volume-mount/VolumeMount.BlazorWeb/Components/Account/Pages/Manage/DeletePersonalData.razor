@@ -83,8 +83,7 @@
 
         await SignInManager.SignOutAsync();
 
-        var userId = await UserManager.GetUserIdAsync(user);
-        Logger.LogInformation("User with ID '{UserId}' deleted themselves.", userId);
+        Logger.LogInformation("User deleted themselves.");
 
         RedirectManager.RedirectToCurrentPage();
     }
