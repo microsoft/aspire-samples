@@ -58,14 +58,63 @@ jobs:
       with:
         node-version: '24.x'
 
+    - name: Install Aspire CLI (Ubuntu)
+      if: matrix.os == 'ubuntu-latest'
+      shell: bash
+      run: |
+        install_path="$RUNNER_TEMP/aspire-cli"
+        curl -sSL https://aspire.dev/install.sh | bash -s -- --install-path "$install_path" --skip-path
+        echo "$install_path" >> "$GITHUB_PATH"
+        echo "ASPIRE_CLI=$install_path/aspire" >> "$GITHUB_ENV"
+        "$install_path/aspire" --version
+
+    - name: Install Aspire CLI (Windows)
+      if: matrix.os == 'windows-latest'
+      shell: pwsh
+      run: |
+        $installScript = Join-Path $env:RUNNER_TEMP 'aspire-install.ps1'
+        $installPath = Join-Path $env:RUNNER_TEMP 'aspire-cli'
+        $aspirePath = Join-Path $installPath 'aspire.exe'
+
+        Invoke-RestMethod 'https://aspire.dev/install.ps1' -OutFile $installScript
+        & $installScript -InstallPath $installPath -SkipPath
+
+        $installPath | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+        "ASPIRE_CLI=$aspirePath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+        & $aspirePath --version
+
     - name: Install & trust dev-certs
       id: install-dev-certs
       # Trusting certs on Windows throws a prompt so will halt the build
       if: matrix.os == 'ubuntu-latest'
       run: dotnet dev-certs https --trust
 
-    - name: Build
-      run: ${{ matrix.os == 'ubuntu-latest' && './build/build.sh' || '.\build\build.cmd' }}
+    - name: Restore TypeScript AppHosts
+      if: matrix.os == 'ubuntu-latest'
+      shell: bash
+      run: |
+        set -euo pipefail
+
+        while IFS= read -r apphost; do
+          sample_dir="$(dirname "$apphost")"
+          sample_name="${apphost#./samples/}"
+          echo "::group::Restore $sample_name"
+          (
+            cd "$sample_dir"
+            "$ASPIRE_CLI" restore --apphost apphost.ts --non-interactive
+            npm ci --no-audit --no-fund
+          )
+          echo "::endgroup::"
+        done < <(find ./samples -name apphost.ts | sort)
+
+    - name: Build (Ubuntu)
+      if: matrix.os == 'ubuntu-latest'
+      run: ./build/build.sh -p:SkipTypeScriptRestore=true
+
+    - name: Build (Windows)
+      if: matrix.os == 'windows-latest'
+      run: .\build\build.cmd
 
     - name: Copy binlog files
       if: always()

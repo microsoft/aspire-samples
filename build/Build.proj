@@ -4,17 +4,18 @@
     <TargetFramework>net10.0</TargetFramework>
     <SamplesDir>$(MSBuildThisFileDirectory)../samples/</SamplesDir>
     <NodeModules>$(SamplesDir)**/node_modules/**/*.*</NodeModules>
+    <AspireCliCommand Condition="'$(AspireCliCommand)' == '' and '$(ASPIRE_CLI)' != ''">$(ASPIRE_CLI)</AspireCliCommand>
+    <AspireCliCommand Condition="'$(AspireCliCommand)' == ''">aspire</AspireCliCommand>
   </PropertyGroup>
 
   <ItemGroup>
     <SampleSolutions Include="$(SamplesDir)**/*.slnx" Exclude="$(NodeModules)" />
     <AppHostProjects Include="$(SamplesDir)**/*.AppHost/*.AppHost.csproj" Exclude="$(NodeModules)" />
-    <CandidateSingleFileAppHostFiles Include="$(SamplesDir)**/apphost.cs" Exclude="$(NodeModules)" />
+    <CandidateSingleFileCSharpAppHostFiles Include="$(SamplesDir)**/apphost.cs" Exclude="$(NodeModules)" />
+    <SingleFileTypeScriptAppHostFiles Include="$(SamplesDir)**/apphost.ts" Exclude="$(NodeModules)" />
   </ItemGroup>
 
   <Target Name="BuildSamples" BeforeTargets="Build">
-    <Message Text="Building @(SampleSolutions->Count()) samples" Importance="High" />
-
     <PropertyGroup>
       <!-- Support building samples with a specific packages restore location & disabling HTTP cache to mimic CI -->
       <RestorePackagesPath Condition="'$(NoRestoreCache)' == 'true'">$(MSBuildThisFileDirectory)../.packages</RestorePackagesPath>
@@ -23,17 +24,22 @@
 
     <ItemGroup>
       <!-- Filter out any apphost.cs that's in a directory that also contains a .csproj file -->
-      <SingleFileAppHostFiles Include="@(CandidateSingleFileAppHostFiles)"
-                              ParentDir="%(CandidateSingleFileAppHostFiles.RootDir)%(CandidateSingleFileAppHostFiles.Directory)"
-                              Condition="$([System.IO.Directory]::GetFiles('%(CandidateSingleFileAppHostFiles.RootDir)%(CandidateSingleFileAppHostFiles.Directory)','*.csproj').Length) == 0" />
+      <SingleFileCSharpAppHostFiles Include="@(CandidateSingleFileCSharpAppHostFiles)"
+                                    ParentDir="%(CandidateSingleFileCSharpAppHostFiles.RootDir)%(CandidateSingleFileCSharpAppHostFiles.Directory)"
+                                    Condition="$([System.IO.Directory]::GetFiles('%(CandidateSingleFileCSharpAppHostFiles.RootDir)%(CandidateSingleFileCSharpAppHostFiles.Directory)','*.csproj').Length) == 0" />
     </ItemGroup>
+
+    <Message Text="Building @(SampleSolutions->Count()) solution samples, @(SingleFileCSharpAppHostFiles->Count()) single-file C# AppHosts, and @(SingleFileTypeScriptAppHostFiles->Count()) single-file TypeScript AppHosts" Importance="High" />
+    <Message Text="Using Aspire CLI command: $(AspireCliCommand)" Importance="High" Condition="'@(SingleFileTypeScriptAppHostFiles)' != ''" />
 
     <ItemGroup>
       <!-- Build up list of samples to build -->
       <BuildsPerSample Include="$(MSBuildThisFile)"
                       AdditionalProperties="SamplePath=%(SampleSolutions.Identity);RestorePackagesPath=$(RestorePackagesPath);RestoreNoHttpCache=$(RestoreNoHttpCache)" />
       <BuildsPerSample Include="$(MSBuildThisFile)"
-                      AdditionalProperties="SamplePath=%(SingleFileAppHostFiles.Identity);RestorePackagesPath=$(RestorePackagesPath);RestoreNoHttpCache=$(RestoreNoHttpCache)" />
+                      AdditionalProperties="SamplePath=%(SingleFileCSharpAppHostFiles.Identity);RestorePackagesPath=$(RestorePackagesPath);RestoreNoHttpCache=$(RestoreNoHttpCache)" />
+      <BuildsPerSample Include="$(MSBuildThisFile)"
+                      AdditionalProperties="SamplePath=%(SingleFileTypeScriptAppHostFiles.Identity);RestorePackagesPath=$(RestorePackagesPath);RestoreNoHttpCache=$(RestoreNoHttpCache)" />
     </ItemGroup>
 
     <!-- Execute the appropriate sample-building target for each sample -->
@@ -55,7 +61,12 @@
       <RestoreArgs Include="-bl:$([System.IO.Path]::GetFileNameWithoutExtension($([System.IO.Path]::GetDirectoryName(%(SampleToBuild.Identity)))))-restore-{}.binlog" Condition="%(SampleToBuild.Extension) == '.cs'" />
       <RestoreArgs Include="-bl:%(SampleToBuild.Filename)-restore-{}.binlog" Condition="%(SampleToBuild.Extension) != '.cs'" />
     </ItemGroup>
-    <Exec Command="@(RestoreArgs, ' ')" WorkingDirectory="%(SampleToBuild.RootDir)%(SampleToBuild.Directory)"
+    <Message Text="Restoring sample %(SampleToBuild.Identity)" Importance="High" />
+    <Exec Condition="%(SampleToBuild.Extension) != '.ts'" Command="@(RestoreArgs, ' ')" WorkingDirectory="%(SampleToBuild.RootDir)%(SampleToBuild.Directory)"
+          StandardOutputImportance="Normal" StandardErrorImportance="Normal" />
+    <Exec Condition="%(SampleToBuild.Extension) == '.ts' and '$(SkipTypeScriptRestore)' != 'true'" Command="&quot;$(AspireCliCommand)&quot; restore --apphost %(SampleToBuild.Filename)%(SampleToBuild.Extension) --non-interactive" WorkingDirectory="%(SampleToBuild.RootDir)%(SampleToBuild.Directory)"
+          StandardOutputImportance="Normal" StandardErrorImportance="Normal" />
+    <Exec Condition="%(SampleToBuild.Extension) == '.ts' and '$(SkipTypeScriptRestore)' != 'true'" Command="npm ci --no-audit --no-fund" WorkingDirectory="%(SampleToBuild.RootDir)%(SampleToBuild.Directory)"
           StandardOutputImportance="Normal" StandardErrorImportance="Normal" />
   </Target>
 
@@ -70,7 +81,10 @@
       <BuildArgs Include="-bl:$([System.IO.Path]::GetFileNameWithoutExtension($([System.IO.Path]::GetDirectoryName(%(SampleToBuild.Identity)))))-build-{}.binlog" Condition="%(SampleToBuild.Extension) == '.cs'" />
       <BuildArgs Include="-bl:%(SampleToBuild.Filename)-build-{}.binlog" Condition="%(SampleToBuild.Extension) != '.cs'" />
     </ItemGroup>
-    <Exec Command="@(BuildArgs, ' ')" WorkingDirectory="%(SampleToBuild.RootDir)%(SampleToBuild.Directory)"
+    <Message Text="Building sample %(SampleToBuild.Identity)" Importance="High" />
+    <Exec Condition="%(SampleToBuild.Extension) != '.ts'" Command="@(BuildArgs, ' ')" WorkingDirectory="%(SampleToBuild.RootDir)%(SampleToBuild.Directory)"
+          StandardOutputImportance="Normal" StandardErrorImportance="Normal" />
+    <Exec Condition="%(SampleToBuild.Extension) == '.ts'" Command="npm run aspire:build" WorkingDirectory="%(SampleToBuild.RootDir)%(SampleToBuild.Directory)"
           StandardOutputImportance="Normal" StandardErrorImportance="Normal" />
   </Target>
 

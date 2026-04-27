@@ -1,0 +1,11 @@
+[project]
+name = "ai-agent"
+version = "1.0.0"
+description = "AI Chat Agent powered by OpenAI and FastAPI"
+requires-python = ">=3.8"
+dependencies = [
+    "fastapi",
+    "uvicorn[standard]",
+    "openai",
+    "pydantic",
+]

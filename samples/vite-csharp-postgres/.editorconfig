@@ -1,0 +1,4 @@
+[*.cs]
+
+# ASPIRECSHARPAPPS001: Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+dotnet_diagnostic.ASPIRECSHARPAPPS001.severity = silent

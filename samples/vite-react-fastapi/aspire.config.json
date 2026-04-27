@@ -1,0 +1,24 @@
+{
+  "appHost": {
+    "path": "apphost.ts",
+    "language": "typescript/nodejs"
+  },
+  "sdk": {
+    "version": "13.2.2"
+  },
+  "profiles": {
+    "https": {
+      "applicationUrl": "https://localhost:32532;http://localhost:11142",
+      "environmentVariables": {
+        "ASPIRE_DASHBOARD_OTLP_ENDPOINT_URL": "https://localhost:19026",
+        "ASPIRE_RESOURCE_SERVICE_ENDPOINT_URL": "https://localhost:52201"
+      }
+    }
+  },
+  "packages": {
+    "Aspire.Hosting.Python": "13.2.2",
+    "Aspire.Hosting.JavaScript": "13.2.2",
+    "Aspire.Hosting.Yarp": "13.2.2",
+    "Aspire.Hosting.Docker": "13.2.2"
+  }
+}

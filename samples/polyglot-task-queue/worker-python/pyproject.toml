@@ -1,0 +1,21 @@
+[project]
+name = "worker-python"
+version = "0.1.0"
+description = "Python data processing worker for polyglot task queue"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "aio-pika>=9.4.3",
+    "pandas>=2.2.0",
+    "numpy>=1.26.0",
+    "opentelemetry-api>=1.27.0",
+    "opentelemetry-sdk>=1.27.0",
+    "opentelemetry-exporter-otlp-proto-grpc>=1.27.0",
+    "opentelemetry-instrumentation>=0.48b0"
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-asyncio>=0.21.0"
+]
