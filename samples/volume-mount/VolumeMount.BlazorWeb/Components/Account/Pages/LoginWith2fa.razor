@@ -78,7 +78,7 @@
         }
         else if (result.IsLockedOut)
         {
-            Logger.LogWarning("User account locked out after 2fa attempt.");
+            Logger.LogWarning("User account locked out after 2FA attempt.");
             RedirectManager.RedirectTo("Account/Lockout");
         }
         else
