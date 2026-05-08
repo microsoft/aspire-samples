@@ -10,11 +10,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Aspire.Hosting.AppHost" Version="13.2.2" />
-    <PackageReference Include="Aspire.Hosting.Azure" Version="13.2.2" />
-    <PackageReference Include="Aspire.Hosting.Testing" Version="13.2.2" />
-    <PackageReference Include="Aspire.Hosting.JavaScript" Version="13.2.2" />
-    <PackageReference Include="Aspire.Hosting.Python" Version="13.2.2" />
+    <PackageReference Include="Aspire.Hosting.AppHost" Version="13.3.0" />
+    <PackageReference Include="Aspire.Hosting.Azure" Version="13.3.0" />
+    <PackageReference Include="Aspire.Hosting.Testing" Version="13.3.0" />
+    <PackageReference Include="Aspire.Hosting.JavaScript" Version="13.3.0" />
+    <PackageReference Include="Aspire.Hosting.Python" Version="13.3.0" />
 
     <PackageReference Include="coverlet.collector" Version="8.0.1">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -39,7 +39,7 @@
 
   <ItemGroup>
     <!-- Reference all sample AppHost projects in the repo -->
-    <PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="10.4.0" />
+    <PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="10.5.0" />
     <ProjectReference Include="../../samples/**/*.AppHost/*.AppHost.csproj" />
     <ThisProject Include="$(MSBuildThisFileFullPath)" />
   </ItemGroup>

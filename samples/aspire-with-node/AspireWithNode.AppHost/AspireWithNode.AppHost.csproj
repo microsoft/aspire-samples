@@ -9,11 +9,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Aspire.Hosting.AppHost" Version="13.2.2" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.5" />
+    <PackageReference Include="Aspire.Hosting.AppHost" Version="13.3.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.7" />
     <ProjectReference Include="..\AspireWithNode.AspNetCoreApi\AspireWithNode.AspNetCoreApi.csproj" />
-    <PackageReference Include="Aspire.Hosting.JavaScript" Version="13.2.2" />
-    <PackageReference Include="Aspire.Hosting.Redis" Version="13.2.2" />
+    <PackageReference Include="Aspire.Hosting.JavaScript" Version="13.3.0" />
+    <PackageReference Include="Aspire.Hosting.Redis" Version="13.3.0" />
   </ItemGroup>
 
 </Project>
