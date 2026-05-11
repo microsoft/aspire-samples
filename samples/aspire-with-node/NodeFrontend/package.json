@@ -23,7 +23,7 @@
     "@opentelemetry/instrumentation-winston": "^0.49.0",
     "@opentelemetry/sdk-logs": "^0.203.0",
     "@opentelemetry/sdk-metrics": "^2.0.1",
-    "@opentelemetry/sdk-node": "^0.203.0",
+    "@opentelemetry/sdk-node": "^0.217.0",
     "@opentelemetry/winston-transport": "^0.7.0",
     "express": "^5.2.0",
     "node-fetch": "^3.3.2",
