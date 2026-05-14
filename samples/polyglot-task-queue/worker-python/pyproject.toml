@@ -5,17 +5,17 @@ description = "Python data processing worker for polyglot task queue"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "aio-pika>=9.4.3",
-    "pandas>=2.2.0",
-    "numpy>=1.26.0",
-    "opentelemetry-api>=1.27.0",
-    "opentelemetry-sdk>=1.27.0",
-    "opentelemetry-exporter-otlp-proto-grpc>=1.27.0",
-    "opentelemetry-instrumentation>=0.48b0"
+    "aio-pika>=9.6.2",
+    "pandas>=3.0.3",
+    "numpy>=2.4.4",
+    "opentelemetry-api>=1.41.1",
+    "opentelemetry-sdk>=1.41.1",
+    "opentelemetry-exporter-otlp-proto-grpc>=1.41.1",
+    "opentelemetry-instrumentation>=0.62b1"
 ]
 
 [dependency-groups]
 dev = [
-    "pytest>=7.0.0",
-    "pytest-asyncio>=0.21.0"
+    "pytest>=9.0.3",
+    "pytest-asyncio>=1.3.0"
 ]

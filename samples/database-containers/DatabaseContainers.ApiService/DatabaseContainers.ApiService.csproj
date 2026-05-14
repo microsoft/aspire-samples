@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -12,11 +12,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Aspire.Microsoft.Data.SqlClient" Version="13.2.2" />
-    <PackageReference Include="Aspire.Npgsql" Version="13.2.2" />
-    <PackageReference Include="Aspire.MySqlConnector" Version="13.2.2" />
+    <PackageReference Include="Aspire.Microsoft.Data.SqlClient" Version="13.3.2" />
+    <PackageReference Include="Aspire.Npgsql" Version="13.3.2" />
+    <PackageReference Include="Aspire.MySqlConnector" Version="13.3.2" />
     <PackageReference Include="Dapper" Version="2.1.72" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="10.0.1" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="10.1.7" />
   </ItemGroup>
 
 </Project>

@@ -4,7 +4,7 @@
     "language": "typescript/nodejs"
   },
   "sdk": {
-    "version": "13.2.2"
+    "version": "13.3.2"
   },
   "profiles": {
     "https": {
@@ -16,6 +16,6 @@
     }
   },
   "packages": {
-    "Aspire.Hosting.Docker": "13.2.2"
+    "Aspire.Hosting.Docker": "13.3.2"
   }
 }

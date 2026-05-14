@@ -1,7 +1,7 @@
 import { createBuilder } from "./.modules/aspire.js";
 
 const builder = await createBuilder();
-const executionContext = await builder.executionContext.get();
+const executionContext = await builder.executionContext();
 
 await builder.addDockerComposeEnvironment("env")
     .configureDashboard(async (dashboard) =>
@@ -9,7 +9,7 @@ await builder.addDockerComposeEnvironment("env")
         await dashboard.withHostPort({ port: 9003 });
     });
 
-if (await executionContext.isPublishMode.get())
+if (await executionContext.isPublishMode())
 {
     await builder.addDockerfile("api", "./api")
         .withHttpEndpoint({ env: "PORT" })

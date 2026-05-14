@@ -1,7 +1,7 @@
 import { createBuilder } from "./.modules/aspire.js";
 
 const builder = await createBuilder();
-const executionContext = await builder.executionContext.get();
+const executionContext = await builder.executionContext();
 
 await builder.addDockerComposeEnvironment("dc");
 
@@ -18,7 +18,7 @@ await builder.addYarp("app")
         await (await yarp.addRoute("api/{**catch-all}", apiCluster))
             .withTransformPathRemovePrefix("/api");
 
-        if (await executionContext.isRunMode.get())
+        if (await executionContext.isRunMode())
         {
             const frontendCluster = await yarp.addClusterFromResource(frontend);
             await yarp.addRoute("{**catch-all}", frontendCluster);

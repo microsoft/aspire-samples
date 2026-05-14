@@ -4,10 +4,10 @@ version = "0.1.0"
 description = "FastAPI starter"
 requires-python = ">=3.13"
 dependencies = [
-    "fastapi[standard]>=0.119.0",
-    "opentelemetry-distro>=0.59b0",
-    "opentelemetry-exporter-otlp-proto-grpc>=1.38.0",
-    "opentelemetry-instrumentation-fastapi>=0.59b0",
-    "opentelemetry-instrumentation-redis>=0.59b0",
-    "redis>=6.4.0",
+    "fastapi[standard]>=0.136.1",
+    "opentelemetry-distro>=0.62b1",
+    "opentelemetry-exporter-otlp-proto-grpc>=1.41.1",
+    "opentelemetry-instrumentation-fastapi>=0.62b1",
+    "opentelemetry-instrumentation-redis>=0.62b1",
+    "redis>=7.4.0",
 ]

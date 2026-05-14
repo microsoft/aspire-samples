@@ -4,7 +4,7 @@
     "language": "typescript/nodejs"
   },
   "sdk": {
-    "version": "13.2.2"
+    "version": "13.3.2"
   },
   "profiles": {
     "https": {
@@ -16,9 +16,9 @@
     }
   },
   "packages": {
-    "Aspire.Hosting.Python": "13.2.2",
-    "Aspire.Hosting.JavaScript": "13.2.2",
-    "Aspire.Hosting.Qdrant": "13.2.2",
-    "Aspire.Hosting.OpenAI": "13.2.2"
+    "Aspire.Hosting.Python": "13.3.2",
+    "Aspire.Hosting.JavaScript": "13.3.2",
+    "Aspire.Hosting.Qdrant": "13.3.2",
+    "Aspire.Hosting.OpenAI": "13.3.2"
   }
 }

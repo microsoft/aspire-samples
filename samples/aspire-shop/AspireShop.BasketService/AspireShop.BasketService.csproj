@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -7,9 +7,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Grpc.AspNetCore" Version="2.76.0" />
-    <PackageReference Include="Grpc.AspNetCore.HealthChecks" Version="2.76.0" />
-    <PackageReference Include="Aspire.StackExchange.Redis" Version="13.2.2" />
+    <PackageReference Include="Grpc.AspNetCore" Version="2.80.0" />
+    <PackageReference Include="Grpc.AspNetCore.HealthChecks" Version="2.80.0" />
+    <PackageReference Include="Aspire.StackExchange.Redis" Version="13.3.2" />
   </ItemGroup>
 
   <ItemGroup>

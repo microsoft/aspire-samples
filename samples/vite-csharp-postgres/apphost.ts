@@ -29,10 +29,12 @@ const api = await builder.addCSharpApp("api", "./api")
     {
         url.displayLocation = UrlDisplayLocation.DetailsOnly;
     })
-    .withUrlForEndpointFactory("https", async (endpoint) => ({
-        url: `${await endpoint.url.get()}/scalar`,
-        displayText: "API Reference"
-    }))
+    .withUrls(async (ctx) =>
+    {
+        const endpoint = ctx.getEndpoint("https");
+        const urls = await ctx.urls();
+        await urls.addForEndpoint(endpoint, `${await endpoint.url()}/scalar`, { displayText: "API Reference" });
+    })
     .publishAsDockerComposeService(async (_, service) =>
     {
         await service.restart.set("always");
