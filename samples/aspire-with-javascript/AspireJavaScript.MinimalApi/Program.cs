@@ -22,10 +22,18 @@ else
 }
 
 app.UseHttpsRedirection();
-app.UseCors(static builder => 
-    builder.AllowAnyMethod()
-        .AllowAnyHeader()
-        .AllowAnyOrigin());
+
+// SAMPLE ONLY: the wide-open CORS policy is gated on Development so the pattern
+// does not follow the sample into deployments that ship cookies or state-changing
+// endpoints. Real apps should configure an explicit origin allow-list via
+// WithOrigins(...) and only the headers/methods they actually need.
+if (app.Environment.IsDevelopment())
+{
+    app.UseCors(static builder =>
+        builder.AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowAnyOrigin());
+}
 
 var summaries = new[]
 {

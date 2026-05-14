@@ -1,13 +1,22 @@
+import asyncio
+import logging
 import os
-from pathlib import Path
-from fastapi import FastAPI, File, UploadFile, HTTPException
-from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel
-from openai import OpenAI
-from qdrant_client.models import PointStruct
-import tiktoken
+import secrets
 import uuid
+from pathlib import Path
+from time import monotonic
+
+import tiktoken
+from fastapi import Depends, FastAPI, File, HTTPException, Request, UploadFile, status
+from fastapi.security import APIKeyHeader
+from fastapi.staticfiles import StaticFiles
+from openai import OpenAI
+from pydantic import BaseModel
+from qdrant_client.models import PointStruct
 from qdrant_setup import initialize_qdrant, COLLECTION_NAME
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+logger = logging.getLogger(__name__)
 
 app = FastAPI()
 
@@ -22,6 +31,59 @@ qdrant_client = initialize_qdrant()
 EMBEDDING_MODEL = "text-embedding-3-small"
 CHAT_MODEL = "gpt-4.1"
 
+# Defense-in-depth caps so the /upload and /ask endpoints can't be turned into
+# an unbounded OpenAI cost-burn or memory-growth vector when the AppHost wires
+# the api with `withExternalHttpEndpoints`.
+MAX_FILE_SIZE = 1_000_000      # 1 MB hard ceiling on uploaded payload size
+MAX_CHUNKS_PER_DOC = 200
+MAX_QUESTION_LENGTH = 2000
+RATE_LIMIT_CAPACITY = 20
+RATE_LIMIT_REFILL_PER_SEC = 0.33  # ~20 requests per minute per client
+
+# Optional shared-secret auth. When RAG_API_KEY is set the mutating endpoints
+# require callers to send the same value via the X-API-Key header. When it is
+# not set the sample stays anonymous (the other guards still apply) and a loud
+# warning is logged so deployments without auth are obvious.
+_api_key_required: str | None = os.getenv("RAG_API_KEY") or None
+_api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
+
+_rate_buckets: dict[str, tuple[float, float]] = {}
+_rate_lock = asyncio.Lock()
+
+if _api_key_required is None:
+    logger.warning(
+        "RAG_API_KEY not set. /upload and /ask are anonymous; set RAG_API_KEY "
+        "before exposing this sample on a public network."
+    )
+
+
+async def _require_api_key(api_key: str | None = Depends(_api_key_header)) -> None:
+    if _api_key_required is None:
+        return
+    if api_key is None or not secrets.compare_digest(api_key, _api_key_required):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or missing API key",
+        )
+
+
+async def _enforce_rate_limit(request: Request) -> None:
+    client_id = request.client.host if request.client else "unknown"
+    now = monotonic()
+    async with _rate_lock:
+        tokens, last = _rate_buckets.get(client_id, (float(RATE_LIMIT_CAPACITY), now))
+        tokens = min(
+            float(RATE_LIMIT_CAPACITY),
+            tokens + (now - last) * RATE_LIMIT_REFILL_PER_SEC,
+        )
+        if tokens < 1:
+            _rate_buckets[client_id] = (tokens, now)
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail="Rate limit exceeded. Please slow down.",
+            )
+        _rate_buckets[client_id] = (tokens - 1, now)
+
 
 class QuestionRequest(BaseModel):
     question: str
@@ -35,8 +97,8 @@ def chunk_text(text: str, chunk_size: int = 500, overlap: int = 50) -> list[str]
     chunks = []
     for i in range(0, len(tokens), chunk_size - overlap):
         chunk_tokens = tokens[i:i + chunk_size]
-        chunk_text = encoding.decode(chunk_tokens)
-        chunks.append(chunk_text)
+        chunk_str = encoding.decode(chunk_tokens)
+        chunks.append(chunk_str)
 
     return chunks
 
@@ -55,16 +117,45 @@ async def health():
     return {"status": "healthy"}
 
 
-@app.post("/upload")
+@app.post(
+    "/upload",
+    dependencies=[Depends(_enforce_rate_limit), Depends(_require_api_key)],
+)
 async def upload_document(file: UploadFile = File(...)):
     """Upload and index a document."""
     try:
-        # Read file content
-        content = await file.read()
-        text = content.decode("utf-8")
+        # Stream the upload in fixed-size chunks so we can reject oversized
+        # payloads before they all sit in memory.
+        buffered: list[bytes] = []
+        size = 0
+        while True:
+            chunk = await file.read(64 * 1024)
+            if not chunk:
+                break
+            size += len(chunk)
+            if size > MAX_FILE_SIZE:
+                raise HTTPException(
+                    status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                    detail=f"Uploaded file exceeds {MAX_FILE_SIZE} byte limit.",
+                )
+            buffered.append(chunk)
+        content = b"".join(buffered)
+
+        try:
+            text = content.decode("utf-8")
+        except UnicodeDecodeError:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Uploaded file is not valid UTF-8 text.",
+            )
 
         # Chunk the document
         chunks = chunk_text(text)
+        if len(chunks) > MAX_CHUNKS_PER_DOC:
+            raise HTTPException(
+                status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                detail=f"Document produces too many chunks (limit {MAX_CHUNKS_PER_DOC}).",
+            )
         print(f"📄 Processing {len(chunks)} chunks from {file.filename}")
 
         # Create embeddings and store in Qdrant
@@ -93,6 +184,8 @@ async def upload_document(file: UploadFile = File(...)):
             "chunks": len(chunks)
         }
 
+    except HTTPException:
+        raise
     except Exception as e:
         print(f"❌ Error in upload_document: {e}")
         import traceback
@@ -100,9 +193,22 @@ async def upload_document(file: UploadFile = File(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/ask")
+@app.post(
+    "/ask",
+    dependencies=[Depends(_enforce_rate_limit), Depends(_require_api_key)],
+)
 async def ask_question(request: QuestionRequest):
     """Answer a question using RAG."""
+    if not request.question or not request.question.strip():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Question is required.",
+        )
+    if len(request.question) > MAX_QUESTION_LENGTH:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Question exceeds {MAX_QUESTION_LENGTH} character limit.",
+        )
     try:
         # Get embedding for question
         question_embedding = get_embedding(request.question)
@@ -160,6 +266,8 @@ async def ask_question(request: QuestionRequest):
             "sources": sources
         }
 
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
