@@ -40,5 +40,11 @@
     "karma-jasmine-html-reporter": "~2.2.0",
     "typescript": "~5.9.3",
     "run-script-os": "^1.1.6"
+  },
+  "overrides": {
+    "postcss": "8.5.10",
+    "sockjs": {
+      "uuid": "14.0.0"
+    }
   }
 }
