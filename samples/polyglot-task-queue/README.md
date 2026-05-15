@@ -74,6 +74,22 @@ aspire deploy   # Deploy to Docker Compose
 aspire do docker-compose-down-dc  # Teardown deployment
 ```
 
+## Security Notes
+
+This sample is intended for local demo use. RabbitMQ messages are treated as trusted internal messages, and the public HTTP endpoints are unauthenticated.
+
+The Node.js API applies simple guardrails for the demo: JSON request bodies are limited to 64 KB, task `type` must be `analyze` or `report`, task `data` is capped at 10,000 characters, and `GET /tasks` returns the latest 100 tasks by default with `?limit=` capped at 500. Production services should add explicit input schemas, authentication and authorization, rate limits, a RabbitMQ retry/dead-letter policy, and capacity limits for queues, stored results, and in-memory caches.
+
+The workers acknowledge or drop invalid and failed messages instead of requeueing indefinitely. For production, configure bounded retries and a dead-letter exchange so poison messages can be inspected without blocking queue processing.
+
+Relevant references:
+
+- [Node.js security best practices](https://nodejs.org/en/learn/getting-started/security-best-practices)
+- [Express body parser limits](https://expressjs.com/en/resources/middleware/body-parser.html)
+- [RabbitMQ consumer acknowledgements and publisher confirms](https://www.rabbitmq.com/docs/confirms)
+- [RabbitMQ dead letter exchanges](https://www.rabbitmq.com/docs/dlx)
+- [OWASP API Security Top 10](https://owasp.org/API-Security/editions/2023/en/0x11-t10/)
+
 ## Key Aspire Patterns
 
 **RabbitMQ Setup** - Message queue with management UI:

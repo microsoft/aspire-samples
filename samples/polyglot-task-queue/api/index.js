@@ -15,9 +15,69 @@ const tracer = trace.getTracer('api-service');
 
 const app = express();
 const port = process.env.PORT || 3000;
+const JSON_BODY_LIMIT = '64kb';
+const MAX_TASK_DATA_LENGTH = 10_000;
+const DEFAULT_TASK_LIST_LIMIT = 100;
+const MAX_TASK_LIST_LIMIT = 500;
+const SUPPORTED_TASK_TYPES = new Set(['analyze', 'report']);
 
-app.use(express.json());
+app.use(express.json({ limit: JSON_BODY_LIMIT }));
+app.use((error, req, res, next) => {
+    if (error.type === 'entity.too.large') {
+        return res.status(413).json({ error: `Request body must be ${JSON_BODY_LIMIT} or smaller` });
+    }
+
+    if (error.type === 'entity.parse.failed') {
+        return res.status(400).json({ error: 'Request body must be valid JSON' });
+    }
+
+    return next(error);
+});
 app.use(express.static(join(__dirname, 'public')));
+
+function validateTaskRequest(body) {
+    if (!body || typeof body !== 'object' || Array.isArray(body)) {
+        return 'Request body must be a JSON object';
+    }
+
+    const { type, data } = body;
+
+    if (typeof type !== 'string' || type.trim().length === 0) {
+        return 'type is required';
+    }
+
+    if (!SUPPORTED_TASK_TYPES.has(type)) {
+        return `type must be one of: ${Array.from(SUPPORTED_TASK_TYPES).join(', ')}`;
+    }
+
+    if (typeof data !== 'string' || data.length === 0) {
+        return 'data is required';
+    }
+
+    if (data.length > MAX_TASK_DATA_LENGTH) {
+        return `data must be ${MAX_TASK_DATA_LENGTH} characters or fewer`;
+    }
+
+    return null;
+}
+
+function parseTaskListLimit(value) {
+    if (value === undefined) {
+        return { limit: DEFAULT_TASK_LIST_LIMIT };
+    }
+
+    const rawLimit = Array.isArray(value) ? value[0] : value;
+    if (typeof rawLimit !== 'string' || !/^\d+$/.test(rawLimit)) {
+        return { error: `limit must be a positive integer up to ${MAX_TASK_LIST_LIMIT}` };
+    }
+
+    const parsedLimit = Number.parseInt(rawLimit, 10);
+    if (parsedLimit < 1) {
+        return { error: `limit must be a positive integer up to ${MAX_TASK_LIST_LIMIT}` };
+    }
+
+    return { limit: Math.min(parsedLimit, MAX_TASK_LIST_LIMIT) };
+}
 
 // ============================================================================
 // STATE MANAGEMENT
@@ -173,9 +233,10 @@ async function consumeTaskStatus() {
                             }
 
                             // Handle error status
-                            if (statusUpdate.status === 'error' && statusUpdate.error) {
-                                task.error = statusUpdate.error;
-                                span.setAttribute('task.error', statusUpdate.error);
+                            const statusError = statusUpdate.error || statusUpdate.additionalData?.error;
+                            if (statusUpdate.status === 'error' && statusError) {
+                                task.error = statusError;
+                                span.setAttribute('task.error', statusError);
                             }
                             console.log(`🔄 [Background] Updated task in cache: ${task.id} -> ${task.status}`);
                             span.addEvent('task.updated_in_cache');
@@ -310,13 +371,13 @@ app.post('/tasks', async (req, res) => {
     // Express auto-instrumentation creates a span, we'll use it as parent
     return tracer.startActiveSpan('task.submit', async (span) => {
         try {
-            const { type, data } = req.body;
-
-            if (!type || !data) {
-                span.setStatus({ code: SpanStatusCode.ERROR, message: 'Missing required fields' });
-                span.end();
-                return res.status(400).json({ error: 'type and data are required' });
+            const validationError = validateTaskRequest(req.body);
+            if (validationError) {
+                span.setStatus({ code: SpanStatusCode.ERROR, message: validationError });
+                return res.status(400).json({ error: validationError });
             }
+
+            const { type, data } = req.body;
 
             const taskId = `task-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
             const createdAt = new Date().toISOString();
@@ -376,9 +437,17 @@ app.post('/tasks', async (req, res) => {
 
 // Get all tasks - reads ONLY from cache (Map), never queries RabbitMQ
 app.get('/tasks', (req, res) => {
+    const { limit, error } = parseTaskListLimit(req.query.limit);
+    if (error) {
+        return res.status(400).json({ error });
+    }
+
     const allTasks = Array.from(tasks.values()).sort((a, b) =>
         new Date(b.createdAt) - new Date(a.createdAt)
-    );
+    ).slice(0, limit);
+
+    res.set('X-Total-Count', String(tasks.size));
+    res.set('X-Result-Limit', String(limit));
     res.json(allTasks);
 });
 

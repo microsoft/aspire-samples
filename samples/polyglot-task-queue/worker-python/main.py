@@ -39,6 +39,33 @@ TASKS_QUEUE = 'tasks'
 RESULTS_QUEUE = 'results'
 TASK_STATUS_QUEUE = 'task_status'
 WORKER_NAME = 'python-worker'
+MAX_TASK_DATA_LENGTH = 10_000
+SUPPORTED_TASK_TYPES = {'analyze', 'report'}
+
+def validate_task(task) -> str | None:
+    """Validate the internal task message before processing."""
+    if not isinstance(task, dict):
+        return 'task message must be a JSON object'
+
+    task_id = task.get('taskId')
+    if not isinstance(task_id, str) or not task_id.strip():
+        return 'taskId is required'
+
+    task_type = task.get('type')
+    if not isinstance(task_type, str) or not task_type.strip():
+        return 'type is required'
+
+    if task_type not in SUPPORTED_TASK_TYPES:
+        return f"unsupported task type '{task_type}'"
+
+    data = task.get('data')
+    if not isinstance(data, str) or not data:
+        return 'data is required'
+
+    if len(data) > MAX_TASK_DATA_LENGTH:
+        return f'data must be {MAX_TASK_DATA_LENGTH} characters or fewer'
+
+    return None
 
 async def publish_task_status(channel, task_id, status, **additional_data):
     """Publish task status update to RabbitMQ with trace context."""
@@ -163,8 +190,19 @@ async def on_message(message: AbstractIncomingMessage, channel):
                 span.set_attribute('messaging.operation', 'process')
 
                 task = json.loads(message.body.decode())
-                task_id = task.get('taskId')
-                task_type = task.get('type')
+                validation_error = validate_task(task)
+                task_id = task.get('taskId') if isinstance(task, dict) else None
+
+                if validation_error:
+                    print(f"[{datetime.now().isoformat()}] Dropping invalid task message: {validation_error}", file=sys.stderr)
+                    if isinstance(task_id, str) and task_id.strip():
+                        await publish_task_status(channel, task_id, 'error', error=validation_error)
+                    span.set_status(Status(StatusCode.ERROR, validation_error))
+                    span.add_event('task.invalid', {'reason': validation_error})
+                    return
+
+                task_id = task['taskId']
+                task_type = task['type']
 
                 span.set_attribute('task.id', task_id)
                 span.set_attribute('task.type', task_type)
