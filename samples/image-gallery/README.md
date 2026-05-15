@@ -35,7 +35,7 @@ flowchart LR
 1. **Upload**: User uploads image → API saves to Azure Blob Storage and metadata to Azure SQL
 2. **Queue**: API enqueues thumbnail generation message to Azure Storage Queue
 3. **Trigger**: Azure monitors queue depth and automatically starts a Container Apps Job instance
-4. **Process**: Job processes messages in batches (up to 10), generates thumbnails using ImageSharp
+4. **Process**: Job processes messages in batches (up to 10), generates thumbnails using SkiaSharp
 5. **Scale Down**: After 2 empty polls (~5 seconds), job exits; new instances start automatically when messages arrive
 
 ### Local Development vs Production
@@ -54,7 +54,7 @@ flowchart LR
 - **Dual-Mode Resources**: Azurite/SQL Server containers locally, Azure services in production (`.RunAsEmulator()`, `.RunAsContainer()`)
 - **Free Tier Deployment**: Azure SQL free tier with serverless auto-pause, Container Apps scale-to-zero
 - **Managed Identity**: Password-less authentication to all Azure resources (Storage, SQL, Queues)
-- **Polyglot Stack**: Vite+React frontend embedded in C# API container, ImageSharp for image processing
+- **Polyglot Stack**: Vite+React frontend embedded in C# API container, SkiaSharp for image processing
 - **OpenTelemetry**: Distributed tracing across upload → queue → worker pipeline
 
 ## Running Locally

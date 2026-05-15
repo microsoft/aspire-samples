@@ -5,8 +5,7 @@ using Azure.Storage.Blobs;
 using Azure.Storage.Queues;
 using Api.Data;
 using Api.Models;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Formats;
+using SkiaSharp;
 using System.Text.Json;
 
 namespace Api.Extensions;
@@ -16,6 +15,23 @@ public static class ImageEndpoints
     private const long MaxFileSizeBytes = 10 * 1024 * 1024; // 10 MB
     private const string ThumbnailContentType = "image/jpeg";
     private static readonly string[] AllowedImageFormats = [".jpg", ".jpeg", ".png", ".gif", ".webp"];
+    private static readonly IReadOnlyDictionary<string, SKEncodedImageFormat> AllowedFormatsByExtension =
+        new Dictionary<string, SKEncodedImageFormat>(StringComparer.OrdinalIgnoreCase)
+        {
+            [".jpg"] = SKEncodedImageFormat.Jpeg,
+            [".jpeg"] = SKEncodedImageFormat.Jpeg,
+            [".png"] = SKEncodedImageFormat.Png,
+            [".gif"] = SKEncodedImageFormat.Gif,
+            [".webp"] = SKEncodedImageFormat.Webp
+        };
+    private static readonly IReadOnlyDictionary<SKEncodedImageFormat, string> ContentTypesByFormat =
+        new Dictionary<SKEncodedImageFormat, string>
+        {
+            [SKEncodedImageFormat.Jpeg] = "image/jpeg",
+            [SKEncodedImageFormat.Png] = "image/png",
+            [SKEncodedImageFormat.Gif] = "image/gif",
+            [SKEncodedImageFormat.Webp] = "image/webp"
+        };
 
     public static WebApplication MapImages(this WebApplication app)
     {
@@ -129,12 +145,12 @@ public static class ImageEndpoints
 
             // Validate file extension
             var fileExtension = Path.GetExtension(file.FileName).ToLowerInvariant();
-            if (string.IsNullOrEmpty(fileExtension) || !AllowedImageFormats.Contains(fileExtension))
+            if (string.IsNullOrEmpty(fileExtension) || !AllowedFormatsByExtension.ContainsKey(fileExtension))
             {
                 return Results.BadRequest(new { error = $"File type not allowed. Allowed types: {string.Join(", ", AllowedImageFormats)}" });
             }
 
-            var validatedContentType = await GetValidatedImageContentTypeAsync(file, fileExtension, context.RequestAborted);
+            var validatedContentType = GetValidatedImageContentType(file, fileExtension, context.RequestAborted);
             if (validatedContentType is null)
             {
                 return Results.BadRequest(new { error = "File contents must be a valid supported image" });
@@ -240,37 +256,38 @@ public static class ImageEndpoints
         return app;
     }
 
-    private static async Task<string?> GetValidatedImageContentTypeAsync(
+    private static string? GetValidatedImageContentType(
         IFormFile file,
         string fileExtension,
         CancellationToken cancellationToken)
     {
-        try
-        {
-            using var detectionStream = file.OpenReadStream();
-            var detectedFormat = await Image.DetectFormatAsync(detectionStream, cancellationToken);
-
-            if (!DoesDetectedFormatMatchExtension(detectedFormat, fileExtension))
-            {
-                return null;
-            }
-
-            using var identifyStream = file.OpenReadStream();
-            _ = await Image.IdentifyAsync(identifyStream, cancellationToken);
-
-            return detectedFormat.DefaultMimeType;
-        }
-        catch (Exception ex) when (ex is UnknownImageFormatException or InvalidImageContentException or ImageFormatException)
+        if (!AllowedFormatsByExtension.TryGetValue(fileExtension, out var expectedFormat))
         {
             return null;
         }
-    }
 
-    private static bool DoesDetectedFormatMatchExtension(IImageFormat detectedFormat, string fileExtension)
-    {
-        var normalizedExtension = fileExtension.TrimStart('.');
-        return detectedFormat.FileExtensions.Any(extension =>
-            string.Equals(extension, normalizedExtension, StringComparison.OrdinalIgnoreCase));
+        cancellationToken.ThrowIfCancellationRequested();
+
+        using var detectionStream = file.OpenReadStream();
+        using var codec = SKCodec.Create(detectionStream);
+
+        if (codec is null ||
+            codec.EncodedFormat != expectedFormat ||
+            codec.Info.Width <= 0 ||
+            codec.Info.Height <= 0 ||
+            !ContentTypesByFormat.TryGetValue(codec.EncodedFormat, out var contentType))
+        {
+            return null;
+        }
+
+        cancellationToken.ThrowIfCancellationRequested();
+
+        using var decodeStream = file.OpenReadStream();
+        using var bitmap = SKBitmap.Decode(decodeStream);
+
+        return bitmap is not null && !bitmap.IsNull && bitmap.ReadyToDraw
+            ? contentType
+            : null;
     }
 
     private static async Task<IResult?> ValidateAntiforgeryAsync(IAntiforgery antiforgery, HttpContext context)

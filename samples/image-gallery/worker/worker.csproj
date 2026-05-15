@@ -15,13 +15,12 @@
     <Compile Include="../shared/Extensions.cs" LinkBase="Shared" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.8" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.8" />
     <PackageReference Include="Aspire.Microsoft.EntityFrameworkCore.SqlServer" Version="13.3.2" />
     <PackageReference Include="Aspire.Azure.Storage.Blobs" Version="13.3.2" />
     <PackageReference Include="Aspire.Azure.Storage.Queues" Version="13.3.2" />
-    <!-- Upgrade ImageSharp to address known vulnerabilities in 3.1.5 (GHSA-2cmq-823j-5qj8, GHSA-rxmq-m78w-7wmc) -->
-    <PackageReference Include="SixLabors.ImageSharp" Version="4.0.0" />
+    <PackageReference Include="SkiaSharp" Version="3.119.1" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="3.119.1" />
   </ItemGroup>
 
   <ItemGroup>

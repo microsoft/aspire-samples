@@ -2,8 +2,7 @@ using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Azure.Storage.Queues;
 using Azure.Storage.Queues.Models;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Processing;
+using SkiaSharp;
 using System.Text.Json;
 using Worker.Data;
 
@@ -194,19 +193,31 @@ public class ThumbnailWorker(
         originalStream.Position = 0;
 
         // Generate thumbnail
-        using var image = await Image.LoadAsync(originalStream, cancellationToken);
-        image.Mutate(x => x.Resize(new ResizeOptions
+        cancellationToken.ThrowIfCancellationRequested();
+        using var image = SKBitmap.Decode(originalStream)
+            ?? throw new InvalidOperationException($"Unable to decode image {imageId}");
+
+        if (image.Width <= 0 || image.Height <= 0)
         {
-            Size = new Size(ThumbnailWidth, ThumbnailHeight),
-            Mode = ResizeMode.Max
-        }));
+            throw new InvalidOperationException($"Image {imageId} has invalid dimensions");
+        }
+
+        var scale = Math.Min((double)ThumbnailWidth / image.Width, (double)ThumbnailHeight / image.Height);
+        var targetSize = new SKImageInfo(
+            Math.Max(1, (int)Math.Round(image.Width * scale)),
+            Math.Max(1, (int)Math.Round(image.Height * scale)));
+
+        using var resizedImage = image.Resize(targetSize, new SKSamplingOptions(SKFilterMode.Linear, SKMipmapMode.Linear))
+            ?? throw new InvalidOperationException($"Unable to resize image {imageId}");
 
         // Upload thumbnail
         var thumbnailName = $"thumb-{blobName}";
         var thumbnailBlobClient = _containerClient.GetBlobClient(thumbnailName);
 
         using var thumbnailStream = new MemoryStream();
-        await image.SaveAsJpegAsync(thumbnailStream, cancellationToken);
+        using var encodedThumbnail = resizedImage.Encode(SKEncodedImageFormat.Jpeg, quality: 85)
+            ?? throw new InvalidOperationException($"Unable to encode thumbnail for image {imageId}");
+        encodedThumbnail.SaveTo(thumbnailStream);
         thumbnailStream.Position = 0;
         await thumbnailBlobClient.UploadAsync(thumbnailStream, overwrite: true, cancellationToken: cancellationToken);
         await thumbnailBlobClient.SetHttpHeadersAsync(
