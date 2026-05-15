@@ -5,6 +5,8 @@ using Azure.Storage.Blobs;
 using Azure.Storage.Queues;
 using Api.Data;
 using Api.Models;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats;
 using System.Text.Json;
 
 namespace Api.Extensions;
@@ -120,7 +122,7 @@ public static class ImageEndpoints
             }
 
             // Validate content type
-            if (!file.ContentType.StartsWith("image/"))
+            if (!file.ContentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
             {
                 return Results.BadRequest(new { error = "File must be an image" });
             }
@@ -130,6 +132,12 @@ public static class ImageEndpoints
             if (string.IsNullOrEmpty(fileExtension) || !AllowedImageFormats.Contains(fileExtension))
             {
                 return Results.BadRequest(new { error = $"File type not allowed. Allowed types: {string.Join(", ", AllowedImageFormats)}" });
+            }
+
+            var validatedContentType = await GetValidatedImageContentTypeAsync(file, fileExtension, context.RequestAborted);
+            if (validatedContentType is null)
+            {
+                return Results.BadRequest(new { error = "File contents must be a valid supported image" });
             }
 
             try
@@ -151,7 +159,7 @@ public static class ImageEndpoints
                 var image = new Image
                 {
                     FileName = sanitizedFileName,
-                    ContentType = file.ContentType,
+                    ContentType = validatedContentType,
                     Size = file.Length,
                     BlobUrl = blobClient.Uri.ToString(),
                     ThumbnailProcessed = false
@@ -230,6 +238,39 @@ public static class ImageEndpoints
         });
 
         return app;
+    }
+
+    private static async Task<string?> GetValidatedImageContentTypeAsync(
+        IFormFile file,
+        string fileExtension,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            using var detectionStream = file.OpenReadStream();
+            var detectedFormat = await Image.DetectFormatAsync(detectionStream, cancellationToken);
+
+            if (!DoesDetectedFormatMatchExtension(detectedFormat, fileExtension))
+            {
+                return null;
+            }
+
+            using var identifyStream = file.OpenReadStream();
+            _ = await Image.IdentifyAsync(identifyStream, cancellationToken);
+
+            return detectedFormat.DefaultMimeType;
+        }
+        catch (Exception ex) when (ex is UnknownImageFormatException or InvalidImageContentException or ImageFormatException)
+        {
+            return null;
+        }
+    }
+
+    private static bool DoesDetectedFormatMatchExtension(IImageFormat detectedFormat, string fileExtension)
+    {
+        var normalizedExtension = fileExtension.TrimStart('.');
+        return detectedFormat.FileExtensions.Any(extension =>
+            string.Equals(extension, normalizedExtension, StringComparison.OrdinalIgnoreCase));
     }
 
     private static async Task<IResult?> ValidateAntiforgeryAsync(IAntiforgery antiforgery, HttpContext context)

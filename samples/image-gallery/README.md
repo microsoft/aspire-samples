@@ -82,14 +82,15 @@ aspire deploy   # Deploy to Azure Container Apps
 
 **Implemented:**
 - ✅ **Managed Identity**: Password-less authentication to all Azure resources (no connection strings or secrets)
-- ✅ **XSRF Protection**: Antiforgery tokens protect upload/delete endpoints from cross-site request forgery attacks
-- ✅ **Input Validation**: 10 MB file size limit, extension allowlist (.jpg, .jpeg, .png, .gif, .webp)
+- ✅ **XSRF Protection**: Antiforgery tokens protect upload/delete endpoints from cross-site request forgery attacks ([docs](https://learn.microsoft.com/aspnet/core/security/anti-request-forgery))
+- ✅ **Input Validation**: 10 MB file size limit, extension allowlist (.jpg, .jpeg, .png, .gif, .webp), and server-side image byte validation before saving or queueing uploads ([file upload security](https://learn.microsoft.com/aspnet/core/mvc/models/file-uploads))
 - ✅ **Filename Sanitization**: Path traversal prevention, 255 char limit
 - ✅ **Resource Limits**: Pagination (max 100 items), retry limits (3 attempts), size checks (20 MB max)
 
 **Not Implemented (Required for Production):**
 - ❌ **Authentication & Authorization**: Endpoints are public - anyone can upload/delete
-- ❌ **Rate Limiting**: No protection against abuse or DoS
+- ❌ **Rate Limiting**: No protection against abuse or DoS ([docs](https://learn.microsoft.com/aspnet/core/performance/rate-limit))
+- ❌ **Malware Scanning**: Image byte validation rejects unsupported or malformed images, but production upload workflows should consider malware scanning and the broader [ASP.NET Core security guidance](https://learn.microsoft.com/aspnet/core/security/)
 
 ## Key Aspire Patterns
 
