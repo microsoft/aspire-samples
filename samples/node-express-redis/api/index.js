@@ -106,6 +106,14 @@ app.delete('/stats', async (req, res) => {
   });
 });
 
+app.use((err, req, res, next) => {
+  if (err?.type === 'entity.too.large') {
+    return res.status(413).json({ error: 'Request body too large' });
+  }
+
+  next(err);
+});
+
 app.listen(port, () => {
   console.log(`✓ API listening on port ${port}`);
 });
