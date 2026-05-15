@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Net;
 using System.Reflection;
 using System.Security.Cryptography;
+using Aspire.Hosting.Azure;
 using Aspire.Hosting.JavaScript;
 using Aspire.Hosting.Python;
 using Microsoft.Extensions.DependencyInjection;
@@ -146,11 +147,11 @@ public static partial class DistributedApplicationExtensions
 
         foreach (var resource in applicationModel.Resources)
         {
-            var explicitStartup = resource.Annotations.OfType<ExplicitStartupAnnotation>().FirstOrDefault();
-            if (resource is IResourceWithoutLifetime || explicitStartup is not null)
+            if (ShouldSkipResource(resource))
             {
                 continue;
             }
+
             resourceTasks[resource.Name] = GetResourceWaitTask(resource.Name, targetStates, cancellationToken);
         }
 
@@ -212,6 +213,33 @@ public static partial class DistributedApplicationExtensions
             var state = await app.ResourceNotifications.WaitForResourceAsync(resourceName, targetStates, cancellationToken);
             return (resourceName, state);
         }
+    }
+
+    // Aspire 13.3 introduced AzureEnvironmentResource, a hidden resource added implicitly
+    // by Aspire.Hosting.Azure for any AddAzure* API to host pipeline/deployment steps. It
+    // has no runtime lifecycle and never publishes a Running/Finished state when resources
+    // run as local emulators, but does not implement IResourceWithoutLifetime - so
+    // WaitForResourceAsync would hang on it forever. Filter it out here as if it did.
+    private static bool ShouldSkipResource(IResource resource)
+    {
+        if (resource is IResourceWithoutLifetime)
+        {
+            return true;
+        }
+
+        if (resource.Annotations.OfType<ExplicitStartupAnnotation>().Any())
+        {
+            return true;
+        }
+
+#pragma warning disable ASPIREAZURE001 // AzureEnvironmentResource is experimental.
+        if (resource is AzureEnvironmentResource)
+        {
+            return true;
+        }
+#pragma warning restore ASPIREAZURE001
+
+        return false;
     }
 
     /// <summary>
