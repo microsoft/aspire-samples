@@ -4,7 +4,7 @@ import { svelte } from '@sveltejs/vite-plugin-svelte'
 export default defineConfig({
   plugins: [svelte()],
   server: {
-    host: true,
+    host: 'localhost',
     proxy: {
       '/upload': {
         target: process.env.API_HTTP,
