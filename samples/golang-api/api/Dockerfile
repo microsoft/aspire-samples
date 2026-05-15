@@ -19,6 +19,8 @@ WORKDIR /app
 
 COPY --from=builder /app/main ./
 
+ENV HOST=0.0.0.0
+
 USER app
 
 CMD ["./main"]

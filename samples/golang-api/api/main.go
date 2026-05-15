@@ -5,6 +5,7 @@ import (
 	"errors"
 	"io"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"strconv"
@@ -20,6 +21,7 @@ const (
 	maxJSONRequestBodyBytes = 1 << 20
 	maxItemNameLength       = 200
 	maxStoredItems          = 1000
+	defaultBindHost         = "127.0.0.1"
 )
 
 var (
@@ -304,10 +306,15 @@ func main() {
 	if port == "" {
 		port = "8080"
 	}
+	host := os.Getenv("HOST")
+	if host == "" {
+		host = defaultBindHost
+	}
 
-	log.Printf("Starting server on port %s", port)
+	addr := net.JoinHostPort(host, port)
+	log.Printf("Starting server on %s", addr)
 	server := &http.Server{
-		Addr:              ":" + port,
+		Addr:              addr,
 		Handler:           r,
 		ReadTimeout:       5 * time.Second,
 		ReadHeaderTimeout: 2 * time.Second,
