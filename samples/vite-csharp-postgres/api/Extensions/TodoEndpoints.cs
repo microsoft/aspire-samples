@@ -21,18 +21,12 @@ public static class TodoEndpoints
 
             if (normalizedOffset < 0)
             {
-                return Results.ValidationProblem(new Dictionary<string, string[]>
-                {
-                    ["offset"] = new[] { "Offset must be greater than or equal to 0." }
-                });
+                return ValidationProblem("offset", "Offset must be greater than or equal to 0.");
             }
 
             if (normalizedLimit is < 1 or > MaxTodoLimit)
             {
-                return Results.ValidationProblem(new Dictionary<string, string[]>
-                {
-                    ["limit"] = new[] { $"Limit must be between 1 and {MaxTodoLimit}." }
-                });
+                return ValidationProblem("limit", $"Limit must be between 1 and {MaxTodoLimit}.");
             }
 
             var todos = await db.Todos
@@ -125,20 +119,24 @@ public static class TodoEndpoints
 
         if (normalizedTitle.Length == 0)
         {
-            return Results.ValidationProblem(new Dictionary<string, string[]>
-            {
-                ["title"] = new[] { "Title is required." }
-            });
+            return ValidationProblem("title", "Title is required.");
         }
 
         if (normalizedTitle.Length > Todo.MaxTitleLength)
         {
-            return Results.ValidationProblem(new Dictionary<string, string[]>
-            {
-                ["title"] = new[] { $"Title must be {Todo.MaxTitleLength} characters or fewer." }
-            });
+            return ValidationProblem("title", $"Title must be {Todo.MaxTitleLength} characters or fewer.");
         }
 
         return null;
+    }
+
+    private static IResult ValidationProblem(string key, string message)
+    {
+        Dictionary<string, string[]> errors = new()
+        {
+            [key] = new[] { message }
+        };
+
+        return Results.ValidationProblem(errors);
     }
 }
