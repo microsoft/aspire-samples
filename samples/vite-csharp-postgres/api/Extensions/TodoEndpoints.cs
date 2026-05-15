@@ -6,14 +6,42 @@ namespace Api.Extensions;
 
 public static class TodoEndpoints
 {
+    private const int DefaultTodoLimit = 50;
+    private const int MaxTodoLimit = 100;
+
     public static WebApplication MapTodos(this WebApplication app)
     {
         var group = app.MapGroup("/api");
 
-        // Get all todos
-        group.MapGet("/todos", async (TodoDbContext db) =>
+        // Get todos
+        group.MapGet("/todos", async (int? offset, int? limit, TodoDbContext db) =>
         {
-            return await db.Todos.OrderBy(t => t.Id).ToListAsync();
+            var normalizedOffset = offset ?? 0;
+            var normalizedLimit = limit ?? DefaultTodoLimit;
+
+            if (normalizedOffset < 0)
+            {
+                return Results.ValidationProblem(new Dictionary<string, string[]>
+                {
+                    ["offset"] = new[] { "Offset must be greater than or equal to 0." }
+                });
+            }
+
+            if (normalizedLimit is < 1 or > MaxTodoLimit)
+            {
+                return Results.ValidationProblem(new Dictionary<string, string[]>
+                {
+                    ["limit"] = new[] { $"Limit must be between 1 and {MaxTodoLimit}." }
+                });
+            }
+
+            var todos = await db.Todos
+                .OrderBy(t => t.Id)
+                .Skip(normalizedOffset)
+                .Take(normalizedLimit)
+                .ToListAsync();
+
+            return Results.Ok(todos);
         });
 
         // Get todo by id
@@ -26,16 +54,22 @@ public static class TodoEndpoints
         // Create todo
         group.MapPost("/todos", async (CreateTodoRequest request, TodoDbContext db) =>
         {
+            var validationResult = ValidateTitle(request.Title, out var title);
+            if (validationResult is not null)
+            {
+                return validationResult;
+            }
+
             var todo = new Todo
             {
-                Title = request.Title,
+                Title = title,
                 Completed = false
             };
 
             db.Todos.Add(todo);
             await db.SaveChangesAsync();
 
-            return Results.Created($"/todos/{todo.Id}", todo);
+            return Results.Created($"/api/todos/{todo.Id}", todo);
         });
 
         // Update todo
@@ -49,7 +83,13 @@ public static class TodoEndpoints
 
             if (request.Title is not null)
             {
-                todo.Title = request.Title;
+                var validationResult = ValidateTitle(request.Title, out var title);
+                if (validationResult is not null)
+                {
+                    return validationResult;
+                }
+
+                todo.Title = title;
             }
 
             if (request.Completed is not null)
@@ -77,5 +117,28 @@ public static class TodoEndpoints
         });
 
         return app;
+    }
+
+    private static IResult? ValidateTitle(string? title, out string normalizedTitle)
+    {
+        normalizedTitle = title?.Trim() ?? string.Empty;
+
+        if (normalizedTitle.Length == 0)
+        {
+            return Results.ValidationProblem(new Dictionary<string, string[]>
+            {
+                ["title"] = new[] { "Title is required." }
+            });
+        }
+
+        if (normalizedTitle.Length > Todo.MaxTitleLength)
+        {
+            return Results.ValidationProblem(new Dictionary<string, string[]>
+            {
+                ["title"] = new[] { $"Title must be {Todo.MaxTitleLength} characters or fewer." }
+            });
+        }
+
+        return null;
     }
 }

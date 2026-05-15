@@ -37,6 +37,14 @@ flowchart LR
 aspire run
 ```
 
+## Security Notes
+
+This sample is intentionally small and demo-focused. The todo CRUD endpoints under `/api/todos` are public and unauthenticated, and the app does not add authentication, authorization, CSRF protection, or rate limiting. `GET /api/todos` applies bounded pagination with `offset` and `limit` query parameters, defaulting to 50 items and capping responses at 100 items.
+
+The PostgreSQL pgAdmin container is included as local demo tooling. Do not expose pgAdmin or these unauthenticated CRUD endpoints directly in production.
+
+For production deployments, review the [ASP.NET Core security overview](https://learn.microsoft.com/aspnet/core/security/), add appropriate authentication and authorization, keep request validation in place using [ASP.NET Core minimal API parameter validation](https://learn.microsoft.com/aspnet/core/fundamentals/minimal-apis/parameter-binding?view=aspnetcore-10.0#parameter-validation), add [rate limiting](https://learn.microsoft.com/aspnet/core/performance/rate-limit), use [antiforgery APIs](https://learn.microsoft.com/aspnet/core/security/anti-request-forgery) when browser clients rely on cookies, and evaluate the [OWASP API Security Top 10](https://owasp.org/API-Security/editions/2023/en/0x11-t10/).
+
 ## Commands
 
 ```bash

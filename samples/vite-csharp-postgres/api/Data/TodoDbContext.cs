@@ -12,7 +12,7 @@ public class TodoDbContext(DbContextOptions<TodoDbContext> options) : DbContext(
         modelBuilder.Entity<Todo>(entity =>
         {
             entity.HasKey(e => e.Id);
-            entity.Property(e => e.Title).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Title).IsRequired().HasMaxLength(Todo.MaxTitleLength);
             entity.Property(e => e.Completed).IsRequired();
             entity.Property(e => e.CreatedAt).IsRequired();
         });
