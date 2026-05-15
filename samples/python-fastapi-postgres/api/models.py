@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional
 
 
@@ -9,5 +9,10 @@ class User(BaseModel):
 
 
 class UserCreate(BaseModel):
-    name: str
-    email: str
+    name: str = Field(..., min_length=1, max_length=100)
+    email: str = Field(
+        ...,
+        min_length=3,
+        max_length=254,
+        pattern=r"^[^@\s]+@[^@\s]+\.[^@\s]+$",
+    )

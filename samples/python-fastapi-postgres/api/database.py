@@ -1,6 +1,7 @@
 import os
 from typing import List, Optional
 import psycopg
+from psycopg import sql
 from psycopg.rows import dict_row
 from fastapi import HTTPException
 
@@ -59,7 +60,7 @@ class DatabaseManager:
                     else:
                         # Step 3: Create database
                         print(f"  → Database '{db_name}' does not exist, creating...")
-                        await cur.execute(f'CREATE DATABASE "{db_name}"')
+                        await cur.execute(sql.SQL("CREATE DATABASE {}").format(sql.Identifier(db_name)))
                         print(f"  ✓ Database '{db_name}' created successfully")
 
             # Step 4: Connect to target database and create table
@@ -97,23 +98,28 @@ class DatabaseManager:
                     await cur.execute("SELECT 1")
             return {"status": "healthy", "database": "connected"}
         except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+            print(f"Health check failed: {e}")
+            raise HTTPException(status_code=500, detail="Database unavailable")
 
 
 class UserRepository:
     """Repository for user-related database operations."""
     
     @staticmethod
-    async def get_all() -> List[User]:
+    async def get_all(limit: int, offset: int) -> List[User]:
         """Get all users from the database."""
         try:
             async with await DatabaseManager.get_connection() as conn:
                 async with conn.cursor() as cur:
-                    await cur.execute("SELECT id, name, email FROM users ORDER BY id")
+                    await cur.execute(
+                        "SELECT id, name, email FROM users ORDER BY id LIMIT %s OFFSET %s",
+                        (limit, offset)
+                    )
                     rows = await cur.fetchall()
             return [User(**row) for row in rows]
         except Exception as e:
-            raise HTTPException(status_code=500, detail=str(e))
+            print(f"Failed to list users: {e}")
+            raise HTTPException(status_code=500, detail="Database operation failed")
     
     @staticmethod
     async def get_by_id(user_id: int) -> User:
@@ -131,7 +137,8 @@ class UserRepository:
         except HTTPException:
             raise
         except Exception as e:
-            raise HTTPException(status_code=500, detail=str(e))
+            print(f"Failed to get user {user_id}: {e}")
+            raise HTTPException(status_code=500, detail="Database operation failed")
     
     @staticmethod
     async def create(user: UserCreate) -> User:
@@ -149,7 +156,8 @@ class UserRepository:
         except psycopg.errors.UniqueViolation:
             raise HTTPException(status_code=400, detail="Email already exists")
         except Exception as e:
-            raise HTTPException(status_code=500, detail=str(e))
+            print(f"Failed to create user: {e}")
+            raise HTTPException(status_code=500, detail="Database operation failed")
     
     @staticmethod
     async def delete(user_id: int) -> dict:
@@ -167,4 +175,5 @@ class UserRepository:
         except HTTPException:
             raise
         except Exception as e:
-            raise HTTPException(status_code=500, detail=str(e))
+            print(f"Failed to delete user {user_id}: {e}")
+            raise HTTPException(status_code=500, detail="Database operation failed")

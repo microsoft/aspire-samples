@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Query
 from typing import List
 from contextlib import asynccontextmanager
 
@@ -32,8 +32,11 @@ async def health_check():
 
 
 @app.get("/users", response_model=List[User])
-async def get_users():
-    return await UserRepository.get_all()
+async def get_users(
+    limit: int = Query(default=100, ge=1, le=100),
+    offset: int = Query(default=0, ge=0),
+):
+    return await UserRepository.get_all(limit=limit, offset=offset)
 
 
 @app.get("/users/{user_id}", response_model=User)
