@@ -50,10 +50,11 @@ ALLOWED_MODELS: frozenset[str] = frozenset({
     "gpt-4o",
 })
 
-# Optional shared-secret auth. When AGENT_API_KEY is set the /chat endpoint
-# requires callers to send the same value via the X-API-Key header. When it
-# is not set the sample stays anonymous (the other guards still apply) and a
-# loud warning is logged on startup so it's obvious in deployment logs.
+# Optional shared-secret auth. When AGENT_API_KEY is set, state-changing and
+# session-disclosing endpoints require callers to send the same value via the
+# X-API-Key header. When it is not set the sample stays anonymous (the other
+# guards still apply) and a loud warning is logged on startup so it's obvious
+# in deployment logs.
 _api_key_required: str | None = None
 _api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
 
@@ -123,11 +124,15 @@ async def initialize_openai() -> None:
     _api_key_required = os.getenv("AGENT_API_KEY") or None
     if _api_key_required is None:
         logger.warning(
-            "AGENT_API_KEY not set. The /chat endpoint is anonymous; set "
-            "AGENT_API_KEY before exposing this sample on a public network."
+            "AGENT_API_KEY not set. The /chat and /sessions endpoints are "
+            "anonymous; set AGENT_API_KEY before exposing this sample on a "
+            "public network."
         )
     else:
-        logger.info("AGENT_API_KEY configured; /chat requires the X-API-Key header.")
+        logger.info(
+            "AGENT_API_KEY configured; /chat and /sessions require the "
+            "X-API-Key header."
+        )
 
 
 @asynccontextmanager
@@ -250,7 +255,7 @@ async def chat(request: ChatRequest) -> ChatResponse:
         raise HTTPException(status_code=500, detail=f"Error: {str(e)}")
 
 
-@app.get("/sessions")
+@app.get("/sessions", dependencies=[Depends(_require_api_key)])
 def list_sessions():
     """List all active sessions."""
     return {
@@ -259,7 +264,7 @@ def list_sessions():
     }
 
 
-@app.delete("/sessions/{session_id}")
+@app.delete("/sessions/{session_id}", dependencies=[Depends(_require_api_key)])
 def clear_session(session_id: str):
     """Clear conversation history for a session."""
     if session_id in _session_histories:
