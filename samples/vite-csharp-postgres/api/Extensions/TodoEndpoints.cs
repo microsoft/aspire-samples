@@ -134,7 +134,7 @@ public static class TodoEndpoints
     {
         Dictionary<string, string[]> errors = new()
         {
-            [key] = new[] { message }
+            [key] = [message]
         };
 
         return Results.ValidationProblem(errors);
