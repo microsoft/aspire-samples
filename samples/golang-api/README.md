@@ -73,3 +73,19 @@ else
 - `POST /items` - Create new item
 - `PUT /items/{id}` - Update item
 - `DELETE /items/{id}` - Delete item
+
+## Security Notes
+
+This sample keeps the API intentionally small for demo purposes:
+
+- It does not implement authentication or authorization.
+- Data is stored only in memory and is lost when the process restarts.
+- The request body, item name, and in-memory item count limits are illustrative safeguards, not production capacity planning.
+- External HTTP endpoints are enabled to make the demo easy to run and inspect.
+- Production services should add real authentication, authorization, rate limiting, persistent storage, and monitoring appropriate for their threat model.
+
+Related references:
+
+- [Go `net/http.Server` docs](https://pkg.go.dev/net/http#Server)
+- [Dockerfile best practices: user](https://docs.docker.com/build/building/best-practices/#user)
+- [OWASP API Security Top 10](https://owasp.org/API-Security/editions/2023/en/0x11-t10/)

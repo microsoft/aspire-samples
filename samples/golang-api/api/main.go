@@ -2,15 +2,32 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
+	"io"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"strconv"
 	"sync"
 	"time"
+	"unicode/utf8"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+)
+
+const (
+	maxJSONRequestBodyBytes = 1 << 20
+	maxItemNameLength       = 200
+	maxStoredItems          = 1000
+	defaultBindHost         = "127.0.0.1"
+)
+
+var (
+	errStoreFull        = errors.New("store is at capacity")
+	errItemNameRequired = errors.New("item name is required")
+	errItemNameTooLong  = errors.New("item name is too long")
 )
 
 type Item struct {
@@ -21,15 +38,17 @@ type Item struct {
 }
 
 type Store struct {
-	mu    sync.RWMutex
-	items map[int]*Item
-	nextID int
+	mu       sync.RWMutex
+	items    map[int]*Item
+	nextID   int
+	maxItems int
 }
 
-func NewStore() *Store {
+func NewStore(maxItems int) *Store {
 	return &Store{
-		items: make(map[int]*Item),
-		nextID: 1,
+		items:    make(map[int]*Item),
+		nextID:   1,
+		maxItems: maxItems,
 	}
 }
 
@@ -52,9 +71,17 @@ func (s *Store) Get(id int) (*Item, bool) {
 	return item, ok
 }
 
-func (s *Store) Create(name string) *Item {
+func (s *Store) Create(name string) (*Item, error) {
+	if err := validateItemName(name); err != nil {
+		return nil, err
+	}
+
 	s.mu.Lock()
 	defer s.mu.Unlock()
+
+	if len(s.items) >= s.maxItems {
+		return nil, errStoreFull
+	}
 
 	item := &Item{
 		ID:        s.nextID,
@@ -64,16 +91,22 @@ func (s *Store) Create(name string) *Item {
 	}
 	s.items[s.nextID] = item
 	s.nextID++
-	return item
+	return item, nil
 }
 
-func (s *Store) Update(id int, name *string, completed *bool) (*Item, bool) {
+func (s *Store) Update(id int, name *string, completed *bool) (*Item, bool, error) {
+	if name != nil {
+		if err := validateItemName(*name); err != nil {
+			return nil, false, err
+		}
+	}
+
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
 	item, ok := s.items[id]
 	if !ok {
-		return nil, false
+		return nil, false, nil
 	}
 
 	if name != nil {
@@ -82,7 +115,7 @@ func (s *Store) Update(id int, name *string, completed *bool) (*Item, bool) {
 	if completed != nil {
 		item.Completed = *completed
 	}
-	return item, true
+	return item, true, nil
 }
 
 func (s *Store) Delete(id int) bool {
@@ -96,13 +129,72 @@ func (s *Store) Delete(id int) bool {
 	return ok
 }
 
+func validateItemName(name string) error {
+	if name == "" {
+		return errItemNameRequired
+	}
+	if utf8.RuneCountInString(name) > maxItemNameLength {
+		return errItemNameTooLong
+	}
+	return nil
+}
+
+func decodeJSONBody(w http.ResponseWriter, r *http.Request, dst any) bool {
+	r.Body = http.MaxBytesReader(w, r.Body, maxJSONRequestBodyBytes)
+
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(dst); err != nil {
+		writeJSONDecodeError(w, err)
+		return false
+	}
+
+	if err := decoder.Decode(&struct{}{}); err != io.EOF {
+		writeJSONDecodeError(w, err)
+		return false
+	}
+
+	return true
+}
+
+func writeJSONDecodeError(w http.ResponseWriter, err error) {
+	var maxBytesErr *http.MaxBytesError
+	if errors.As(err, &maxBytesErr) {
+		http.Error(w, "Request body too large", http.StatusRequestEntityTooLarge)
+		return
+	}
+
+	http.Error(w, "Invalid request body", http.StatusBadRequest)
+}
+
+func writeStoreError(w http.ResponseWriter, err error) {
+	switch {
+	case errors.Is(err, errItemNameRequired):
+		http.Error(w, "Name is required", http.StatusBadRequest)
+	case errors.Is(err, errItemNameTooLong):
+		http.Error(w, "Name is too long", http.StatusBadRequest)
+	case errors.Is(err, errStoreFull):
+		http.Error(w, "Item limit reached", http.StatusConflict)
+	default:
+		http.Error(w, "Unable to store item", http.StatusInternalServerError)
+	}
+}
+
+func seedStore(store *Store) error {
+	for _, name := range []string{"Learn Go", "Build APIs", "Deploy with Aspire"} {
+		if _, err := store.Create(name); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func main() {
-	store := NewStore()
+	store := NewStore(maxStoredItems)
 
 	// Add some initial data
-	store.Create("Learn Go")
-	store.Create("Build APIs")
-	store.Create("Deploy with Aspire")
+	if err := seedStore(store); err != nil {
+		log.Fatal(err)
+	}
 
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
@@ -149,17 +241,16 @@ func main() {
 			Name string `json:"name"`
 		}
 
-		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-			http.Error(w, "Invalid request body", http.StatusBadRequest)
+		if !decodeJSONBody(w, r, &req) {
 			return
 		}
 
-		if req.Name == "" {
-			http.Error(w, "Name is required", http.StatusBadRequest)
+		item, err := store.Create(req.Name)
+		if err != nil {
+			writeStoreError(w, err)
 			return
 		}
 
-		item := store.Create(req.Name)
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
 		json.NewEncoder(w).Encode(item)
@@ -177,12 +268,15 @@ func main() {
 			Completed *bool   `json:"completed"`
 		}
 
-		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-			http.Error(w, "Invalid request body", http.StatusBadRequest)
+		if !decodeJSONBody(w, r, &req) {
 			return
 		}
 
-		item, ok := store.Update(id, req.Name, req.Completed)
+		item, ok, err := store.Update(id, req.Name, req.Completed)
+		if err != nil {
+			writeStoreError(w, err)
+			return
+		}
 		if !ok {
 			http.Error(w, "Item not found", http.StatusNotFound)
 			return
@@ -212,9 +306,22 @@ func main() {
 	if port == "" {
 		port = "8080"
 	}
+	host := os.Getenv("HOST")
+	if host == "" {
+		host = defaultBindHost
+	}
 
-	log.Printf("Starting server on port %s", port)
-	if err := http.ListenAndServe(":"+port, r); err != nil {
+	addr := net.JoinHostPort(host, port)
+	log.Printf("Starting server on %s", addr)
+	server := &http.Server{
+		Addr:              addr,
+		Handler:           r,
+		ReadTimeout:       5 * time.Second,
+		ReadHeaderTimeout: 2 * time.Second,
+		WriteTimeout:      10 * time.Second,
+		IdleTimeout:       60 * time.Second,
+	}
+	if err := server.ListenAndServe(); err != nil {
 		log.Fatal(err)
 	}
 }
