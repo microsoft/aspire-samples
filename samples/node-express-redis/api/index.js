@@ -3,8 +3,17 @@ import { createClient } from 'redis';
 
 const app = express();
 const port = process.env.PORT || 3000;
+const pages = ['home', 'about', 'contact', 'products', 'services', 'blog'];
+const allowedPages = new Set(pages);
+const visitKeyPrefix = 'sample:node-express-redis:visits:';
 
-app.use(express.json());
+function getVisitKey(page) {
+  return `${visitKeyPrefix}${page}`;
+}
+
+const visitKeys = pages.map((page) => getVisitKey(page));
+
+app.use(express.json({ limit: '10kb' }));
 
 // Initialize Redis client using Aspire connection properties
 // Aspire provides REDIS_URI for non-.NET apps
@@ -17,13 +26,17 @@ redis.on('connect', () => console.log('✓ Connected to Redis'));
 // Connect to Redis
 await redis.connect();
 
-async function getVisitKeys() {
-  const keys = [];
-  for await (const key of redis.scanIterator({ MATCH: 'visits:*', COUNT: 100 })) {
-    keys.push(key);
+function validatePage(req, res, next) {
+  const { page } = req.params;
+
+  if (!allowedPages.has(page)) {
+    return res.status(400).json({
+      error: 'Unsupported page',
+      allowedPages: pages,
+    });
   }
 
-  return keys;
+  next();
 }
 
 // Root endpoint
@@ -45,9 +58,9 @@ app.get('/health', async (req, res) => {
 });
 
 // Track a visit to a page
-app.post('/visit/:page', async (req, res) => {
+app.post('/visit/:page', validatePage, async (req, res) => {
   const { page } = req.params;
-  const count = await redis.incr(`visits:${page}`);
+  const count = await redis.incr(getVisitKey(page));
 
   res.json({
     page,
@@ -57,45 +70,48 @@ app.post('/visit/:page', async (req, res) => {
 });
 
 // Get visit count for a page
-app.get('/visit/:page', async (req, res) => {
+app.get('/visit/:page', validatePage, async (req, res) => {
   const { page } = req.params;
-  const count = await redis.get(`visits:${page}`);
+  const count = await redis.get(getVisitKey(page));
 
   res.json({
     page,
-    visits: count ? parseInt(count) : 0,
+    visits: count ? parseInt(count, 10) : 0,
   });
 });
 
 // Get stats for all pages
 app.get('/stats', async (req, res) => {
-  const keys = await getVisitKeys();
-  const counts = keys.length > 0 ? await redis.mGet(keys) : [];
+  const counts = await redis.mGet(visitKeys);
   const stats = {};
 
-  keys.forEach((key, index) => {
-    const page = key.replace('visits:', '');
+  pages.forEach((page, index) => {
     const count = counts[index];
     stats[page] = count ? parseInt(count, 10) : 0;
   });
 
   res.json({
-    totalPages: keys.length,
+    totalPages: pages.length,
     stats,
   });
 });
 
 // Reset all stats
 app.delete('/stats', async (req, res) => {
-  const keys = await getVisitKeys();
-  if (keys.length > 0) {
-    await redis.del(...keys);
-  }
+  const pagesCleared = await redis.del(...visitKeys);
 
   res.json({
     message: 'All stats reset',
-    pagesCleared: keys.length,
+    pagesCleared,
   });
+});
+
+app.use((err, req, res, next) => {
+  if (err?.type === 'entity.too.large') {
+    return res.status(413).json({ error: 'Request body too large' });
+  }
+
+  next(err);
 });
 
 app.listen(port, () => {

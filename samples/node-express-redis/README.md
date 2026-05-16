@@ -38,6 +38,14 @@ flowchart LR
 aspire run
 ```
 
+## Security Notes
+
+This sample keeps the Express endpoints public and unauthenticated so the visit counter is easy to run and inspect locally. It does not add CSRF protection, rate limiting, authentication, or authorization, so treat it as a demo pattern rather than production-ready API security.
+
+The API accepts visits only for the sample's built-in pages and uses bounded Redis operations for stats and reset. Production services still need deliberate cache and key management to avoid unbounded key cardinality, accidental deletion of unrelated keys, or expensive enumeration against shared Redis instances.
+
+For production applications, add real authN/authZ, request rate limiting, CSRF protection where browser credentials are used, bounded request bodies, and Redis security controls appropriate for your deployment. See the [Node.js security best practices](https://nodejs.org/en/learn/getting-started/security-best-practices), [Express body parser limits documentation](https://expressjs.com/en/resources/middleware/body-parser.html), [Redis security documentation](https://redis.io/docs/latest/operate/oss_and_stack/management/security/), and [OWASP API Security Top 10](https://owasp.org/API-Security/editions/2023/en/0x11-t10/).
+
 ## Commands
 
 ```bash
