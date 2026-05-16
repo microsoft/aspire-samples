@@ -40,7 +40,7 @@ MAX_QUESTION_LENGTH = 2000
 RATE_LIMIT_CAPACITY = 20
 RATE_LIMIT_REFILL_PER_SEC = 0.33  # ~20 requests per minute per client
 
-# Optional shared-secret auth. When RAG_API_KEY is set the mutating endpoints
+# Optional shared-secret auth. When RAG_API_KEY is set the protected endpoints
 # require callers to send the same value via the X-API-Key header. When it is
 # not set the sample stays anonymous (the other guards still apply) and a loud
 # warning is logged so deployments without auth are obvious.
@@ -52,8 +52,8 @@ _rate_lock = asyncio.Lock()
 
 if _api_key_required is None:
     logger.warning(
-        "RAG_API_KEY not set. /upload and /ask are anonymous; set RAG_API_KEY "
-        "before exposing this sample on a public network."
+        "RAG_API_KEY not set. /upload, /ask, and /documents are anonymous; "
+        "set RAG_API_KEY before exposing this sample on a public network."
     )
 
 
@@ -83,6 +83,25 @@ async def _enforce_rate_limit(request: Request) -> None:
                 detail="Rate limit exceeded. Please slow down.",
             )
         _rate_buckets[client_id] = (tokens - 1, now)
+
+
+def _validate_text_upload(file: UploadFile) -> None:
+    filename = file.filename or ""
+    if Path(filename).suffix.lower() != ".txt":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Only .txt text uploads are supported.",
+        )
+
+    content_type = (file.content_type or "").split(";", maxsplit=1)[0].strip().lower()
+    if content_type and not (
+        content_type.startswith("text/")
+        or content_type == "application/octet-stream"
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Uploaded file must be text content.",
+        )
 
 
 class QuestionRequest(BaseModel):
@@ -124,6 +143,8 @@ async def health():
 async def upload_document(file: UploadFile = File(...)):
     """Upload and index a document."""
     try:
+        _validate_text_upload(file)
+
         # Stream the upload in fixed-size chunks so we can reject oversized
         # payloads before they all sit in memory.
         buffered: list[bytes] = []
@@ -272,7 +293,7 @@ async def ask_question(request: QuestionRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.get("/documents")
+@app.get("/documents", dependencies=[Depends(_require_api_key)])
 async def list_documents():
     """List all indexed documents."""
     try:
