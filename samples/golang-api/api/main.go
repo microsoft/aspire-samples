@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"io"
@@ -8,8 +9,10 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"os/signal"
 	"strconv"
 	"sync"
+	"syscall"
 	"time"
 	"unicode/utf8"
 
@@ -141,6 +144,7 @@ func validateItemName(name string) error {
 
 func decodeJSONBody(w http.ResponseWriter, r *http.Request, dst any) bool {
 	r.Body = http.MaxBytesReader(w, r.Body, maxJSONRequestBodyBytes)
+	defer r.Body.Close()
 
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(dst); err != nil {
@@ -154,6 +158,12 @@ func decodeJSONBody(w http.ResponseWriter, r *http.Request, dst any) bool {
 	}
 
 	return true
+}
+
+func writeJSONResponse(w http.ResponseWriter, v any) {
+	if err := json.NewEncoder(w).Encode(v); err != nil {
+		log.Printf("write JSON response: %v", err)
+	}
 }
 
 func writeJSONDecodeError(w http.ResponseWriter, err error) {
@@ -202,7 +212,7 @@ func main() {
 	r.Use(middleware.RequestID)
 
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		json.NewEncoder(w).Encode(map[string]string{
+		writeJSONResponse(w, map[string]string{
 			"message": "Go API with in-memory storage",
 			"version": "1.0.0",
 		})
@@ -210,13 +220,13 @@ func main() {
 
 	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(map[string]string{"status": "healthy"})
+		writeJSONResponse(w, map[string]string{"status": "healthy"})
 	})
 
 	r.Get("/items", func(w http.ResponseWriter, r *http.Request) {
 		items := store.GetAll()
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(items)
+		writeJSONResponse(w, items)
 	})
 
 	r.Get("/items/{id}", func(w http.ResponseWriter, r *http.Request) {
@@ -233,7 +243,7 @@ func main() {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(item)
+		writeJSONResponse(w, item)
 	})
 
 	r.Post("/items", func(w http.ResponseWriter, r *http.Request) {
@@ -253,7 +263,7 @@ func main() {
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
-		json.NewEncoder(w).Encode(item)
+		writeJSONResponse(w, item)
 	})
 
 	r.Put("/items/{id}", func(w http.ResponseWriter, r *http.Request) {
@@ -283,7 +293,7 @@ func main() {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(item)
+		writeJSONResponse(w, item)
 	})
 
 	r.Delete("/items/{id}", func(w http.ResponseWriter, r *http.Request) {
@@ -312,7 +322,6 @@ func main() {
 	}
 
 	addr := net.JoinHostPort(host, port)
-	log.Printf("Starting server on %s", addr)
 	server := &http.Server{
 		Addr:              addr,
 		Handler:           r,
@@ -321,7 +330,31 @@ func main() {
 		WriteTimeout:      10 * time.Second,
 		IdleTimeout:       60 * time.Second,
 	}
-	if err := server.ListenAndServe(); err != nil {
-		log.Fatal(err)
+
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
+	serverErrs := make(chan error, 1)
+	go func() {
+		log.Printf("Starting server on %s", addr)
+		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			serverErrs <- err
+		}
+		close(serverErrs)
+	}()
+
+	select {
+	case err, ok := <-serverErrs:
+		if ok && err != nil {
+			log.Fatalf("server error: %v", err)
+		}
+	case <-ctx.Done():
+		log.Println("Shutdown signal received, draining in-flight requests...")
+	}
+
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	if err := server.Shutdown(shutdownCtx); err != nil {
+		log.Printf("server shutdown: %v", err)
 	}
 }
