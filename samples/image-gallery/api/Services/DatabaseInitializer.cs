@@ -19,7 +19,7 @@ public class DatabaseInitializer(IServiceProvider serviceProvider, ILogger<Datab
 
         try
         {
-            if ((await db.Database.GetMigrationsAsync(cancellationToken)).Any())
+            if (db.Database.GetMigrations().Any())
             {
                 _logger.LogInformation("[1/1] Applying migrations...");
                 await db.Database.MigrateAsync(cancellationToken);

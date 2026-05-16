@@ -35,7 +35,7 @@ flowchart LR
 1. **Upload**: User uploads image → API saves to Azure Blob Storage and metadata to Azure SQL
 2. **Queue**: API enqueues thumbnail generation message to Azure Storage Queue
 3. **Trigger**: Azure monitors queue depth and automatically starts a Container Apps Job instance
-4. **Process**: Job processes messages in batches (up to 10), generates thumbnails using ImageSharp
+4. **Process**: Job processes messages in batches (up to 10), generates thumbnails using SkiaSharp
 5. **Scale Down**: After 2 empty polls (~5 seconds), job exits; new instances start automatically when messages arrive
 
 ### Local Development vs Production
@@ -54,7 +54,7 @@ flowchart LR
 - **Dual-Mode Resources**: Azurite/SQL Server containers locally, Azure services in production (`.RunAsEmulator()`, `.RunAsContainer()`)
 - **Free Tier Deployment**: Azure SQL free tier with serverless auto-pause, Container Apps scale-to-zero
 - **Managed Identity**: Password-less authentication to all Azure resources (Storage, SQL, Queues)
-- **Polyglot Stack**: Vite+React frontend embedded in C# API container, ImageSharp for image processing
+- **Polyglot Stack**: Vite+React frontend embedded in C# API container, SkiaSharp for image processing
 - **OpenTelemetry**: Distributed tracing across upload → queue → worker pipeline
 
 ## Running Locally
@@ -82,14 +82,15 @@ aspire deploy   # Deploy to Azure Container Apps
 
 **Implemented:**
 - ✅ **Managed Identity**: Password-less authentication to all Azure resources (no connection strings or secrets)
-- ✅ **XSRF Protection**: Antiforgery tokens protect upload/delete endpoints from cross-site request forgery attacks
-- ✅ **Input Validation**: 10 MB file size limit, extension allowlist (.jpg, .jpeg, .png, .gif, .webp)
+- ✅ **XSRF Protection**: Antiforgery tokens protect upload/delete endpoints from cross-site request forgery attacks ([docs](https://learn.microsoft.com/aspnet/core/security/anti-request-forgery))
+- ✅ **Input Validation**: 10 MB file size limit, extension allowlist (.jpg, .jpeg, .png, .gif, .webp), and server-side image byte validation before saving or queueing uploads ([file upload security](https://learn.microsoft.com/aspnet/core/mvc/models/file-uploads))
 - ✅ **Filename Sanitization**: Path traversal prevention, 255 char limit
 - ✅ **Resource Limits**: Pagination (max 100 items), retry limits (3 attempts), size checks (20 MB max)
 
 **Not Implemented (Required for Production):**
 - ❌ **Authentication & Authorization**: Endpoints are public - anyone can upload/delete
-- ❌ **Rate Limiting**: No protection against abuse or DoS
+- ❌ **Rate Limiting**: No protection against abuse or DoS ([docs](https://learn.microsoft.com/aspnet/core/performance/rate-limit))
+- ❌ **Malware Scanning**: Image byte validation rejects unsupported or malformed images, but production upload workflows should consider malware scanning and the broader [ASP.NET Core security guidance](https://learn.microsoft.com/aspnet/core/security/)
 
 ## Key Aspire Patterns
 
