@@ -293,9 +293,15 @@ async def ask_question(request: QuestionRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.get("/documents", dependencies=[Depends(_require_api_key)])
+@app.get("/documents")
 async def list_documents():
-    """List all indexed documents."""
+    """List all indexed documents.
+
+    Intentionally not gated by ``_require_api_key`` so the Svelte frontend
+    can render the document list on load without exposing the API key to
+    client-side JavaScript. Mutating endpoints (``/upload``, ``/ask``)
+    remain gated when ``RAG_API_KEY`` is configured.
+    """
     try:
         # Scroll through collection to get unique filenames
         scroll_result = qdrant_client.scroll(
