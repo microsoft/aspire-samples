@@ -11,7 +11,6 @@
   <ItemGroup>
     <PackageReference Include="Aspire.RabbitMQ.Client" Version="13.3.2" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.8" />
-    <PackageReference Include="System.Text.Json" Version="10.0.8" />
   </ItemGroup>
 
   <ItemGroup>

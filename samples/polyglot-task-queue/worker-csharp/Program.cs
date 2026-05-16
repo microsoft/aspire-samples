@@ -27,6 +27,8 @@ class ReportWorker(IConnection connection, ILogger<ReportWorker> logger) : Backg
     private const string ResultsQueue = "results";
     private const string TaskStatusQueue = "task_status";
     private const string WorkerName = "csharp-worker";
+    private const int MaxTaskDataLength = 10_000;
+    private static readonly HashSet<string> SupportedTaskTypes = new(StringComparer.Ordinal) { "analyze", "report" };
 
     // ActivitySource for distributed tracing
     private static readonly ActivitySource ActivitySource = new("TaskQueue.Worker.CSharp", "1.0.0");
@@ -83,7 +85,7 @@ class ReportWorker(IConnection connection, ILogger<ReportWorker> logger) : Backg
         {
             logger.LogError(ex, "[{Time}] Error publishing status for task {TaskId}", DateTime.Now, taskId);
             activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
-            activity?.RecordException(ex);
+            activity?.AddException(ex);
         }
     }
 
@@ -128,6 +130,8 @@ class ReportWorker(IConnection connection, ILogger<ReportWorker> logger) : Backg
         var consumer = new AsyncEventingBasicConsumer(channel);
         consumer.ReceivedAsync += async (model, ea) =>
         {
+            TaskMessage? task = null;
+
             // Extract trace context from message headers
             var parentContext = Propagator.Extract(default, ea.BasicProperties.Headers, (headers, key) =>
             {
@@ -154,7 +158,7 @@ class ReportWorker(IConnection connection, ILogger<ReportWorker> logger) : Backg
                 var messageBody = Encoding.UTF8.GetString(ea.Body.Span);
                 logger.LogInformation("[{Time}] Received message: {Message}", DateTime.Now, messageBody);
 
-                var task = JsonSerializer.Deserialize<TaskMessage>(messageBody, JsonOptions);
+                task = JsonSerializer.Deserialize<TaskMessage>(messageBody, JsonOptions);
 
                 if (task is null)
                 {
@@ -164,23 +168,42 @@ class ReportWorker(IConnection connection, ILogger<ReportWorker> logger) : Backg
                     return;
                 }
 
-                activity?.SetTag("task.id", task.TaskId);
-                activity?.SetTag("task.type", task.Type);
-                activity?.SetTag("messaging.message.id", task.TaskId);
+                var validationError = ValidateTaskMessage(task);
+                if (validationError is not null)
+                {
+                    logger.LogWarning("[{Time}] Dropping invalid task message: {ValidationError}", DateTime.Now, validationError);
+
+                    if (!string.IsNullOrWhiteSpace(task.TaskId))
+                    {
+                        await PublishTaskStatusAsync(channel, task.TaskId, "error",
+                            new { error = validationError }, stoppingToken);
+                    }
+
+                    await channel.BasicAckAsync(ea.DeliveryTag, false, stoppingToken);
+                    activity?.SetStatus(ActivityStatusCode.Error, validationError);
+                    return;
+                }
+
+                var taskId = task.TaskId!;
+                var taskType = task.Type!;
+
+                activity?.SetTag("task.id", taskId);
+                activity?.SetTag("task.type", taskType);
+                activity?.SetTag("messaging.message.id", taskId);
 
                 logger.LogInformation("[{Time}] Processing task {TaskId} (type: {Type})",
-                    DateTime.Now, task.TaskId, task.Type);
+                    DateTime.Now, taskId, taskType);
 
                 // Publish processing status
-                await PublishTaskStatusAsync(channel, task.TaskId!, "processing", cancellationToken: stoppingToken);
+                await PublishTaskStatusAsync(channel, taskId, "processing", cancellationToken: stoppingToken);
 
                 // Only process 'report' tasks
-                if (task.Type != "report")
+                if (taskType != "report")
                 {
                     logger.LogInformation("[{Time}] Skipping task {TaskId} - not a report task",
-                        DateTime.Now, task.TaskId);
+                        DateTime.Now, taskId);
 
-                    await PublishTaskStatusAsync(channel, task.TaskId!, "skipped",
+                    await PublishTaskStatusAsync(channel, taskId, "skipped",
                         new { reason = "not a report task" }, stoppingToken);
 
                     await channel.BasicAckAsync(ea.DeliveryTag, false, stoppingToken);
@@ -192,7 +215,7 @@ class ReportWorker(IConnection connection, ILogger<ReportWorker> logger) : Backg
                 // Process the task with a child activity
                 using (var processActivity = ActivitySource.StartActivity("task.process_report"))
                 {
-                    processActivity?.SetTag("task.id", task.TaskId);
+                    processActivity?.SetTag("task.id", taskId);
                     var result = await ProcessReportTask(task);
                     processActivity?.SetStatus(ActivityStatusCode.Ok);
 
@@ -202,11 +225,11 @@ class ReportWorker(IConnection connection, ILogger<ReportWorker> logger) : Backg
                         publishActivity?.SetTag("messaging.system", "rabbitmq");
                         publishActivity?.SetTag("messaging.destination.name", ResultsQueue);
                         publishActivity?.SetTag("messaging.operation", "publish");
-                        publishActivity?.SetTag("task.id", task.TaskId);
+                        publishActivity?.SetTag("task.id", taskId);
 
                         var resultMessage = new ResultMessage
                         {
-                            TaskId = task.TaskId,
+                            TaskId = taskId,
                             Worker = WorkerName,
                             Result = result,
                             CompletedAt = DateTime.Now
@@ -236,7 +259,7 @@ class ReportWorker(IConnection connection, ILogger<ReportWorker> logger) : Backg
                     }
                 }
 
-                logger.LogInformation("[{Time}] Completed task {TaskId}", DateTime.Now, task.TaskId);
+                logger.LogInformation("[{Time}] Completed task {TaskId}", DateTime.Now, taskId);
                 activity?.AddEvent(new ActivityEvent("task.completed"));
                 activity?.SetStatus(ActivityStatusCode.Ok);
 
@@ -245,24 +268,18 @@ class ReportWorker(IConnection connection, ILogger<ReportWorker> logger) : Backg
             catch (Exception ex)
             {
                 logger.LogError(ex, "[{Time}] Error processing message", DateTime.Now);
-                
-                // Try to publish error status if we have task info
-                try
+
+                if (!string.IsNullOrWhiteSpace(task?.TaskId))
                 {
-                    var messageBody = Encoding.UTF8.GetString(ea.Body.Span);
-                    var task = JsonSerializer.Deserialize<TaskMessage>(messageBody, JsonOptions);
-                    if (task?.TaskId != null)
-                    {
-                        await PublishTaskStatusAsync(channel, task.TaskId, "error", 
-                            new { error = ex.Message }, stoppingToken);
-                    }
+                    await PublishTaskStatusAsync(channel, task.TaskId, "error",
+                        new { error = ex.Message }, stoppingToken);
                 }
-                catch
-                {
-                    // Ignore errors in error handling
-                }
-                
-                await channel.BasicNackAsync(ea.DeliveryTag, false, true, stoppingToken);
+
+                activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+                activity?.AddException(ex);
+
+                logger.LogWarning("[{Time}] Dropping failed task message to avoid an infinite requeue loop", DateTime.Now);
+                await channel.BasicNackAsync(ea.DeliveryTag, false, false, stoppingToken);
             }
         };
 
@@ -276,6 +293,36 @@ class ReportWorker(IConnection connection, ILogger<ReportWorker> logger) : Backg
 
         // Keep the worker running
         await Task.Delay(Timeout.Infinite, stoppingToken);
+    }
+
+    private static string? ValidateTaskMessage(TaskMessage task)
+    {
+        if (string.IsNullOrWhiteSpace(task.TaskId))
+        {
+            return "taskId is required";
+        }
+
+        if (string.IsNullOrWhiteSpace(task.Type))
+        {
+            return "type is required";
+        }
+
+        if (!SupportedTaskTypes.Contains(task.Type))
+        {
+            return $"unsupported task type '{task.Type}'";
+        }
+
+        if (string.IsNullOrEmpty(task.Data))
+        {
+            return "data is required";
+        }
+
+        if (task.Data.Length > MaxTaskDataLength)
+        {
+            return $"data must be {MaxTaskDataLength} characters or fewer";
+        }
+
+        return null;
     }
 
     private async Task<object> ProcessReportTask(TaskMessage task)
