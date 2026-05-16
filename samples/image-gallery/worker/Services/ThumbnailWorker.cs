@@ -27,6 +27,10 @@ public class ThumbnailWorker(
     private const int ThumbnailWidth = 300;
     private const int ThumbnailHeight = 300;
     private const long MaxImageSizeBytes = 20 * 1024 * 1024; // 20 MB - slightly larger than upload limit
+    // Cap decoded pixel count to guard against decompression bombs that
+    // pass the byte-size check but declare extreme dimensions.
+    // 100 MP allows ~10000x10000 images while bounding peak SKBitmap memory.
+    private const long MaxPixelCount = 100_000_000;
     private const int MaxRetryCount = 3;
     private const int MaxEmptyPolls = 2;        // Poll up to 2 times (event-triggered)
     private const int EmptyPollWaitSeconds = 5; // Wait 5 seconds between polls (total: ~5 seconds)
@@ -194,13 +198,26 @@ public class ThumbnailWorker(
 
         // Generate thumbnail
         cancellationToken.ThrowIfCancellationRequested();
-        using var image = SKBitmap.Decode(originalStream)
+
+        using var codec = SKCodec.Create(originalStream)
             ?? throw new InvalidOperationException($"Unable to decode image {imageId}");
 
-        if (image.Width <= 0 || image.Height <= 0)
+        if (codec.Info.Width <= 0 || codec.Info.Height <= 0)
         {
             throw new InvalidOperationException($"Image {imageId} has invalid dimensions");
         }
+
+        if ((long)codec.Info.Width * codec.Info.Height > MaxPixelCount)
+        {
+            _logger.LogWarning(
+                "Image {ImageId} exceeds max pixel count ({Width}x{Height}), skipping thumbnail generation",
+                imageId, codec.Info.Width, codec.Info.Height);
+            throw new InvalidOperationException(
+                $"Image {imageId} pixel count {(long)codec.Info.Width * codec.Info.Height} exceeds maximum allowed {MaxPixelCount}");
+        }
+
+        using var image = SKBitmap.Decode(codec)
+            ?? throw new InvalidOperationException($"Unable to decode image {imageId}");
 
         var scale = Math.Min((double)ThumbnailWidth / image.Width, (double)ThumbnailHeight / image.Height);
         var targetSize = new SKImageInfo(

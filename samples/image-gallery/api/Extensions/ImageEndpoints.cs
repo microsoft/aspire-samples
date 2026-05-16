@@ -13,6 +13,11 @@ namespace Api.Extensions;
 public static class ImageEndpoints
 {
     private const long MaxFileSizeBytes = 10 * 1024 * 1024; // 10 MB
+    // Cap decoded pixel count to guard against decompression bombs:
+    // a heavily compressed image well under MaxFileSizeBytes can declare
+    // dimensions that decode to multi-gigabyte SKBitmap allocations.
+    // 100 MP allows ~10000x10000 images while bounding peak memory at ~400 MB (RGBA).
+    private const long MaxPixelCount = 100_000_000;
     private const string ThumbnailContentType = "image/jpeg";
     private static readonly string[] AllowedImageFormats = [".jpg", ".jpeg", ".png", ".gif", ".webp"];
     private static readonly IReadOnlyDictionary<string, SKEncodedImageFormat> AllowedFormatsByExtension =
@@ -275,6 +280,7 @@ public static class ImageEndpoints
             codec.EncodedFormat != expectedFormat ||
             codec.Info.Width <= 0 ||
             codec.Info.Height <= 0 ||
+            (long)codec.Info.Width * codec.Info.Height > MaxPixelCount ||
             !ContentTypesByFormat.TryGetValue(codec.EncodedFormat, out var contentType))
         {
             return null;
