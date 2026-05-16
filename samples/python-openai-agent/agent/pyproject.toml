@@ -2,7 +2,7 @@
 name = "ai-agent"
 version = "1.0.0"
 description = "AI Chat Agent powered by OpenAI and FastAPI"
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 dependencies = [
     "fastapi",
     "uvicorn[standard]",

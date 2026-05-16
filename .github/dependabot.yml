@@ -123,6 +123,25 @@ updates:
       - area-engineering-systems
 
   - package-ecosystem: npm
+    directory: "samples/AspireWithJavaScript/AspireJavaScript.Vite"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 1
+    groups:
+      vite-tooling:
+        patterns:
+          - "vite*"
+          - "@vitejs/*"
+          - "typescript"
+          - "@types/*"
+          - "eslint*"
+      misc-deps:
+        patterns:
+          - "*"
+    labels:
+      - area-engineering-systems
+
+  - package-ecosystem: npm
     directory: "samples/AspireWithNode/NodeFrontend"
     schedule:
       interval: weekly
