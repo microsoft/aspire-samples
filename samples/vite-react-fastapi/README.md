@@ -76,3 +76,17 @@ await builder.addYarp("app")
 - YARP receives: `/api/todos`
 - Transform strips: `/api`
 - FastAPI receives: `GET /todos`
+
+## Security Notes
+
+This sample intentionally keeps the FastAPI todo endpoints public and unauthenticated for instructional use. The `/api/todos` endpoints are demo endpoints, not a production API security model.
+
+- Todo data is stored in process memory and is lost when the API restarts. The API caps the in-memory list at 100 todos, limits todo titles to 200 characters, requires non-empty titles, and bounds list responses with `skip` and `limit` query parameters.
+- The sample does not include authentication, authorization, CSRF protection, or rate limiting.
+- For production, add an appropriate identity provider and authorization checks, persistent storage, CSRF protections if browser credentials are used, rate limiting/quotas, request logging/monitoring, and deployment-specific network protections.
+
+Relevant references:
+
+- [FastAPI security](https://fastapi.tiangolo.com/tutorial/security/)
+- [FastAPI request body and field validation](https://fastapi.tiangolo.com/tutorial/body-fields/)
+- [OWASP API Security Top 10](https://owasp.org/API-Security/editions/2023/en/0x11-t10/)

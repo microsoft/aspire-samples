@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 
+const MAX_TITLE_LENGTH = 200;
+
 function App() {
   const [todos, setTodos] = useState([]);
   const [newTodo, setNewTodo] = useState('');
@@ -16,13 +18,15 @@ function App() {
 
   const addTodo = async (e) => {
     e.preventDefault();
-    if (!newTodo.trim()) return;
+    const title = newTodo.trim();
+    if (!title) return;
 
     const response = await fetch('/api/todos', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title: newTodo, completed: false }),
+      body: JSON.stringify({ title, completed: false }),
     });
+    if (!response.ok) return;
 
     const todo = await response.json();
     setTodos([...todos, todo]);
@@ -31,18 +35,23 @@ function App() {
 
   const toggleTodo = async (id, completed) => {
     const todo = todos.find((t) => t.id === id);
+    if (!todo) return;
+
     const response = await fetch(`/api/todos/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ title: todo.title, completed: !completed }),
     });
+    if (!response.ok) return;
 
     const updated = await response.json();
     setTodos(todos.map((t) => (t.id === id ? updated : t)));
   };
 
   const deleteTodo = async (id) => {
-    await fetch(`/api/todos/${id}`, { method: 'DELETE' });
+    const response = await fetch(`/api/todos/${id}`, { method: 'DELETE' });
+    if (!response.ok) return;
+
     setTodos(todos.filter((t) => t.id !== id));
   };
 
@@ -57,6 +66,7 @@ function App() {
           value={newTodo}
           onChange={(e) => setNewTodo(e.target.value)}
           placeholder="Add a new todo..."
+          maxLength={MAX_TITLE_LENGTH}
         />
         <button type="submit">Add</button>
       </form>
