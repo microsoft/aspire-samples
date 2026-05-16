@@ -1,11 +1,11 @@
 #pragma warning disable ASPIRECSHARPAPPS001
 #pragma warning disable ASPIREAZURE002
 
-#:sdk Aspire.AppHost.Sdk@13.3.2
-#:package Aspire.Hosting.Azure.Storage@13.3.2
-#:package Aspire.Hosting.Azure.Sql@13.3.2
-#:package Aspire.Hosting.JavaScript@13.3.2
-#:package Aspire.Hosting.Azure.AppContainers@13.3.2
+#:sdk Aspire.AppHost.Sdk@13.3.3
+#:package Aspire.Hosting.Azure.Storage@13.3.3
+#:package Aspire.Hosting.Azure.Sql@13.3.3
+#:package Aspire.Hosting.JavaScript@13.3.3
+#:package Aspire.Hosting.Azure.AppContainers@13.3.3
 
 using Aspire.Hosting.Azure;
 using Azure.Provisioning.AppContainers;

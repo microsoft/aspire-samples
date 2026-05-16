@@ -4,7 +4,7 @@
     "language": "typescript/nodejs"
   },
   "sdk": {
-    "version": "13.3.2"
+    "version": "13.3.3"
   },
   "profiles": {
     "https": {
@@ -16,6 +16,6 @@
     }
   },
   "packages": {
-    "Aspire.Hosting.Python": "13.3.2"
+    "Aspire.Hosting.Python": "13.3.3"
   }
 }
