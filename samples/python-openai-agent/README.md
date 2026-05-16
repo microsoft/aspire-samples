@@ -92,6 +92,24 @@ The Python AI agent also provides REST endpoints:
 - `GET /sessions` - List active conversation sessions
 - `DELETE /sessions/{id}` - Clear a conversation session
 
+## Security Notes
+
+This sample is instructional and is not production-ready; see the repository's
+[security disclaimer](../../README.md#security-disclaimer). By default, `/chat`
+is anonymous. If you configure `AGENT_API_KEY`, `/chat`, `GET /sessions`, and
+`DELETE /sessions/{id}` require the same value in the `X-API-Key` header.
+
+The code includes basic OpenAI quota and cost controls: message length,
+session/history caps, response token caps, per-client rate limiting, and a model
+allow-list. Production deployments should add real authentication and
+authorization (see [FastAPI security](https://fastapi.tiangolo.com/tutorial/security/)),
+abuse monitoring, persistent session storage if conversations must survive
+process restarts, and prompt/content safety controls aligned with
+[OpenAI production best practices](https://developers.openai.com/api/docs/guides/production-best-practices),
+[OpenAI safety best practices](https://developers.openai.com/api/docs/guides/safety-best-practices),
+and [OWASP LLM Prompt Injection](https://genai.owasp.org/llmrisk/llm01-prompt-injection/)
+guidance.
+
 ## Example API Usage
 
 You can also interact with the AI agent programmatically via its REST API:
