@@ -48,7 +48,7 @@ updates:
       - area-engineering-systems
 
   - package-ecosystem: npm
-    directory: "samples/AspireWithJavaScript/AspireJavaScript.Angular"
+    directory: "samples/aspire-with-javascript/AspireJavaScript.Angular"
     schedule:
       interval: weekly
     open-pull-requests-limit: 1
@@ -73,7 +73,7 @@ updates:
       - area-engineering-systems
 
   - package-ecosystem: npm
-    directory: "samples/AspireWithJavaScript/AspireJavaScript.React"
+    directory: "samples/aspire-with-javascript/AspireJavaScript.React"
     schedule:
       interval: weekly
     open-pull-requests-limit: 1
@@ -98,7 +98,7 @@ updates:
       - area-engineering-systems
 
   - package-ecosystem: npm
-    directory: "samples/AspireWithJavaScript/AspireJavaScript.Vue"
+    directory: "samples/aspire-with-javascript/AspireJavaScript.Vue"
     schedule:
       interval: weekly
     open-pull-requests-limit: 1
@@ -123,7 +123,7 @@ updates:
       - area-engineering-systems
 
   - package-ecosystem: npm
-    directory: "samples/AspireWithJavaScript/AspireJavaScript.Vite"
+    directory: "samples/aspire-with-javascript/AspireJavaScript.Vite"
     schedule:
       interval: weekly
     open-pull-requests-limit: 1
@@ -142,7 +142,7 @@ updates:
       - area-engineering-systems
 
   - package-ecosystem: npm
-    directory: "samples/AspireWithNode/NodeFrontend"
+    directory: "samples/aspire-with-node/NodeFrontend"
     schedule:
       interval: weekly
     open-pull-requests-limit: 1
