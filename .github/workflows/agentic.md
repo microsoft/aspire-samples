@@ -11,14 +11,35 @@ The set is intentionally narrow and modeled on patterns from [Peli's Agent Facto
 
 | Workflow | Source | Trigger | Effect |
 |---|---|---|---|
-| [`issue-triage`](./issue-triage.md) | `githubnext/agentics/workflows/issue-triage` | `issues: [opened, reopened]` | Labels, comments on, types, or closes the triggering issue (spam only). |
-| [`ci-doctor`](./ci-doctor.md) | `githubnext/agentics/workflows/ci-doctor` | `workflow_run` on `["Aspire Samples CI"]` completed on `main` | Files a `[ci-doctor]` issue (labels `automation`, `ci`) with root-cause analysis when CI fails. |
-| [`doc-updater`](./doc-updater.md) | `githubnext/agentics/workflows/doc-updater` *(retuned)* | `schedule: daily` + `workflow_dispatch` | Opens a `[docs]` pull request that updates **only** `samples/*/README.md` files whose corresponding sample folder had material code changes in the last 24 hours. Strictly does not touch the root `README.md`, `CODE_OF_CONDUCT.md`, `SECURITY.md`, `LICENSE`, or anything outside `samples/`. |
+| [`issue-triage`](./issue-triage.md) | `githubnext/agentics/workflows/issue-triage` *(retuned)* | `issues: [opened, reopened]` | Labels, comments on, types, or closes the triggering issue (spam only). Rubric tightened to the repo's actual label set — see the workflow source. |
+| [`backlog-triage`](./backlog-triage.md) | Custom (this repo) | `schedule: weekly on monday` + `workflow_dispatch` | Picks up to 10 oldest open issues with no area / type label and no prior triage comment, then applies the `issue-triage` rubric to each. Idempotent via a `<!-- backlog-triage -->` marker comment. |
+| [`ci-doctor`](./ci-doctor.md) | `githubnext/agentics/workflows/ci-doctor` | `workflow_run` on `["Aspire Samples CI"]` completed on `main` | Files a `[ci-doctor]` issue (labels `automation`, `ci`) with root-cause analysis when CI fails. **Only investigates main-branch runs — PR-CI failures are out of scope.** |
+| [`doc-updater`](./doc-updater.md) | `githubnext/agentics/workflows/doc-updater` *(retuned)* | `schedule: weekly on monday` + `workflow_dispatch` | Opens a `[docs]` pull request that updates **only** `samples/*/README.md` files whose corresponding sample folder had material code changes in the last week. Strictly does not touch the root `README.md`, `CODE_OF_CONDUCT.md`, `SECURITY.md`, `LICENSE`, or anything outside `samples/`. |
 | [`malicious-code-scan`](./malicious-code-scan.md) | `githubnext/agentics/workflows/malicious-code-scan` | `schedule: daily` + `workflow_dispatch` | Reviews the last 3 days of code changes for supply-chain / exfiltration patterns and files Code Scanning alerts to the Security tab (not the issue tracker). |
 
-A fifth workflow, `agentics-maintenance.yml`, is generated automatically by
+A sixth workflow, `agentics-maintenance.yml`, is generated automatically by
 `gh aw compile` because `doc-updater` uses the `expires` field; it sweeps expired
 draft items on a schedule and should be left alone.
+
+## Known caveats
+
+- **`set-issue-type` may silently no-op.** This safe output sets a repo-level
+  *issue type* (Bug/Feature/Task), not a label. It only works if the parent
+  organization has issue types configured and exposed to this repo. If the org
+  hasn't enabled them, the call fails silently and the agent falls back to a type
+  *label* (`bug` / `enhancement` / `documentation`) per the rubric — this is
+  intentional and not a bug.
+- **`ci-doctor` only investigates `main` failures.** PR-CI failures are
+  deliberately out of scope: the doctor's job is to alert maintainers when the
+  protected branch breaks, not to comment on every red PR. If you want a per-PR
+  fix-it agent, add `pr-fix` (`gh aw add githubnext/agentics/workflows/pr-fix`) in
+  a follow-up PR.
+- **`malicious-code-scan` requires Code Scanning to be enabled.** The workflow
+  publishes alerts via the `create-code-scanning-alert` safe output, which uses
+  the GitHub Code Scanning API. Microsoft repos generally have Advanced Security
+  (and therefore Code Scanning) enabled. If alerts don't appear in the Security
+  tab after a run, confirm Code Scanning is on for the repo before assuming a
+  workflow bug.
 
 ## Authentication model
 
@@ -95,15 +116,16 @@ there if you want the doctor to investigate failures of other workflows on `main
 To temporarily silence the agents without removing them:
 
 ```bash
-gh aw disable issue-triage ci-doctor doc-updater malicious-code-scan
+gh aw disable issue-triage backlog-triage ci-doctor doc-updater malicious-code-scan
 ```
 
 Re-enable with `gh aw enable <name>`.
 
-## Why these four?
+## Why these workflows?
 
-These map to the most-trafficked patterns from the agent factory tour: triage,
-fault investigation, documentation hygiene, and security compliance. Other useful
-agents (`daily-repo-status`, `pr-fix`, ChatOps-style assistants, etc.) can be
-added later via `gh aw add githubnext/agentics/<workflow-name>` and are
-intentionally deferred until this baseline is proven.
+These map to the most-trafficked patterns from the agent factory tour: triage
+(both new issues and the stale backlog), fault investigation, documentation
+hygiene, and security compliance. Other useful agents (`daily-repo-status`,
+`pr-fix`, ChatOps-style assistants, etc.) can be added later via
+`gh aw add githubnext/agentics/<workflow-name>` and are intentionally deferred
+until this baseline is proven.

@@ -2,7 +2,7 @@
 name: Sample README Updater
 description: Reviews per-sample code changes and updates the README.md inside each affected `samples/<name>/` folder. Strictly scoped to `samples/*/README.md` — does not touch other documentation.
 on:
-  schedule: daily
+  schedule: weekly on monday
   workflow_dispatch:
   permissions:
     pull-requests: read
@@ -80,7 +80,7 @@ If a change clearly belongs in a non-README file (for example a project file, an
 
 ## Your Mission
 
-For each Aspire sample whose source files were materially changed in the last 24 hours, update **only** that sample's `samples/<name>/README.md` so it accurately reflects the current state of the sample.
+For each Aspire sample whose source files were materially changed in the last 7 days, update **only** that sample's `samples/<name>/README.md` so it accurately reflects the current state of the sample.
 
 ## Task Steps
 
@@ -94,21 +94,21 @@ ls -d samples/*/
 
 Each of these is an independently scoped unit of work. Process them one at a time.
 
-### 2. Find materially-changed samples in the last 24h
+### 2. Find materially-changed samples in the last week
 
-Compute yesterday's date and find merged PRs:
+Compute the week-ago date and find merged PRs:
 
 ```bash
-YESTERDAY=$(date -u -d "1 day ago" +%Y-%m-%d)
+SINCE=$(date -u -d "7 days ago" +%Y-%m-%d)
 ```
 
 Then use the GitHub tools to:
 
-- Search merged PRs in the last 24h with `search_pull_requests`: `repo:${{ github.repository }} is:pr is:merged merged:>=YESTERDAY`
+- Search merged PRs in the last 7 days with `search_pull_requests`: `repo:${{ github.repository }} is:pr is:merged merged:>=SINCE`
 - For each PR, use `pull_request_read` (or its files endpoint) to list changed files
 - Group changed files by their top-level `samples/<name>/` prefix
 
-A sample is **materially changed** if at least one merged PR in the last 24h modified a file under its `samples/<name>/` directory **excluding**:
+A sample is **materially changed** if at least one merged PR in the last 7 days modified a file under its `samples/<name>/` directory **excluding**:
 
 - `samples/<name>/README.md` itself
 - Anything under `samples/<name>/images/`, `samples/<name>/assets/`, or similarly named asset folders
@@ -173,7 +173,7 @@ If you made edits to one or more `samples/<name>/README.md` files, call the `cre
 ```markdown
 ## Sample README updates
 
-Synced per-sample README files with code changes merged in the last 24 hours.
+Synced per-sample README files with code changes merged in the last 7 days.
 
 ### Samples updated
 
