@@ -5,9 +5,7 @@ on:
     workflows: ["Aspire Samples CI"]
     types: [completed]
 
-permissions:
-  contents: write
-  pull-requests: write
+permissions: {}
 
 jobs:
   auto-merge:
