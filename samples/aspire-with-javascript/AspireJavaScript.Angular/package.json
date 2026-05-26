@@ -50,6 +50,6 @@
     "sockjs": {
       "uuid": "14.0.0"
     },
-    "webpack-dev-server": "5.2.4"
+    "webpack-dev-server": "^5.2.4"
   }
 }
