@@ -26,10 +26,10 @@ The application consists of:
 
 ## Key Code
 
-The `apphost.ts` configuration shows the minimal setup for Python scripts:
+The `apphost.mts` configuration shows the minimal setup for Python scripts:
 
 ```ts
-import { createBuilder } from "./.modules/aspire.js";
+import { createBuilder } from "./.aspire/modules/aspire.mjs";
 
 const builder = await createBuilder();
 

@@ -1,10 +1,10 @@
 {
   "appHost": {
-    "path": "apphost.ts",
+    "path": "apphost.mts",
     "language": "typescript/nodejs"
   },
   "sdk": {
-    "version": "13.3.3"
+    "version": "13.4.0"
   },
   "profiles": {
     "https": {
@@ -16,6 +16,6 @@
     }
   },
   "packages": {
-    "Aspire.Hosting.Python": "13.3.3"
+    "Aspire.Hosting.Python": "13.4.0"
   }
 }

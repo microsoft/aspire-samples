@@ -1,4 +1,4 @@
-import { ContainerLifetime, UrlDisplayLocation, createBuilder } from "./.modules/aspire.js";
+import { ContainerLifetime, UrlDisplayLocation, createBuilder } from "./.aspire/modules/aspire.mjs";
 
 const builder = await createBuilder();
 

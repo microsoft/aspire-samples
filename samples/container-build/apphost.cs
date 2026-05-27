@@ -1,4 +1,4 @@
-#:sdk Aspire.AppHost.Sdk@13.3.3
+#:sdk Aspire.AppHost.Sdk@13.4.0
 
 using Microsoft.Extensions.Hosting;
 
