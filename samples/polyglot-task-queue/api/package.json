@@ -21,5 +21,8 @@
     "@opentelemetry/instrumentation-express": "^0.66.0",
     "@opentelemetry/api": "^1.9.1",
     "@grpc/grpc-js": "^1.14.3"
+  },
+  "overrides": {
+    "qs": "^6.15.2"
   }
 }
