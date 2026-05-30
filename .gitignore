@@ -65,6 +65,7 @@ bld/
 aspire-output/
 **/.aspire/settings.json
 **/.aspire/modules/
+**/.aspire/integrations/
 **/dist/apphost/
 
 # Visual Studio 2015/2017 cache/options directory
