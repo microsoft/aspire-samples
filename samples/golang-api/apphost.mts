@@ -1,4 +1,4 @@
-import { createBuilder } from "./.modules/aspire.js";
+import { createBuilder } from "./.aspire/modules/aspire.mjs";
 
 const builder = await createBuilder();
 const executionContext = await builder.executionContext();

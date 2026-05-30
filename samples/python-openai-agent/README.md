@@ -36,10 +36,10 @@ The application consists of:
 
 ## Key Code
 
-The `apphost.ts` configuration demonstrates AI workloads with Aspire:
+The `apphost.mts` configuration demonstrates AI workloads with Aspire:
 
 ```ts
-import { createBuilder } from "./.modules/aspire.js";
+import { createBuilder } from "./.aspire/modules/aspire.mjs";
 
 const builder = await createBuilder();
 

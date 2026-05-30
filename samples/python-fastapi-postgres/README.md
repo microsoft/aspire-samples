@@ -31,10 +31,10 @@ The application consists of:
 
 ## Key Code
 
-The `apphost.ts` configuration demonstrates Aspire 13's Python support:
+The `apphost.mts` configuration demonstrates Aspire 13's Python support:
 
 ```ts
-import { createBuilder } from "./.modules/aspire.js";
+import { createBuilder } from "./.aspire/modules/aspire.mjs";
 
 const builder = await createBuilder();
 

@@ -98,15 +98,16 @@ jobs:
 
         while IFS= read -r apphost; do
           sample_dir="$(dirname "$apphost")"
+          apphost_name="$(basename "$apphost")"
           sample_name="${apphost#./samples/}"
           echo "::group::Restore $sample_name"
           (
             cd "$sample_dir"
-            "$ASPIRE_CLI" restore --apphost apphost.ts --non-interactive
+            "$ASPIRE_CLI" restore --apphost "$apphost_name" --non-interactive
             npm ci --no-audit --no-fund
           )
           echo "::endgroup::"
-        done < <(find ./samples -name apphost.ts | sort)
+        done < <(find ./samples \( -name apphost.ts -o -name apphost.mts \) | sort)
 
     - name: Build (Ubuntu)
       if: matrix.os == 'ubuntu-latest'
