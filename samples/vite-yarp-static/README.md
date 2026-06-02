@@ -45,7 +45,7 @@ aspire do docker-compose-down-dc  # Teardown deployment
 
 **Dual-Mode YARP** - Run mode proxies to Vite, publish mode serves static files:
 ```ts
-import { createBuilder } from "./.modules/aspire.js";
+import { createBuilder } from "./.aspire/modules/aspire.mjs";
 
 const builder = await createBuilder();
 const executionContext = await builder.executionContext.get();

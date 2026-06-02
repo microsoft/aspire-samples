@@ -29,6 +29,7 @@ jobs:
       DOTNET_MULTILEVEL_LOOKUP: false
       DOTNET_INSTALL_DIR: ${{ matrix.os == 'ubuntu-latest' && '' || 'dotnet' }}
       ASPIRE_ALLOW_UNSECURED_TRANSPORT: true
+      ASPIRE_CLI_TELEMETRY_OPTOUT: true
       SuppressNETCoreSdkPreviewMessage: true
       DCP_DIAGNOSTICS_LOG_LEVEL: 'debug'
     steps:
@@ -102,11 +103,11 @@ jobs:
           echo "::group::Restore $sample_name"
           (
             cd "$sample_dir"
-            "$ASPIRE_CLI" restore --apphost apphost.ts --non-interactive
+            "$ASPIRE_CLI" restore --apphost . --non-interactive --nologo
             npm ci --no-audit --no-fund
           )
           echo "::endgroup::"
-        done < <(find ./samples -name apphost.ts | sort)
+        done < <(find ./samples -name apphost.mts | sort)
 
     - name: Build (Ubuntu)
       if: matrix.os == 'ubuntu-latest'

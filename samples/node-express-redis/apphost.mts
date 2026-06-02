@@ -1,12 +1,18 @@
-import { createBuilder } from "./.modules/aspire.js";
+import { createBuilder } from "./.aspire/modules/aspire.mjs";
 
 const builder = await createBuilder();
 const executionContext = await builder.executionContext();
 
 await builder.addDockerComposeEnvironment("dc");
 
-const api = await builder.addUvicornApp("api", "./api", "main:app")
-    .withHttpHealthCheck({ path: "/health" });
+const redis = await builder.addRedis("redis")
+    .withRedisInsight();
+
+const api = await builder.addNodeApp("api", "./api", "index.js")
+    .withHttpEndpoint({ env: "PORT" })
+    .withHttpHealthCheck({ path: "/health" })
+    .waitFor(redis)
+    .withReference(redis);
 
 const frontend = await builder.addViteApp("frontend", "./frontend")
     .withReference(api);
@@ -14,8 +20,7 @@ const frontend = await builder.addViteApp("frontend", "./frontend")
 await builder.addYarp("app")
     .withConfiguration(async (yarp) =>
     {
-        const apiCluster = await (await yarp.addClusterWithDestination("api", "https://api"))
-            .withHttpClientConfig({ dangerousAcceptAnyServerCertificate: true });
+        const apiCluster = await yarp.addClusterFromResource(api);
         await (await yarp.addRoute("api/{**catch-all}", apiCluster))
             .withTransformPathRemovePrefix("/api");
 
@@ -25,7 +30,6 @@ await builder.addYarp("app")
             await yarp.addRoute("{**catch-all}", frontendCluster);
         }
     })
-    .withReference(api)
     .withExternalHttpEndpoints()
     .publishWithStaticFiles(frontend)
     .withExplicitStart();

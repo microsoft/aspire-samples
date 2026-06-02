@@ -1,10 +1,10 @@
 {
   "appHost": {
-    "path": "apphost.ts",
+    "path": "apphost.mts",
     "language": "typescript/nodejs"
   },
   "sdk": {
-    "version": "13.3.3"
+    "version": "13.4.0"
   },
   "profiles": {
     "https": {
@@ -16,9 +16,9 @@
     }
   },
   "packages": {
-    "Aspire.Hosting.RabbitMQ": "13.3.3",
-    "Aspire.Hosting.Python": "13.3.3",
-    "Aspire.Hosting.JavaScript": "13.3.3",
-    "Aspire.Hosting.Docker": "13.3.3"
+    "Aspire.Hosting.RabbitMQ": "13.4.0",
+    "Aspire.Hosting.Python": "13.4.0",
+    "Aspire.Hosting.JavaScript": "13.4.0",
+    "Aspire.Hosting.Docker": "13.4.0"
   }
 }
