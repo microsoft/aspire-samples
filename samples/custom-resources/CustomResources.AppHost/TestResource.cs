@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -23,6 +24,24 @@ static class TestResourceExtensions
                     new(CustomResourceKnownProperties.Source, "Custom")
                 ]
             })
+            .WithCommand(
+                name: "inspect",
+                displayName: "Inspect resource",
+                executeCommand: context =>
+                {
+                    context.Logger.LogInformation("Inspect command executed for {ResourceName}.", context.ResourceName);
+
+                    var result = JsonSerializer.Serialize(new
+                    {
+                        resource = context.ResourceName,
+                        generatedAt = DateTimeOffset.UtcNow
+                    });
+
+                    return Task.FromResult(CommandResults.Success(
+                        message: "Resource inspection generated.",
+                        result: result,
+                        resultFormat: CommandResultFormat.Json));
+                })
             .ExcludeFromManifest();
 
         rb.OnInitializeResource((resource, e, ct) =>

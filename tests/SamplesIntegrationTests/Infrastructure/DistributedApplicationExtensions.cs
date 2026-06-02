@@ -232,6 +232,13 @@ public static partial class DistributedApplicationExtensions
             return true;
         }
 
+        // BrowserLogs resources are dashboard command resources; they do not have a
+        // service lifecycle to wait for during AppHost startup tests.
+        if (resource.GetType().FullName?.Contains("BrowserLogs", StringComparison.Ordinal) == true)
+        {
+            return true;
+        }
+
 #pragma warning disable ASPIREAZURE001 // AzureEnvironmentResource is experimental.
         if (resource is AzureEnvironmentResource)
         {

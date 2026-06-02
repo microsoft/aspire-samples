@@ -2,10 +2,11 @@ import { ContainerLifetime, UrlDisplayLocation, createBuilder } from "./.aspire/
 
 const builder = await createBuilder();
 
-await builder.addDockerComposeEnvironment("dc");
+const dc = await builder.addDockerComposeEnvironment("dc");
 
 const rabbitmq = await builder.addRabbitMQ("messaging")
     .withManagementPlugin()
+    .withComputeEnvironment(dc)
     .withLifetime(ContainerLifetime.Persistent)
     .withUrlForEndpoint("tcp", async (url) =>
     {
@@ -19,19 +20,23 @@ const rabbitmq = await builder.addRabbitMQ("messaging")
 const api = await builder.addNodeApp("api", "./api", "index.js")
     .withHttpEndpoint({ env: "PORT" })
     .withHttpHealthCheck({ path: "/health" })
+    .withComputeEnvironment(dc)
     .waitFor(rabbitmq)
     .withReference(rabbitmq);
 
 const frontend = await builder.addViteApp("frontend", "./frontend")
     .withReference(api)
-    .withUrl("", { displayText: "Task Queue UI" });
+    .withUrl("", { displayText: "Task Queue UI" })
+    .withBrowserLogs();
 
 await builder.addPythonApp("worker-python", "./worker-python", "main.py")
     .withUv()
+    .withComputeEnvironment(dc)
     .waitFor(rabbitmq)
     .withReference(rabbitmq);
 
 await builder.addCSharpApp("worker-csharp", "./worker-csharp")
+    .withComputeEnvironment(dc)
     .waitFor(rabbitmq)
     .withReference(rabbitmq);
 

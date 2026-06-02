@@ -2,9 +2,10 @@ import { ContainerLifetime, UrlDisplayLocation, createBuilder } from "./.aspire/
 
 const builder = await createBuilder();
 
-await builder.addDockerComposeEnvironment("dc");
+const dc = await builder.addDockerComposeEnvironment("dc");
 
 const postgres = await builder.addPostgres("postgres")
+    .withComputeEnvironment(dc)
     .withDataVolume()
     .withLifetime(ContainerLifetime.Persistent)
     .withPgAdmin({
@@ -19,6 +20,7 @@ const db = await postgres.addDatabase("db");
 const api = await builder.addCSharpApp("api", "./api")
     .withHttpHealthCheck({ path: "/health" })
     .withExternalHttpEndpoints()
+    .withComputeEnvironment(dc)
     .waitFor(db)
     .withReference(db)
     .withUrlForEndpoint("http", async (url) =>
@@ -42,7 +44,8 @@ const api = await builder.addCSharpApp("api", "./api")
 
 const frontend = await builder.addViteApp("frontend", "./frontend")
     .withReference(api)
-    .withUrl("", { displayText: "Todo UI" });
+    .withUrl("", { displayText: "Todo UI" })
+    .withBrowserLogs();
 
 await api.publishWithContainerFiles(frontend, "wwwroot");
 

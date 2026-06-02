@@ -16,6 +16,7 @@
     }
   },
   "packages": {
+    "Aspire.Hosting.Browsers": "13.4.0-preview.1.26281.18",
     "Aspire.Hosting.Python": "13.4.0",
     "Aspire.Hosting.JavaScript": "13.4.0",
     "Aspire.Hosting.Yarp": "13.4.0",

@@ -3,7 +3,7 @@ import { createBuilder } from "./.aspire/modules/aspire.mjs";
 const builder = await createBuilder();
 const executionContext = await builder.executionContext();
 
-await builder.addDockerComposeEnvironment("dc");
+const dc = await builder.addDockerComposeEnvironment("dc");
 
 const frontend = await builder.addViteApp("frontend", "./frontend");
 
@@ -17,6 +17,8 @@ await builder.addYarp("app")
         }
     })
     .withExternalHttpEndpoints()
-    .publishWithStaticFiles(frontend);
+    .withBrowserLogs()
+    .publishWithStaticFiles(frontend)
+    .withComputeEnvironment(dc);
 
 await builder.build().run();

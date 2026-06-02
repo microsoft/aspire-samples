@@ -1,4 +1,6 @@
-﻿var builder = DistributedApplication.CreateBuilder(args);
+﻿#pragma warning disable ASPIREBROWSERLOGS001
+
+var builder = DistributedApplication.CreateBuilder(args);
 
 var cache = builder.AddRedis("cache")
     .WithRedisInsight();
@@ -12,6 +14,7 @@ builder.AddNodeApp("frontend", "../NodeFrontend", "./app.js")
     .WithHttpEndpoint(port: 5223, env: "PORT")
     .WithExternalHttpEndpoints()
     .WithHttpHealthCheck("/health")
+    .WithBrowserLogs()
     .WithReference(weatherapi).WaitFor(weatherapi)
     .WithReference(cache).WaitFor(cache);
 
