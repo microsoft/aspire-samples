@@ -1,5 +1,9 @@
+#pragma warning disable ASPIREBROWSERLOGS001
+#pragma warning disable ASPIREJAVASCRIPT001
+
 #:sdk Aspire.AppHost.Sdk@13.4.0
 #:package Aspire.Hosting.JavaScript@13.4.0
+#:package Aspire.Hosting.Browsers@13.4.0-preview.1.26281.18
 #:package Aspire.Hosting.Python@13.4.0
 #:package Aspire.Hosting.Redis@13.4.0
 
@@ -14,10 +18,10 @@ var app = builder.AddUvicornApp("app", "./app", "main:app")
     .WaitFor(cache)
     .WithHttpHealthCheck("/health");
 
-var frontend = builder.AddViteApp("frontend", "./frontend")
+builder.AddViteApp("frontend", "./frontend")
     .WithReference(app)
-    .WaitFor(app);
-
-app.PublishWithContainerFiles(frontend, "./static");
+    .WaitFor(app)
+    .WithBrowserLogs()
+    .PublishAsStaticWebsite("/api", app);
 
 builder.Build().Run();

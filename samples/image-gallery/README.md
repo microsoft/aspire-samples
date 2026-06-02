@@ -19,7 +19,8 @@ flowchart LR
 **Publish Mode:**
 ```mermaid
 flowchart LR
-    Browser --> API[C# API serving<br/>Vite build output<br/>'npm run build']
+    Browser --> Frontend[Static website serving<br/>Vite build output<br/>'npm run build']
+    Frontend -->|Proxy /api| API[C# API]
     API --> Blobs[Azure Blob Storage]
     API --> Queue[Azure Storage Queue]
     API --> SQL[Azure SQL]
@@ -54,7 +55,7 @@ flowchart LR
 - **Dual-Mode Resources**: Azurite/SQL Server containers locally, Azure services in production (`.RunAsEmulator()`, `.RunAsContainer()`)
 - **Free Tier Deployment**: Azure SQL free tier with serverless auto-pause, Container Apps scale-to-zero
 - **Managed Identity**: Password-less authentication to all Azure resources (Storage, SQL, Queues)
-- **Polyglot Stack**: Vite+React frontend embedded in C# API container, SkiaSharp for image processing
+- **Polyglot Stack**: Vite+React frontend published as a static website, SkiaSharp for image processing
 - **OpenTelemetry**: Distributed tracing across upload → queue → worker pipeline
 
 ## Running Locally
@@ -194,9 +195,9 @@ else
 }
 ```
 
-**Container Files Publishing** - Embed Vite build output in API container:
+**Static Website Publishing** - Publish the Vite app as a static website with API proxying:
 ```csharp
-api.PublishWithContainerFiles(frontend, "wwwroot");
+frontend.PublishAsStaticWebsite("/api", api);
 ```
 
 ## Performance & Cost Characteristics

@@ -3,7 +3,6 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
-    <PackageVersion Include="Aspire.Hosting.AppHost" Version="13.4.0" />
     <PackageVersion Include="Aspire.Hosting.Azure" Version="13.4.0" />
     <!-- Aspire Hosting -->
     <PackageVersion Include="Aspire.Hosting.Azure.AppContainers" Version="13.4.0" />

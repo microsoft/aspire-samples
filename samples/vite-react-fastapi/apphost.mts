@@ -3,10 +3,11 @@ import { createBuilder } from "./.aspire/modules/aspire.mjs";
 const builder = await createBuilder();
 const executionContext = await builder.executionContext();
 
-await builder.addDockerComposeEnvironment("dc");
+const dc = await builder.addDockerComposeEnvironment("dc");
 
 const api = await builder.addUvicornApp("api", "./api", "main:app")
-    .withHttpHealthCheck({ path: "/health" });
+    .withHttpHealthCheck({ path: "/health" })
+    .withComputeEnvironment(dc);
 
 const frontend = await builder.addViteApp("frontend", "./frontend")
     .withReference(api);
@@ -27,7 +28,9 @@ await builder.addYarp("app")
     })
     .withReference(api)
     .withExternalHttpEndpoints()
+    .withBrowserLogs()
     .publishWithStaticFiles(frontend)
+    .withComputeEnvironment(dc)
     .withExplicitStart();
 
 await builder.build().run();

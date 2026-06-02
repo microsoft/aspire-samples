@@ -2,7 +2,7 @@
 
 var builder = DistributedApplication.CreateBuilder(args);
 
-builder.AddAzureContainerAppEnvironment("env");
+var env = builder.AddAzureContainerAppEnvironment("env");
 
 var storage = builder.AddAzureStorage("storage").RunAsEmulator()
     .ConfigureInfrastructure((infrastructure) =>
@@ -24,7 +24,8 @@ var storage = builder.AddAzureStorage("storage").RunAsEmulator()
 var blobs = storage.AddBlobs("blobs");
 var queues = storage.AddQueues("queues");
 
-var functions = builder.AddAzureFunctionsProject<Projects.ImageGallery_Functions>("functions")
+var functions = builder.AddAzureFunctionsProject("functions", "../ImageGallery.Functions/ImageGallery.Functions.csproj")
+                       .WithComputeEnvironment(env)
                        .WithReference(queues)
                        .WithReference(blobs)
                        .WaitFor(storage)
@@ -37,6 +38,7 @@ var functions = builder.AddAzureFunctionsProject<Projects.ImageGallery_Functions
                        .WithUrlForEndpoint("http", u => u.DisplayText = "Functions App");
 
 builder.AddProject<Projects.ImageGallery_FrontEnd>("frontend")
+       .WithComputeEnvironment(env)
        .WithReference(queues)
        .WithReference(blobs)
        .WaitFor(functions)

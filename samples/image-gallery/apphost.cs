@@ -1,10 +1,13 @@
 #pragma warning disable ASPIRECSHARPAPPS001
 #pragma warning disable ASPIREAZURE002
+#pragma warning disable ASPIREBROWSERLOGS001
+#pragma warning disable ASPIREJAVASCRIPT001
 
 #:sdk Aspire.AppHost.Sdk@13.4.0
 #:package Aspire.Hosting.Azure.Storage@13.4.0
 #:package Aspire.Hosting.Azure.Sql@13.4.0
 #:package Aspire.Hosting.JavaScript@13.4.0
+#:package Aspire.Hosting.Browsers@13.4.0-preview.1.26281.18
 #:package Aspire.Hosting.Azure.AppContainers@13.4.0
 
 using Aspire.Hosting.Azure;
@@ -13,7 +16,7 @@ using Azure.Provisioning.Expressions;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
-builder.AddAzureContainerAppEnvironment("env");
+var env = builder.AddAzureContainerAppEnvironment("env");
 
 // Storage: Use Azurite emulator in run mode, real Azure in publish mode
 var storage = builder.AddAzureStorage("storage")
@@ -29,6 +32,7 @@ var sql = builder.AddAzureSqlServer("sql")
 
 // API: Upload images, queue thumbnail jobs, serve metadata
 var api = builder.AddCSharpApp("api", "./api")
+    .WithComputeEnvironment(env)
     .WithHttpHealthCheck("/health")
     .WithExternalHttpEndpoints()
     .WaitFor(sql)
@@ -58,6 +62,7 @@ var api = builder.AddCSharpApp("api", "./api")
 // Worker: Container Apps Job for queue-triggered thumbnail generation
 // Event-driven: starts when messages arrive, exits within ~5 seconds when queue is empty
 var worker = builder.AddCSharpApp("worker", "./worker")
+    .WithComputeEnvironment(env)
     .WithReference(blobs)
     .WithReference(queues)
     .WithReference(sql)
@@ -99,13 +104,12 @@ else
 }
 
 // Frontend: Vite+React for upload and gallery UI
-var frontend = builder.AddViteApp("frontend", "./frontend")
+builder.AddViteApp("frontend", "./frontend")
     .WithEndpoint("http", e => e.Port = 9080)
     .WithReference(api)
-    .WithUrl("", "Image Gallery");
-
-// Publish: Embed frontend build output in API container
-api.PublishWithContainerFiles(frontend, "wwwroot");
+    .WithUrl("", "Image Gallery")
+    .WithBrowserLogs()
+    .WithComputeEnvironment(env)
+    .PublishAsStaticWebsite("/api", api);
 
 builder.Build().Run();
-

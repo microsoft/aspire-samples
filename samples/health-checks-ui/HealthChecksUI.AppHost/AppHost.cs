@@ -1,15 +1,18 @@
 ﻿var builder = DistributedApplication.CreateBuilder(args);
 
-builder.AddDockerComposeEnvironment("compose");
+var compose = builder.AddDockerComposeEnvironment("compose");
 
-var cache = builder.AddRedis("cache");
+var cache = builder.AddRedis("cache")
+    .WithComputeEnvironment(compose);
 
 var apiService = builder.AddProject<Projects.HealthChecksUI_ApiService>("apiservice")
+    .WithComputeEnvironment(compose)
     .WithHttpHealthCheck("/health")
     .WithHttpProbe(ProbeType.Liveness, "/alive")
     .WithFriendlyUrls(displayText: "API");
 
 var webFrontend = builder.AddProject<Projects.HealthChecksUI_Web>("webfrontend")
+    .WithComputeEnvironment(compose)
     .WithReference(cache)
     .WaitFor(cache)
     .WithReference(apiService)
@@ -20,6 +23,7 @@ var webFrontend = builder.AddProject<Projects.HealthChecksUI_Web>("webfrontend")
     .WithExternalHttpEndpoints();
 
 var healthChecksUI = builder.AddHealthChecksUI("healthchecksui")
+    .WithComputeEnvironment(compose)
     .WithReference(apiService)
     .WithReference(webFrontend)
     .WithFriendlyUrls("HealthChecksUI Dashboard", "http")

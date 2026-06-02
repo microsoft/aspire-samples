@@ -3,14 +3,16 @@ import { createBuilder } from "./.aspire/modules/aspire.mjs";
 const builder = await createBuilder();
 const executionContext = await builder.executionContext();
 
-await builder.addDockerComposeEnvironment("dc");
+const dc = await builder.addDockerComposeEnvironment("dc");
 
 const redis = await builder.addRedis("redis")
-    .withRedisInsight();
+    .withRedisInsight()
+    .withComputeEnvironment(dc);
 
 const api = await builder.addNodeApp("api", "./api", "index.js")
     .withHttpEndpoint({ env: "PORT" })
     .withHttpHealthCheck({ path: "/health" })
+    .withComputeEnvironment(dc)
     .waitFor(redis)
     .withReference(redis);
 
@@ -31,7 +33,9 @@ await builder.addYarp("app")
         }
     })
     .withExternalHttpEndpoints()
+    .withBrowserLogs()
     .publishWithStaticFiles(frontend)
+    .withComputeEnvironment(dc)
     .withExplicitStart();
 
 await builder.build().run();

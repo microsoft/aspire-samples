@@ -19,7 +19,8 @@ const api = await builder.addUvicornApp("api", "./api", "main:app")
 
 const frontend = await builder.addViteApp("frontend", "./frontend")
     .withReference(api)
-    .withUrl("", { displayText: "RAG UI" });
+    .withUrl("", { displayText: "RAG UI" })
+    .withBrowserLogs();
 
 await api.publishWithContainerFiles(frontend, "public");
 
