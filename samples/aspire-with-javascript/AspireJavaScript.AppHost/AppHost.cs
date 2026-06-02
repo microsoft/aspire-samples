@@ -4,6 +4,7 @@ var weatherApi = builder.AddProject<Projects.AspireJavaScript_MinimalApi>("weath
     .WithExternalHttpEndpoints();
 
 builder.AddJavaScriptApp("angular", "../AspireJavaScript.Angular", runScriptName: "start")
+    .WithNpm(installCommand: "ci")
     .WithReference(weatherApi)
     .WaitFor(weatherApi)
     .WithHttpEndpoint(env: "PORT")
@@ -11,6 +12,7 @@ builder.AddJavaScriptApp("angular", "../AspireJavaScript.Angular", runScriptName
     .PublishAsDockerFile();
 
 builder.AddJavaScriptApp("react", "../AspireJavaScript.React", runScriptName: "start")
+    .WithNpm(installCommand: "ci")
     .WithReference(weatherApi)
     .WaitFor(weatherApi)
     .WithEnvironment("BROWSER", "none") // Disable opening browser on npm start
@@ -28,6 +30,7 @@ builder.AddJavaScriptApp("vue", "../AspireJavaScript.Vue")
     .PublishAsDockerFile();
 
 var reactVite = builder.AddViteApp("reactvite", "../AspireJavaScript.Vite")
+    .WithNpm(installCommand: "ci")
     .WithReference(weatherApi)
     .WithEnvironment("BROWSER", "none");
 
