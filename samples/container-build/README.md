@@ -1,6 +1,6 @@
-# Working with container-built resources in a Aspire application
+# Working with container-built resources in an Aspire application
 
-This sample demonstrates integrating applications into a Aspire app via Dockerfiles and container-based builds. This is especially helpful to integrate applications written in languages that Aspire does not have a native integration for, or to reduce the prerequisites required to run the application.
+This sample demonstrates integrating applications into an Aspire app via Dockerfiles and container-based builds. This is especially helpful to integrate applications written in languages that Aspire does not have a native integration for, or to reduce the prerequisites required to run the application.
 
 ![Screenshot of the Aspire dashboard showing the ginapp container resource built from a Dockerfile](./images/aspire-dashboard-container-build.png)
 

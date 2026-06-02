@@ -1,6 +1,6 @@
 # Integrating a FastAPI (Python) app within an Aspire application
 
-This sample demonstrates integrating a FastAPI (Python) app and a JavaSript frontend using Aspire.
+This sample demonstrates integrating a FastAPI (Python) app and a JavaScript frontend using Aspire.
 
 The sample consists of two apps:
 
