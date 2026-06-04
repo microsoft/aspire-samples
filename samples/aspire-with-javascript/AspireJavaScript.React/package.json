@@ -12,8 +12,8 @@
     "start:default": "webpack-dev-server --mode development --hot --env PORT=$PORT"
   },
   "dependencies": {
-    "react": "^19.2.6",
-    "react-dom": "^19.2.6"
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7"
   },
   "devDependencies": {
     "@babel/core": "^7.29.0",
