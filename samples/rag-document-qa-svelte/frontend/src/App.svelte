@@ -339,8 +339,7 @@
     padding: 1rem 0 1.1rem;
     margin-bottom: 1.75rem;
     border-bottom: 2px solid var(--border-strong);
-    background: color-mix(in srgb, var(--bg) 82%, transparent);
-    backdrop-filter: blur(8px);
+    background: var(--bg);
   }
 
   .brand {

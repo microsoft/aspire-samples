@@ -15,8 +15,7 @@
   gap: 1rem;
   padding: 1rem 0;
   margin-bottom: 1.75rem;
-  backdrop-filter: blur(8px);
-  background: color-mix(in srgb, var(--bg) 78%, transparent);
+  background: var(--bg);
   border-bottom: 1px solid var(--border);
 }
 
@@ -531,14 +530,14 @@
   height: 40px;
   border: 0;
   border-radius: 50%;
-  background: rgba(6, 17, 26, 0.62);
+  background: #0e1d2b;
   color: #fff;
   cursor: pointer;
   transition: background 0.18s ease;
 }
 
 .modalClose:hover {
-  background: rgba(6, 17, 26, 0.85);
+  background: #1a2f42;
 }
 
 .modalClose svg {

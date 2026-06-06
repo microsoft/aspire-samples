@@ -3,6 +3,8 @@
 ![Athenaeum — the Aspire RAG reading room (dark theme)](./images/rag-document-qa-svelte-primary-page-dark.png#gh-dark-mode-only)
 ![Athenaeum — the Aspire RAG reading room (light theme)](./images/rag-document-qa-svelte-primary-page-light.png#gh-light-mode-only)
 
+> The catalogue, answer, and cited passages shown above are **illustrative** — an OpenAI API key is required for live embeddings and answers. The empty-library and upload error states are captured against the real backend.
+
 Upload documents and ask questions using Retrieval Augmented Generation with vector search.
 
 ## Architecture
