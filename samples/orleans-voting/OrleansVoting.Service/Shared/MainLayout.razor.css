@@ -1,71 +1,77 @@
-.page {
+.stage {
     position: relative;
     display: flex;
     flex-direction: column;
+    min-height: 100vh;
 }
 
 main {
     flex: 1;
+    width: 100%;
+    outline: none;
 }
 
-.sidebar {
-    background-image: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%);
+main:focus-visible {
+    outline: none;
 }
 
-.top-row {
-    background-color: #f7f7f7;
-    border-bottom: 1px solid #d6d5d5;
-    height: 4rem;
+.stage-inner {
+    width: 100%;
+    max-width: 920px;
+    margin: 0 auto;
+    padding: clamp(1.5rem, 4vw, 3rem) clamp(1.1rem, 4vw, 2rem) 4rem;
+}
+
+.stage-foot {
+    margin-top: auto;
     display: flex;
-    justify-items: center;
-    align-self: center;
-    align-content: center;
+    align-items: center;
+    gap: 0.7rem;
+    flex-wrap: wrap;
+    padding: 1rem clamp(1.1rem, 4vw, 2rem);
+    border-top: 1px solid var(--line);
+    background: color-mix(in srgb, var(--surface) 55%, transparent);
+    backdrop-filter: blur(8px);
+    font-size: 0.86rem;
+    color: var(--ink-soft);
 }
 
-    .top-row ::deep a, .top-row .btn-link {
-        white-space: nowrap;
-        margin-left: 1.5rem;
-    }
-
-    .top-row a:first-child {
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-@media (max-width: 640.98px) {
-    .top-row:not(.auth) {
-        display: none;
-    }
-
-    .top-row.auth {
-        justify-content: space-between;
-    }
-
-    .top-row a, .top-row .btn-link {
-        margin-left: 0;
-    }
+.stage-foot-mark {
+    display: inline-flex;
+    color: var(--gold-text);
 }
 
-@media (min-width: 641px) {
-    .page {
-        flex-direction: row;
-    }
+.stage-foot-mark ::deep .icon {
+    width: 1.05rem;
+    height: 1.05rem;
+}
 
-    .sidebar {
-        width: 250px;
-        height: 100vh;
-        position: sticky;
-        top: 0;
-    }
+.stage-foot-silo {
+    font-family: var(--font-mono);
+    color: var(--ink);
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 0.15rem 0.6rem;
+    margin-left: 0.25rem;
+    font-size: 0.8rem;
+}
 
-    .top-row {
-        position: sticky;
-        top: 0;
-        z-index: 1;
-    }
+.stage-foot-src {
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--ink-soft);
+    text-decoration: none;
+    font-weight: 600;
+}
 
-    .top-row, article {
-        padding-left: 2rem !important;
-        padding-right: 1.5rem !important;
-    }
+.stage-foot-src:hover {
+    color: var(--ink);
+}
+
+.stage-foot-src ::deep .icon {
+    width: 1.05rem;
+    height: 1.05rem;
 }

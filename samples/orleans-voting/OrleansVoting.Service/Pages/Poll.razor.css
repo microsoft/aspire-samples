@@ -1,0 +1,329 @@
+.hero {
+    margin-bottom: 1.75rem;
+}
+
+.eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--brand-text);
+    margin: 0 0 0.6rem;
+}
+
+.eyebrow-ico ::deep .icon {
+    width: 1rem;
+    height: 1rem;
+}
+
+h1 {
+    font-size: clamp(1.9rem, 5.5vw, 2.9rem);
+    margin: 0;
+}
+
+.hero-sub {
+    margin: 0.7rem 0 0;
+    max-width: 46ch;
+    color: var(--ink-soft);
+    font-size: 1.05rem;
+    line-height: 1.5;
+}
+
+/* Loading */
+.poll-loading {
+    text-align: center;
+    padding: 4rem 1rem;
+    color: var(--ink-soft);
+}
+
+.poll-loading-mark {
+    display: inline-flex;
+    color: var(--brand-text);
+}
+
+.poll-loading-mark ::deep .icon {
+    width: 3rem;
+    height: 3rem;
+    animation: poll-bounce 1.2s ease-in-out infinite;
+}
+
+@keyframes poll-bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+}
+
+.poll-loading h2 {
+    margin: 1rem 0 0.4rem;
+}
+
+/* Ballot */
+.ballot {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+}
+
+.ballot-option {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    text-align: left;
+    padding: 1.1rem 1.25rem;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    cursor: pointer;
+    box-shadow: var(--shadow);
+    transition: transform 0.14s ease, border-color 0.18s ease, box-shadow 0.2s ease;
+}
+
+.ballot-option:hover:not(:disabled) {
+    transform: translateY(-2px);
+    border-color: var(--magenta);
+}
+
+.ballot-option:disabled {
+    opacity: 0.6;
+    cursor: progress;
+}
+
+.ballot-check {
+    flex: none;
+    width: 2.6rem;
+    height: 2.6rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    color: var(--brand-text);
+    background: var(--surface-2);
+    border: 1px solid var(--line-strong);
+    transition: color 0.18s ease, background 0.18s ease, border-color 0.18s ease;
+}
+
+.ballot-check ::deep .icon {
+    width: 1.4rem;
+    height: 1.4rem;
+}
+
+.ballot-option:hover:not(:disabled) .ballot-check {
+    color: var(--btn-ink);
+    background: linear-gradient(120deg, var(--btn-bg), var(--btn-bg-2));
+    border-color: transparent;
+}
+
+.ballot-label {
+    flex: 1;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.15rem;
+    color: var(--ink);
+}
+
+.ballot-go {
+    flex: none;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    border: 1px solid var(--line-strong);
+    border-radius: 999px;
+    padding: 0.35rem 0.8rem;
+    transition: color 0.18s ease, border-color 0.18s ease;
+}
+
+.ballot-option:hover:not(:disabled) .ballot-go {
+    color: var(--brand-text);
+    border-color: var(--magenta);
+}
+
+/* Share */
+.share-panel {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    margin-top: 1.75rem;
+    padding: 1rem 1.25rem;
+    border: 1px dashed var(--line-strong);
+    border-radius: var(--radius);
+    background: var(--surface-2);
+}
+
+.share-ico {
+    display: inline-flex;
+    color: var(--cyan-text);
+}
+
+.share-ico ::deep .icon {
+    width: 1.6rem;
+    height: 1.6rem;
+}
+
+.share-title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 700;
+    color: var(--ink);
+}
+
+.share-id {
+    margin: 0.15rem 0 0;
+    color: var(--ink-soft);
+    font-size: 0.92rem;
+}
+
+.share-id code {
+    font-family: var(--font-mono);
+    color: var(--ink);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    padding: 0.1rem 0.45rem;
+}
+
+/* Results */
+.results-status {
+    margin: 0 0 1.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    color: var(--ink-soft);
+}
+
+.results {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    counter-reset: rank;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.result-row {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 1.1rem 1.25rem;
+    box-shadow: var(--shadow);
+}
+
+.result-row.is-leading {
+    border-color: color-mix(in srgb, var(--gold) 60%, var(--line-strong));
+}
+
+.result-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.7rem;
+    flex-wrap: wrap;
+}
+
+.result-name {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.2rem;
+    color: var(--ink);
+}
+
+.result-crown {
+    display: inline-flex;
+    color: var(--gold-text);
+}
+
+.result-crown ::deep .icon {
+    width: 1.3rem;
+    height: 1.3rem;
+}
+
+.result-figures {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.7rem;
+}
+
+.result-badge {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gold-text);
+    border: 1px solid color-mix(in srgb, var(--gold) 55%, transparent);
+    border-radius: 999px;
+    padding: 0.15rem 0.55rem;
+}
+
+.result-pct {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 1.25rem;
+    color: var(--ink);
+}
+
+.result-votes {
+    font-size: 0.85rem;
+    color: var(--ink-faint);
+}
+
+.result-track {
+    height: 16px;
+    border-radius: 999px;
+    background: var(--surface-3);
+    overflow: hidden;
+}
+
+.result-fill {
+    display: block;
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--violet), var(--cyan));
+    transition: width 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.result-fill.is-leading {
+    background: linear-gradient(90deg, var(--magenta), var(--gold));
+}
+
+/* Demo bar */
+.demo-bar {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.7rem;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--line);
+}
+
+.demo-bar-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--violet-text);
+    margin-right: 0.3rem;
+}
+
+.demo-ico ::deep .icon {
+    width: 1rem;
+    height: 1rem;
+}

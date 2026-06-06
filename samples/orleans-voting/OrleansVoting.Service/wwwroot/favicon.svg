@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Grain Poll">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ff49a3"/>
+      <stop offset="0.55" stop-color="#b072ff"/>
+      <stop offset="1" stop-color="#2de2e2"/>
+    </linearGradient>
+  </defs>
+  <rect x="2" y="2" width="60" height="60" rx="16" fill="#140a24"/>
+  <rect x="2.75" y="2.75" width="58.5" height="58.5" rx="15.25" fill="none" stroke="url(#g)" stroke-width="1.5" opacity="0.6"/>
+  <rect x="13" y="34" width="9" height="17" rx="3" fill="url(#g)"/>
+  <rect x="27.5" y="24" width="9" height="27" rx="3" fill="url(#g)"/>
+  <rect x="42" y="15" width="9" height="36" rx="3" fill="url(#g)"/>
+  <circle cx="46.5" cy="11" r="4" fill="#ff49a3"/>
+</svg>

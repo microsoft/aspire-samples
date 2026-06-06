@@ -1,34 +1,39 @@
-<div class="top-row ps-3 navbar navbar-dark bg-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="">🌾 Grain Poll 🌾</a>
-        <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-    </div>
-</div>
+<header class="topbar">
+    <div class="topbar-inner">
+        <a class="brand" href="">
+            <span class="brand-mark">@Icons.Logo</span>
+            <span class="brand-text">
+                <span class="brand-name">Grain Poll</span>
+                <span class="brand-live"><span class="brand-live-dot" aria-hidden="true"></span>LIVE</span>
+            </span>
+        </a>
 
-<div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
-    <nav class="flex-column">
-        <div class="nav-item px-3">
+        <button type="button" class="nav-toggle" aria-label="Toggle navigation" aria-expanded="@(!collapseNavMenu)" @onclick="ToggleNavMenu">
+            <span class="nav-toggle-bar"></span>
+            <span class="nav-toggle-bar"></span>
+            <span class="nav-toggle-bar"></span>
+        </button>
+
+        <nav class="@NavMenuCssClass" aria-label="Primary" @onclick="CollapseNavMenu">
             <NavLink class="nav-link" href="new" Match="NavLinkMatch.All">
-                <span class="oi oi-home" aria-hidden="true"></span> Home
+                <span class="nav-ico">@Icons.Ballot</span> New poll
             </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="new">
-                <span class="oi oi-list-rich" aria-hidden="true"></span> Create poll
-            </NavLink>
-        </div>
-    </nav>
-</div>
+        </nav>
+    </div>
+</header>
 
 @code {
     private bool collapseNavMenu = true;
 
-    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+    private string NavMenuCssClass => collapseNavMenu ? "topnav collapsed" : "topnav";
 
     private void ToggleNavMenu()
     {
         collapseNavMenu = !collapseNavMenu;
+    }
+
+    private void CollapseNavMenu()
+    {
+        collapseNavMenu = true;
     }
 }
