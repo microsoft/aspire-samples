@@ -321,10 +321,9 @@
   border-radius: 999px;
   font-size: 0.72rem;
   font-weight: 700;
-  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  background: var(--surface);
   color: var(--accent-strong);
   border: 1px solid var(--border);
-  backdrop-filter: blur(4px);
 }
 
 .thumbBadge svg {
