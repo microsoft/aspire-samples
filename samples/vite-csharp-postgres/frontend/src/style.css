@@ -1,146 +1,278 @@
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+@import "tailwindcss";
+
+/*
+ * Design identity: "Quiet Office" — a restrained, shadcn-inspired neutral
+ * system. Deliberately monochrome (with emerald/red semantic accents) so it
+ * reads as calm and precise next to the more colorful samples. Tokens are
+ * defined as runtime CSS variables (light/dark via prefers-color-scheme) and
+ * surfaced to Tailwind utilities through @theme inline.
+ */
+
+:root {
+  color-scheme: light dark;
+
+  --background: oklch(0.991 0 0);
+  --foreground: oklch(0.18 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.18 0 0);
+  --muted: oklch(0.968 0 0);
+  --muted-foreground: oklch(0.44 0 0);
+  --border: oklch(0.9 0 0);
+  --input: oklch(0.885 0 0);
+  --primary: oklch(0.18 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --accent: oklch(0.965 0 0);
+  --accent-foreground: oklch(0.18 0 0);
+  --ring: oklch(0.18 0 0);
+  --success: oklch(0.52 0.13 152);
+  --success-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.52 0.21 27);
+  --destructive-foreground: oklch(0.985 0 0);
+  --radius: 0.85rem;
 }
 
-body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem;
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: oklch(0.155 0 0);
+    --foreground: oklch(0.985 0 0);
+    --card: oklch(0.205 0 0);
+    --card-foreground: oklch(0.985 0 0);
+    --muted: oklch(0.26 0 0);
+    --muted-foreground: oklch(0.78 0 0);
+    --border: oklch(1 0 0 / 12%);
+    --input: oklch(1 0 0 / 16%);
+    --primary: oklch(0.985 0 0);
+    --primary-foreground: oklch(0.18 0 0);
+    --accent: oklch(0.27 0 0);
+    --accent-foreground: oklch(0.985 0 0);
+    --ring: oklch(0.75 0 0);
+    --success: oklch(0.72 0.15 153);
+    --success-foreground: oklch(0.18 0 0);
+    --destructive: oklch(0.62 0.2 25);
+    --destructive-foreground: oklch(0.985 0 0);
+  }
 }
 
-.container {
-  background: white;
-  border-radius: 10px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-  width: 100%;
-  max-width: 600px;
-  padding: 2rem;
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-ring: var(--ring);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 0.25rem);
+  --radius-sm: calc(var(--radius) - 0.4rem);
 }
 
-h1 {
-  color: #333;
-  font-size: 2rem;
-  margin-bottom: 0.5rem;
-}
-
-.subtitle {
-  color: #666;
-  margin-bottom: 2rem;
-}
-
-.add-todo-form {
-  display: flex;
-  gap: 0.75rem;
-  margin-bottom: 2rem;
-}
-
-input[type='text'] {
-  flex: 1;
-  padding: 0.75rem;
-  border: 2px solid #e0e0e0;
-  border-radius: 5px;
-  font-size: 1rem;
-}
-
-input[type='text']:focus {
-  outline: none;
-  border-color: #667eea;
-}
-
-button {
-  padding: 0.75rem 1.5rem;
-  background: #667eea;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 1rem;
-  transition: background 0.2s;
-}
-
-button:hover:not(:disabled) {
-  background: #5568d3;
-}
-
-button:disabled {
-  background: #ccc;
-  cursor: not-allowed;
-}
-
-.todos-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.empty-state {
-  text-align: center;
-  color: #999;
-  padding: 3rem 1rem;
-  font-size: 1.1rem;
-}
-
-.todo-item {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 1rem;
-  background: #f9f9f9;
-  border-radius: 5px;
-  transition: background 0.2s;
-}
-
-.todo-item:hover {
-  background: #f0f0f0;
-}
-
-.todo-item.completed .todo-title {
-  text-decoration: line-through;
-  color: #999;
-}
-
-.todo-title {
-  flex: 1;
-  font-size: 1rem;
-  color: #333;
-}
-
-input[type='checkbox'] {
-  width: 20px;
-  height: 20px;
-  cursor: pointer;
-}
-
-.delete-btn {
-  padding: 0.5rem 1rem;
-  background: #f44336;
-  font-size: 0.875rem;
-}
-
-.delete-btn:hover:not(:disabled) {
-  background: #d32f2f;
-}
-
-.stats {
-  margin-top: 1.5rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid #e0e0e0;
-  text-align: center;
-  color: #666;
-}
-
-@media (max-width: 600px) {
-  .add-todo-form {
-    flex-direction: column;
+@layer base {
+  * {
+    border-color: var(--color-border);
   }
 
-  button {
+  body {
+    margin: 0;
+    min-height: 100svh;
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-feature-settings: "cv11", "ss01";
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Subtle dotted grid — the one bit of texture in an otherwise flat system. */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background-image: radial-gradient(var(--color-border) 1px, transparent 1px);
+    background-size: 22px 22px;
+    -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 30%, transparent 75%);
+    mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 30%, transparent 75%);
+    opacity: 0.5;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  .field {
     width: 100%;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-input);
+    background-color: color-mix(in oklab, var(--color-card) 60%, transparent);
+    padding: 0.7rem 0.9rem;
+    font-size: 1rem;
+    color: var(--color-foreground);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
   }
+
+  .field::placeholder {
+    color: var(--color-muted-foreground);
+  }
+
+  .field:focus-visible {
+    outline: none;
+    border-color: var(--color-ring);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-ring) 22%, transparent);
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    border-radius: var(--radius-md);
+    padding: 0.7rem 1.1rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    line-height: 1;
+    white-space: nowrap;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.06s ease;
+  }
+
+  .btn:active:not(:disabled) {
+    transform: translateY(1px);
+  }
+
+  .btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .btn-primary {
+    background-color: var(--color-primary);
+    color: var(--color-primary-foreground);
+  }
+
+  .btn-primary:hover:not(:disabled) {
+    background-color: color-mix(in oklab, var(--color-primary) 88%, var(--color-background));
+  }
+
+  .btn-ghost {
+    background-color: transparent;
+    color: var(--color-muted-foreground);
+    border-color: transparent;
+  }
+
+  .btn-ghost:hover:not(:disabled) {
+    background-color: var(--color-accent);
+    color: var(--color-destructive);
+  }
+
+  .seg {
+    display: inline-flex;
+    align-items: center;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+    background-color: var(--color-muted);
+    padding: 0.2rem;
+    gap: 0.2rem;
+  }
+
+  .seg-btn {
+    border: 0;
+    background: transparent;
+    color: var(--color-muted-foreground);
+    font-size: 0.82rem;
+    font-weight: 600;
+    padding: 0.4rem 0.8rem;
+    border-radius: calc(var(--radius-md) - 0.2rem);
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+  }
+
+  .seg-btn[aria-pressed="true"] {
+    background-color: var(--color-card);
+    color: var(--color-foreground);
+    box-shadow: 0 1px 2px oklch(0 0 0 / 0.08);
+  }
+
+  /* Accessible custom checkbox built on a real input. */
+  .check {
+    appearance: none;
+    -webkit-appearance: none;
+    flex: none;
+    width: 1.4rem;
+    height: 1.4rem;
+    border-radius: 0.5rem;
+    border: 1.5px solid var(--color-input);
+    background-color: color-mix(in oklab, var(--color-card) 60%, transparent);
+    cursor: pointer;
+    display: grid;
+    place-content: center;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+  }
+
+  .check::after {
+    content: "";
+    width: 0.78rem;
+    height: 0.78rem;
+    transform: scale(0);
+    transition: transform 0.12s ease;
+    background-color: var(--color-success-foreground);
+    clip-path: polygon(14% 47%, 0 60%, 40% 100%, 100% 22%, 86% 9%, 38% 71%);
+  }
+
+  .check:checked {
+    background-color: var(--color-success);
+    border-color: var(--color-success);
+  }
+
+  .check:checked::after {
+    transform: scale(1);
+  }
+}
+
+/* Row enter animation + view transitions, both motion-gated. */
+@media (prefers-reduced-motion: no-preference) {
+  .row-enter {
+    animation: row-in 0.28s ease both;
+  }
+
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 0.22s;
+  }
+}
+
+@keyframes row-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
