@@ -1,6 +1,7 @@
 # Aspire Shop
 
-![Screenshot of the web front end the Aspire Shop sample](./images/aspireshop-frontend-complete.png)
+![Screenshot of the web front end the Aspire Shop sample](./images/aspireshop-frontend-light.png#gh-light-mode-only)
+![Screenshot of the web front end the Aspire Shop sample](./images/aspireshop-frontend-dark.png#gh-dark-mode-only)
 
 The app consists of four .NET services:
 
