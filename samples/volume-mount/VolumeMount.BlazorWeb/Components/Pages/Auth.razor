@@ -4,10 +4,16 @@
 
 @attribute [Authorize]
 
-<PageTitle>Auth</PageTitle>
-
-<h1>You are authenticated</h1>
+<PageTitle>You're verified · Vault</PageTitle>
 
 <AuthorizeView>
-    Hello @context.User.Identity?.Name!
+    <div class="status-banner" role="status">
+        <span class="status-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+        </span>
+        <div>
+            <h1>You're signed in and verified</h1>
+            <p>Welcome back, <strong>@context.User.Identity?.Name</strong>. This page is protected — only authenticated accounts can reach it.</p>
+        </div>
+    </div>
 </AuthorizeView>
