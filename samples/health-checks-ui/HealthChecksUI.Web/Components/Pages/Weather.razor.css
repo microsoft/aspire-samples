@@ -1,0 +1,121 @@
+.feed-head {
+    margin-bottom: 1.75rem;
+}
+
+.feed-head h1 {
+    font-size: clamp(1.8rem, 4vw, 2.4rem);
+}
+
+.feed-head .lede {
+    margin-top: 0.6rem;
+}
+
+/* ---- Loading ----------------------------------------------------------- */
+.feed-loading {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1.5rem;
+    border-radius: var(--radius);
+    border: 1px dashed var(--line-strong);
+    color: var(--ink-soft);
+    background: var(--surface);
+}
+
+.spinner {
+    width: 1.1rem;
+    height: 1.1rem;
+    border-radius: 50%;
+    border: 2px solid var(--line-strong);
+    border-top-color: var(--brand);
+    animation: feed-spin 0.8s linear infinite;
+}
+
+@keyframes feed-spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ---- Panel ------------------------------------------------------------- */
+.feed-panel {
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: var(--surface);
+    box-shadow: var(--shadow-sm);
+}
+
+.feed-panel-head {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.85rem 1.1rem;
+    border-bottom: 1px solid var(--line);
+    background: var(--surface-2);
+    font-weight: 600;
+    font-size: 0.92rem;
+    color: var(--ink);
+}
+
+.feed-icon {
+    display: inline-flex;
+    color: var(--brand);
+}
+
+.feed-icon ::deep .icon {
+    width: 1.1rem;
+    height: 1.1rem;
+}
+
+.feed-count {
+    margin-left: auto;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--ink-faint);
+}
+
+/* ---- Data table -------------------------------------------------------- */
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.92rem;
+}
+
+.data-table th,
+.data-table td {
+    padding: 0.7rem 1.1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--line);
+}
+
+.data-table thead th {
+    font-size: 0.72rem;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    font-weight: 600;
+    background: color-mix(in srgb, var(--surface-2) 60%, transparent);
+}
+
+.data-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.data-table tbody tr:hover td {
+    background: var(--surface-2);
+}
+
+.data-table .num {
+    font-family: var(--font-mono);
+    color: var(--ink);
+}
+
+.summary-chip {
+    display: inline-block;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    font-size: 0.82rem;
+    color: var(--ink-soft);
+}

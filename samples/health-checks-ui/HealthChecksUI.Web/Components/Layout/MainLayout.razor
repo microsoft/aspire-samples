@@ -1,23 +1,46 @@
 ﻿@inherits LayoutComponentBase
 
-<div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
+<a class="skip-link" href="#main-content">Skip to main content</a>
 
-    <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
+<div class="layout">
+    <header class="appbar">
+        <div class="appbar-inner">
+            <a class="brand" href="" aria-label="Aspire Status, overview">
+                <span class="brand-mark" aria-hidden="true">@Icons.Activity</span>
+                <span class="brand-text">
+                    <span class="brand-name">Aspire Status</span>
+                    <span class="brand-sub">Systems observability</span>
+                </span>
+            </a>
+
+            <NavMenu />
+
+            <div class="appbar-state">
+                <span class="state-pill state-ok">
+                    <span class="pulse-dot" aria-hidden="true"></span>
+                    All systems operational
+                </span>
+            </div>
         </div>
+    </header>
 
-        <article class="content px-4">
-            @Body
-        </article>
+    <main id="main-content" class="content" tabindex="-1">
+        @Body
     </main>
+
+    <footer class="appfoot">
+        <p class="appfoot-copy">Aspire Status · health &amp; uptime observability sample</p>
+        <a class="appfoot-link" href="https://github.com/dotnet/aspire-samples/tree/main/samples/health-checks-ui"
+           target="_blank" rel="noopener">
+            <span aria-hidden="true">@Icons.GitHub</span> View source
+            <span aria-hidden="true">@Icons.ArrowUpRight</span>
+        </a>
+    </footer>
 </div>
 
-<div id="blazor-error-ui">
-    An unhandled error has occurred.
+<div id="blazor-error-ui" role="alert">
+    <span class="error-ui-icon" aria-hidden="true">@Icons.TriangleAlert</span>
+    <span class="error-ui-text">A connection issue interrupted the session.</span>
     <a href="" class="reload">Reload</a>
-    <a class="dismiss">🗙</a>
+    <button type="button" class="dismiss" aria-label="Dismiss">✕</button>
 </div>
