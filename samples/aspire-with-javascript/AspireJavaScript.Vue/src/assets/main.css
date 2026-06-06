@@ -1,35 +1,104 @@
-@import './base.css';
+:root {
+  color-scheme: light dark;
+
+  /* Aurora sky (day) */
+  --sky-base: #cfe0ff;
+  --aurora-1: rgba(120, 170, 255, 0.65);
+  --aurora-2: rgba(173, 140, 255, 0.6);
+  --aurora-3: rgba(120, 230, 214, 0.55);
+  --aurora-4: rgba(255, 196, 173, 0.55);
+
+  /* Glass + ink */
+  --glass: rgba(255, 255, 255, 0.86);
+  --glass-2: rgba(255, 255, 255, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.75);
+  --glass-shadow: rgba(31, 51, 102, 0.22);
+  --ink: #122039;
+  --muted: #303e55;
+  --accent: #4d38c4;
+  --accent-ink: #ffffff;
+  --teal: #0f9f8f;
+
+  --radius: 22px;
+  --radius-sm: 14px;
+  font-family: "Outfit Variable", "Outfit", system-ui, -apple-system,
+    "Segoe UI", Roboto, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --sky-base: #0b0f20;
+    --aurora-1: rgba(76, 110, 245, 0.5);
+    --aurora-2: rgba(150, 86, 230, 0.5);
+    --aurora-3: rgba(34, 211, 188, 0.42);
+    --aurora-4: rgba(236, 110, 173, 0.4);
+
+    --glass: rgba(20, 26, 48, 0.82);
+    --glass-2: rgba(28, 36, 64, 0.55);
+    --glass-border: rgba(150, 170, 230, 0.28);
+    --glass-shadow: rgba(0, 0, 0, 0.45);
+    --ink: #eaf1ff;
+    --muted: #aebbdc;
+    --accent: #a99bff;
+    --accent-ink: #0b0f20;
+    --teal: #45e6cf;
+  }
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  position: relative;
+  min-height: 100vh;
+  overflow-x: hidden;
+  color: var(--ink);
+  background-color: var(--sky-base);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.55;
+}
+
+/* Animated aurora layer sits behind content; body keeps a solid base
+   colour so contrast resolves predictably for assistive tooling. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: -25%;
+  z-index: -1;
+  background:
+    radial-gradient(42% 38% at 18% 22%, var(--aurora-2), transparent 70%),
+    radial-gradient(46% 42% at 82% 18%, var(--aurora-1), transparent 72%),
+    radial-gradient(50% 50% at 30% 88%, var(--aurora-3), transparent 70%),
+    radial-gradient(46% 46% at 88% 82%, var(--aurora-4), transparent 72%);
+  filter: blur(8px) saturate(120%);
+  animation: drift 26s ease-in-out infinite alternate;
+}
+
+@keyframes drift {
+  0% {
+    transform: translate3d(-3%, -2%, 0) scale(1.05) rotate(0deg);
+  }
+  50% {
+    transform: translate3d(3%, 2%, 0) scale(1.12) rotate(4deg);
+  }
+  100% {
+    transform: translate3d(-2%, 3%, 0) scale(1.06) rotate(-3deg);
+  }
+}
 
 #app {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  font-weight: normal;
+  min-height: 100vh;
 }
 
-a,
-.green {
-  text-decoration: none;
-  color: hsla(160, 100%, 37%, 1);
-  transition: 0.4s;
-  padding: 3px;
-}
-
-@media (hover: hover) {
-  a:hover {
-    background-color: hsla(160, 100%, 37%, 0.2);
-  }
-}
-
-@media (min-width: 1024px) {
-  body {
-    display: flex;
-    place-items: center;
-  }
-
-  #app {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    padding: 0 2rem;
+@media (prefers-reduced-motion: reduce) {
+  body::before {
+    animation: none;
   }
 }

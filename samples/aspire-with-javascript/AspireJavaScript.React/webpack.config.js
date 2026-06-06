@@ -23,7 +23,6 @@ module.exports = (env) => {
     plugins: [
       new HTMLWebpackPlugin({
         template: "./src/index.html",
-        favicon: "./src/favicon.ico",
       }),
     ],
     module: {
@@ -43,8 +42,23 @@ module.exports = (env) => {
         },
         {
           test: /\.css$/,
-          exclude: /node_modules/,
-          use: ["style-loader", "css-loader"],
+          use: [
+            "style-loader",
+            {
+              loader: "css-loader",
+              options: {
+                modules: {
+                  auto: true,
+                  namedExport: false,
+                  exportLocalsConvention: "as-is",
+                },
+              },
+            },
+          ],
+        },
+        {
+          test: /\.woff2?$/,
+          type: "asset/resource",
         },
       ],
     },

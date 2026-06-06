@@ -1,13 +1,78 @@
+:root {
+  color-scheme: light dark;
+
+  /* Neo-brutalist design tokens (light) */
+  --nb-bg: #ffe14d;
+  --nb-bg-grid: rgba(10, 10, 10, 0.06);
+  --nb-surface: #ffffff;
+  --nb-surface-2: #fff8df;
+  --nb-ink: #0a0a0a;
+  --nb-muted: #4a4636;
+  --nb-border: #0a0a0a;
+  --nb-shadow: #0a0a0a;
+  --nb-accent: #2e44ff;
+  --nb-accent-ink: #ffffff;
+  --nb-lime: #c6ff3d;
+  --nb-pink: #ff5470;
+  --nb-cyan: #46e0ff;
+  --nb-zebra: #f2eedd;
+
+  /* Ink for bright accent blocks (lime/pink/cyan) — stays dark in both themes */
+  --nb-on-bright: #0a0a0a;
+
+  /* Temperature ramp (cold -> hot) */
+  --nb-cold: #3a7bff;
+  --nb-cool: #46e0ff;
+  --nb-mild: #c6ff3d;
+  --nb-warm: #ffb340;
+  --nb-hot: #ff5470;
+
+  --nb-border-w: 3px;
+  font-family: "Space Grotesk Variable", "Space Grotesk", system-ui,
+    "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --nb-bg: #14130f;
+    --nb-bg-grid: rgba(250, 247, 238, 0.06);
+    --nb-surface: #211d15;
+    --nb-surface-2: #2a251a;
+    --nb-ink: #faf7ee;
+    --nb-muted: #c7c1ae;
+    --nb-border: #faf7ee;
+    --nb-shadow: #c6ff3d;
+    --nb-accent: #aab6ff;
+    --nb-accent-ink: #0a0a0a;
+    --nb-lime: #c6ff3d;
+    --nb-pink: #ff7a93;
+    --nb-cyan: #46e0ff;
+    --nb-zebra: #2a251a;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
-    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
-    sans-serif;
+  min-height: 100%;
+}
+
+body {
+  background-color: var(--nb-bg);
+  background-image:
+    linear-gradient(var(--nb-bg-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--nb-bg-grid) 1px, transparent 1px);
+  background-size: 28px 28px;
+  color: var(--nb-ink);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
-    monospace;
+  font-family: "JetBrains Mono Variable", ui-monospace, SFMono-Regular, Menlo,
+    Consolas, monospace;
 }
