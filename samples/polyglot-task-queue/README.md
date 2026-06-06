@@ -1,6 +1,7 @@
 # Polyglot Task Queue
 
-![Screenshot of the Polyglot Task Queue sample UI](./images/polyglot-task-queue-primary-page.png)
+![Screenshot of the Polyglot Task Queue sample UI](./images/polyglot-task-queue-primary-page-light.png#gh-light-mode-only)
+![Screenshot of the Polyglot Task Queue sample UI](./images/polyglot-task-queue-primary-page-dark.png#gh-dark-mode-only)
 
 Distributed task processing with Python, C#, and Node.js workers using RabbitMQ and end-to-end OpenTelemetry tracing.
 
