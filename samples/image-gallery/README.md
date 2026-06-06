@@ -1,6 +1,11 @@
 # Image Gallery with Event-Triggered Azure Container Apps Jobs
 
+[![Lumina media library, light theme](./images/image-gallery-primary-page-light.png#gh-light-mode-only)](./images/image-gallery-primary-page-light.png#gh-light-mode-only)
+[![Lumina media library, dark theme](./images/image-gallery-primary-page-dark.png#gh-dark-mode-only)](./images/image-gallery-primary-page-dark.png#gh-dark-mode-only)
+
 Upload images to Azure Blob Storage with queue-triggered thumbnail generation. Demonstrates event-driven Container Apps Jobs with queue-based autoscaling, managed identity authentication, and Azure SQL free tier - **can run entirely within Azure free tier limits**.
+
+The **Lumina** front end is a bright, productized media-library built with React, TypeScript, CSS Modules and [Heroicons](https://heroicons.com/). It ships light and dark themes (honoring `prefers-color-scheme`), an accessible drag-and-drop upload flow, live thumbnail polling and a keyboard-operable lightbox.
 
 ## Architecture
 

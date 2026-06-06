@@ -1,0 +1,158 @@
+/* Lumina design tokens — a bright, productized media-library palette.
+   Light is the primary identity; dark keeps the same airy structure on
+   opaque slate surfaces so text contrast stays well above WCAG AA. */
+:root {
+  color-scheme: light;
+
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Helvetica, Arial, sans-serif;
+
+  --bg: #eef4f9;
+  --bg-grid: rgba(14, 116, 144, 0.06);
+  --surface: #ffffff;
+  --surface-2: #f1f6fa;
+  --surface-3: #e6eef5;
+  --border: #d3e0ea;
+  --border-strong: #b6cad8;
+
+  --text: #0d2231;
+  --text-muted: #334155;
+  --text-soft: #42515f;
+
+  --accent: #0e7490;
+  --accent-strong: #0b5e74;
+  --accent-contrast: #ffffff;
+  --accent-soft: #d6eef3;
+  --accent-ring: rgba(14, 116, 144, 0.32);
+
+  --success: #157347;
+  --success-soft: #dcf3e6;
+  --danger: #b42318;
+  --danger-strong: #97180f;
+  --danger-soft: #fbe4e1;
+
+  --shadow-sm: 0 1px 2px rgba(15, 42, 60, 0.08);
+  --shadow-md: 0 10px 24px -12px rgba(15, 42, 60, 0.28);
+  --shadow-lg: 0 24px 60px -24px rgba(15, 42, 60, 0.42);
+
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+
+  --maxw: 1180px;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg: #0a141d;
+  --bg-grid: rgba(56, 189, 248, 0.06);
+  --surface: #14222f;
+  --surface-2: #1a2c3b;
+  --surface-3: #213545;
+  --border: #2b4254;
+  --border-strong: #3a5468;
+
+  --text: #eef5fb;
+  --text-muted: #b6cbda;
+  --text-soft: #9fb6c6;
+
+  --accent: #38bdf8;
+  --accent-strong: #7dd3fc;
+  --accent-contrast: #052430;
+  --accent-soft: #163141;
+  --accent-ring: rgba(56, 189, 248, 0.42);
+
+  --success: #4ade80;
+  --success-soft: #15321f;
+  --danger: #fca5a5;
+  --danger-strong: #fecaca;
+  --danger-soft: #3a1715;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 10px 24px -12px rgba(0, 0, 0, 0.6);
+  --shadow-lg: 0 24px 60px -24px rgba(0, 0, 0, 0.7);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font-sans);
+  color: var(--text);
+  background-color: var(--bg);
+  background-image:
+    linear-gradient(var(--bg-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--bg-grid) 1px, transparent 1px);
+  background-size: 28px 28px;
+  min-height: 100vh;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+a {
+  color: var(--accent-strong);
+}
+
+:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: fixed;
+  top: 0.75rem;
+  left: 0.75rem;
+  transform: translateY(-160%);
+  z-index: 100;
+  padding: 0.65rem 1.1rem;
+  background: var(--accent);
+  color: var(--accent-contrast);
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  box-shadow: var(--shadow-md);
+  transition: transform 0.18s ease;
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
