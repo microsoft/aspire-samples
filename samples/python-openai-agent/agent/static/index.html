@@ -3,346 +3,508 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Chat Agent</title>
+    <meta name="color-scheme" content="light dark">
+    <meta name="description" content="Ember, a cozy AI assistant built with FastAPI and Aspire.">
+    <title>Ember · a cozy assistant</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23e0552b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='4'/%3E%3Cpath d='M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41'/%3E%3C/svg%3E">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        :root {
+            /* Warm sunset palette — light theme (default). Contrasts verified
+               against WCAG 2.x for AAA (7:1) on body text. */
+            --bg-top: #ffe4cf;
+            --bg-bottom: #ffd0b5;
+            --card: #fffaf4;
+            --card-border: #f0d6c2;
+            --topbar: #fff3e8;
+            --ink: #2e1c12;          /* ~13:1 on warm surfaces */
+            --ink-soft: #5a4030;     /* ~7.1:1 on --card */
+            --assistant-bg: #fff5ec;
+            --assistant-ink: #2e1c12;
+            --assistant-border: #f1dccb;
+            --user-bg: #8f2f1f;      /* terracotta, ~8:1 with white */
+            --user-ink: #ffffff;
+            --avatar-user-bg: #8f2f1f;
+            --avatar-user-ink: #ffffff;
+            --avatar-bot-bg: #ffe0cb;
+            --avatar-bot-ink: #8f2f1f;
+            --accent: #e0552b;
+            --accent-ink: #ffffff;
+            --composer-bg: rgba(255, 243, 232, 0.86);
+            --field-bg: #fffaf4;
+            --field-ink: #2e1c12;
+            --field-border: #e3c4ad;
+            --placeholder: #7a5a48;
+            --notice-bg: #fff1d6;
+            --notice-ink: #4a3410;
+            --notice-border: #e7c98a;
+            --dot: #c9603a;
+            --focus: #7a2516;
+            --shadow: 0 24px 60px -28px rgba(120, 50, 20, 0.55);
         }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-top: #2a1830;
+                --bg-bottom: #3a1f24;
+                --card: #2a2027;
+                --card-border: #46343d;
+                --topbar: #322530;
+                --ink: #ffe9da;          /* ~11:1 on --card */
+                --ink-soft: #e7c3ad;     /* ~7.3:1 on --card */
+                --assistant-bg: #3a2a33;
+                --assistant-ink: #ffe9da;
+                --assistant-border: #503a45;
+                --user-bg: #ff9e6d;      /* apricot, ~8.6:1 with near-black ink */
+                --user-ink: #241710;
+                --avatar-user-bg: #ff9e6d;
+                --avatar-user-ink: #241710;
+                --avatar-bot-bg: #4a333f;
+                --avatar-bot-ink: #ffc8a6;
+                --accent: #ff9e6d;
+                --accent-ink: #241710;
+                --composer-bg: rgba(42, 32, 39, 0.82);
+                --field-bg: #2f2330;
+                --field-ink: #ffe9da;
+                --field-border: #5a4350;
+                --placeholder: #c2a08f;
+                --notice-bg: #3c3320;
+                --notice-ink: #ffe7b0;
+                --notice-border: #6b5a36;
+                --dot: #ffb187;
+                --focus: #ffc8a6;
+                --shadow: 0 24px 60px -28px rgba(0, 0, 0, 0.7);
+            }
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html { -webkit-text-size-adjust: 100%; }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            font-family: ui-rounded, 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+            min-height: 100vh;
+            color: var(--ink);
+            background:
+                radial-gradient(120% 80% at 50% -10%, var(--bg-top) 0%, var(--bg-bottom) 70%) fixed;
+            display: grid;
+            place-items: center;
+            padding: clamp(0.75rem, 3vw, 2rem);
+            line-height: 1.5;
         }
 
-        .chat-container {
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-            width: 90%;
-            max-width: 800px;
-            height: 80vh;
+        /* Skip link */
+        .skip-link {
+            position: absolute;
+            left: 0.75rem;
+            top: -3.5rem;
+            z-index: 20;
+            background: var(--accent);
+            color: var(--accent-ink);
+            padding: 0.6rem 1rem;
+            border-radius: 0 0 0.6rem 0.6rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: top 0.15s ease;
+        }
+        .skip-link:focus { top: 0; }
+
+        .visually-hidden {
+            position: absolute !important;
+            width: 1px; height: 1px;
+            padding: 0; margin: -1px;
+            overflow: hidden; clip: rect(0 0 0 0);
+            white-space: nowrap; border: 0;
+        }
+
+        :focus-visible {
+            outline: 3px solid var(--focus);
+            outline-offset: 2px;
+        }
+
+        .app {
+            width: min(100%, 46rem);
+            height: min(90vh, 48rem);
+            display: flex;
+            flex-direction: column;
+            background: var(--card);
+            border: 1px solid var(--card-border);
+            border-radius: 1.5rem;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .topbar {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+            padding: 1.1rem 1.35rem;
+            background: var(--topbar);
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        .brand-mark {
+            display: grid;
+            place-items: center;
+            width: 2.75rem;
+            height: 2.75rem;
+            flex: none;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #ffd9a8, var(--accent));
+            color: #3a1c0c;
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35);
+        }
+        .brand-mark svg { width: 1.6rem; height: 1.6rem; }
+
+        .brand-text h1 {
+            font-size: 1.2rem;
+            letter-spacing: -0.01em;
+            line-height: 1.1;
+        }
+        .brand-text p {
+            font-size: 0.85rem;
+            color: var(--ink-soft);
+            margin-top: 0.1rem;
+        }
+
+        .chat-main {
+            flex: 1;
+            min-height: 0;
             display: flex;
             flex-direction: column;
         }
 
-        .chat-header {
-            padding: 1.5rem;
-            border-bottom: 1px solid #e0e0e0;
+        .notice {
+            margin: 0.75rem 1rem 0;
+            padding: 0.65rem 0.9rem;
+            border-radius: 0.75rem;
+            background: var(--notice-bg);
+            color: var(--notice-ink);
+            border: 1px solid var(--notice-border);
+            font-size: 0.88rem;
         }
+        .notice[hidden] { display: none; }
 
-        .chat-header h1 {
-            color: #333;
-            font-size: 1.5rem;
-        }
-
-        .chat-header p {
-            color: #666;
-            font-size: 0.9rem;
-            margin-top: 0.25rem;
-        }
-
-        .chat-messages {
+        .log {
             flex: 1;
             overflow-y: auto;
-            padding: 1.5rem;
+            padding: 1.25rem;
+            scroll-behavior: smooth;
+        }
+
+        .thread {
+            list-style: none;
             display: flex;
             flex-direction: column;
-            gap: 1rem;
+            gap: 0.9rem;
         }
 
-        .message {
+        .msg {
             display: flex;
-            gap: 0.75rem;
-            max-width: 80%;
+            gap: 0.6rem;
+            max-width: 85%;
+            align-items: flex-end;
         }
+        .msg--user { align-self: flex-end; flex-direction: row-reverse; }
+        .msg--assistant { align-self: flex-start; }
 
-        .message.user {
-            align-self: flex-end;
-            flex-direction: row-reverse;
-        }
-
-        .message-avatar {
-            width: 36px;
-            height: 36px;
+        .msg__avatar {
+            width: 2.1rem;
+            height: 2.1rem;
+            flex: none;
             border-radius: 50%;
-            display: flex;
+            display: grid;
+            place-items: center;
+        }
+        .msg__avatar svg { width: 1.15rem; height: 1.15rem; }
+        .msg--user .msg__avatar {
+            background: var(--avatar-user-bg);
+            color: var(--avatar-user-ink);
+        }
+        .msg--assistant .msg__avatar {
+            background: var(--avatar-bot-bg);
+            color: var(--avatar-bot-ink);
+        }
+
+        .msg__bubble {
+            padding: 0.7rem 0.95rem;
+            border-radius: 1.15rem;
+            overflow-wrap: anywhere;
+            word-break: break-word;
+            white-space: pre-wrap;
+        }
+        .msg--user .msg__bubble {
+            background: var(--user-bg);
+            color: var(--user-ink);
+            border-bottom-right-radius: 0.35rem;
+        }
+        .msg--assistant .msg__bubble {
+            background: var(--assistant-bg);
+            color: var(--assistant-ink);
+            border: 1px solid var(--assistant-border);
+            border-bottom-left-radius: 0.35rem;
+        }
+
+        /* Typing indicator */
+        .typing {
+            display: inline-flex;
+            gap: 0.3rem;
             align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-            flex-shrink: 0;
         }
-
-        .message.user .message-avatar {
-            background: #667eea;
-        }
-
-        .message.assistant .message-avatar {
-            background: #764ba2;
-        }
-
-        .message-content {
-            background: #f5f5f5;
-            padding: 0.75rem 1rem;
-            border-radius: 10px;
-        }
-
-        .message.user .message-content {
-            background: #667eea;
-            color: white;
-        }
-
-        .message.assistant .message-content {
-            background: #f5f5f5;
-            color: #333;
-        }
-
-        .chat-input {
-            padding: 1.5rem;
-            border-top: 1px solid #e0e0e0;
-            display: flex;
-            gap: 0.75rem;
-        }
-
-        .chat-input input {
-            flex: 1;
-            padding: 0.75rem;
-            border: 2px solid #e0e0e0;
-            border-radius: 5px;
-            font-size: 1rem;
-        }
-
-        .chat-input input:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-
-        .chat-input button {
-            padding: 0.75rem 1.5rem;
-            background: #667eea;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 1rem;
-            transition: background 0.2s;
-        }
-
-        .chat-input button:hover {
-            background: #5568d3;
-        }
-
-        .chat-input button:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-        }
-
-        .status {
-            text-align: center;
-            padding: 0.5rem;
-            font-size: 0.85rem;
-            color: #666;
-        }
-
-        .status.error {
-            color: #f44336;
-        }
-
-        .typing-indicator {
-            display: flex;
-            gap: 0.25rem;
-            padding: 0.5rem;
-        }
-
-        .typing-indicator span {
-            width: 8px;
-            height: 8px;
-            background: #999;
+        .typing__dot {
+            width: 0.5rem;
+            height: 0.5rem;
             border-radius: 50%;
-            animation: typing 1.4s infinite;
+            background: var(--dot);
+            opacity: 1;
         }
 
-        .typing-indicator span:nth-child(2) {
-            animation-delay: 0.2s;
+        .composer {
+            display: flex;
+            align-items: flex-end;
+            gap: 0.6rem;
+            padding: 0.85rem 1rem;
+            background: var(--composer-bg);
+            border-top: 1px solid var(--card-border);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
         }
 
-        .typing-indicator span:nth-child(3) {
-            animation-delay: 0.4s;
+        .field {
+            flex: 1;
+            resize: none;
+            font: inherit;
+            color: var(--field-ink);
+            background: var(--field-bg);
+            border: 1.5px solid var(--field-border);
+            border-radius: 1rem;
+            padding: 0.7rem 0.95rem;
         }
+        .field::placeholder { color: var(--placeholder); opacity: 1; }
 
-        @keyframes typing {
-            0%, 60%, 100% {
-                opacity: 0.3;
+        .send {
+            flex: none;
+            width: 2.85rem;
+            height: 2.85rem;
+            display: grid;
+            place-items: center;
+            border: none;
+            border-radius: 50%;
+            background: var(--accent);
+            color: var(--accent-ink);
+            cursor: pointer;
+        }
+        .send svg { width: 1.35rem; height: 1.35rem; }
+        .send:disabled { opacity: 0.55; cursor: not-allowed; }
+
+        @media (prefers-reduced-motion: no-preference) {
+            .msg { animation: rise 0.32s ease both; }
+            .send { transition: transform 0.15s ease, filter 0.15s ease; }
+            .send:not(:disabled):hover { transform: translateY(-1px); filter: brightness(1.05); }
+            .typing__dot { animation: bounce 1.3s ease-in-out infinite; }
+            .typing__dot:nth-child(2) { animation-delay: 0.18s; }
+            .typing__dot:nth-child(3) { animation-delay: 0.36s; }
+
+            @keyframes rise {
+                from { opacity: 0; transform: translateY(8px); }
+                to { opacity: 1; transform: translateY(0); }
             }
-            30% {
-                opacity: 1;
+            @keyframes bounce {
+                0%, 70%, 100% { transform: translateY(0); opacity: 0.55; }
+                35% { transform: translateY(-0.32rem); opacity: 1; }
             }
         }
     </style>
 </head>
 <body>
-    <div class="chat-container">
-        <div class="chat-header">
-            <h1>AI Chat Agent</h1>
-            <p>Powered by OpenAI and Aspire</p>
-        </div>
+    <a class="skip-link" href="#messageInput">Skip to the message box</a>
 
-        <div class="chat-messages" id="messages">
-            <div class="status" id="status">Ready to chat!</div>
-        </div>
+    <div class="app">
+        <header class="topbar">
+            <span class="brand-mark" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+            </span>
+            <div class="brand-text">
+                <h1>Ember</h1>
+                <p>A cozy assistant · built with Aspire</p>
+            </div>
+        </header>
 
-        <div class="chat-input">
-            <input
-                type="text"
-                id="messageInput"
-                placeholder="Type your message..."
-                autocomplete="off"
-            >
-            <button id="sendButton">Send</button>
-        </div>
+        <main class="chat-main" id="main">
+            <p class="notice" id="notice" role="status" hidden></p>
+
+            <div class="log" id="messages" role="log" aria-live="polite" aria-label="Conversation with Ember">
+                <ol class="thread" id="thread">
+                    <li class="msg msg--assistant">
+                        <span class="msg__avatar" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l1.9 5.8a2 2 0 0 0 1.3 1.3L21 12l-5.8 1.9a2 2 0 0 0-1.3 1.3L12 21l-1.9-5.8a2 2 0 0 0-1.3-1.3L3 12l5.8-1.9a2 2 0 0 0 1.3-1.3z"/></svg>
+                        </span>
+                        <div class="msg__bubble">Hi, I&rsquo;m Ember. Pull up a chair and ask me anything &mdash; I&rsquo;m happy to help.</div>
+                    </li>
+                </ol>
+            </div>
+
+            <form class="composer" id="composer" autocomplete="off">
+                <label class="visually-hidden" for="messageInput">Type your message to Ember</label>
+                <textarea
+                    class="field"
+                    id="messageInput"
+                    name="message"
+                    rows="1"
+                    placeholder="Type your message&hellip;"
+                    enterkeyhint="send"></textarea>
+                <button class="send" id="sendButton" type="submit" aria-label="Send message">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 7-7 7 7"/><path d="M12 19V5"/></svg>
+                </button>
+            </form>
+        </main>
     </div>
 
+    <!-- Polite, screen-reader-only status. Present and empty at load so the
+         very first announcement is reliably picked up. -->
+    <p class="visually-hidden" id="liveStatus" role="status" aria-live="polite"></p>
+
     <script>
-        const messagesContainer = document.getElementById('messages');
-        const messageInput = document.getElementById('messageInput');
+        const log = document.getElementById('messages');
+        const thread = document.getElementById('thread');
+        const input = document.getElementById('messageInput');
         const sendButton = document.getElementById('sendButton');
-        const statusDiv = document.getElementById('status');
+        const composer = document.getElementById('composer');
+        const liveStatus = document.getElementById('liveStatus');
+        const notice = document.getElementById('notice');
 
-        // Generate a unique session ID
-        const sessionId = 'session-' + Math.random().toString(36).substr(2, 9);
+        const ICONS = {
+            user: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
+            assistant: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l1.9 5.8a2 2 0 0 0 1.3 1.3L21 12l-5.8 1.9a2 2 0 0 0-1.3 1.3L12 21l-1.9-5.8a2 2 0 0 0-1.3-1.3L3 12l5.8-1.9a2 2 0 0 0 1.3-1.3z"/></svg>'
+        };
 
-        function addMessage(role, content) {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${role}`;
+        // Unique session id, with a fallback for environments without crypto.randomUUID.
+        const sessionId = (window.crypto && crypto.randomUUID)
+            ? 'session-' + crypto.randomUUID()
+            : 'session-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
 
-            const avatar = document.createElement('div');
-            avatar.className = 'message-avatar';
-            avatar.textContent = role === 'user' ? '👤' : '🤖';
+        let sending = false;
 
-            const messageContent = document.createElement('div');
-            messageContent.className = 'message-content';
-            messageContent.textContent = content;
-
-            messageDiv.appendChild(avatar);
-            messageDiv.appendChild(messageContent);
-
-            // Remove status message when first message is added
-            if (statusDiv) {
-                statusDiv.remove();
-            }
-
-            messagesContainer.appendChild(messageDiv);
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        function nearBottom() {
+            return log.scrollHeight - log.scrollTop - log.clientHeight < 80;
         }
 
-        function showTypingIndicator() {
-            const typingDiv = document.createElement('div');
-            typingDiv.className = 'message assistant';
-            typingDiv.id = 'typing-indicator';
+        function addMessage(role, text) {
+            const wasNear = nearBottom();
 
-            const avatar = document.createElement('div');
-            avatar.className = 'message-avatar';
-            avatar.textContent = '🤖';
+            const li = document.createElement('li');
+            li.className = 'msg msg--' + role;
 
-            const indicator = document.createElement('div');
-            indicator.className = 'typing-indicator';
-            indicator.innerHTML = '<span></span><span></span><span></span>';
+            const avatar = document.createElement('span');
+            avatar.className = 'msg__avatar';
+            avatar.setAttribute('aria-hidden', 'true');
+            avatar.innerHTML = role === 'user' ? ICONS.user : ICONS.assistant;
 
-            typingDiv.appendChild(avatar);
-            typingDiv.appendChild(indicator);
-            messagesContainer.appendChild(typingDiv);
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            const bubble = document.createElement('div');
+            bubble.className = 'msg__bubble';
+            bubble.textContent = text;
+
+            li.appendChild(avatar);
+            li.appendChild(bubble);
+            thread.appendChild(li);
+
+            if (wasNear) {
+                log.scrollTop = log.scrollHeight;
+            }
         }
 
-        function hideTypingIndicator() {
-            const indicator = document.getElementById('typing-indicator');
-            if (indicator) {
-                indicator.remove();
-            }
+        function showTyping() {
+            if (document.getElementById('typing')) return;
+
+            const li = document.createElement('li');
+            li.className = 'msg msg--assistant';
+            li.id = 'typing';
+            li.setAttribute('aria-hidden', 'true');
+
+            const avatar = document.createElement('span');
+            avatar.className = 'msg__avatar';
+            avatar.innerHTML = ICONS.assistant;
+
+            const bubble = document.createElement('div');
+            bubble.className = 'msg__bubble';
+            bubble.innerHTML = '<span class="typing"><span class="typing__dot"></span><span class="typing__dot"></span><span class="typing__dot"></span></span>';
+
+            li.appendChild(avatar);
+            li.appendChild(bubble);
+            thread.appendChild(li);
+            log.scrollTop = log.scrollHeight;
+
+            liveStatus.textContent = 'Ember is typing…';
+        }
+
+        function hideTyping() {
+            const el = document.getElementById('typing');
+            if (el) el.remove();
+            liveStatus.textContent = '';
         }
 
         async function sendMessage() {
-            const message = messageInput.value.trim();
-            if (!message) return;
+            if (sending) return;
+            const text = input.value.trim();
+            if (!text) return;
 
-            // Disable input while processing
-            messageInput.disabled = true;
-            sendButton.disabled = true;
+            sending = true;
+            sendButton.disabled = true;   // Keep the input focusable during the await.
 
-            // Add user message
-            addMessage('user', message);
-            messageInput.value = '';
-
-            // Show typing indicator
-            showTypingIndicator();
+            addMessage('user', text);
+            input.value = '';
+            showTyping();
 
             try {
                 const response = await fetch('/chat', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        message: message,
-                        session_id: sessionId,
-                    }),
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: text, session_id: sessionId })
                 });
 
                 if (!response.ok) {
-                    throw new Error('Failed to send message');
+                    throw new Error('Request failed with status ' + response.status);
                 }
 
                 const data = await response.json();
-
-                // Hide typing indicator
-                hideTypingIndicator();
-
-                // Add AI response
-                addMessage('assistant', data.response);
-
+                hideTyping();
+                addMessage('assistant', (data && data.response) ? data.response : 'I didn\u2019t catch a reply that time. Could you try again?');
             } catch (error) {
-                hideTypingIndicator();
-                console.error('Error:', error);
-                addMessage('assistant', 'Sorry, I encountered an error. Please try again.');
+                hideTyping();
+                addMessage('assistant', 'Sorry, I\u2019m having trouble reaching the kitchen right now. Please try again in a moment.');
+                liveStatus.textContent = 'Ember is unavailable right now. Please try again.';
             } finally {
-                // Re-enable input
-                messageInput.disabled = false;
+                sending = false;
                 sendButton.disabled = false;
-                messageInput.focus();
+                input.focus();
             }
         }
 
-        // Send message on button click
-        sendButton.addEventListener('click', sendMessage);
+        composer.addEventListener('submit', (e) => {
+            e.preventDefault();
+            sendMessage();
+        });
 
-        // Send message on Enter key
-        messageInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
+        // Enter sends; Shift+Enter inserts a newline. Honour IME composition so
+        // confirming a CJK candidate with Enter does not submit prematurely.
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) {
+                e.preventDefault();
                 sendMessage();
             }
         });
 
-        // Check health on load
+        // Surface the graceful "AI paused" state without a hard error.
         fetch('/health')
-            .then(res => res.json())
-            .then(data => {
-                if (data.openai_available === false) {
-                    statusDiv.textContent = 'Warning: OpenAI API key not configured';
-                    statusDiv.className = 'status error';
+            .then((res) => res.json())
+            .then((data) => {
+                if (data && data.openai_available === false) {
+                    notice.textContent = 'Ember isn\u2019t connected to an AI model right now, so replies are paused. The rest of the page still works.';
+                    notice.hidden = false;
                 }
             })
-            .catch(() => {
-                statusDiv.textContent = 'Error connecting to server';
-                statusDiv.className = 'status error';
-            });
+            .catch(() => { /* Network hiccup on health check is non-fatal; stay quiet. */ });
 
-        // Focus input on load
-        messageInput.focus();
+        input.focus();
     </script>
 </body>
 </html>
