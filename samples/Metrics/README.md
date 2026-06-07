@@ -4,16 +4,13 @@ This is a simple .NET app that shows off collecting metrics with OpenTelemetry a
 
 ![Screenshot of the ASP.NET Core Grafana dashboard](./images/dashboard-screenshot.png)
 
-The instrumented app itself is a small Aspire-branded "Telemetry Console" — an indigo-and-slate observability shell with a faint metric grid, monospaced readouts, and a live signal chip. Click around it (the **Weather** feed and the **Auth Required** flow) to generate the traffic that lights up the Grafana dashboard above.
+The instrumented app is a small web UI that emits OpenTelemetry metrics. Click around it — the **Weather** feed and the **Auth Required** flow — to generate the request traffic that shows up on the Grafana dashboard above. It supports both light and dark themes:
 
-<!-- The two images below use GitHub's theme-aware image markup: the first shows in light mode, the second in dark mode. -->
-![Telemetry Console home in light mode](./images/metricsapp-light.png#gh-light-mode-only)
-![Telemetry Console home in dark mode](./images/metricsapp-dark.png#gh-dark-mode-only)
+![The metrics app home page in light mode](./images/metricsapp-light.png#gh-light-mode-only)
+![The metrics app home page in dark mode](./images/metricsapp-dark.png#gh-dark-mode-only)
 
-![Telemetry Console authenticated weather feed in light mode](./images/metricsapp-weather-light.png#gh-light-mode-only)
-![Telemetry Console authenticated weather feed in dark mode](./images/metricsapp-weather-dark.png#gh-dark-mode-only)
-
-> **Design:** "Telemetry Console" — a bespoke, de-templated Blazor WebAssembly UI built on custom design tokens and scoped `.razor.css` (no Bootstrap). Indigo/slate palette with signal-cyan accents, light and dark via `prefers-color-scheme`, inline SVG iconography, and an accessible top-bar shell. Validated with Playwright + axe-core (WCAG 2.2 AA clean in both themes, AAA contrast for body text).
+![The metrics app weather feed in light mode](./images/metricsapp-weather-light.png#gh-light-mode-only)
+![The metrics app weather feed in dark mode](./images/metricsapp-weather-dark.png#gh-dark-mode-only)
 
 
 ## Demonstrates
