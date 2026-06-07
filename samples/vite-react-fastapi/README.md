@@ -1,7 +1,7 @@
 # Vite React + FastAPI
 
-![Screenshot of the Clay Todos UI for the Vite React + FastAPI sample (light theme)](./images/vite-react-fastapi-primary-page-light.png#gh-light-mode-only)
-![Screenshot of the Clay Todos UI for the Vite React + FastAPI sample (dark theme)](./images/vite-react-fastapi-primary-page-dark.png#gh-dark-mode-only)
+![Screenshot of the todo list UI for the Vite React + FastAPI sample (light theme)](./images/vite-react-fastapi-primary-page-light.png#gh-light-mode-only)
+![Screenshot of the todo list UI for the Vite React + FastAPI sample (dark theme)](./images/vite-react-fastapi-primary-page-dark.png#gh-dark-mode-only)
 
 Todo app with React frontend and Python FastAPI backend using YARP for unified routing.
 
