@@ -27,11 +27,20 @@ describe('AppComponent', () => {
     httpMock.verify();
   });
 
-  function flushForecast() {
-    const req = httpMock.expectOne('api/weatherforecast');
-    req.flush([
+  function flushForecast(
+    forecast: ReadonlyArray<{
+      date: string;
+      temperatureC: number;
+      temperatureF: number;
+      summary: string;
+    }> = [
       { date: '2026-06-07', temperatureC: 21, temperatureF: 70, summary: 'Warm' },
-    ]);
+      { date: '2026-06-08', temperatureC: 4, temperatureF: 39, summary: 'Cool' },
+      { date: '2026-06-09', temperatureC: 33, temperatureF: 91, summary: 'Hot' },
+    ],
+  ) {
+    const req = httpMock.expectOne('api/weatherforecast');
+    req.flush(forecast);
   }
 
   it('should create the app', () => {
@@ -48,24 +57,26 @@ describe('AppComponent', () => {
     expect(fixture.componentInstance['title']).toEqual('weather');
   });
 
-  it('should render the Aspire Weather masthead', () => {
+  it('should render the Angular Weather masthead', () => {
     const fixture = TestBed.createComponent(AppComponent);
     fixture.detectChanges();
     flushForecast();
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.querySelector('.masthead-title')?.textContent).toContain(
-      'Aspire Weather'
+      'Angular Weather',
     );
   });
 
-  it('should render a row per forecast', () => {
+  it('should feature the first day and list the remaining days', () => {
     const fixture = TestBed.createComponent(AppComponent);
     fixture.detectChanges();
     flushForecast();
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
-    const rows = compiled.querySelectorAll('tr[mat-row]');
-    expect(rows.length).toBe(1);
+    expect(compiled.querySelector('.hero')).toBeTruthy();
+    // 3 days flushed: 1 featured in the hero + 2 in the grid.
+    const cards = compiled.querySelectorAll('.forecast-grid .grid-item');
+    expect(cards.length).toBe(2);
   });
 });
