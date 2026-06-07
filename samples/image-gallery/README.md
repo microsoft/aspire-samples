@@ -5,7 +5,7 @@
 
 Upload images to Azure Blob Storage with queue-triggered thumbnail generation. Demonstrates event-driven Container Apps Jobs with queue-based autoscaling, managed identity authentication, and Azure SQL free tier - **can run entirely within Azure free tier limits**.
 
-The **Lumina** front end is a bright, productized media-library built with React, TypeScript, CSS Modules and [Heroicons](https://heroicons.com/). It ships light and dark themes (honoring `prefers-color-scheme`), an accessible drag-and-drop upload flow, live thumbnail polling and a keyboard-operable lightbox.
+The **Lumina** front end is a productized media library built with React, TypeScript, CSS Modules and [Heroicons](https://heroicons.com/). It ships light and dark themes (honoring `prefers-color-scheme`), an accessible drag-and-drop upload flow, live thumbnail polling and a keyboard-operable lightbox.
 
 ## Architecture
 
