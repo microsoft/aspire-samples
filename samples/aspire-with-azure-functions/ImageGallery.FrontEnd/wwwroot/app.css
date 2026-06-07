@@ -1,60 +1,185 @@
-html, body {
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+/* ==========================================================================
+   Darkroom Studio — bespoke theme for the Aspire "Image Gallery" sample
+   (Blazor Server + Azure Functions). A photographer's darkroom: near-black
+   walls, warm amber safelight accent, editorial serif display, framed prints
+   on a contact-sheet wall. Intentionally dark-only (the counterpart to the
+   bright React image-gallery sample). Custom inline-SVG aperture iconography.
+   ========================================================================== */
+
+:root {
+    color-scheme: dark;
+
+    --font-serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Times New Roman", serif;
+    --font-sans: ui-sans-serif, system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: ui-monospace, "Cascadia Code", "SF Mono", Consolas, monospace;
+
+    --bg: #0c0c0f;
+    --bg-2: #08080a;
+    --surface: #17171c;
+    --surface-2: #1e1e24;
+    --surface-3: #26262e;
+    --border: #2c2c35;
+    --border-strong: #3c3c48;
+
+    --ink: #f4efe6;
+    --ink-soft: #d3ccbf;
+    --ink-muted: #aaa395;
+
+    --amber: #f4a838;
+    --amber-soft: #f7c170;
+    --amber-deep: #c97f1e;
+    --amber-ink: #1a1206;
+    --amber-glow: rgba(244, 168, 56, 0.28);
+
+    --danger: #ff9a9a;
+    --danger-surface: #2a1414;
+    --danger-border: #6b2626;
+
+    --radius: 5px;
+    --radius-lg: 9px;
+    --shadow: 0 2px 6px rgba(0, 0, 0, 0.5), 0 18px 44px -22px rgba(0, 0, 0, 0.9);
+    --shadow-frame: 0 1px 2px rgba(0, 0, 0, 0.6), 0 14px 30px -16px rgba(0, 0, 0, 0.85);
+    --ring: 0 0 0 3px var(--amber-glow), 0 0 0 1px var(--amber);
 }
 
-a, .btn-link {
-    color: #006bb7;
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body { margin: 0; padding: 0; }
+
+html { height: 100%; }
+
+body {
+    min-height: 100%;
+    font-family: var(--font-sans);
+    color: var(--ink);
+    background-color: var(--bg);
+    background-image:
+        radial-gradient(120% 80% at 50% -10%, #16131a 0%, var(--bg) 55%, var(--bg-2) 100%);
+    background-attachment: fixed;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
 }
 
-.btn-primary {
-    color: #fff;
-    background-color: #1b6ec2;
-    border-color: #1861ac;
+/* Fine film-grain overlay (decorative). */
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.045;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
+h1, h2, h3 { font-family: var(--font-serif); font-weight: 600; line-height: 1.15; letter-spacing: -0.01em; }
+h1:focus, h1:focus-visible { outline: none; box-shadow: none; }
 
-.content {
-    padding-top: 1.1rem;
-}
+a { color: var(--amber-soft); text-underline-offset: 2px; }
+a:hover { color: var(--amber); }
 
-h1:focus {
+code, .mono { font-family: var(--font-mono); }
+
+:focus-visible {
     outline: none;
+    box-shadow: var(--ring);
+    border-radius: var(--radius);
 }
 
-.valid.modified:not([type=checkbox]) {
-    outline: 1px solid #26b050;
+.visually-hidden {
+    position: absolute !important;
+    width: 1px; height: 1px;
+    padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0 0 0 0);
+    white-space: nowrap; border: 0;
 }
 
-.invalid {
-    outline: 1px solid #e50000;
+.skip-link {
+    position: absolute;
+    left: 1rem;
+    top: -3rem;
+    z-index: 50;
+    background: var(--amber);
+    color: var(--amber-ink);
+    padding: 0.55rem 0.95rem;
+    border-radius: 0 0 var(--radius) var(--radius);
+    font-weight: 700;
+    text-decoration: none;
+    transition: top 0.15s ease;
+}
+.skip-link:focus { top: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+        scroll-behavior: auto !important;
+    }
 }
 
-.validation-message {
-    color: #e50000;
+/* ---- Buttons -------------------------------------------------------------- */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font: inherit;
+    font-weight: 600;
+    line-height: 1;
+    padding: 0.62rem 1.1rem;
+    border-radius: var(--radius);
+    border: 1px solid transparent;
+    cursor: pointer;
+    text-decoration: none;
+    transition: transform 0.12s ease, background-color 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
 }
+.btn:hover { transform: translateY(-1px); }
+.btn:active { transform: translateY(0); }
+
+.btn-amber {
+    background: var(--amber);
+    color: var(--amber-ink);
+    box-shadow: 0 8px 22px -12px var(--amber-glow);
+}
+.btn-amber:hover { background: var(--amber-soft); color: var(--amber-ink); }
+
+.btn-ghost {
+    background: var(--surface-2);
+    color: var(--ink);
+    border-color: var(--border-strong);
+}
+.btn-ghost:hover { background: var(--surface-3); color: var(--ink); }
+
+.btn .icon { width: 1.1rem; height: 1.1rem; }
+
+/* ---- Error UI / boundary -------------------------------------------------- */
+#blazor-error-ui {
+    color-scheme: dark;
+    background: #2a1206;
+    color: var(--amber-soft);
+    border-top: 2px solid var(--amber-deep);
+    bottom: 0; left: 0;
+    box-shadow: 0 -8px 30px -10px rgba(0, 0, 0, 0.7);
+    box-sizing: border-box;
+    display: none;
+    padding: 0.7rem 1.25rem;
+    position: fixed;
+    width: 100%;
+    z-index: 1000;
+}
+#blazor-error-ui .reload { color: var(--amber-soft); margin: 0 0.75rem; }
+#blazor-error-ui .dismiss { cursor: pointer; position: absolute; right: 1rem; top: 0.6rem; }
 
 .blazor-error-boundary {
-    background: url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTYiIGhlaWdodD0iNDkiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIG92ZXJmbG93PSJoaWRkZW4iPjxkZWZzPjxjbGlwUGF0aCBpZD0iY2xpcDAiPjxyZWN0IHg9IjIzNSIgeT0iNTEiIHdpZHRoPSI1NiIgaGVpZ2h0PSI0OSIvPjwvY2xpcFBhdGg+PC9kZWZzPjxnIGNsaXAtcGF0aD0idXJsKCNjbGlwMCkiIHRyYW5zZm9ybT0idHJhbnNsYXRlKC0yMzUgLTUxKSI+PHBhdGggZD0iTTI2My41MDYgNTFDMjY0LjcxNyA1MSAyNjUuODEzIDUxLjQ4MzcgMjY2LjYwNiA1Mi4yNjU4TDI2Ny4wNTIgNTIuNzk4NyAyNjcuNTM5IDUzLjYyODMgMjkwLjE4NSA5Mi4xODMxIDI5MC41NDUgOTIuNzk1IDI5MC42NTYgOTIuOTk2QzI5MC44NzcgOTMuNTEzIDI5MSA5NC4wODE1IDI5MSA5NC42NzgyIDI5MSA5Ny4wNjUxIDI4OS4wMzggOTkgMjg2LjYxNyA5OUwyNDAuMzgzIDk5QzIzNy45NjMgOTkgMjM2IDk3LjA2NTEgMjM2IDk0LjY3ODIgMjM2IDk0LjM3OTkgMjM2LjAzMSA5NC4wODg2IDIzNi4wODkgOTMuODA3MkwyMzYuMzM4IDkzLjAxNjIgMjM2Ljg1OCA5Mi4xMzE0IDI1OS40NzMgNTMuNjI5NCAyNTkuOTYxIDUyLjc5ODUgMjYwLjQwNyA1Mi4yNjU4QzI2MS4yIDUxLjQ4MzcgMjYyLjI5NiA1MSAyNjMuNTA2IDUxWk0yNjMuNTg2IDY2LjAxODNDMjYwLjczNyA2Ni4wMTgzIDI1OS4zMTMgNjcuMTI0NSAyNTkuMzEzIDY5LjMzNyAyNTkuMzEzIDY5LjYxMDIgMjU5LjMzMiA2OS44NjA4IDI1OS4zNzEgNzAuMDg4N0wyNjEuNzk1IDg0LjAxNjEgMjY1LjM4IDg0LjAxNjEgMjY3LjgyMSA2OS43NDc1QzI2Ny44NiA2OS43MzA5IDI2Ny44NzkgNjkuNTg3NyAyNjcuODc5IDY5LjMxNzkgMjY3Ljg3OSA2Ny4xMTgyIDI2Ni40NDggNjYuMDE4MyAyNjMuNTg2IDY2LjAxODNaTTI2My41NzYgODYuMDU0N0MyNjEuMDQ5IDg2LjA1NDcgMjU5Ljc4NiA4Ny4zMDA1IDI1OS43ODYgODkuNzkyMSAyNTkuNzg2IDkyLjI4MzcgMjYxLjA0OSA5My41Mjk1IDI2My41NzYgOTMuNTI5NSAyNjYuMTE2IDkzLjUyOTUgMjY3LjM4NyA5Mi4yODM3IDI2Ny4zODcgODkuNzkyMSAyNjcuMzg3IDg3LjMwMDUgMjY2LjExNiA4Ni4wNTQ3IDI2My41NzYgODYuMDU0N1oiIGZpbGw9IiNGRkU1MDAiIGZpbGwtcnVsZT0iZXZlbm9kZCIvPjwvZz48L3N2Zz4=) no-repeat 1rem/1.8rem, #b32121;
-    padding: 1rem 1rem 1rem 3.7rem;
-    color: white;
+    background: var(--danger-surface);
+    border: 1px solid var(--danger-border);
+    border-radius: var(--radius);
+    padding: 1rem 1.25rem;
+    color: var(--danger);
 }
+.blazor-error-boundary::after { content: "A frame failed to develop. Please reload."; }
 
-    .blazor-error-boundary::after {
-        content: "An error has occurred."
-    }
-
-.darker-border-checkbox.form-check-input {
-    border-color: #929292;
-}
-
-.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
-    color: var(--bs-secondary-color);
-    text-align: end;
-}
-
-.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
-    text-align: start;
-}
+/* ---- Form validation (kept for parity) ------------------------------------ */
+.valid.modified:not([type=checkbox]) { outline: 1px solid #3f7d4f; }
+.invalid { outline: 1px solid var(--danger-border); }
+.validation-message { color: var(--danger); }
