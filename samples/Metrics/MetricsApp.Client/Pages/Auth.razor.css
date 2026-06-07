@@ -1,0 +1,21 @@
+.auth {
+    max-width: 30rem;
+    padding: clamp(1.4rem, 4vw, 2.2rem);
+}
+
+.auth h1 { margin: 0.35rem 0 0.75rem; }
+.auth__lede { margin: 0 0 1.25rem; color: var(--ink-soft); }
+.auth__hello { color: var(--ink-soft); margin: 0.5rem 0 1.25rem; }
+
+.demo-creds {
+    margin-top: 1.5rem;
+    padding: 1rem 1.1rem;
+    border: 1px dashed var(--border-strong);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+}
+.demo-creds .eyebrow { display: block; margin-bottom: 0.5rem; }
+.demo-creds dl { margin: 0; display: grid; gap: 0.3rem; }
+.demo-creds dl > div { display: flex; gap: 0.6rem; }
+.demo-creds dt { color: var(--ink-soft); min-width: 4.5rem; }
+.demo-creds dd { margin: 0; color: var(--ink); font-weight: 600; }

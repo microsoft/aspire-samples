@@ -1,61 +1,76 @@
-﻿@page "/weather"
+@page "/weather"
 @using System.Net
 @inject HttpClient Http
 @implements IDisposable
 
-<PageTitle>Weather</PageTitle>
+<PageTitle>Telemetry Console · Weather</PageTitle>
 
-<h1>Weather</h1>
+<section class="panel weather">
+    <header class="weather__head">
+        <div>
+            <p class="eyebrow">Request histograms</p>
+            <h1>Weather feed</h1>
+            <p class="weather__lede">
+                Each refresh calls <code>api/weather</code> on the server, feeding latency
+                and fault metrics back to the live dashboards.
+            </p>
+        </div>
+        <div class="weather__controls">
+            <button class="btn btn-primary" @onclick="LoadWeatherAsync">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M21 12a9 9 0 1 1-3-6.7" /><path d="M21 4v5h-5" />
+                </svg>
+                Refresh
+            </button>
+            <label class="switch">
+                <input type="checkbox" role="switch" @bind-value="autoRefreshEnabled" @bind-value:after="AutoRefreshChanged" />
+                <span class="switch__track" aria-hidden="true"></span>
+                <span class="switch__label">Auto refresh</span>
+            </label>
+        </div>
+    </header>
 
-<p>This component demonstrates fetching data from the server.</p>
-
-<div class="row">
-    <div class="col-auto">
-        <button class="btn btn-primary" @onclick="LoadWeatherAsync">Refresh</button>
+    <div class="weather__body" aria-live="polite">
+        @if (errorMessage == null)
+        {
+            @if (forecasts == null)
+            {
+                <p class="weather__loading" role="status">
+                    <span class="spinner" aria-hidden="true"></span> Loading forecast…
+                </p>
+            }
+            else
+            {
+                <table class="data-table">
+                    <caption>Five-day forecast — refreshed on demand</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Date</th>
+                            <th scope="col">Temp. (C)</th>
+                            <th scope="col">Temp. (F)</th>
+                            <th scope="col">Summary</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var forecast in forecasts)
+                        {
+                            <tr>
+                                <td>@forecast.Date.ToShortDateString()</td>
+                                <td class="num">@forecast.TemperatureC</td>
+                                <td class="num">@forecast.TemperatureF</td>
+                                <td>@forecast.Summary</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        }
+        else
+        {
+            <StatusMessage Message="@errorMessage" />
+        }
     </div>
-    <div class="col-auto form-check form-switch my-auto">
-        <input class="form-check-input" type="checkbox" role="switch" id="toggle-auto-refresh" @bind-value="@autoRefreshEnabled" @bind-value:after="AutoRefreshChanged">
-        <label class="form-check-label" for="toggle-auto-refresh">Auto refresh</label>
-    </div>
-</div>
-
-<hr />
-
-@if (errorMessage == null)
-{
-    @if (forecasts == null)
-    {
-        <p><em>Loading...</em></p>
-    }
-    else
-    {
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>Temp. (C)</th>
-                    <th>Temp. (F)</th>
-                    <th>Summary</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var forecast in forecasts)
-                {
-                    <tr>
-                        <td>@forecast.Date.ToShortDateString()</td>
-                        <td>@forecast.TemperatureC</td>
-                        <td>@forecast.TemperatureF</td>
-                        <td>@forecast.Summary</td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    }
-}
-else
-{
-    <StatusMessage Message="@errorMessage" />
-}
+</section>
 
 @code {
     private static readonly TimeSpan s_refreshInterval = TimeSpan.FromSeconds(2);
