@@ -6,9 +6,9 @@
 @inject NavigationManager NavigationManager
 
 <section class="hero">
-    <p class="eyebrow"><span class="eyebrow-ico">@Icons.Sparkles</span> Set the stage</p>
-    <h1>Create a live poll</h1>
-    <p class="hero-sub">Write a question, add a few answers, then share the link. Votes roll in live with animated results for everyone watching.</p>
+    <p class="eyebrow"><span class="eyebrow-ico">@Icons.Sparkles</span> New poll</p>
+    <h1>Create a poll</h1>
+    <p class="hero-sub">Write a question and add a few answers, then share the link. Each poll is backed by an Orleans grain, so vote totals update in real time.</p>
 </section>
 
 <form class="poll-form" @onsubmit="@(() => { })" @onsubmit:preventDefault="true">
@@ -111,7 +111,7 @@
         options.Clear();
         options.Add("Green");
         options.Add("Red");
-        options.Add("Blue. No, yel-auuuuugggh");
-        options.Add("Aubergine");
+        options.Add("Blue");
+        options.Add("Yellow");
     }
 }
