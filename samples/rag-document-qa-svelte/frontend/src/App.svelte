@@ -154,7 +154,7 @@
       </span>
       <span class="brand-text">
         <span class="brand-name">Athenaeum</span>
-        <span class="brand-tag">Aspire RAG reading room</span>
+        <span class="brand-tag">Aspire RAG document Q&amp;A</span>
       </span>
     </div>
     <button
@@ -168,17 +168,17 @@
       {:else}
         <Moon size={20} weight="bold" aria-hidden="true" />
       {/if}
-      <span class="sr-only">Switch to {theme === 'dark' ? 'light' : 'dark'} reading light</span>
+      <span class="sr-only">Switch to {theme === 'dark' ? 'light' : 'dark'} theme</span>
     </button>
   </header>
 
   <main id="main">
     <section class="intro">
-      <h1>Ask your library</h1>
+      <h1>Ask your documents</h1>
       <p class="lede">
-        Bring plain-text sources to the stacks. Athenaeum chunks and embeds each
-        one into a vector index, then retrieves the most relevant passages to
-        ground every answer with citations.
+        Upload plain-text documents. Athenaeum chunks and embeds each one into a
+        vector index, then retrieves the most relevant passages to ground every
+        answer with citations.
       </p>
       <ul class="pillrow" aria-label="Built with">
         <li>Svelte</li>
@@ -199,7 +199,7 @@
 
       <!-- Acquisitions / Upload -->
       <section class="card shelf" aria-labelledby="acq-heading">
-        <h2 id="acq-heading"><UploadSimple size={22} weight="duotone" aria-hidden="true" /> Acquire sources</h2>
+        <h2 id="acq-heading"><UploadSimple size={22} weight="duotone" aria-hidden="true" /> Upload documents</h2>
 
         <div
           class="dropzone"
@@ -223,7 +223,7 @@
           }}
         >
           <span class="drop-icon" aria-hidden="true"><FileText size={38} weight="thin" /></span>
-          <p class="drop-title">Drop a .txt source, or click to browse</p>
+          <p class="drop-title">Drop a .txt file, or click to browse</p>
           <p class="drop-hint">Each document is chunked and embedded for semantic retrieval</p>
         </div>
 
@@ -237,7 +237,7 @@
 
         <div class="status-region" aria-live="polite">
           {#if uploading}
-            <p class="status loading"><span class="spinner" aria-hidden="true"></span> Cataloguing &amp; indexing…</p>
+            <p class="status loading"><span class="spinner" aria-hidden="true"></span> Uploading &amp; indexing…</p>
           {/if}
           {#if uploadMessage}
             <p class="status success"><CheckCircle size={18} weight="fill" aria-hidden="true" /> {uploadMessage}</p>
@@ -245,13 +245,13 @@
         </div>
 
         <h3 class="catalog-heading">
-          In the catalogue
+          Uploaded documents
           <span class="count">{documents.length}</span>
         </h3>
 
         <ul class="catalog">
           {#if documents.length === 0}
-            <li class="catalog-empty">The shelves are empty. Acquire a source to begin.</li>
+            <li class="catalog-empty">No documents yet. Upload one to begin.</li>
           {:else}
             {#each documents as doc}
               <li class="catalog-item">
@@ -265,21 +265,21 @@
 
       <!-- Inquiry / Ask -->
       <section class="card desk" aria-labelledby="ask-heading">
-        <h2 id="ask-heading"><ChatCircleText size={22} weight="duotone" aria-hidden="true" /> Pose an inquiry</h2>
+        <h2 id="ask-heading"><ChatCircleText size={22} weight="duotone" aria-hidden="true" /> Ask a question</h2>
 
         <label class="sr-only" for="question">Your question</label>
         <textarea
           id="question"
           bind:value={question}
-          placeholder="Ask a question about your sources…"
+          placeholder="Ask a question about your documents…"
           disabled={asking}
         ></textarea>
 
         <button class="ask-btn" onclick={askQuestion} disabled={asking || !question.trim()}>
           {#if asking}
-            <span class="spinner" aria-hidden="true"></span> Consulting the stacks…
+            <span class="spinner" aria-hidden="true"></span> Searching documents…
           {:else}
-            <MagnifyingGlass size={18} weight="bold" aria-hidden="true" /> Ask the librarian
+            <MagnifyingGlass size={18} weight="bold" aria-hidden="true" /> Ask question
           {/if}
         </button>
 
@@ -316,7 +316,7 @@
 
   <footer class="colophon">
     <p>Powered by <strong>Aspire</strong> — Svelte · Python · Qdrant · OpenAI</p>
-    <p>A Retrieval Augmented Generation reading room with vector search.</p>
+    <p>Retrieval Augmented Generation over your documents with vector search.</p>
   </footer>
 </div>
 
