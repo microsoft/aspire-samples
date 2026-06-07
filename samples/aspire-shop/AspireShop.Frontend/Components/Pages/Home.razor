@@ -3,27 +3,27 @@
 
 @inject CatalogServiceClient CatalogService
 
-<PageTitle>Atelier Aspire · The Collection</PageTitle>
+<PageTitle>Aspire Shop · Product catalog</PageTitle>
 
 <header class="topbar">
     <div class="topbar-inner">
-        <a class="brand" href="/" aria-label="Atelier Aspire, home">
+        <a class="brand" href="/" aria-label="Aspire Shop, home">
             <span class="brand-mark" aria-hidden="true">@Icons.Storefront</span>
             <span class="brand-words">
-                <span class="brand-kicker">Atelier</span>
-                <span class="brand-name">Aspire</span>
+                <span class="brand-kicker">Aspire</span>
+                <span class="brand-name">Shop</span>
             </span>
         </a>
-        <p class="brand-tagline">Considered objects for modern living</p>
+        <p class="brand-tagline">Browse the product catalog and add items to your cart</p>
         <Cart BasketAvailabilityChanged="HandleBasketAvailabilityChanged" />
     </div>
 </header>
 
 <main id="main-content" class="shell">
     <section class="collection-head">
-        <p class="eyebrow">The shop · @DateTime.Now.Year</p>
-        <h1 class="collection-title">The Collection</h1>
-        <p class="collection-sub">A rotating selection of pieces, sourced and arranged by hand.</p>
+        <p class="eyebrow">Product catalog</p>
+        <h1 class="collection-title">Browse the catalog</h1>
+        <p class="collection-sub">Products are served by the Catalog service. Add items to your cart and they're stored by the Basket service.</p>
     </section>
 
     @if (catalog is { Data: var data })
@@ -91,7 +91,7 @@
     {
         <div class="catalog-loading" role="status" aria-live="polite">
             <span class="loading-spinner" aria-hidden="true"></span>
-            <p>Bringing the collection together…</p>
+            <p>Loading products from the Catalog service…</p>
         </div>
     }
 </main>

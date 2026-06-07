@@ -8,7 +8,7 @@
             <button type="submit" class="cart-button" aria-label="@CartLabel">
                 <span class="cart-icon" aria-hidden="true">@Icons.Handbag</span>
                 <span class="cart-count @(ItemCount == 0 ? "is-empty" : null)" aria-hidden="true">@ItemCount</span>
-                <span class="cart-text">Bag</span>
+                <span class="cart-text">Cart</span>
             </button>
         </EditForm>
     }
@@ -22,9 +22,9 @@
 
     string CartLabel => ItemCount switch
     {
-        0 => "Your bag is empty. Proceed to checkout.",
-        1 => "Bag with 1 item. Proceed to checkout.",
-        _ => $"Bag with {ItemCount} items. Proceed to checkout."
+        0 => "Your cart is empty. Proceed to checkout.",
+        1 => "Cart with 1 item. Proceed to checkout.",
+        _ => $"Cart with {ItemCount} items. Proceed to checkout."
     };
 
     [Parameter]
