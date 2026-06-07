@@ -1,44 +1,68 @@
 /* =========================================================================
    Clay Todos — a soft, puffy claymorphism identity.
    Built on Open Props tokens (radii, sizes, easings, fonts) with a custom
-   layered clay shadow system. Light + dark via prefers-color-scheme.
+   "raised clay" elevation system: soft cast shadows + a hairline top highlight
+   give each surface an inflated, pinched-from-clay feel — without the carved
+   neumorphic craters. Light + dark via prefers-color-scheme.
    ========================================================================= */
 
 :root {
   color-scheme: light dark;
 
   /* Surfaces & ink */
-  --bg-1: #ffe9f5;
-  --bg-2: #e9ebff;
-  --bg-3: #dffaf0;
-  --surface: #fbf4ff;
-  --surface-inset: #f3ecff;
-  --text: #2c2541;
-  --muted: #574b6e;
+  --bg-1: #ffe1f0;
+  --bg-2: #e8eaff;
+  --bg-3: #d6fbef;
+  --surface-raised: #fbf5ff; /* pills / blobs floating on the gradient */
+  --well: #efe7fb;           /* recessed input */
+  --text: #241d3a;
+  --muted: #4d4368;
 
   /* Accent (primary) */
-  --accent: #5b34d6;
+  --accent: #5a2fd0;
   --accent-ink: #ffffff;
-  --accent-soft: #ede4ff;
+  --accent-soft: #ece2ff;
   --accent-soft-ink: #4a2bb8;
 
   /* Danger */
-  --danger: #b5174a;
+  --danger: #c2185b;
   --danger-ink: #ffffff;
-  --danger-soft: #ffe1ea;
-  --danger-soft-ink: #9a153f;
+  --danger-soft: #ffe2ec;
+  --danger-soft-ink: #97123f;
 
   /* Done / mint */
-  --done: #1e7a5a;
-  --done-text: #4a4066;
+  --done: #0f7a52;
+  --done-text: #5a4f70;
 
-  --focus: #5b34d6;
+  --focus: #5a2fd0;
 
-  /* Clay shadow ingredients */
-  --clay-cast: rgba(124, 92, 200, 0.38);
-  --clay-tint: rgba(124, 92, 200, 0.34);
-  --clay-hi: rgba(255, 255, 255, 0.95);
-  --clay-hi-strong: rgba(255, 255, 255, 1);
+  /* Clay elevation ingredients */
+  --hi: rgba(255, 255, 255, 0.9);     /* top highlight */
+  --cast-1: rgba(106, 61, 240, 0.16); /* near cast */
+  --cast-2: rgba(106, 61, 240, 0.32); /* deep cast */
+  --well-shade: rgba(106, 61, 240, 0.2);
+
+  /* Composed shadows */
+  --shadow-card:
+    inset 0 1.5px 0 var(--hi),
+    0 2px 6px -2px var(--cast-1),
+    0 26px 48px -24px var(--cast-2);
+  --shadow-raised:
+    inset 0 1.5px 0 var(--hi),
+    0 1px 2px var(--cast-1),
+    0 12px 20px -14px var(--cast-2);
+  --shadow-raised-hover:
+    inset 0 1.5px 0 var(--hi),
+    0 2px 4px var(--cast-1),
+    0 18px 28px -14px var(--cast-2);
+  --shadow-well:
+    inset 0 2px 5px var(--well-shade),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.7);
+  --shadow-btn:
+    inset 0 1.5px 0 rgba(255, 255, 255, 0.45),
+    0 10px 20px -8px rgba(106, 61, 240, 0.6);
+  --shadow-btn-active:
+    inset 0 2px 5px rgba(0, 0, 0, 0.25);
 
   /* Open Props derived */
   --radius-clay: var(--radius-6, 2rem);
@@ -48,33 +72,55 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg-1: #1b1533;
-    --bg-2: #241a40;
-    --bg-3: #141228;
-    --surface: #2c2547;
-    --surface-inset: #3a2b66;
-    --text: #f4eeff;
-    --muted: #c3b6e8;
+    --bg-1: #2a1c46;
+    --bg-2: #18132e;
+    --bg-3: #13273a;
+    --surface: #241d3e;        /* the card */
+    --surface-raised: #2f2750; /* pills sit lighter → read as raised */
+    --well: #191430;           /* recessed input is darker than the card */
+    --text: #f3eeff;
+    --muted: #c4b7ec;
 
-    --accent: #caa8ff;
-    --accent-ink: #1c1633;
-    --accent-soft: #392e5e;
-    --accent-soft-ink: #d9c8ff;
+    --accent: #b59cff;
+    --accent-ink: #1b1433;
+    --accent-soft: #352b59;
+    --accent-soft-ink: #ddccff;
 
-    --danger: #ffb4cf;
-    --danger-ink: #3a1530;
-    --danger-soft: #3a2342;
+    --danger: #ff9dc0;
+    --danger-ink: #3a1226;
+    --danger-soft: #3c2342;
     --danger-soft-ink: #ffc4da;
 
-    --done: #86f0c2;
-    --done-text: #d3c7f2;
+    --done: #74e6b4;
+    --done-text: #cbbdf0;
 
-    --focus: #caa8ff;
+    --focus: #b59cff;
 
-    --clay-cast: rgba(0, 0, 0, 0.55);
-    --clay-tint: rgba(0, 0, 0, 0.5);
-    --clay-hi: rgba(255, 255, 255, 0.07);
-    --clay-hi-strong: rgba(255, 255, 255, 0.1);
+    --hi: rgba(255, 255, 255, 0.06);
+    --cast-1: rgba(0, 0, 0, 0.4);
+    --cast-2: rgba(0, 0, 0, 0.7);
+    --well-shade: rgba(0, 0, 0, 0.55);
+
+    --shadow-card:
+      inset 0 1px 0 var(--hi),
+      0 2px 6px -2px var(--cast-1),
+      0 28px 52px -26px var(--cast-2);
+    --shadow-raised:
+      inset 0 1px 0 var(--hi),
+      0 1px 2px var(--cast-1),
+      0 12px 22px -14px var(--cast-2);
+    --shadow-raised-hover:
+      inset 0 1px 0 var(--hi),
+      0 2px 4px var(--cast-1),
+      0 18px 30px -14px var(--cast-2);
+    --shadow-well:
+      inset 0 2px 6px var(--well-shade),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.04);
+    --shadow-btn:
+      inset 0 1px 0 rgba(255, 255, 255, 0.18),
+      0 12px 22px -8px rgba(0, 0, 0, 0.6);
+    --shadow-btn-active:
+      inset 0 2px 6px rgba(0, 0, 0, 0.6);
   }
 }
 
@@ -88,9 +134,9 @@ body {
   font-family: var(--font-sans, system-ui, sans-serif);
   color: var(--text);
   background:
-    radial-gradient(circle at 12% 18%, var(--bg-1), transparent 42%),
-    radial-gradient(circle at 88% 12%, var(--bg-3), transparent 40%),
-    radial-gradient(circle at 50% 100%, var(--bg-2), transparent 55%),
+    radial-gradient(circle at 12% 16%, var(--bg-1), transparent 45%),
+    radial-gradient(circle at 86% 10%, var(--bg-3), transparent 42%),
+    radial-gradient(circle at 50% 104%, var(--bg-2), transparent 58%),
     var(--bg-2);
   background-attachment: fixed;
   min-height: 100dvh;
@@ -128,7 +174,7 @@ body {
   border-radius: var(--radius-pill);
   font-weight: 700;
   text-decoration: none;
-  box-shadow: 0 12px 28px -8px var(--clay-cast);
+  box-shadow: var(--shadow-btn);
   transition: transform 0.18s var(--ease-squish);
 }
 
@@ -155,35 +201,31 @@ body {
   display: flex;
   align-items: center;
   gap: var(--size-4, 1.1rem);
-  padding-inline: var(--size-3, 0.75rem);
+  padding-inline: 0.35rem;
 }
 
 .brand-blob {
   flex: none;
   display: grid;
   place-items: center;
-  width: 4rem;
-  height: 4rem;
+  width: 3.75rem;
+  height: 3.75rem;
   border-radius: var(--radius-clay);
   background: var(--accent-soft);
   color: var(--accent-soft-ink);
-  box-shadow:
-    0 16px 30px -12px var(--clay-cast),
-    inset -6px -6px 12px var(--clay-tint),
-    inset 0 8px 16px var(--clay-hi);
-  rotate: -6deg;
+  box-shadow: var(--shadow-raised);
 }
 
 .brand-blob svg {
-  width: 2.1rem;
-  height: 2.1rem;
+  width: 2rem;
+  height: 2rem;
 }
 
 h1 {
   font-size: var(--font-size-7, 2.4rem);
   font-weight: 800;
   letter-spacing: -0.02em;
-  line-height: 1.1;
+  line-height: 1.05;
 }
 
 .subtitle {
@@ -205,13 +247,15 @@ h1 {
 
 /* --- Card --------------------------------------------------------------- */
 .card {
-  background: var(--surface);
-  border-radius: var(--radius-clay);
-  padding: clamp(1.4rem, 4vw, 2.2rem);
-  box-shadow:
-    0 30px 60px -18px var(--clay-cast),
-    inset -10px -12px 24px var(--clay-tint),
-    inset 0 14px 30px var(--clay-hi);
+  padding: 0;
+  animation: rise-in 0.5s var(--ease-squish) both;
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.985);
+  }
 }
 
 /* --- Add form ----------------------------------------------------------- */
@@ -228,13 +272,10 @@ h1 {
   font-size: var(--font-size-2, 1rem);
   font-family: inherit;
   color: var(--text);
-  background: var(--surface-inset);
+  background: var(--well);
   border: none;
   border-radius: var(--radius-pill);
-  /* pressed-in clay well */
-  box-shadow:
-    inset 6px 6px 12px var(--clay-tint),
-    inset -6px -6px 12px var(--clay-hi-strong);
+  box-shadow: var(--shadow-well);
 }
 
 #new-todo::placeholder {
@@ -255,10 +296,7 @@ h1 {
   border: none;
   border-radius: var(--radius-pill);
   cursor: pointer;
-  box-shadow:
-    0 14px 24px -10px var(--clay-cast),
-    inset -4px -5px 10px rgba(0, 0, 0, 0.18),
-    inset 0 5px 10px rgba(255, 255, 255, 0.35);
+  box-shadow: var(--shadow-btn);
   transition:
     transform 0.16s var(--ease-squish),
     box-shadow 0.16s ease;
@@ -275,9 +313,7 @@ h1 {
 
 .btn-add:active {
   transform: translateY(1px) scale(0.97);
-  box-shadow:
-    0 6px 14px -10px var(--clay-cast),
-    inset 4px 5px 10px rgba(0, 0, 0, 0.25);
+  box-shadow: var(--shadow-btn-active);
 }
 
 /* --- Tally -------------------------------------------------------------- */
@@ -323,9 +359,7 @@ h1 {
   border-radius: var(--radius-clay);
   background: var(--accent-soft);
   color: var(--accent-soft-ink);
-  box-shadow:
-    inset -5px -5px 10px var(--clay-tint),
-    inset 0 6px 12px var(--clay-hi);
+  box-shadow: var(--shadow-raised);
 }
 
 .empty-blob svg {
@@ -346,12 +380,17 @@ h1 {
   align-items: center;
   gap: var(--size-3, 0.75rem);
   padding: 0.7rem 0.8rem 0.7rem 1rem;
-  background: var(--surface-inset);
+  background: var(--surface-raised);
   border-radius: var(--radius-pill);
-  box-shadow:
-    0 10px 22px -16px var(--clay-cast),
-    inset 3px 3px 7px var(--clay-tint),
-    inset -4px -4px 8px var(--clay-hi-strong);
+  box-shadow: var(--shadow-raised);
+  transition:
+    transform 0.16s var(--ease-squish),
+    box-shadow 0.16s ease;
+}
+
+.todo:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-raised-hover);
 }
 
 .todo-toggle {
@@ -376,7 +415,7 @@ h1 {
   width: 1.7rem;
   height: 1.7rem;
   color: var(--muted);
-  opacity: 0.55;
+  opacity: 0.5;
   transition:
     color 0.2s ease,
     opacity 0.2s ease,
@@ -420,8 +459,8 @@ h1 {
   border-radius: var(--radius-pill);
   cursor: pointer;
   box-shadow:
-    inset -3px -3px 7px rgba(0, 0, 0, 0.06),
-    inset 0 3px 6px rgba(255, 255, 255, 0.5);
+    inset 0 1.5px 0 rgba(255, 255, 255, 0.4),
+    0 6px 12px -8px var(--cast-2);
   transition:
     transform 0.16s var(--ease-squish),
     color 0.16s ease,
@@ -456,6 +495,10 @@ h1 {
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
     scroll-behavior: auto !important;
+  }
+
+  .card {
+    animation: none !important;
   }
 
   ::view-transition-group(*),
