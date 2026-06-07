@@ -1,0 +1,39 @@
+.weather { padding: clamp(1.4rem, 4vw, 2.2rem); }
+
+.weather__head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1.25rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.25rem;
+}
+.weather__head h1 { margin: 0.35rem 0 0.5rem; font-size: clamp(1.5rem, 3vw, 2rem); }
+.weather__lede { margin: 0; max-width: 46ch; color: var(--ink-soft); }
+
+.weather__controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.weather__body { min-height: 6rem; }
+
+.weather__loading {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    color: var(--ink-muted);
+    font-family: var(--font-mono);
+}
+
+.spinner {
+    width: 1.05rem;
+    height: 1.05rem;
+    border-radius: 50%;
+    border: 2px solid var(--surface-inset);
+    border-top-color: var(--accent);
+    animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }

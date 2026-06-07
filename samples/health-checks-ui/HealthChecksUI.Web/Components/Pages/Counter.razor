@@ -1,13 +1,32 @@
 ﻿@page "/counter"
 @rendermode InteractiveServer
 
-<PageTitle>Counter</PageTitle>
+<PageTitle>Aspire Status · Probe</PageTitle>
 
-<h1>Counter</h1>
+<section class="probe">
+    <header class="probe-head">
+        <p class="eyebrow">Interactive probe</p>
+        <h1>Synthetic check</h1>
+        <p class="lede">
+            Trigger an on-demand synthetic check against the service. Each run is processed
+            live over a persistent connection and the tally updates in place.
+        </p>
+    </header>
 
-<p role="status">Current count: @currentCount</p>
-
-<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+    <div class="probe-card">
+        <div class="probe-readout">
+            <span class="probe-icon" aria-hidden="true">@Icons.Zap</span>
+            <p class="probe-readout-line" role="status" aria-live="polite">
+                <span class="probe-count">@currentCount</span>
+                <span class="probe-label">checks executed</span>
+            </p>
+        </div>
+        <button class="btn-action" @onclick="IncrementCount">
+            <span class="btn-icon" aria-hidden="true">@Icons.RefreshCw</span>
+            Run probe
+        </button>
+    </div>
+</section>
 
 @code {
     private int currentCount = 0;

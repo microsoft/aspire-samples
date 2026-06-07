@@ -4,29 +4,34 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Metrics sample</title>
+    <meta name="color-scheme" content="light dark" />
+    <meta name="description" content="Telemetry Console - the instrumented Aspire app that emits OpenTelemetry metrics to Prometheus and Grafana." />
+    <title>Telemetry Console · Aspire</title>
     <base href="/" />
-    <link rel="stylesheet" href="css/bootstrap/bootstrap.min.css" />
     <link rel="stylesheet" href="css/app.css" />
-    <link rel="icon" type="image/png" href="favicon.png" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%234f46e5'/%3E%3Cpath d='M5 17h5l3-8 4 14 3-9 2 3h5' fill='none' stroke='%23a5f3fc' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
     <link href="MetricsApp.Client.styles.css" rel="stylesheet" />
 </head>
 
 <body>
     <div id="app">
-        <svg class="loading-progress">
-            <circle r="40%" cx="50%" cy="50%" />
-            <circle r="40%" cx="50%" cy="50%" />
-        </svg>
-        <div class="loading-progress-text"></div>
+        <div class="app-boot">
+            <svg class="loading-progress" viewBox="0 0 100 100" aria-hidden="true">
+                <circle r="40%" cx="50%" cy="50%" />
+                <circle r="40%" cx="50%" cy="50%" />
+            </svg>
+            <div class="loading-progress-text"></div>
+            <p class="app-boot__label">Initializing telemetry console…</p>
+        </div>
     </div>
 
     <div id="blazor-error-ui">
-        An unhandled error has occurred.
+        <span>A telemetry stream hit an unexpected error.</span>
         <a href="" class="reload">Reload</a>
-        <a class="dismiss">🗙</a>
+        <a class="dismiss" role="button" aria-label="Dismiss">✕</a>
     </div>
     <script src="_framework/blazor.webassembly.js"></script>
 </body>
 
 </html>
+

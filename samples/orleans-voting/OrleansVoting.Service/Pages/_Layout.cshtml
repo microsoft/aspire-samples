@@ -7,25 +7,33 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark light" />
+    <meta name="theme-color" content="#140a24" />
     <base href="~/" />
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="css/bootstrap/bootstrap.min.css" />
     <link href="css/site.css" rel="stylesheet" />
+    <link href="OrleansVoting.Service.styles.css" rel="stylesheet" />
     <component type="typeof(HeadOutlet)" render-mode="ServerPrerendered" />
 </head>
 <body class="d-flex flex-column min-vh-100">
     @RenderBody()
 
-    <div id="blazor-error-ui">
+    <div id="blazor-error-ui" role="alert">
         <environment include="Staging,Production">
-            An error has occurred. This application may no longer respond until reloaded.
+            Connection lost. This poll may stop updating until you reload.
         </environment>
         <environment include="Development">
-            An unhandled exception has occurred. See browser dev tools for details.
+            An unhandled exception occurred. See the browser dev tools for details.
         </environment>
         <a href="" class="reload">Reload</a>
-        <a class="dismiss">🗙</a>
+        <button type="button" class="dismiss" aria-label="Dismiss this message">🗙</button>
     </div>
 
+    <script src="js/confetti.js"></script>
     <script src="_framework/blazor.server.js"></script>
 </body>
 </html>

@@ -1,17 +1,14 @@
 ﻿@inject BasketServiceClient BasketClient
 @inject NavigationManager Navigation
 
-<div class="justify-content-end">
+<div class="cart">
     @if (basketIsAvailable)
     {
         <EditForm Model="this" FormName="checkout" OnSubmit="HandleCheckout" data-enhance>
-            <button type="submit" class="align-content-end cart-button">
-                <span class="fa-stack fa-lg cart-stack pa-4">
-                    <i class="fa fa-shopping-cart fa-stack-4x"></i>
-                    <i class="fa fa-stack-1x badge">
-                        @(customerBasket?.TotalItemCount ?? 0)
-                    </i>
-                </span>
+            <button type="submit" class="cart-button" aria-label="@CartLabel">
+                <span class="cart-icon" aria-hidden="true">@Icons.Handbag</span>
+                <span class="cart-count @(ItemCount == 0 ? "is-empty" : null)" aria-hidden="true">@ItemCount</span>
+                <span class="cart-text">Bag</span>
             </button>
         </EditForm>
     }
@@ -20,6 +17,15 @@
 @code {
     CustomerBasket? customerBasket;
     bool basketIsAvailable;
+
+    int ItemCount => customerBasket?.TotalItemCount ?? 0;
+
+    string CartLabel => ItemCount switch
+    {
+        0 => "Your bag is empty. Proceed to checkout.",
+        1 => "Bag with 1 item. Proceed to checkout.",
+        _ => $"Bag with {ItemCount} items. Proceed to checkout."
+    };
 
     [Parameter]
     public EventCallback<bool> BasketAvailabilityChanged { get; set; }

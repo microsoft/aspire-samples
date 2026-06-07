@@ -1,0 +1,75 @@
+.error-page {
+    max-width: 40rem;
+    margin: 1rem auto;
+    text-align: center;
+}
+
+.error-page-mark {
+    display: inline-grid;
+    place-items: center;
+    width: 3.5rem;
+    height: 3.5rem;
+    margin-bottom: 1rem;
+    border-radius: 16px;
+    background: var(--warn-soft);
+    color: var(--warn);
+    border: 1px solid color-mix(in srgb, var(--warn) 40%, transparent);
+}
+
+.error-page-mark ::deep .icon {
+    width: 1.9rem;
+    height: 1.9rem;
+}
+
+.error-page h1 {
+    font-size: clamp(1.8rem, 4vw, 2.4rem);
+}
+
+.error-page .lede {
+    margin: 0.65rem auto 1.5rem;
+}
+
+.error-meta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.9rem;
+    border-radius: var(--radius-sm);
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    margin-bottom: 1.5rem;
+}
+
+.error-meta span {
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+}
+
+.error-note {
+    text-align: left;
+    padding: 1.25rem 1.4rem;
+    border-radius: var(--radius);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    margin-bottom: 1.75rem;
+}
+
+.error-note h2 {
+    font-size: 1.05rem;
+    margin-bottom: 0.5rem;
+}
+
+.error-note p {
+    color: var(--ink-soft);
+    font-size: 0.92rem;
+}
+
+.error-note p + p {
+    margin-top: 0.6rem;
+}
+
+.error-note code {
+    color: var(--ink);
+}
