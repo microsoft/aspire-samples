@@ -1,8 +1,8 @@
 /* ==========================================================================
-   Darkroom Studio — bespoke theme for the Aspire "Image Gallery" sample
-   (Blazor Server + Azure Functions). A photographer's darkroom: near-black
-   walls, warm amber safelight accent, editorial serif display, framed prints
-   on a contact-sheet wall. Intentionally dark-only (the counterpart to the
+   Bespoke dark theme for the Aspire "Image Gallery" sample
+   (Blazor Server + Azure Functions). Near-black surfaces, a warm amber
+   accent, editorial serif display headings, and a contact-sheet style grid
+   of uploaded thumbnails. Intentionally dark-only (the counterpart to the
    bright React image-gallery sample). Custom inline-SVG aperture iconography.
    ========================================================================== */
 
@@ -177,7 +177,7 @@ code, .mono { font-family: var(--font-mono); }
     padding: 1rem 1.25rem;
     color: var(--danger);
 }
-.blazor-error-boundary::after { content: "A frame failed to develop. Please reload."; }
+.blazor-error-boundary::after { content: "Something went wrong. Please reload."; }
 
 /* ---- Form validation (kept for parity) ------------------------------------ */
 .valid.modified:not([type=checkbox]) { outline: 1px solid #3f7d4f; }
