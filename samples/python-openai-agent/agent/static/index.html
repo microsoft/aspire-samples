@@ -15,79 +15,80 @@
             --measure: 50rem;            /* comfortable conversation width */
             --pad-x: clamp(1rem, 4vw, 2rem);
 
-            /* Warm amber palette — light theme (default). Message body text
-               pairs are verified for WCAG AAA (7:1); UI chrome pairs for AA. */
-            --canvas: #fff8f1;
-            --glow: #ffe2cb;             /* soft warm halo at the top */
-            --topbar: #fff3e8;
-            --card-border: #f0d6c2;
-            --ink: #2e1c12;              /* ~13:1 on warm surfaces */
-            --ink-soft: #5a4030;         /* ~7.1:1 on --topbar */
-            --assistant-bg: #fff5ec;
-            --assistant-ink: #2e1c12;
-            --assistant-border: #f1dccb;
-            --user-bg: #8f2f1f;          /* terracotta, ~8:1 with white */
+            /* Warm-neutral palette — light theme (default). Surfaces are soft
+               cream rather than saturated peach; clay/coral carries the accent.
+               Message body-text pairs target WCAG AAA; UI chrome pairs meet AA. */
+            --canvas: #f7f4ee;
+            --glow: #f1e7d9;             /* faint warm halo at the top */
+            --topbar: #fbf9f4;
+            --card-border: #e6dccd;
+            --ink: #2c2521;              /* ~13:1 on cream surfaces */
+            --ink-soft: #5f5347;         /* ~6.8:1 on --canvas */
+            --assistant-bg: #fdfbf7;
+            --assistant-ink: #2c2521;
+            --assistant-border: #ebe1d4;
+            --user-bg: #b4482b;          /* clay, ~5.4:1 with white */
             --user-ink: #ffffff;
-            --avatar-user-bg: #8f2f1f;
+            --avatar-user-bg: #b4482b;
             --avatar-user-ink: #ffffff;
-            --avatar-bot-bg: #ffe0cb;
-            --avatar-bot-ink: #8f2f1f;
-            --accent: #e0552b;
+            --avatar-bot-bg: #f0e4d5;
+            --avatar-bot-ink: #a4472a;
+            --accent: #c2542f;           /* refined coral */
             --accent-ink: #ffffff;
-            --skip-bg: #8f2f1f;          /* white text ~8:1 (AAA) */
+            --skip-bg: #b4482b;          /* white text ~5.4:1 */
             --skip-ink: #ffffff;
-            --composer-bg: rgba(255, 248, 241, 0.86);
-            --field-bg: #fffaf4;
-            --field-ink: #2e1c12;
-            --field-border: #e3c4ad;
-            --placeholder: #7a5a48;      /* ~6:1 on --field-bg */
-            --chip-bg: #fff1e3;
-            --chip-hover: #ffe7d2;
-            --chip-ink: #2e1c12;
-            --chip-border: #f0d6c2;
-            --notice-bg: #fff1d6;
-            --notice-ink: #4a3410;
-            --notice-border: #e7c98a;
-            --dot: #c9603a;
-            --focus: #7a2516;
-            --dock-shadow: 0 -14px 30px -26px rgba(120, 50, 20, 0.55);
+            --composer-bg: rgba(251, 249, 244, 0.86);
+            --field-bg: #ffffff;
+            --field-ink: #2c2521;
+            --field-border: #ddd2c2;
+            --placeholder: #786a5b;      /* ~5.2:1 on --field-bg */
+            --chip-bg: #f2ebe0;
+            --chip-hover: #ebe1d2;
+            --chip-ink: #2c2521;
+            --chip-border: #e3d8c8;
+            --notice-bg: #f8edd2;
+            --notice-ink: #5a4516;
+            --notice-border: #e6d3a0;
+            --dot: #c2542f;
+            --focus: #8a3a1f;
+            --dock-shadow: 0 -14px 30px -26px rgba(80, 50, 30, 0.4);
         }
 
         @media (prefers-color-scheme: dark) {
             :root {
-                --canvas: #1b141a;
-                --glow: #392130;         /* warm plum halo at the top */
-                --topbar: #271d25;
-                --card-border: #46343d;
-                --ink: #ffe9da;          /* ~11:1 on dark surfaces */
-                --ink-soft: #e7c3ad;     /* ~7.3:1 on --topbar */
-                --assistant-bg: #2c2230;
-                --assistant-ink: #ffe9da;
-                --assistant-border: #463544;
-                --user-bg: #ff9e6d;      /* apricot, ~8.6:1 with near-black ink */
-                --user-ink: #241710;
-                --avatar-user-bg: #ff9e6d;
-                --avatar-user-ink: #241710;
-                --avatar-bot-bg: #4a333f;
-                --avatar-bot-ink: #ffc8a6;
-                --accent: #ff9e6d;
-                --accent-ink: #241710;
-                --skip-bg: #ff9e6d;      /* near-black text ~8.6:1 (AAA) */
-                --skip-ink: #241710;
-                --composer-bg: rgba(27, 20, 26, 0.84);
-                --field-bg: #2a1f29;
-                --field-ink: #ffe9da;
-                --field-border: #5a4350;
-                --placeholder: #c2a08f;
-                --chip-bg: #2c2230;
-                --chip-hover: #382b39;
-                --chip-ink: #ffe9da;
-                --chip-border: #4a3744;
-                --notice-bg: #3c3320;
-                --notice-ink: #ffe7b0;
-                --notice-border: #6b5a36;
-                --dot: #ffb187;
-                --focus: #ffc8a6;
+                --canvas: #1f1b17;
+                --glow: #2c2620;         /* faint warm halo at the top */
+                --topbar: #262119;
+                --card-border: #3b342b;
+                --ink: #f0e8dd;          /* ~12:1 on dark surfaces */
+                --ink-soft: #c4b7a6;     /* ~7.4:1 on --canvas */
+                --assistant-bg: #2a2620;
+                --assistant-ink: #f0e8dd;
+                --assistant-border: #3c352c;
+                --user-bg: #d97b54;      /* warm coral, ~5.5:1 with near-black ink */
+                --user-ink: #2a1a11;
+                --avatar-user-bg: #d97b54;
+                --avatar-user-ink: #2a1a11;
+                --avatar-bot-bg: #3c332a;
+                --avatar-bot-ink: #e6b58e;
+                --accent: #d97b54;
+                --accent-ink: #2a1a11;
+                --skip-bg: #d97b54;      /* near-black text ~5.5:1 */
+                --skip-ink: #2a1a11;
+                --composer-bg: rgba(31, 27, 23, 0.85);
+                --field-bg: #2a251d;
+                --field-ink: #f0e8dd;
+                --field-border: #4a4135;
+                --placeholder: #b0a290;
+                --chip-bg: #2a2620;
+                --chip-hover: #352f27;
+                --chip-ink: #f0e8dd;
+                --chip-border: #3c352c;
+                --notice-bg: #38301c;
+                --notice-ink: #f0dca6;
+                --notice-border: #5e5230;
+                --dot: #e0926b;
+                --focus: #e6b58e;
                 --dock-shadow: 0 -14px 30px -26px rgba(0, 0, 0, 0.7);
             }
         }
@@ -166,7 +167,7 @@
             height: 2.75rem;
             flex: none;
             border-radius: 50%;
-            background: radial-gradient(circle at 30% 30%, #ffd9a8, var(--accent));
+            background: radial-gradient(circle at 30% 30%, #f2d6b8, var(--accent));
             color: #3a1c0c;
             box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35);
         }
