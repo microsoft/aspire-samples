@@ -58,8 +58,10 @@
 .dropzone__title { font-weight: 700; font-size: 1.05rem; color: var(--ink); }
 .dropzone__hint { font-size: 0.86rem; color: var(--ink-muted); }
 
-/* The native file input covers the whole label so the entire zone is clickable. */
-.dropzone__input {
+/* The native file input covers the whole label so the entire zone is
+   clickable. InputFile renders its own <input>, which doesn't inherit this
+   component's scope attribute, so reach it with ::deep. */
+.dropzone ::deep .dropzone__input {
     position: absolute;
     inset: 0;
     width: 100%;
