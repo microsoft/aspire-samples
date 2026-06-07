@@ -1,7 +1,7 @@
 # Python OpenAI Agent Sample
 
-![Screenshot of the Ember cozy AI chat UI for the Python OpenAI Agent sample (light theme)](./images/python-openai-agent-primary-page-light.png#gh-light-mode-only)
-![Screenshot of the Ember cozy AI chat UI for the Python OpenAI Agent sample (dark theme)](./images/python-openai-agent-primary-page-dark.png#gh-dark-mode-only)
+![Screenshot of the Ember AI chat assistant UI for the Python OpenAI Agent sample (light theme)](./images/python-openai-agent-primary-page-light.png#gh-light-mode-only)
+![Screenshot of the Ember AI chat assistant UI for the Python OpenAI Agent sample (dark theme)](./images/python-openai-agent-primary-page-dark.png#gh-dark-mode-only)
 
 > [!NOTE]
 > The screenshots above show a deterministic, stubbed conversation captured for
