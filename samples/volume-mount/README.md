@@ -10,7 +10,7 @@ The app consists of a single service, **VolumeMount.BlazorWeb**, that is configu
 > [!NOTE]
 > The web front end wears a bespoke "Vault" identity — a split-screen authentication experience, a custom design-token system, distinct iconography, and full light/dark theming — tuned to meet WCAG 2.2 AA (with AAA contrast on body text).
 
-The app also includes a standard class library project, **VolumeMount.ServiceDefaults**, that contains the service defaults used by the service project.
+The app also includes a class library project, **VolumeMount.Data**, that contains the Entity Framework Core data model and migrations, a worker service project, **VolumeMount.MigrationService**, that applies any pending database migrations on startup before the web front end starts, and a standard class library project, **VolumeMount.ServiceDefaults**, that contains the service defaults used by the service projects.
 
 ## Pre-requisites
 
@@ -33,10 +33,6 @@ The app also includes a standard class library project, **VolumeMount.ServiceDef
 
     ![Screenshot of the account registration page on the web front end](./images/volume-mount-frontend-register-light.png#gh-light-mode-only)
     ![Screenshot of the account registration page on the web front end](./images/volume-mount-frontend-register-dark.png#gh-dark-mode-only)
-
-1. After a short while (5-15s) an error page will be displayed stating that the database is not initialized and suggesting that EF Core migration be run. Click the "Apply Migrations" button and once the button text changes to "Migrations Applied", refresh the browser and confirm the form resubmission when prompted by the browser:
-
-    ![Screenshot of the database operation failed error page](./images/volume-mount-frontend-dbcontext-error.png)
 
 1. A page will be shown confirming the registration of the account and a message detailing that a real email sender is not registered. Find and click the link at the end of the message to confirm the created account:
 

@@ -224,8 +224,11 @@ public class AppHostTests(ITestOutputHelper testOutput)
                 { "voting-fe", ["/alive", "/health", "/", "/api/votes"] }
             }),
             new TestEndpoints("VolumeMount.AppHost", new() {
-                { "blazorweb", ["/alive", "/ApplyDatabaseMigrations", "/health", "/"] }
-            }),
+                { "blazorweb", ["/alive", "/health", "/"] }
+            })
+            {
+                WaitForResources = [new("migration", KnownResourceStates.Finished)]
+            },
             new TestEndpoints("ImageGallery.AppHost", new() {
                 { "frontend", ["/alive", "/health", "/"] }
             }),
