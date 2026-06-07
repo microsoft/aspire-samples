@@ -38,6 +38,10 @@
     --btn-bg-2: #b072ff;
     --btn-ink: #1a0a2e;
 
+    /* LIVE chip — tuned to clear 7:1 (small bold text) per theme */
+    --live-bg: #ff7ab8;
+    --live-ink: #1a0a2e;
+
     --ok: #34e0a1;
     --ok-text: #58e9b4;
     --danger: #ff5d77;
@@ -87,12 +91,15 @@
 
         --brand-text: #b3126a;
         --cyan-text: #0b6f7c;
-        --gold-text: #8f6306;
+        --gold-text: #6b4a04;
         --violet-text: #6a23bf;
 
         --btn-bg: #c11574;
         --btn-bg-2: #7b2fd6;
         --btn-ink: #ffffff;
+
+        --live-bg: #9c0f5d;
+        --live-ink: #ffffff;
 
         --ok: #0e8a5a;
         --ok-text: #0a7049;

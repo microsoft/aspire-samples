@@ -62,8 +62,8 @@
     font-weight: 700;
     font-size: 0.7rem;
     letter-spacing: 0.12em;
-    color: var(--btn-ink);
-    background: var(--magenta);
+    color: var(--live-ink);
+    background: var(--live-bg);
     padding: 0.16rem 0.5rem;
     border-radius: 999px;
 }
@@ -72,7 +72,7 @@
     width: 0.5rem;
     height: 0.5rem;
     border-radius: 50%;
-    background: var(--btn-ink);
+    background: var(--live-ink);
     animation: live-pulse 1.6s ease-in-out infinite;
 }
 
