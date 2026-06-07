@@ -45,6 +45,15 @@ const typeMeta: Record<string, { label: string; worker: string; Icon: IconType }
   report: { label: 'Report generation', worker: 'C#', Icon: FileText },
 };
 
+// Keep task cards compact: show the first few lines of the submitted payload
+// and summarise the rest rather than printing every row.
+function truncateData(data: string, maxLines = 6): string {
+  const lines = data.split(/\r?\n/);
+  if (lines.length <= maxLines) return data;
+  const remaining = lines.length - maxLines;
+  return `${lines.slice(0, maxLines).join('\n')}\n… ${remaining} more line${remaining === 1 ? '' : 's'}`;
+}
+
 function App() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [taskType, setTaskType] = useState<string>('analyze');
@@ -141,16 +150,17 @@ function App() {
         Skip to task board
       </a>
 
-      <div className="mx-auto flex max-w-5xl flex-col gap-7 px-5 py-8 sm:px-7 sm:py-10">
+      <div className="shell">
         <header className="flex flex-col gap-3">
           <p className="text-accent inline-flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-[0.22em]">
             <Terminal size={15} aria-hidden="true" />
-            Aspire · Polyglot control room
+            Aspire · Polyglot task queue
           </p>
           <h1 className="font-mono text-4xl font-extrabold tracking-tight sm:text-5xl">Task Queue</h1>
           <p className="text-muted max-w-2xl text-base">
-            A neon HUD for a distributed task queue. Submit work and watch Python, C#, and Node.js
-            workers process it live over RabbitMQ on Aspire.
+            Submit a job and an Aspire-orchestrated worker picks it up from a RabbitMQ queue, runs it
+            in the background, and streams the result back here — data analysis in Python, report
+            generation in C#.
           </p>
 
           <div className="hud-panel mt-1 flex flex-wrap items-center gap-x-5 gap-y-3 px-4 py-3">
@@ -175,7 +185,8 @@ function App() {
           </div>
         </header>
 
-        <section className="hud-panel flex flex-col gap-4 p-5 sm:p-6" aria-labelledby="submit-heading">
+        <div className="board">
+        <section className="dispatch hud-panel flex flex-col gap-4 p-5 sm:p-6" aria-labelledby="submit-heading">
           <h2 id="submit-heading" className="font-mono text-lg font-bold">
             Dispatch task
           </h2>
@@ -243,7 +254,7 @@ function App() {
 
           {tasks.length === 0 ? (
             <p className="text-muted border-border rounded-xl border border-dashed px-4 py-12 text-center font-mono">
-              No tasks yet. Dispatch one above to light up the board.
+              No tasks yet. Submit a job above to see it move through the queue.
             </p>
           ) : (
             <ul className="flex flex-col gap-4">
@@ -279,13 +290,13 @@ function App() {
                     <div className="mt-3 flex flex-col gap-3">
                       <div>
                         <p className="text-muted mb-1 font-mono text-xs font-bold uppercase tracking-wider">Data</p>
-                        <pre className="code-block">{task.data}</pre>
+                        <pre className="code-block">{truncateData(task.data)}</pre>
                       </div>
 
                       {task.result && (
                         <div>
                           <p className="text-muted mb-1 font-mono text-xs font-bold uppercase tracking-wider">Result</p>
-                          <pre className="code-block">{JSON.stringify(task.result, null, 2)}</pre>
+                          <pre className="code-block code-scroll">{JSON.stringify(task.result, null, 2)}</pre>
                         </div>
                       )}
 
@@ -307,6 +318,7 @@ function App() {
             </ul>
           )}
         </main>
+        </div>
       </div>
 
       <p role="status" aria-live="polite" className="visually-hidden">

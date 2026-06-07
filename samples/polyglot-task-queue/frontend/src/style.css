@@ -58,9 +58,9 @@
   }
 }
 
-* {
-  margin: 0;
-  padding: 0;
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
@@ -288,6 +288,53 @@ body {
 }
 .hud-divider {
   border-color: var(--border);
+}
+
+/* Layout shell: centered, width-aware, two-column board on wide viewports so
+   the dispatch form and the live task stream sit side by side instead of
+   stacking in a narrow column with empty space beside it. */
+.shell {
+  max-width: 1200px;
+  margin-inline: auto;
+  padding: 2rem 1.25rem 3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+}
+
+@media (min-width: 640px) {
+  .shell {
+    padding: 2.5rem 1.75rem 3.5rem;
+  }
+}
+
+.board {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+@media (min-width: 960px) {
+  .board {
+    grid-template-columns: minmax(320px, 360px) 1fr;
+  }
+
+  .dispatch {
+    position: sticky;
+    top: 1.5rem;
+  }
+}
+
+.code-scroll {
+  max-height: 15rem;
+  overflow: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dispatch {
+    position: static;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
