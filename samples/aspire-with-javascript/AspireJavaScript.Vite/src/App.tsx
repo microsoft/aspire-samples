@@ -62,15 +62,16 @@ function App() {
 
   const status =
     state === "loading"
-      ? "Tuning the transmission…"
+      ? "Tuning in the latest forecast…"
       : state === "error"
-        ? "Signal lost. Hit refresh to retry."
-        : `Five-day broadcast · ${forecasts.length} days`;
+        ? "Couldn't reach the weather service. Hit refresh to retry."
+        : `Broadcasting the next ${forecasts.length} days.`;
 
   return (
     <>
       <div className="synth-backdrop" aria-hidden="true">
         <div className="synth-sun" />
+        <div className="synth-horizon" />
         <div className="synth-grid" />
       </div>
 
@@ -91,7 +92,7 @@ function App() {
               Aspire · React + Vite
             </p>
             <h1 className="neon font-display text-3xl font-bold uppercase tracking-tight sm:text-4xl">
-              Synthwave Weather
+              Vite Weather
             </h1>
           </div>
         </header>
@@ -198,8 +199,8 @@ function App() {
           <p className="mt-6 flex items-center gap-2 font-mono text-sm text-[color:var(--muted)]">
             <IconBolt size={16} aria-hidden="true" />
             Powered by{" "}
-            <strong className="text-[color:var(--ink)]">Aspire</strong> — same
-            data, four personalities.
+            <strong className="text-[color:var(--ink)]">Aspire</strong> —
+            forecast served by the orchestrated minimal API.
           </p>
         </main>
       </div>

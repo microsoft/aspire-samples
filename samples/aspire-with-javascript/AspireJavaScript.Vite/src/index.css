@@ -27,7 +27,7 @@
   --accent: #b02683;
   --accent-2: #0a5560;
   --accent-ink: #ffffff;
-  --grid-line: rgba(176, 38, 131, 0.55);
+  --grid-line: rgba(176, 38, 131, 0.7);
   --sun-a: #ff5d8f;
   --sun-b: #ffcf5c;
   --glow-blur: 0px;
@@ -58,7 +58,7 @@
     --accent: #ff5cc8;
     --accent-2: #2de2e6;
     --accent-ink: #0a0420;
-    --grid-line: rgba(45, 226, 230, 0.55);
+    --grid-line: rgba(45, 226, 230, 0.62);
     --sun-a: #ff2e97;
     --sun-b: #ffd166;
     --glow-blur: 16px;
@@ -107,46 +107,63 @@ body {
   pointer-events: none;
 }
 
+/* Neon sun, set off to one side so it clears the content column and
+   crests from behind the panels with classic scanline slits. */
 .synth-sun {
   position: absolute;
-  left: 50%;
-  top: 26%;
-  width: min(46vw, 340px);
+  left: 82%;
+  top: 27%;
+  width: min(56vw, 380px);
   aspect-ratio: 1;
-  translate: -50% 0;
+  translate: -50% -50%;
   border-radius: 50%;
-  background: linear-gradient(180deg, var(--sun-b) 0%, var(--sun-a) 70%);
-  /* stacked scanline bands toward the base */
-  -webkit-mask: linear-gradient(#000 0 0);
-  filter: drop-shadow(0 0 60px var(--halo));
-}
-.synth-sun::after {
-  content: "";
-  position: absolute;
-  inset: 55% 0 0 0;
-  background: repeating-linear-gradient(
-    180deg,
-    transparent 0 6px,
-    var(--bg-mid) 6px 12px
-  );
+  background: radial-gradient(circle at 50% 36%, var(--sun-b) 0%, var(--sun-a) 74%);
+  -webkit-mask:
+    linear-gradient(#000 0 0) top / 100% 56% no-repeat,
+    repeating-linear-gradient(180deg, #000 0 8px, transparent 8px 15px) bottom /
+      100% 44% no-repeat;
+  mask:
+    linear-gradient(#000 0 0) top / 100% 56% no-repeat,
+    repeating-linear-gradient(180deg, #000 0 8px, transparent 8px 15px) bottom /
+      100% 44% no-repeat;
+  filter: drop-shadow(0 0 72px var(--halo));
 }
 
+/* Glowing horizon line where the sky meets the grid. */
+.synth-horizon {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 54%;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--sun-a) 18%,
+    var(--sun-b) 50%,
+    var(--sun-a) 82%,
+    transparent
+  );
+  box-shadow: 0 0 22px 3px var(--halo);
+}
+
+/* Receding 80s grid floor. */
 .synth-grid {
   position: absolute;
   left: 50%;
   bottom: 0;
-  width: 240vw;
-  height: 52vh;
+  width: 260vw;
+  height: 60vh;
   translate: -50% 0;
-  transform: perspective(40vh) rotateX(72deg);
+  transform: perspective(44vh) rotateX(73deg);
   transform-origin: 50% 100%;
   background-image:
-    linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
-    linear-gradient(to top, var(--grid-line) 1px, transparent 1px);
-  background-size: 5vw 5vh;
-  -webkit-mask: linear-gradient(to top, #000, transparent 88%);
-  mask: linear-gradient(to top, #000, transparent 88%);
-  animation: gridRun 7s linear infinite;
+    linear-gradient(to right, var(--grid-line) 2px, transparent 2px),
+    linear-gradient(to top, var(--grid-line) 2px, transparent 2px);
+  background-size: 4.5vw 5vh;
+  -webkit-mask: linear-gradient(to top, #000 45%, transparent 96%);
+  mask: linear-gradient(to top, #000 45%, transparent 96%);
+  animation: gridRun 6s linear infinite;
 }
 
 @keyframes gridRun {
