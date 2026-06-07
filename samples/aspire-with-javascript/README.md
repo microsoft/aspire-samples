@@ -5,10 +5,10 @@ This sample demonstrates using the Aspire JavaScript hosting integration to conf
 The app consists of five services:
 
 - **AspireJavaScript.MinimalApi**: This is an HTTP API that returns randomly generated weather forecast data.
-- **AspireJavaScript.Angular**: An Angular app that consumes the weather forecast API and displays the data in a table.
-- **AspireJavaScript.React**: A React app (Webpack) that consumes the weather forecast API and displays the data in a table.
-- **AspireJavaScript.Vue**: A Vue app that consumes the weather forecast API and displays the data in a table.
-- **AspireJavaScript.Vite**: A React + Vite + TypeScript app that consumes the weather forecast API and displays the data in a table.
+- **AspireJavaScript.Angular**: An Angular app that consumes the weather forecast API and displays it with a featured-day hero and supporting day cards.
+- **AspireJavaScript.React**: A React app (Webpack) that consumes the weather forecast API and displays the forecast.
+- **AspireJavaScript.Vue**: A Vue app that consumes the weather forecast API and presents the forecast as a swipeable, keyboard-navigable day-by-day carousel.
+- **AspireJavaScript.Vite**: A React + Vite + TypeScript app that consumes the weather forecast API and displays the forecast.
 
 The four front ends all render the **same** weather data, but each one wears a **completely different design identity** — the point of the sample is to compare the frameworks side by side, so we lean into that contrast:
 
@@ -16,7 +16,7 @@ The four front ends all render the **same** weather data, but each one wears a *
 | --- | --- | --- | --- |
 | **Angular** | Material 3 "expressive" — dynamic tonal color, elevated surfaces | Angular Material + SCSS | Material Symbols |
 | **React** | Neo-brutalism — thick borders, hard offset shadows, chunky type | CSS Modules | Phosphor |
-| **Vue** | Glassmorphism aurora — frosted panels over an animated gradient sky | Scoped CSS + custom properties | Lucide |
+| **Vue** | Forecast carousel — soft cards, Vue-green gradients, day-by-day navigation | Scoped CSS + custom properties | Lucide |
 | **Vite** | Retro synthwave — neon sun, 80s grid horizon | Tailwind CSS | Tabler |
 
 Every front end is keyboard operable, ships a skip link, announces async state with `aria-live`, honors `prefers-reduced-motion` and `prefers-color-scheme`, and passes an automated `axe-core` accessibility scan in both light and dark themes.
@@ -55,7 +55,7 @@ From the dashboard, you can navigate to the Angular, React, Vue, and Vite apps.
 ![React app (light)](./images/react-app-light.png#gh-light-mode-only)
 ![React app (dark)](./images/react-app-dark.png#gh-dark-mode-only)
 
-**Vue** — Glassmorphism aurora
+**Vue** — Forecast carousel
 
 ![Vue app (light)](./images/vue-app-light.png#gh-light-mode-only)
 ![Vue app (dark)](./images/vue-app-dark.png#gh-dark-mode-only)
