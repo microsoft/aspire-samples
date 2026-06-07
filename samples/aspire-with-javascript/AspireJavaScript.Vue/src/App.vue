@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { CloudSun, Sparkles } from '@lucide/vue'
-import ForecastTable from './components/ForecastTable.vue'
+import ForecastCarousel from './components/ForecastCarousel.vue'
 </script>
 
 <template>
@@ -8,23 +7,22 @@ import ForecastTable from './components/ForecastTable.vue'
 
   <div class="shell">
     <header class="masthead">
-      <span class="glyph" aria-hidden="true">
-        <CloudSun :size="30" :stroke-width="2.25" />
-      </span>
+      <svg class="mark" viewBox="0 0 48 40" role="img" aria-label="Vue">
+        <polygon points="0,0 9.5,0 24,25 38.5,0 48,0 24,40" fill="#35495e" />
+        <polygon points="9.5,0 18,0 24,10 30,0 38.5,0 24,25" fill="#42b883" />
+      </svg>
       <div class="wordmark">
-        <p class="kicker">
-          <Sparkles :size="14" aria-hidden="true" /> Aspire · Vue + Vite
-        </p>
-        <h1>Aurora Weather</h1>
+        <p class="kicker">Aspire &middot; Vue + Vite</p>
+        <h1>Vue Weather</h1>
       </div>
     </header>
 
     <main id="main" class="main">
-      <ForecastTable />
+      <ForecastCarousel />
     </main>
 
     <footer class="colophon">
-      <p>Frosted glass over a living sky &mdash; powered by <strong>Aspire</strong>.</p>
+      <p>Five-day weather forecast demo &middot; powered by <strong>Aspire</strong>.</p>
     </footer>
   </div>
 </template>
@@ -35,11 +33,11 @@ import ForecastTable from './components/ForecastTable.vue'
   left: -9999px;
   top: 0;
   z-index: 50;
-  background: var(--accent);
-  color: var(--accent-ink);
+  background: var(--vue-green);
+  color: var(--on-brand);
   padding: 0.6rem 1rem;
   border-radius: 0 0 12px 0;
-  font-weight: 600;
+  font-weight: 700;
   text-decoration: none;
 }
 .skip-link:focus {
@@ -47,12 +45,12 @@ import ForecastTable from './components/ForecastTable.vue'
 }
 
 .shell {
-  max-width: 820px;
+  max-width: 940px;
   margin: 0 auto;
   padding: clamp(1.75rem, 5vw, 4rem) 1.25rem 3rem;
   display: flex;
   flex-direction: column;
-  gap: 1.75rem;
+  gap: 1.5rem;
 }
 
 .masthead {
@@ -61,25 +59,17 @@ import ForecastTable from './components/ForecastTable.vue'
   gap: 1rem;
 }
 
-.glyph {
-  display: grid;
-  place-items: center;
-  width: 56px;
-  height: 56px;
-  border-radius: 18px;
-  color: #fff;
-  background: linear-gradient(140deg, var(--accent), var(--teal));
-  box-shadow: 0 16px 36px -14px var(--glass-shadow);
+.mark {
+  width: 48px;
+  height: 40px;
+  filter: drop-shadow(0 8px 16px rgba(53, 73, 94, 0.28));
 }
 
 .kicker {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
   font-size: 0.74rem;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--muted);
 }
 
