@@ -182,7 +182,8 @@ function App() {
 
           <p className={styles.foot}>
             <Lightning size={16} weight="fill" aria-hidden="true" />
-            Powered by <strong>Aspire</strong> — same data, four personalities.
+            Powered by <strong>Aspire</strong> — weather forecast from the
+            orchestrated minimal API.
           </p>
         </main>
       </div>
