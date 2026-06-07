@@ -6,7 +6,7 @@
     <meta name="color-scheme" content="light dark">
     <meta name="description" content="Ember, an AI chat assistant powered by OpenAI and FastAPI, orchestrated by Aspire.">
     <title>Ember · AI chat assistant</title>
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23e0552b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='4'/%3E%3Cpath d='M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41'/%3E%3C/svg%3E">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234f46e5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='4'/%3E%3Cpath d='M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41'/%3E%3C/svg%3E">
     <style>
         :root {
             color-scheme: light dark;
@@ -15,81 +15,81 @@
             --measure: 50rem;            /* comfortable conversation width */
             --pad-x: clamp(1rem, 4vw, 2rem);
 
-            /* Warm-neutral palette — light theme (default). Surfaces are soft
-               cream rather than saturated peach; clay/coral carries the accent.
-               Message body-text pairs target WCAG AAA; UI chrome pairs meet AA. */
-            --canvas: #f7f4ee;
-            --glow: #f1e7d9;             /* faint warm halo at the top */
-            --topbar: #fbf9f4;
-            --card-border: #e6dccd;
-            --ink: #2c2521;              /* ~13:1 on cream surfaces */
-            --ink-soft: #5f5347;         /* ~6.8:1 on --canvas */
-            --assistant-bg: #fdfbf7;
-            --assistant-ink: #2c2521;
-            --assistant-border: #ebe1d4;
-            --user-bg: #b4482b;          /* clay, ~5.4:1 with white */
+            /* Clean slate palette — light theme (default). Neutral surfaces with
+               a single indigo accent for strong, crisp separation. Message
+               body-text pairs target WCAG AAA; UI chrome pairs meet AA. */
+            --canvas: #f5f6f8;
+            --topbar: #ffffff;
+            --card-border: #e4e7ec;
+            --ink: #1a1d24;              /* ~15:1 on light surfaces */
+            --ink-soft: #5a6273;         /* ~5.6:1 on --canvas */
+            --assistant-bg: #ffffff;
+            --assistant-ink: #1a1d24;
+            --assistant-border: #e4e7ec;
+            --user-bg: #4338ca;          /* indigo, ~7.9:1 with white (AAA) */
             --user-ink: #ffffff;
-            --avatar-user-bg: #b4482b;
+            --avatar-user-bg: #4338ca;
             --avatar-user-ink: #ffffff;
-            --avatar-bot-bg: #f0e4d5;
-            --avatar-bot-ink: #a4472a;
-            --accent: #c2542f;           /* refined coral */
+            --avatar-bot-bg: #eaecfb;
+            --avatar-bot-ink: #4338ca;
+            --accent: #4f46e5;           /* indigo CTA */
+            --accent-2: #7c3aed;         /* violet, for the brand gradient */
             --accent-ink: #ffffff;
-            --skip-bg: #b4482b;          /* white text ~5.4:1 */
+            --skip-bg: #4338ca;          /* white text ~7.9:1 */
             --skip-ink: #ffffff;
-            --composer-bg: rgba(251, 249, 244, 0.86);
+            --composer-bg: rgba(255, 255, 255, 0.85);
             --field-bg: #ffffff;
-            --field-ink: #2c2521;
-            --field-border: #ddd2c2;
-            --placeholder: #786a5b;      /* ~5.2:1 on --field-bg */
-            --chip-bg: #f2ebe0;
-            --chip-hover: #ebe1d2;
-            --chip-ink: #2c2521;
-            --chip-border: #e3d8c8;
-            --notice-bg: #f8edd2;
-            --notice-ink: #5a4516;
-            --notice-border: #e6d3a0;
-            --dot: #c2542f;
-            --focus: #8a3a1f;
-            --dock-shadow: 0 -14px 30px -26px rgba(80, 50, 30, 0.4);
+            --field-ink: #1a1d24;
+            --field-border: #d3d8e0;
+            --placeholder: #6b7280;      /* ~4.8:1 on --field-bg */
+            --chip-bg: #ffffff;
+            --chip-hover: #f0f1f6;
+            --chip-ink: #353b48;
+            --chip-border: #dfe3ea;
+            --notice-bg: #fef6e7;
+            --notice-ink: #6b4e13;
+            --notice-border: #f3dca8;
+            --dot: #6366f1;
+            --focus: #4f46e5;
+            --dock-shadow: 0 -16px 32px -28px rgba(20, 24, 40, 0.45);
         }
 
         @media (prefers-color-scheme: dark) {
             :root {
-                --canvas: #1f1b17;
-                --glow: #2c2620;         /* faint warm halo at the top */
-                --topbar: #262119;
-                --card-border: #3b342b;
-                --ink: #f0e8dd;          /* ~12:1 on dark surfaces */
-                --ink-soft: #c4b7a6;     /* ~7.4:1 on --canvas */
-                --assistant-bg: #2a2620;
-                --assistant-ink: #f0e8dd;
-                --assistant-border: #3c352c;
-                --user-bg: #d97b54;      /* warm coral, ~5.5:1 with near-black ink */
-                --user-ink: #2a1a11;
-                --avatar-user-bg: #d97b54;
-                --avatar-user-ink: #2a1a11;
-                --avatar-bot-bg: #3c332a;
-                --avatar-bot-ink: #e6b58e;
-                --accent: #d97b54;
-                --accent-ink: #2a1a11;
-                --skip-bg: #d97b54;      /* near-black text ~5.5:1 */
-                --skip-ink: #2a1a11;
-                --composer-bg: rgba(31, 27, 23, 0.85);
-                --field-bg: #2a251d;
-                --field-ink: #f0e8dd;
-                --field-border: #4a4135;
-                --placeholder: #b0a290;
-                --chip-bg: #2a2620;
-                --chip-hover: #352f27;
-                --chip-ink: #f0e8dd;
-                --chip-border: #3c352c;
-                --notice-bg: #38301c;
+                --canvas: #0e1016;
+                --topbar: #161922;
+                --card-border: #262b37;
+                --ink: #e8eaf0;          /* ~14:1 on dark surfaces */
+                --ink-soft: #9aa3b5;     /* ~6.6:1 on --canvas */
+                --assistant-bg: #181c25;
+                --assistant-ink: #e8eaf0;
+                --assistant-border: #2a3040;
+                --user-bg: #4f46e5;      /* indigo, ~6.3:1 with white */
+                --user-ink: #ffffff;
+                --avatar-user-bg: #4f46e5;
+                --avatar-user-ink: #ffffff;
+                --avatar-bot-bg: #232a3f;
+                --avatar-bot-ink: #aab4ff;
+                --accent: #6366f1;       /* brighter indigo CTA on dark */
+                --accent-2: #8b5cf6;     /* violet, for the brand gradient */
+                --accent-ink: #ffffff;
+                --skip-bg: #6366f1;
+                --skip-ink: #ffffff;
+                --composer-bg: rgba(14, 16, 22, 0.85);
+                --field-bg: #181c25;
+                --field-ink: #e8eaf0;
+                --field-border: #333a4b;
+                --placeholder: #8b94a7;
+                --chip-bg: #181c25;
+                --chip-hover: #202633;
+                --chip-ink: #c5ccda;
+                --chip-border: #2a3040;
+                --notice-bg: #2c2616;
                 --notice-ink: #f0dca6;
-                --notice-border: #5e5230;
-                --dot: #e0926b;
-                --focus: #e6b58e;
-                --dock-shadow: 0 -14px 30px -26px rgba(0, 0, 0, 0.7);
+                --notice-border: #534828;
+                --dot: #818cf8;
+                --focus: #818cf8;
+                --dock-shadow: 0 -16px 32px -28px rgba(0, 0, 0, 0.8);
             }
         }
 
@@ -135,16 +135,13 @@
             outline-offset: 2px;
         }
 
-        /* Full-viewport app shell. The warm halo sits behind the conversation
-           so the surface reads as an intentional app, not a card in a void. */
+        /* Full-viewport app shell on a flat, intentional canvas. */
         .app {
             min-height: 100vh;
             min-height: 100dvh;
             display: flex;
             flex-direction: column;
-            background:
-                radial-gradient(120% 55% at 50% -8%, var(--glow) 0%, transparent 62%),
-                var(--canvas);
+            background: var(--canvas);
         }
 
         .topbar {
@@ -167,9 +164,9 @@
             height: 2.75rem;
             flex: none;
             border-radius: 50%;
-            background: radial-gradient(circle at 30% 30%, #f2d6b8, var(--accent));
-            color: #3a1c0c;
-            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35);
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
+            color: #ffffff;
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
         }
         .brand-mark svg { width: 1.6rem; height: 1.6rem; }
 
@@ -258,6 +255,7 @@
             background: var(--user-bg);
             color: var(--user-ink);
             border-bottom-right-radius: 0.35rem;
+            box-shadow: 0 6px 16px -10px rgba(67, 56, 202, 0.6);
         }
         .msg--assistant .msg__bubble {
             background: var(--assistant-bg);
@@ -338,7 +336,7 @@
             place-items: center;
             border: none;
             border-radius: 50%;
-            background: var(--accent);
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
             color: var(--accent-ink);
             cursor: pointer;
         }
