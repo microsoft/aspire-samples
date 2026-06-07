@@ -136,10 +136,10 @@ function App() {
             <ClipboardDocumentListIcon />
           </span>
           <div>
-            <h1>Clay Todos</h1>
+            <h1>Todos</h1>
             <p className="subtitle">
               <SparklesIcon className="subtitle-spark" aria-hidden="true" />
-              A squishy little task list · Vite · React · FastAPI on Aspire
+              Create and complete tasks · Vite · React · FastAPI on Aspire
             </p>
           </div>
         </header>
@@ -188,7 +188,7 @@ function App() {
               <span className="empty-blob" aria-hidden="true">
                 <SparklesIcon />
               </span>
-              Your list is squeaky clean.
+              You're all caught up — nothing left to do.
             </p>
           ) : (
             <ul className="todo-list">

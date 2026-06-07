@@ -138,7 +138,7 @@ function App() {
             Visit <span className={styles.titleAccent}>Counter</span>
           </h1>
           <p className={styles.subtitle}>
-            A data-forward counter backed by Redis on Aspire. Tap a page to record a visit and watch the
+            A page-visit counter backed by Redis on Aspire. Tap a page to record a visit and watch the
             totals update live.
           </p>
         </header>

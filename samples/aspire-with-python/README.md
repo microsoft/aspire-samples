@@ -2,8 +2,8 @@
 
 This sample demonstrates integrating a FastAPI (Python) app and a JavaScript frontend using Aspire.
 
-![Screenshot of the Swiss-typographic weather forecast frontend in the Integrating a FastAPI app within an Aspire application sample (light theme)](./images/aspire-with-python-primary-page-light.png#gh-light-mode-only)
-![Screenshot of the Swiss-typographic weather forecast frontend in the Integrating a FastAPI app within an Aspire application sample (dark theme)](./images/aspire-with-python-primary-page-dark.png#gh-dark-mode-only)
+![Screenshot of the weather forecast frontend in the Integrating a FastAPI app within an Aspire application sample (light theme)](./images/aspire-with-python-primary-page-light.png#gh-light-mode-only)
+![Screenshot of the weather forecast frontend in the Integrating a FastAPI app within an Aspire application sample (dark theme)](./images/aspire-with-python-primary-page-dark.png#gh-dark-mode-only)
 
 The sample consists of two apps:
 

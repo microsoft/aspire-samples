@@ -103,8 +103,7 @@ function App() {
             Weather<br />Forecast
           </h1>
           <p className="hero__lede">
-            A five&#8209;day outlook rendered from randomised sample data, laid out on a
-            strict typographic grid.
+            A five&#8209;day outlook generated from randomised sample data.
           </p>
         </section>
 
@@ -240,7 +239,7 @@ function App() {
             github.com/dotnet/aspire<span className="visually-hidden"> (opens in new tab)</span>
           </a>
         </nav>
-        <p className="colophon__set">Set in Helvetica · Aspire weather sample</p>
+        <p className="colophon__set">Aspire weather forecast sample</p>
       </footer>
     </div>
   )

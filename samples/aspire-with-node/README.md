@@ -2,8 +2,8 @@
 
 This sample demonstrates integrating a Node.js app and an ASP.NET Core HTTP API using Aspire.
 
-![Screenshot of the printed-almanac weather forecast frontend in the Integrating a Node.js app within an Aspire application sample (light theme)](./images/aspire-with-node-primary-page-light.png#gh-light-mode-only)
-![Screenshot of the printed-almanac weather forecast frontend in the Integrating a Node.js app within an Aspire application sample (dark theme)](./images/aspire-with-node-primary-page-dark.png#gh-dark-mode-only)
+![Screenshot of the weather forecast frontend in the Integrating a Node.js app within an Aspire application sample (light theme)](./images/aspire-with-node-primary-page-light.png#gh-light-mode-only)
+![Screenshot of the weather forecast frontend in the Integrating a Node.js app within an Aspire application sample (dark theme)](./images/aspire-with-node-primary-page-dark.png#gh-dark-mode-only)
 
 The sample consists of two apps:
 
