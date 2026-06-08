@@ -1,24 +1,38 @@
 ﻿@inherits LayoutComponentBase
 
-<div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
+<a class="skip-link" href="#main">Skip to gallery</a>
 
-    <main>
-        <div class="top-row px-4 bg-body-secondary">
-            <a href="https://learn.microsoft.com/dotnet/aspire/"
-               class="fs-5 link-body-emphasis link-offset-2 link-underline-opacity-25 link-underline-opacity-75-hover" target="_blank">About</a>
-        </div>
+<div class="studio">
+    <header class="studio__bar">
+        <a class="brand" href="">
+            <span class="brand__mark" aria-hidden="true">
+                <svg viewBox="0 0 32 32" fill="none">
+                    <circle cx="16" cy="16" r="11" stroke="currentColor" stroke-width="2" />
+                    <path d="M16 5l5 9H11z M27 16l-9 5 0-10z M5 16l9-5 0 10z M16 27l-5-9h10z" fill="currentColor" opacity="0.85" />
+                    <circle cx="16" cy="16" r="3" fill="var(--bg)" />
+                </svg>
+            </span>
+            <span class="brand__text">
+                <span class="brand__name">Darkroom Studio</span>
+                <span class="brand__sub">Aspire · Image Gallery</span>
+            </span>
+        </a>
 
-        <article class="content px-4">
-            @Body
-        </article>
+        <a class="studio__link" href="https://aspire.dev/" target="_blank" rel="noopener">
+            Built with Aspire
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M7 17 17 7" /><path d="M8 7h9v9" />
+            </svg>
+        </a>
+    </header>
+
+    <main id="main" class="studio__content" tabindex="-1">
+        @Body
     </main>
 </div>
 
 <div id="blazor-error-ui" data-nosnippet>
-    An unhandled error has occurred.
+    A frame failed to develop.
     <a href="." class="reload">Reload</a>
     <span class="dismiss">🗙</span>
 </div>

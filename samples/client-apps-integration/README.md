@@ -2,7 +2,11 @@
 
 This sample demonstrates working with client apps such as WinForms, WPF, etc., in an Aspire app, such that the client app is launched along with the AppHost project, can resolve services via service discovery, and logs, traces, and metrics are sent via OpenTelemetry to the dashboard.
 
-![Screenshot of the WinForms app running and the Aspire dashboard behind it showing traces emitted from the client app.](./images/client-apps-dashboard-winforms.png)
+Both client apps share one **Skyline** weather-companion identity rendered two ways: the WinForms client in a light **Dawn** palette and the WPF client in a dark **Dusk** palette. Each calls the backend weather API, renders the forecast as accessible cards, and streams its logs, traces, and metrics to the Aspire dashboard via OpenTelemetry.
+
+![The WinForms client (Skyline Dawn) showing a five-day weather forecast as cards on a light daybreak gradient.](./images/skyline-winforms-dawn.png)
+
+![The WPF client (Skyline Dusk) showing the same five-day forecast as glass cards on a dark twilight gradient.](./images/skyline-wpf-dusk.png)
 
 The app is based on the Aspire Starter App template, with the following additional elements:
 
@@ -26,6 +30,6 @@ If using Visual Studio, open the solution file `ClientAppsIntegration.slnx` and 
 
 If using the .NET CLI, run `dotnet run` from the `ClientAppsIntegration.AppHost` directory.
 
-In the launched WinForms and WPF app, click on "Load Weather" button to have the app call the backend weather API and populate the grid with the results. To explore the error condition behavior, check the "Force Error" checkbox and click on the "Load Weather" button again.
+In the launched WinForms and WPF apps, click the **Load forecast** button to have the app call the backend weather API and populate the forecast cards with the results. To explore the error-handling behavior, switch on the **Force error** toggle and click **Load forecast** again.
 
-In the Aspire dashboard, use the logs, traces, and metrics pages to see telemtry emitted from the client apps.
+In the Aspire dashboard, use the logs, traces, and metrics pages to see telemetry emitted from the client apps.

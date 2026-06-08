@@ -11,9 +11,13 @@ var blobs = builder.AddAzureStorage("Storage")
     .RunAsEmulator(emulator => emulator.WithDataVolume())
     .AddBlobs("BlobConnection");
 
+var migration = builder.AddProject<Projects.VolumeMount_MigrationService>("migration")
+    .WithReference(sqlDatabase)
+    .WaitFor(sqlDatabase);
+
 builder.AddProject<Projects.VolumeMount_BlazorWeb>("blazorweb")
     .WithReference(sqlDatabase)
-    .WaitFor(sqlDatabase)
+    .WaitForCompletion(migration)
     .WithReference(blobs)
     .WaitFor(blobs);
 

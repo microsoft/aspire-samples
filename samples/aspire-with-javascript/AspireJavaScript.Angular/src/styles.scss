@@ -1,0 +1,82 @@
+@use '@angular/material' as mat;
+
+// Material 3 "expressive" theme tuned to the Angular brand spectrum: a magenta
+// primary and violet tertiary echo Angular's red -> pink -> purple gradient and
+// pair naturally with Aspire's violet accent. `theme-type: color-scheme` lets a
+// single theme follow the user's prefers-color-scheme (light AND dark).
+html {
+  color-scheme: light dark;
+
+  @include mat.theme(
+    (
+      color: (
+        primary: mat.$magenta-palette,
+        tertiary: mat.$violet-palette,
+        theme-type: color-scheme,
+      ),
+      typography: Roboto,
+      density: 0,
+    )
+  );
+
+  // Expressive accent: generous corner radii on key surfaces.
+  --mat-sys-corner-large: 28px;
+  --mat-sys-corner-medium: 18px;
+
+  // Angular brand gradient tokens, reused across the component styles.
+  --ng-grad-start: #e40035; // Angular red
+  --ng-grad-mid: #ff2d87; // magenta / pink
+  --ng-grad-end: #7c4dff; // violet (Aspire accent)
+  --ng-brand-gradient: linear-gradient(
+    135deg,
+    var(--ng-grad-start) 0%,
+    var(--ng-grad-mid) 50%,
+    var(--ng-grad-end) 100%
+  );
+
+  // Deeper, text-safe variant: white body text clears WCAG AA across every stop.
+  --ng-hero-gradient: linear-gradient(135deg, #b3002a 0%, #b8005f 46%, #5b27c9 100%);
+  --ng-hero-fallback: #6a1247;
+
+  accent-color: var(--mat-sys-primary);
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--mat-sys-surface);
+  color: var(--mat-sys-on-surface);
+  font: var(--mat-sys-body-large);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+// Material Symbols: opt into the outlined fill/weight axes for crisp glyphs.
+.material-symbols-outlined {
+  font-variation-settings:
+    'FILL' 0,
+    'wght' 400,
+    'GRAD' 0,
+    'opsz' 24;
+}
+
+// Keyboard focus is always clearly visible in both themes.
+:focus-visible {
+  outline: 3px solid var(--mat-sys-primary);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

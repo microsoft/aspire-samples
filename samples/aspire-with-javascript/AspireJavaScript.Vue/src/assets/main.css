@@ -1,35 +1,136 @@
-@import './base.css';
+:root {
+  color-scheme: light dark;
+
+  /* Vue brand + Aspire accent */
+  --vue-green: #42b883;
+  --vue-green-strong: #1f7a52;
+  --slate: #35495e;
+  --slate-deep: #2b3a49;
+  --aspire: #5b46e5;
+  --aspire-bright: #7c6cf0;
+
+  /* Surfaces + ink (light) */
+  --bg: #eef3f0;
+  --surface: #ffffff;
+  --surface-2: #f4f8f5;
+  --surface-3: #e9f2ec;
+  --border: #d7e3dc;
+  --border-strong: #b9ccc1;
+  --ink: #14202b;
+  --muted: #3c4f5d;
+  --on-brand: #0e1a13;
+
+  --halo-green: rgba(66, 184, 131, 0.28);
+  --halo-purple: rgba(91, 70, 229, 0.2);
+  --halo-slate: rgba(53, 73, 94, 0.14);
+
+  --shadow-sm: 0 2px 6px rgba(20, 40, 33, 0.08);
+  --shadow-md: 0 16px 34px -18px rgba(20, 40, 33, 0.32);
+  --shadow-lg: 0 34px 64px -26px rgba(20, 40, 33, 0.42);
+  --focus-ring: var(--aspire);
+
+  --radius: 26px;
+  --radius-card: 22px;
+  --radius-sm: 14px;
+
+  font-family:
+    'Outfit Variable',
+    'Outfit',
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #111b22;
+    --surface: #1b2730;
+    --surface-2: #213039;
+    --surface-3: #26363f;
+    --border: #324450;
+    --border-strong: #3f5563;
+    --ink: #eaf3ee;
+    --muted: #b3c4cd;
+    --on-brand: #0c1611;
+
+    --vue-green-strong: #5fd39e;
+    --aspire: #a99bff;
+    --aspire-bright: #bdb2ff;
+
+    --halo-green: rgba(66, 184, 131, 0.22);
+    --halo-purple: rgba(124, 108, 240, 0.22);
+    --halo-slate: rgba(120, 150, 175, 0.12);
+
+    --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 18px 40px -20px rgba(0, 0, 0, 0.62);
+    --shadow-lg: 0 36px 70px -28px rgba(0, 0, 0, 0.72);
+  }
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  position: relative;
+  min-height: 100vh;
+  overflow-x: hidden;
+  color: var(--ink);
+  background-color: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.55;
+}
+
+/* Soft brand mesh sits behind the content; the body keeps a solid base colour
+   so text contrast resolves predictably for assistive tooling. */
+body::before {
+  content: '';
+  position: fixed;
+  inset: -20%;
+  z-index: -1;
+  background:
+    radial-gradient(38% 40% at 14% 12%, var(--halo-green), transparent 70%),
+    radial-gradient(44% 46% at 88% 8%, var(--halo-purple), transparent 72%),
+    radial-gradient(50% 50% at 78% 92%, var(--halo-green), transparent 72%),
+    radial-gradient(46% 48% at 10% 86%, var(--halo-slate), transparent 74%);
+  animation: float 30s ease-in-out infinite alternate;
+}
+
+@keyframes float {
+  0% {
+    transform: translate3d(-2%, -1%, 0) scale(1.02);
+  }
+  100% {
+    transform: translate3d(2%, 2%, 0) scale(1.08);
+  }
+}
 
 #app {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  font-weight: normal;
+  min-height: 100vh;
 }
 
-a,
-.green {
-  text-decoration: none;
-  color: hsla(160, 100%, 37%, 1);
-  transition: 0.4s;
-  padding: 3px;
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
-@media (hover: hover) {
-  a:hover {
-    background-color: hsla(160, 100%, 37%, 0.2);
-  }
-}
-
-@media (min-width: 1024px) {
-  body {
-    display: flex;
-    place-items: center;
-  }
-
-  #app {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    padding: 0 2rem;
+@media (prefers-reduced-motion: reduce) {
+  body::before {
+    animation: none;
   }
 }

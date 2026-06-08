@@ -1,7 +1,72 @@
 ﻿@page "/"
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Aspire Status · Overview</PageTitle>
 
-<h1>Hello, world!</h1>
+<section class="overview">
+    <header class="overview-head">
+        <p class="eyebrow">Status overview</p>
+        <h1>Service health at a glance</h1>
+        <p class="lede">
+            An illustrative status overview for the services in this sample — showing how state,
+            uptime, and latency can be surfaced at a glance. Figures below are sample data.
+        </p>
+    </header>
 
-Welcome to your new app.
+    <div class="status-banner status-banner-ok">
+        <span class="banner-mark" aria-hidden="true">@Icons.CircleCheck</span>
+        <div class="banner-body">
+            <p class="banner-title">All systems operational</p>
+            <p class="banner-meta">Illustrative overview · 3 of 3 services reporting healthy</p>
+        </div>
+        <span class="banner-pulse" aria-hidden="true"><span class="pulse-dot"></span></span>
+    </div>
+
+    <h2 class="section-title">Monitored services</h2>
+    <ul class="tile-grid" role="list">
+        @foreach (var svc in Services)
+        {
+            <li class="tile" data-state="@svc.State">
+                <div class="tile-top">
+                    <span class="tile-icon" aria-hidden="true">@svc.Icon</span>
+                    <span class="tile-status">
+                        <span class="dot" aria-hidden="true"></span>
+                        @svc.StateLabel
+                    </span>
+                </div>
+                <h3 class="tile-name">@svc.Name</h3>
+                <p class="tile-role">@svc.Role</p>
+                <dl class="tile-stats">
+                    <div>
+                        <dt>Uptime</dt>
+                        <dd>@svc.Uptime</dd>
+                    </div>
+                    <div>
+                        <dt>Latency</dt>
+                        <dd>@svc.Latency</dd>
+                    </div>
+                </dl>
+                <div class="uptime-track" aria-hidden="true">
+                    @for (var i = 0; i < 30; i++)
+                    {
+                        <span class="bar @(svc.Dip == i ? "bar-warn" : "bar-ok")"></span>
+                    }
+                </div>
+                <p class="tile-foot">@(svc.Dip >= 0 ? "Last 30 checks · 1 warning" : "Last 30 checks · all healthy")</p>
+            </li>
+        }
+    </ul>
+</section>
+
+@code {
+    private record ServiceTile(string Name, string Role, MarkupString Icon, string State,
+        string StateLabel, string Uptime, string Latency, int Dip);
+
+    // Representative tiles for the services that make up this sample. Values are
+    // illustrative and deterministic so the overview renders consistently.
+    private static readonly ServiceTile[] Services =
+    [
+        new("Web frontend", "Serves the web UI", Icons.Server, "ok", "Operational", "99.98%", "12 ms", -1),
+        new("API service", "Forecast & status backend", Icons.Globe, "ok", "Operational", "99.95%", "28 ms", 18),
+        new("Redis cache", "Output cache", Icons.Database, "ok", "Operational", "100.0%", "3 ms", -1),
+    ];
+}

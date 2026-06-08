@@ -1,7 +1,46 @@
-﻿@page "/"
+@page "/"
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Vault · Secure account portal</PageTitle>
 
-<h1>Hello, world!</h1>
+<section class="hero">
+    <span class="lead-eyebrow">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" /><path d="m9 12 2 2 4-4" /></svg>
+        Secure account portal
+    </span>
+    <h1>Sign in once. Your account is always there.</h1>
+    <p>
+        Vault keeps every account in a SQL Server container backed by a persistent
+        volume — so the people you onboard survive each restart, rebuild, and
+        redeploy. No reseeding, no lost data, no surprises.
+    </p>
+    <div class="hero-actions">
+        <a class="btn btn-primary btn-lg" href="Account/Register">Create your account</a>
+        <a class="btn btn-link btn-lg" href="weather">Explore the demo</a>
+    </div>
+</section>
 
-Welcome to your new app.
+<section class="card-grid" aria-label="What you get">
+    <article class="feature-card">
+        <span class="icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3" /><path d="M3 5v14a9 3 0 0 0 18 0V5" /><path d="M3 12a9 3 0 0 0 18 0" /></svg>
+        </span>
+        <h3>Persistent volume storage</h3>
+        <p>Accounts are written to a named volume mounted into SQL Server, so nothing is lost when the container recycles.</p>
+    </article>
+
+    <article class="feature-card">
+        <span class="icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" /><path d="m9 12 2 2 4-4" /></svg>
+        </span>
+        <h3>Secure sign-in</h3>
+        <p>Email-confirmed registration, passkey support, and antiforgery-protected forms keep every session locked down.</p>
+    </article>
+
+    <article class="feature-card">
+        <span class="icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2" /><polyline points="2 17 12 22 22 17" /><polyline points="2 12 12 17 22 12" /></svg>
+        </span>
+        <h3>Built on Aspire</h3>
+        <p>The portal, database, and persistent volume are wired together and orchestrated by Aspire for a single-command local run.</p>
+    </article>
+</section>

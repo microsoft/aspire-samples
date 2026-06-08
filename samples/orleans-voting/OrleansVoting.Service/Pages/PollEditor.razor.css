@@ -1,0 +1,133 @@
+.hero {
+    margin-bottom: 2rem;
+}
+
+.eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--brand-text);
+    margin: 0 0 0.6rem;
+}
+
+.eyebrow-ico ::deep .icon {
+    width: 1rem;
+    height: 1rem;
+}
+
+h1 {
+    font-size: clamp(2.1rem, 6vw, 3.1rem);
+    margin: 0;
+}
+
+.hero-sub {
+    margin: 0.75rem 0 0;
+    max-width: 48ch;
+    color: var(--ink-soft);
+    font-size: 1.05rem;
+    line-height: 1.5;
+}
+
+.poll-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.75rem;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: clamp(1.25rem, 4vw, 2rem);
+    box-shadow: var(--shadow);
+}
+
+.form-block {
+    display: flex;
+    flex-direction: column;
+}
+
+.option-add {
+    display: flex;
+    gap: 0.6rem;
+}
+
+.option-add .gp-field {
+    flex: 1;
+}
+
+.option-empty {
+    margin: 0.9rem 0 0;
+    color: var(--ink-faint);
+    font-size: 0.92rem;
+}
+
+.option-list {
+    list-style: none;
+    margin: 1rem 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.option-row {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.option-index {
+    flex: none;
+    width: 2rem;
+    height: 2rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9px;
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: var(--violet-text);
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+}
+
+.option-row .gp-field {
+    flex: 1;
+}
+
+.icon-btn {
+    flex: none;
+    width: 2.7rem;
+    height: 2.7rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 11px;
+    color: var(--ink-soft);
+    background: var(--surface-2);
+    border: 1px solid var(--line-strong);
+    cursor: pointer;
+    transition: color 0.16s ease, border-color 0.16s ease, background 0.16s ease;
+}
+
+.icon-btn:hover {
+    color: var(--danger-text);
+    border-color: var(--danger);
+    background: var(--danger-soft);
+}
+
+.icon-btn ::deep .icon {
+    width: 1.2rem;
+    height: 1.2rem;
+}
+
+.form-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+}

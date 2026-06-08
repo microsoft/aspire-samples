@@ -1,51 +1,65 @@
-﻿@page "/auth"
+@page "/auth"
 @using System.Text.Json.Nodes
 @using System.ComponentModel.DataAnnotations
 @inject HttpClient Http
 @inject IdentityAuthenticationStateProvider AuthStateProvider
 
-<PageTitle>Log in</PageTitle>
+<PageTitle>Telemetry Console · Log in</PageTitle>
 
-<h1>Log in</h1>
+<section class="panel auth">
+    <p class="eyebrow">Protected endpoint</p>
+    <h1>Log in</h1>
 
-<AuthorizeView>
-    <Authorized>
-        <p>Hello, @context.User.Identity?.Name!</p>
-        <button class="btn btn-primary" @onclick="Logout">Logout</button>
-    </Authorized>
-    <NotAuthorized>
-        <div class="row">
-            <div class="col-md-4">
-                <section>
-                    <StatusMessage Message="@errorMessage" />
-                    <EditForm Model="Input" method="post" OnValidSubmit="LoginUser" FormName="login" Context="editContext">
-                        <DataAnnotationsValidator />
-                        <hr />
-                        <ValidationSummary class="text-danger" role="alert" />
-                        <div class="form-floating mb-3">
-                            <InputText @bind-Value="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
-                            <label for="email" class="form-label">Email</label>
-                            <ValidationMessage For="() => Input.Email" class="text-danger" />
-                        </div>
-                        <div class="form-floating mb-3">
-                            <InputText type="password" @bind-Value="Input.Password" class="form-control" autocomplete="current-password" aria-required="true" placeholder="password" />
-                            <label for="password" class="form-label">Password</label>
-                            <ValidationMessage For="() => Input.Password" class="text-danger" />
-                        </div>
-                        <div>
-                            <button type="submit" class="w-100 btn btn-lg btn-primary">Log in</button>
-                        </div>
-                        <hr />
-                        <div>
-                            Email: <strong>@TestEmail</strong>, Password: <strong>@TestPassword</strong>
-                        </div>
-                    </EditForm>
-                </section>
-            </div>
-        </div>
-    </NotAuthorized>
-</AuthorizeView>
+    <AuthorizeView>
+        <Authorized>
+            <p class="auth__hello">
+                Signed in as <strong>@context.User.Identity?.Name</strong>. The
+                <a href="weather">Weather feed</a> now returns authorized data.
+            </p>
+            <button class="btn btn-ghost" @onclick="Logout">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><path d="m16 17 5-5-5-5" /><path d="M21 12H9" />
+                </svg>
+                Log out
+            </button>
+        </Authorized>
+        <NotAuthorized>
+            <p class="auth__lede">
+                Sign in to call the protected <code>api/weather</code> endpoint and
+                generate authenticated-request metrics.
+            </p>
 
+            <StatusMessage Message="@errorMessage" />
+
+            <EditForm Model="Input" method="post" OnValidSubmit="LoginUser" FormName="login" Context="editContext">
+                <DataAnnotationsValidator />
+                <ValidationSummary class="text-danger" role="alert" />
+
+                <div class="field">
+                    <label class="field__label" for="email">Email</label>
+                    <InputText id="email" @bind-Value="Input.Email" class="field__input" autocomplete="username" aria-required="true" placeholder="name@example.com" />
+                    <ValidationMessage For="() => Input.Email" class="validation-message" />
+                </div>
+
+                <div class="field">
+                    <label class="field__label" for="password">Password</label>
+                    <InputText id="password" type="password" @bind-Value="Input.Password" class="field__input" autocomplete="current-password" aria-required="true" placeholder="Your password" />
+                    <ValidationMessage For="() => Input.Password" class="validation-message" />
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-lg">Log in</button>
+            </EditForm>
+
+            <aside class="demo-creds">
+                <span class="eyebrow">Demo credentials</span>
+                <dl>
+                    <div><dt>Email</dt><dd class="mono">@TestEmail</dd></div>
+                    <div><dt>Password</dt><dd class="mono">@TestPassword</dd></div>
+                </dl>
+            </aside>
+        </NotAuthorized>
+    </AuthorizeView>
+</section>
 
 @code {
     private const string TestEmail = "test@contoso.com";
@@ -67,7 +81,8 @@
 
     public async Task LoginUser()
     {
-        var response = await Http.PostAsJsonAsync("/api/login", new { email = Input.Email, password = Input.Password }, CancellationToken.None);
+        var response = await Http.PostAsJsonAsync("/api/login", new { email = Input.Email, password = Input.Password },
+            CancellationToken.None);
 
         if (response.IsSuccessStatusCode)
         {

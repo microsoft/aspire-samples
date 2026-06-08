@@ -5,30 +5,66 @@
 @inject PollService PollService
 @inject NavigationManager NavigationManager
 
-<h1>Create Poll</h1>
+<section class="hero">
+    <p class="eyebrow"><span class="eyebrow-ico">@Icons.Sparkles</span> New poll</p>
+    <h1>Create a poll</h1>
+    <p class="hero-sub">Write a question and add a few answers, then share the link. Each poll is backed by an Orleans grain, so vote totals update in real time.</p>
+</section>
 
-<form @onsubmit="@(e => { })">
-	<div class="mb-3">
-		<label for="pollTitle" class="form-label">Poll Title</label>
-		<input type="text" class="form-control" id="pollTitle" @bind="@question">
-		<div id="pollTitleDescription" class="form-text">Enter the question you would like answered.</div>
-	</div>
-	<div class="input-group mb-3">
-		<input type="text" class="form-control" placeholder="Option value" @bind="@newOption">
-		<button class="btn btn-outline-secondary" type="button" id="button-add" @onclick="AddOption">Add</button>
-	</div>
-	@foreach (var (index, option) in options.Select((name, index) => (index, name)))
-	{
-		<div class="input-group mb-3">
-			<input type="text" class="form-control" placeholder="Option value" value="@option" @onchange="@(e => RenameOption(index, e.Value as string))">
-			<button class="btn btn-outline-secondary" type="button" id="button-add" @onclick="@(e => DeleteOption(index))">Delete</button>
-		</div>
-	}
+<form class="poll-form" @onsubmit="@(() => { })" @onsubmit:preventDefault="true">
+    <div class="form-block">
+        <label class="gp-label" for="pollTitle">Poll question</label>
+        <input type="text" class="gp-field" id="pollTitle" placeholder="What… is your favorite color?"
+               aria-describedby="pollTitleHelp" @bind="@question" @bind:event="oninput">
+        <p class="gp-help" id="pollTitleHelp">Enter the question you would like answered.</p>
+    </div>
 
-  <button class="btn btn-primary" @onclick="CreatePollAsync">Create</button>
+    <div class="form-block">
+        <span class="gp-label" id="optionsLabel">Answer options</span>
+
+        <div class="option-add">
+            <input type="text" class="gp-field" placeholder="Add an answer option"
+                   aria-label="New answer option" @bind="@newOption" @bind:event="oninput"
+                   @onkeydown="@(e => { if (e.Key == "Enter") AddOption(); })">
+            <button class="gp-btn gp-btn-ghost" type="button" @onclick="AddOption">
+                @Icons.Plus <span>Add</span>
+            </button>
+        </div>
+
+        @if (options.Count == 0)
+        {
+            <p class="option-empty">No options yet — add at least two so people have something to vote on.</p>
+        }
+        else
+        {
+            <ul class="option-list" aria-label="Answer options">
+                @foreach (var (index, option) in options.Select((name, index) => (index, name)))
+                {
+                    <li class="option-row">
+                        <span class="option-index" aria-hidden="true">@(index + 1)</span>
+                        <input type="text" class="gp-field" value="@option"
+                               aria-label="@($"Answer option {index + 1}")"
+                               @onchange="@(e => RenameOption(index, e.Value as string))">
+                        <button class="icon-btn" type="button" aria-label="@($"Delete option {index + 1}")"
+                                @onclick="@(e => DeleteOption(index))">
+                            @Icons.Trash
+                        </button>
+                    </li>
+                }
+            </ul>
+        }
+    </div>
+
+    <div class="form-actions">
+        <button class="gp-btn gp-btn-primary" type="button" @onclick="CreatePollAsync">
+            @Icons.Check <span>Create poll</span>
+        </button>
+        <button class="gp-btn gp-btn-demo" type="button" @onclick="DemoAutofill">
+            @Icons.Sparkles <span>Demo: auto-fill poll</span>
+        </button>
+    </div>
 </form>
-<br />
-<button class="btn btn-danger" @onclick="DemoAutofill">DEMO: auto-fill poll</button>
+
 @code {
 
     private Guid ownerKey = Guid.NewGuid();
@@ -75,7 +111,7 @@
         options.Clear();
         options.Add("Green");
         options.Add("Red");
-        options.Add("Blue. No, yel-auuuuugggh");
-        options.Add("Aubergine");
+        options.Add("Blue");
+        options.Add("Yellow");
     }
 }

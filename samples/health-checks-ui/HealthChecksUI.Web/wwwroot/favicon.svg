@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Aspire Status">
+  <rect width="32" height="32" rx="8" fill="#0b1020"/>
+  <rect x="1.5" y="1.5" width="29" height="29" rx="6.5" fill="none" stroke="#1f2a44" stroke-width="1"/>
+  <path d="M4 16.5h4.2l2.4-7.4a.7.7 0 0 1 1.33.02l3.6 12.4a.7.7 0 0 0 1.34.03l2.2-7.2a1 1 0 0 1 .95-.7H28"
+        fill="none" stroke="#2dd4bf" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

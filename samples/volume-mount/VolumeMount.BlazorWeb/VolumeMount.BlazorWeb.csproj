@@ -11,16 +11,11 @@
   <ItemGroup>
     <PackageReference Include="Aspire.Azure.Storage.Blobs" Version="13.4.2" />
     <PackageReference Include="Aspire.Microsoft.EntityFrameworkCore.SqlServer" Version="13.4.2" />
-    <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="10.0.8" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.8" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.8" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.8">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\VolumeMount.Data\VolumeMount.Data.csproj" />
     <ProjectReference Include="..\VolumeMount.ServiceDefaults\VolumeMount.ServiceDefaults.csproj" />
   </ItemGroup>
 

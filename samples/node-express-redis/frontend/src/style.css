@@ -1,3 +1,50 @@
+/* =========================================================================
+   Visit Counter — "Memphis-pop" stat dashboard (global layer).
+   Holds design tokens, the page background + scattered geometric confetti,
+   resets, and motion preferences. Component styling lives in App.module.css
+   (CSS Modules). Light + dark via prefers-color-scheme.
+   ========================================================================= */
+
+:root {
+  color-scheme: light dark;
+
+  /* Memphis primaries */
+  --c-yellow: #ffd43b;
+  --c-coral: #ff8787;
+  --c-sky: #74c0fc;
+  --c-green: #69db7c;
+  --c-pink: #faa2c1;
+  --c-orange: #ffc078;
+  --c-red: #ff6b6b;
+  --c-blue: #4dabf7;
+  --c-violet: #b197fc;
+
+  /* Surfaces & ink */
+  --page: #fff8e7;
+  --panel: #ffffff;
+  --ink: #141414; /* borders, hard shadows, page text */
+  --ink-soft: #4a4534; /* muted page text */
+  --card-ink: #141414; /* text inside bright cards (always dark) */
+
+  --border-w: 3px;
+  --shadow-x: 6px;
+  --shadow-y: 6px;
+
+  --dot: rgba(20, 20, 20, 0.14);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --page: #17171f;
+    --panel: #23232f;
+    --ink: #f7f0dd; /* borders, hard shadows, page text */
+    --ink-soft: #c9c3ad;
+    --card-ink: #141414; /* cards stay bright, so keep dark text */
+
+    --dot: rgba(247, 240, 221, 0.12);
+  }
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -5,136 +52,69 @@
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  color: var(--ink);
+  background-color: var(--page);
+  /* dotted Memphis grid */
+  background-image: radial-gradient(var(--dot) 2px, transparent 2px);
+  background-size: 26px 26px;
+  background-position: -8px -8px;
+  min-height: 100dvh;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
 }
 
-.container {
-  background: white;
-  border-radius: 10px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-  width: 100%;
-  max-width: 900px;
-  padding: 2rem;
+.visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
 }
 
-h1 {
-  color: #333;
-  font-size: 2rem;
-  margin-bottom: 0.5rem;
+.skip-link {
+  position: fixed;
+  top: 0.85rem;
+  left: 50%;
+  transform: translateX(-50%) translateY(-200%);
+  z-index: 20;
+  padding: 0.7rem 1.2rem;
+  background: var(--c-yellow);
+  color: #141414;
+  border: 3px solid #141414;
+  border-radius: 4px;
+  font-weight: 800;
+  text-decoration: none;
+  box-shadow: 5px 5px 0 #141414;
 }
 
-.subtitle {
-  color: #666;
-  margin-bottom: 2rem;
+.skip-link:focus-visible {
+  transform: translateX(-50%) translateY(0);
 }
 
-.stats-section {
-  margin-top: 2rem;
+:where(a, button, [tabindex]):focus-visible {
+  outline: 4px solid var(--c-blue);
+  outline-offset: 3px;
 }
 
-.stats-header {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  margin-bottom: 1.5rem;
-}
-
-.reset-button {
-  background: #f44336;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  padding: 0.5rem 1rem;
-  font-size: 0.9rem;
-  transition: background 0.2s;
-}
-
-.reset-button:hover:not(:disabled) {
-  background: #d32f2f;
-}
-
-.reset-button:disabled {
-  background: #ccc;
-  cursor: not-allowed;
-}
-
-.empty-state {
-  text-align: center;
-  color: #999;
-  padding: 3rem 1rem;
-  font-size: 1.1rem;
-}
-
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
-  grid-auto-flow: row;
-}
-
-.stat-card {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 1.5rem;
-  border-radius: 8px;
-  text-align: center;
-  color: white;
-  border: none;
-  cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
-  width: 100%;
-}
-
-.stat-card:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-}
-
-.stat-card:active:not(:disabled) {
-  transform: translateY(0);
-}
-
-.stat-card:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-}
-
-.stat-page {
-  font-size: 1.1rem;
-  font-weight: 600;
-  margin-bottom: 0.75rem;
-  word-break: break-word;
-}
-
-.stat-count {
-  font-size: 2.5rem;
-  font-weight: bold;
-  margin-bottom: 0.25rem;
-}
-
-.stat-label {
-  font-size: 0.9rem;
-  opacity: 0.9;
-}
-
-@media (max-width: 768px) {
-  .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
+@media (prefers-color-scheme: dark) {
+  :where(a, button, [tabindex]):focus-visible {
+    outline-color: var(--c-yellow);
   }
 }
 
-@media (max-width: 500px) {
-  .stats-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .stats-header {
-    justify-content: center;
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
   }
 }

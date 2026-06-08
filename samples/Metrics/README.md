@@ -4,6 +4,15 @@ This is a simple .NET app that shows off collecting metrics with OpenTelemetry a
 
 ![Screenshot of the ASP.NET Core Grafana dashboard](./images/dashboard-screenshot.png)
 
+The instrumented app is a small web UI that emits OpenTelemetry metrics. Click around it — the **Weather** feed and the **Auth Required** flow — to generate the request traffic that shows up on the Grafana dashboard above. It supports both light and dark themes:
+
+![The metrics app home page in light mode](./images/metricsapp-light.png#gh-light-mode-only)
+![The metrics app home page in dark mode](./images/metricsapp-dark.png#gh-dark-mode-only)
+
+![The metrics app weather feed in light mode](./images/metricsapp-weather-light.png#gh-light-mode-only)
+![The metrics app weather feed in dark mode](./images/metricsapp-weather-dark.png#gh-dark-mode-only)
+
+
 ## Demonstrates
 
 - How to configure an Aspire app to export metrics to Prometheus

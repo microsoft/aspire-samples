@@ -1,44 +1,81 @@
 ﻿@page "/"
 @rendermode InteractiveServer
 
-<div class="row">
-    <div class="input-group mb-3">
-        <InputFile OnChange="OnFilesChangedAsync" @key="@_fileUploadKey"
-                   class="form-control form-control-lg" accept=".jpg,.jpeg,.png,.gif" multiple />
-    </div>
-</div>
+<PageTitle>Darkroom Studio · Image Gallery</PageTitle>
 
-@foreach (var images in _images.OrderBy(i => i.ImageUrl).Chunk(4))
+<section class="intro">
+    <p class="eyebrow">Contact sheet</p>
+    <h1 class="intro__title">Develop your gallery</h1>
+    <p class="intro__lede">
+        Drop in a few photos. Each upload is stored in Azure Blob storage, and an
+        Aspire-orchestrated Azure Function develops a thumbnail in the background —
+        the wall below refreshes itself as prints come back.
+    </p>
+</section>
+
+<label class="dropzone" for="photo-input">
+    <span class="dropzone__icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 16V4" /><path d="m7 9 5-5 5 5" />
+            <path d="M4 14v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4" />
+        </svg>
+    </span>
+    <span class="dropzone__text">
+        <span class="dropzone__title">Choose photos to develop</span>
+        <span class="dropzone__hint">JPG, PNG or GIF · up to 512&nbsp;KB each · select multiple</span>
+    </span>
+    <InputFile id="photo-input" OnChange="OnFilesChangedAsync" @key="@_fileUploadKey"
+               class="dropzone__input" accept=".jpg,.jpeg,.png,.gif" multiple />
+</label>
+
+@if (_images.Count == 0)
 {
-    <div class="row">
-        @foreach (var image in images)
+    <div class="empty" role="status">
+        <span class="empty__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="4" width="18" height="16" rx="2" /><circle cx="8.5" cy="9.5" r="1.5" />
+                <path d="m4 17 5-5 4 4 3-3 4 4" />
+            </svg>
+        </span>
+        <p class="empty__title">The wall is empty</p>
+        <p class="empty__text">Developed thumbnails will appear here as soon as you upload your first frame.</p>
+    </div>
+}
+else
+{
+    <div class="contact-sheet" aria-live="polite" aria-label="Developed photos">
+        @foreach (var image in _images.OrderBy(i => i.ImageUrl))
         {
-            <div class="col mb-4">
-                <a target="_blank" href="@image.ImageUrl">
-                    <img src="@image.ThumbnailUrl" class="img-fluid img-thumbnail" />
-                </a>
-            </div>
+            <a class="frame" target="_blank" rel="noopener" href="@image.ImageUrl">
+                <img class="frame__img" src="@image.ThumbnailUrl"
+                     alt="@(image.ImageUrl is { Length: > 0 } u ? System.IO.Path.GetFileNameWithoutExtension(u) : "Uploaded photo")" />
+                <span class="frame__overlay" aria-hidden="true">
+                    <svg class="frame__expand" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M15 3h6v6" /><path d="M9 21H3v-6" /><path d="M21 3l-7 7" /><path d="M3 21l7-7" />
+                    </svg>
+                    <span class="frame__label">View full size</span>
+                </span>
+            </a>
         }
     </div>
 }
 
 @if (_isDialogOpen)
 {
-    <div class="modal-overlay" @onclick="CloseDialog"></div>
-    <div class="modal" tabindex="-1" style="display: block;">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Message</h5>
-                    <button type="button" class="btn-close" @onclick="CloseDialog" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <p>@_dialogMessage</p>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-primary" @onclick="CloseDialog">OK</button>
-                </div>
-            </div>
+    <div class="dialog-overlay" @onclick="CloseDialog"></div>
+    <div class="dialog" role="alertdialog" aria-modal="true" aria-labelledby="dialog-title" aria-describedby="dialog-body">
+        <div class="dialog__header">
+            <span class="dialog__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 9v4" /><path d="M12 17h.01" />
+                    <path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z" />
+                </svg>
+            </span>
+            <h2 id="dialog-title" class="dialog__title">Couldn't develop that</h2>
+        </div>
+        <p id="dialog-body" class="dialog__body">@_dialogMessage</p>
+        <div class="dialog__footer">
+            <button class="btn btn-amber" @onclick="CloseDialog" autofocus>Got it</button>
         </div>
     </div>
 }

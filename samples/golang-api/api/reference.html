@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>golang-api · Aspire API reference</title>
+    <meta name="description" content="Interactive API reference for the golang-api Aspire sample — a Go items API built with chi and an in-memory store." />
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%235dc9e2'/%3E%3Cstop offset='1' stop-color='%2300ADD8'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M16 2 28 9 28 23 16 30 4 23 4 9Z' fill='url(%23g)'/%3E%3Cpath d='M11 17.5h4M17 14.5h4' stroke='%23042530' stroke-width='2.2' stroke-linecap='round'/%3E%3C/svg%3E" />
+    <style>
+      :root {
+        --scalar-radius: 10px;
+        --scalar-radius-lg: 13px;
+        --scalar-radius-xl: 18px;
+      }
+
+      /* Go-cyan on deep slate — the primary, branded look */
+      .dark-mode {
+        --scalar-color-1: #e8f3f8;
+        --scalar-color-2: #a3bac8;
+        --scalar-color-3: #6f8799;
+        --scalar-color-accent: #00add8;
+        --scalar-background-1: #0c1822;
+        --scalar-background-2: #102534;
+        --scalar-background-3: #17303f;
+        --scalar-background-accent: rgba(0, 173, 216, 0.13);
+        --scalar-border-color: rgba(120, 173, 199, 0.16);
+
+        --scalar-color-green: #5dd39e;
+        --scalar-color-blue: #00add8;
+        --scalar-color-purple: #9d8cff;
+        --scalar-color-red: #ff6b8b;
+        --scalar-color-orange: #ffb454;
+
+        --scalar-button-1: #00add8;
+        --scalar-button-1-color: #04222c;
+        --scalar-button-1-hover: #2bc7ef;
+      }
+
+      .dark-mode .sidebar,
+      .dark-mode .t-doc__sidebar {
+        --scalar-sidebar-background-1: #0a141d;
+        --scalar-sidebar-color-1: #e8f3f8;
+        --scalar-sidebar-color-2: #93acbb;
+        --scalar-sidebar-color-active: #00add8;
+        --scalar-sidebar-border-color: rgba(120, 173, 199, 0.12);
+        --scalar-sidebar-item-hover-background: rgba(0, 173, 216, 0.1);
+        --scalar-sidebar-item-hover-color: #e8f3f8;
+        --scalar-sidebar-item-active-background: rgba(0, 173, 216, 0.16);
+        --scalar-sidebar-search-background: #0c1822;
+        --scalar-sidebar-search-border-color: rgba(120, 173, 199, 0.14);
+        --scalar-sidebar-search-color: #93acbb;
+      }
+
+      /* Accessible light fallback using Go's print-safe cyan (#007d9c) */
+      .light-mode {
+        --scalar-color-1: #0b2531;
+        --scalar-color-2: #38596a;
+        --scalar-color-3: #5d7a89;
+        --scalar-color-accent: #007d9c;
+        --scalar-background-1: #ffffff;
+        --scalar-background-2: #f1f7f9;
+        --scalar-background-3: #e4eef2;
+        --scalar-background-accent: rgba(0, 125, 156, 0.1);
+        --scalar-border-color: rgba(7, 59, 76, 0.12);
+
+        --scalar-button-1: #007d9c;
+        --scalar-button-1-color: #ffffff;
+        --scalar-button-1-hover: #00667f;
+      }
+
+      .light-mode .sidebar,
+      .light-mode .t-doc__sidebar {
+        --scalar-sidebar-background-1: #f6fbfc;
+        --scalar-sidebar-color-1: #0b2531;
+        --scalar-sidebar-color-2: #44606e;
+        --scalar-sidebar-color-active: #007d9c;
+        --scalar-sidebar-border-color: rgba(7, 59, 76, 0.1);
+        --scalar-sidebar-item-hover-background: rgba(0, 125, 156, 0.08);
+        --scalar-sidebar-item-active-background: rgba(0, 125, 156, 0.12);
+      }
+
+      /* Brand lockup pinned over the top of the sidebar (outside Scalar's
+         Vue tree, so it can't be clobbered by re-renders). */
+      .go-brand {
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 20;
+        box-sizing: border-box;
+        width: var(--refs-sidebar-width, 288px);
+        height: 56px;
+        display: flex;
+        align-items: center;
+        gap: 11px;
+        padding: 0 18px;
+        border-bottom: 1px solid rgba(120, 173, 199, 0.16);
+        border-right: 1px solid rgba(120, 173, 199, 0.12);
+        background:
+          linear-gradient(180deg, #0c1822 0%, #0a141d 100%),
+          radial-gradient(120% 160% at 0% 0%, rgba(0, 173, 216, 0.22), transparent 62%);
+        background-blend-mode: normal;
+      }
+      /* Make room at the top of the sidebar for the fixed brand. */
+      .scalar-app .t-doc__sidebar {
+        padding-top: 56px;
+      }
+      @media (max-width: 1023.98px) {
+        .go-brand {
+          display: none;
+        }
+        .scalar-app .t-doc__sidebar {
+          padding-top: 0;
+        }
+      }
+      .go-brand__mark {
+        width: 28px;
+        height: 28px;
+        flex: 0 0 auto;
+        filter: drop-shadow(0 2px 8px rgba(0, 173, 216, 0.45));
+      }
+      .go-brand__text {
+        display: flex;
+        flex-direction: column;
+        line-height: 1.12;
+      }
+      .go-brand__name {
+        font-family: var(--scalar-font-code, ui-monospace, monospace);
+        font-size: 15px;
+        font-weight: 600;
+        letter-spacing: -0.2px;
+        color: #e8f3f8;
+      }
+      .go-brand__name b {
+        color: #00add8;
+        font-weight: 600;
+      }
+      .go-brand__sub {
+        font-size: 11px;
+        font-weight: 500;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        color: #93acbb;
+      }
+
+      /* A soft cyan aura behind the hero for a polished, distinctly-Go feel */
+      .references-rendered {
+        position: relative;
+      }
+      .references-rendered::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 480px;
+        pointer-events: none;
+        background:
+          radial-gradient(62% 100% at 20% -8%, rgba(0, 173, 216, 0.22), transparent 64%),
+          radial-gradient(48% 90% at 86% -10%, rgba(93, 201, 226, 0.12), transparent 70%);
+        z-index: 0;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="go-brand">
+      <svg class="go-brand__mark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" aria-hidden="true">
+        <defs>
+          <linearGradient id="goBrandGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#5dc9e2" />
+            <stop offset="1" stop-color="#00add8" />
+          </linearGradient>
+        </defs>
+        <path d="M16 2 28 9 28 23 16 30 4 23 4 9Z" fill="url(#goBrandGrad)" />
+        <path d="M11 17.5h4M17 14.5h4" stroke="#04222c" stroke-width="2.2" stroke-linecap="round" />
+      </svg>
+      <span class="go-brand__text">
+        <span class="go-brand__name">golang<b>-api</b></span>
+        <span class="go-brand__sub">Aspire sample</span>
+      </span>
+    </div>
+    <div id="app"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@scalar/api-reference@1.58.0/dist/browser/standalone.min.js"></script>
+    <script>
+      Scalar.createApiReference('#app', {
+        url: '/openapi.json',
+        theme: 'none',
+        darkMode: true,
+        layout: 'modern',
+        hideModels: false,
+        hideDownloadButton: false,
+        defaultHttpClient: { targetKey: 'shell', clientKey: 'curl' },
+        metaData: {
+          title: 'golang-api · Aspire API reference',
+          description: 'Interactive API reference for the golang-api Aspire sample.',
+        },
+      });
+    </script>
+  </body>
+</html>

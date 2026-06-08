@@ -1,6 +1,12 @@
 # Aspire Shop
 
-![Screenshot of the web front end the Aspire Shop sample](./images/aspireshop-frontend-complete.png)
+![Screenshot of the product catalog in the Aspire Shop sample](./images/aspireshop-frontend-light.png#gh-light-mode-only)
+![Screenshot of the product catalog in the Aspire Shop sample](./images/aspireshop-frontend-dark.png#gh-dark-mode-only)
+
+Browse a product catalog served by the Catalog service and add items to a cart held by the Basket service.
+
+![Screenshot of the shopping cart in the Aspire Shop sample](./images/aspireshop-cart-light.png#gh-light-mode-only)
+![Screenshot of the shopping cart in the Aspire Shop sample](./images/aspireshop-cart-dark.png#gh-dark-mode-only)
 
 The app consists of four .NET services:
 

@@ -7,11 +7,13 @@
     "build": "vite build"
   },
   "dependencies": {
-    "react": "^19.2.6",
-    "react-dom": "^19.2.6"
+    "@heroicons/react": "^2.2.0",
+    "open-props": "^1.7.23",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7"
   },
   "devDependencies": {
-    "@vitejs/plugin-react": "^6.0.1",
-    "vite": "^8.0.13"
+    "@vitejs/plugin-react": "^6.0.2",
+    "vite": "^8.0.16"
   }
 }

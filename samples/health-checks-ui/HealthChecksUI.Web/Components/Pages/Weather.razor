@@ -4,40 +4,60 @@
 
 @inject WeatherApiClient WeatherApi
 
-<PageTitle>Weather</PageTitle>
+<PageTitle>Aspire Status · Feed</PageTitle>
 
-<h1>Weather</h1>
+<section class="feed">
+    <header class="feed-head">
+        <p class="eyebrow">Upstream feed</p>
+        <h1>API service output</h1>
+        <p class="lede">
+            Live forecast data from the backend API service, output-cached for a few
+            seconds at the frontend.
+        </p>
+    </header>
 
-<p>This component demonstrates showing data loaded from a backend API service.</p>
-
-@if (forecasts == null)
-{
-    <p><em>Loading...</em></p>
-}
-else
-{
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Date</th>
-                <th>Temp. (C)</th>
-                <th>Temp. (F)</th>
-                <th>Summary</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var forecast in forecasts)
-            {
-                <tr>
-                    <td>@forecast.Date.ToShortDateString()</td>
-                    <td>@forecast.TemperatureC</td>
-                    <td>@forecast.TemperatureF</td>
-                    <td>@forecast.Summary</td>
-                </tr>
-            }
-        </tbody>
-    </table>
-}
+    @if (forecasts == null)
+    {
+        <div class="feed-loading" role="status" aria-live="polite">
+            <span class="spinner" aria-hidden="true"></span>
+            <span>Awaiting first response from upstream…</span>
+        </div>
+    }
+    else
+    {
+        <div class="feed-panel">
+            <div class="feed-panel-head">
+                <span class="feed-icon" aria-hidden="true">@Icons.Signal</span>
+                <span>Forecast stream</span>
+                <span class="feed-count">@forecasts.Length records</span>
+            </div>
+            <table class="data-table">
+                <caption class="visually-hidden">Forecast data streamed from the API service</caption>
+                <thead>
+                    <tr>
+                        <th scope="col">Date</th>
+                        <th scope="col">Temp. (°C)</th>
+                        <th scope="col">Temp. (°F)</th>
+                        <th scope="col">Summary</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var forecast in forecasts)
+                    {
+                        <tr>
+                            <td class="num">@forecast.Date.ToShortDateString()</td>
+                            <td class="num">@forecast.TemperatureC</td>
+                            <td class="num">@forecast.TemperatureF</td>
+                            <td>
+                                <span class="summary-chip">@forecast.Summary</span>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</section>
 
 @code {
     private WeatherForecast[]? forecasts;

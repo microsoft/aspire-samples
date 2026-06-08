@@ -1,4 +1,18 @@
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, useCallback } from 'react'
+import {
+  ArrowUpTrayIcon,
+  PhotoIcon,
+  TrashIcon,
+  EyeIcon,
+  XMarkIcon,
+  SunIcon,
+  MoonIcon,
+  ExclamationCircleIcon,
+  ClockIcon,
+  CheckBadgeIcon,
+  RectangleStackIcon,
+} from '@heroicons/react/24/outline'
+import styles from './App.module.css'
 
 interface Image {
   id: number
@@ -7,6 +21,13 @@ interface Image {
   size: number
   thumbnailProcessed: boolean
   uploadedAt: string
+}
+
+type Theme = 'light' | 'dark'
+
+function getInitialTheme(): Theme {
+  const current = document.documentElement.dataset.theme
+  return current === 'dark' ? 'dark' : 'light'
 }
 
 function App() {
@@ -18,12 +39,29 @@ function App() {
   const [isDragging, setIsDragging] = useState(false)
   const [selectedImage, setSelectedImage] = useState<Image | null>(null)
   const [antiforgeryToken, setAntiforgeryToken] = useState<string | null>(null)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [theme, setTheme] = useState<Theme>(getInitialTheme)
+  const closeButtonRef = useRef<HTMLButtonElement>(null)
+  const lastFocusedRef = useRef<HTMLElement | null>(null)
 
   // Fetch antiforgery token and images on mount
   useEffect(() => {
     fetchAntiforgeryToken()
     fetchImages()
   }, [])
+
+  const toggleTheme = () => {
+    setTheme(prev => {
+      const next = prev === 'dark' ? 'light' : 'dark'
+      document.documentElement.dataset.theme = next
+      try {
+        localStorage.setItem('lumina-theme', next)
+      } catch {
+        /* storage may be unavailable; theme still applies for this session */
+      }
+      return next
+    })
+  }
 
   const fetchAntiforgeryToken = async () => {
     try {
@@ -62,15 +100,16 @@ function App() {
 
     const file = files[0]
     if (!file.type.startsWith('image/')) {
-      alert('Please select an image file')
+      setErrorMessage('That file isn’t an image. Try a .jpg, .png, .gif, or .webp.')
       return
     }
 
     if (!antiforgeryToken) {
-      alert('Security token not available. Please refresh the page.')
+      setErrorMessage('Security token not available. Please refresh the page.')
       return
     }
 
+    setErrorMessage(null)
     setUploading(true)
     setUploadProgress(0)
 
@@ -96,13 +135,13 @@ function App() {
             fileInputRef.current.value = ''
           }
         } else {
-          alert('Upload failed')
+          setErrorMessage('Upload failed. Please try again.')
           setUploading(false)
         }
       })
 
       xhr.addEventListener('error', () => {
-        alert('Upload failed')
+        setErrorMessage('Upload failed. Please try again.')
         setUploading(false)
       })
 
@@ -111,7 +150,7 @@ function App() {
       xhr.send(formData)
     } catch (error) {
       console.error('Upload failed:', error)
-      alert('Upload failed')
+      setErrorMessage('Upload failed. Please try again.')
       setUploading(false)
     }
   }
@@ -151,7 +190,7 @@ function App() {
     if (!confirm('Delete this image?')) return
 
     if (!antiforgeryToken) {
-      alert('Security token not available. Please refresh the page.')
+      setErrorMessage('Security token not available. Please refresh the page.')
       return
     }
 
@@ -162,12 +201,38 @@ function App() {
           'RequestVerificationToken': antiforgeryToken
         }
       })
+      if (selectedImage?.id === id) {
+        setSelectedImage(null)
+      }
       fetchImages()
     } catch (error) {
       console.error('Delete failed:', error)
-      alert('Delete failed')
+      setErrorMessage('Delete failed. Please try again.')
     }
   }
+
+  const openLightbox = (image: Image) => {
+    lastFocusedRef.current = document.activeElement as HTMLElement
+    setSelectedImage(image)
+  }
+
+  const closeLightbox = useCallback(() => {
+    setSelectedImage(null)
+    lastFocusedRef.current?.focus()
+  }, [])
+
+  // Lightbox keyboard handling + focus management
+  useEffect(() => {
+    if (!selectedImage) return
+    closeButtonRef.current?.focus()
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        closeLightbox()
+      }
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => document.removeEventListener('keydown', onKeyDown)
+  }, [selectedImage, closeLightbox])
 
   const formatFileSize = (bytes: number) => {
     if (bytes < 1024) return bytes + ' B'
@@ -175,94 +240,223 @@ function App() {
     return (bytes / (1024 * 1024)).toFixed(1) + ' MB'
   }
 
+  const processingCount = images.filter(img => !img.thumbnailProcessed).length
+  const statusMessage = uploading
+    ? `Uploading, ${uploadProgress} percent complete.`
+    : processingCount > 0
+      ? `${processingCount} thumbnail${processingCount === 1 ? '' : 's'} still processing.`
+      : ''
+
   return (
-    <div className="app">
-      <header>
-        <h1>Image Gallery</h1>
-        <p>Azure Blob Storage + Container Apps Jobs</p>
-      </header>
+    <>
+      <a className="skip-link" href="#main">Skip to content</a>
 
-      <div
-        className={`upload-zone ${isDragging ? 'dragging' : ''}`}
-        onDragEnter={handleDragEnter}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        onDrop={handleDrop}
-        onClick={() => fileInputRef.current?.click()}
-      >
-        {uploading ? (
-          <div className="upload-progress">
-            <div className="progress-bar">
-              <div className="progress-fill" style={{ width: `${uploadProgress}%` }}></div>
-            </div>
-            <p>Uploading... {uploadProgress}%</p>
+      <div className={styles.app}>
+        <header className={styles.topbar}>
+          <div className={styles.brand}>
+            <span className={styles.brandMark} aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="8" />
+                <circle cx="12" cy="12" r="2.6" fill="currentColor" stroke="none" />
+                <path d="M12 4v4M20 12h-4M12 20v-4M4 12h4" />
+              </svg>
+            </span>
+            <span className={styles.brandText}>
+              <span className={styles.brandName}>Lumina</span>
+              <span className={styles.brandTag}>Aspire media library</span>
+            </span>
           </div>
-        ) : (
-          <>
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-              <polyline points="17 8 12 3 7 8" />
-              <line x1="12" y1="3" x2="12" y2="15" />
-            </svg>
-            <p>Drop an image here or click to upload</p>
-          </>
-        )}
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          onChange={(e) => handleFileSelect(e.target.files)}
-          style={{ display: 'none' }}
-        />
-      </div>
 
-      <div className="gallery">
-        {images.map(image => (
-          <div key={image.id} className="image-card">
-            <div 
-              className="image-container" 
-              onClick={() => image.thumbnailProcessed && setSelectedImage(image)}
-              style={{ cursor: image.thumbnailProcessed ? 'pointer' : 'default' }}
+          <div className={styles.topbarActions}>
+            <span className={styles.statPill}>
+              <RectangleStackIcon aria-hidden="true" />
+              {images.length} item{images.length === 1 ? '' : 's'}
+            </span>
+            <button
+              type="button"
+              className={styles.iconButton}
+              onClick={toggleTheme}
+              aria-pressed={theme === 'dark'}
             >
-              {image.thumbnailProcessed ? (
-                <img src={`/api/images/${image.id}/thumbnail`} alt={image.fileName} />
-              ) : (
-                <div className="processing">
-                  <div className="spinner"></div>
-                  <p>Processing thumbnail...</p>
-                </div>
-              )}
-            </div>
-            <div className="image-info">
-              <p className="filename" title={image.fileName}>{image.fileName}</p>
-              <p className="filesize">{formatFileSize(image.size)}</p>
-              <button onClick={() => handleDelete(image.id)} className="delete-btn">
-                Delete
-              </button>
-            </div>
+              {theme === 'dark' ? <SunIcon aria-hidden="true" /> : <MoonIcon aria-hidden="true" />}
+              <span className="sr-only">
+                Switch to {theme === 'dark' ? 'light' : 'dark'} theme
+              </span>
+            </button>
           </div>
-        ))}
-      </div>
+        </header>
 
-      {images.length === 0 && !uploading && (
-        <div className="empty-state">
-          <p>No images yet. Upload one to get started!</p>
-        </div>
-      )}
+        <main id="main">
+          <section className={styles.intro} aria-labelledby="intro-title">
+            <h1 className={styles.introTitle} id="intro-title">Your media library</h1>
+            <p className={styles.introLead}>
+              Upload images and Lumina stores the original, then a queue-triggered
+              job generates thumbnails in the background — refreshing here as they
+              finish.
+            </p>
+          </section>
+
+          <button
+            type="button"
+            className={`${styles.dropzone} ${isDragging ? styles.dragging : ''}`}
+            onDragEnter={handleDragEnter}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            onClick={() => fileInputRef.current?.click()}
+            aria-label="Upload an image. Drop a file here or activate to browse."
+          >
+            {uploading ? (
+              <div className={styles.progress}>
+                <div
+                  className={styles.progressTrack}
+                  role="progressbar"
+                  aria-valuenow={uploadProgress}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-label="Upload progress"
+                >
+                  <div className={styles.progressFill} style={{ width: `${uploadProgress}%` }} />
+                </div>
+                <p className={styles.progressLabel}>Uploading… {uploadProgress}%</p>
+              </div>
+            ) : (
+              <>
+                <span className={styles.dropIcon} aria-hidden="true">
+                  <ArrowUpTrayIcon />
+                </span>
+                <span className={styles.dropTitle}>Drop an image, or click to browse</span>
+                <span className={styles.dropHint}>JPG, PNG, GIF or WebP · up to 10&nbsp;MB</span>
+              </>
+            )}
+          </button>
+          <input
+            ref={fileInputRef}
+            id="file-input"
+            type="file"
+            accept="image/*"
+            aria-label="Choose an image to upload"
+            onChange={(e) => handleFileSelect(e.target.files)}
+            className="sr-only"
+            tabIndex={-1}
+          />
+
+          {errorMessage && (
+            <div className={`${styles.banner} ${styles.bannerError}`} role="alert">
+              <ExclamationCircleIcon aria-hidden="true" />
+              <span>{errorMessage}</span>
+            </div>
+          )}
+
+          <div className="sr-only" aria-live="polite">{statusMessage}</div>
+
+          <div className={styles.libraryHeader}>
+            <h2 className={styles.libraryTitle}>Library</h2>
+            <span className={styles.libraryMeta}>
+              {images.length === 0
+                ? 'No images yet'
+                : `${images.length} image${images.length === 1 ? '' : 's'}${processingCount > 0 ? ` · ${processingCount} processing` : ''}`}
+            </span>
+          </div>
+
+          {images.length === 0 && !uploading ? (
+            <div className={styles.emptyState}>
+              <span className={styles.emptyIcon} aria-hidden="true">
+                <PhotoIcon />
+              </span>
+              <p className={styles.emptyTitle}>Your library is empty</p>
+              <p>Upload your first image to see it appear here with a generated thumbnail.</p>
+            </div>
+          ) : (
+            <ul className={styles.grid}>
+              {images.map(image => (
+                <li key={image.id} className={styles.card}>
+                  <button
+                    type="button"
+                    className={styles.thumb}
+                    onClick={() => image.thumbnailProcessed && openLightbox(image)}
+                    disabled={!image.thumbnailProcessed}
+                    aria-label={image.thumbnailProcessed ? `View ${image.fileName} full size` : `${image.fileName}, thumbnail processing`}
+                  >
+                    {image.thumbnailProcessed ? (
+                      <>
+                        <img src={`/api/images/${image.id}/thumbnail`} alt={image.fileName} />
+                        <span className={styles.thumbBadge}>
+                          <CheckBadgeIcon aria-hidden="true" />
+                          Ready
+                        </span>
+                      </>
+                    ) : (
+                      <div className={styles.processing}>
+                        <span className={styles.spinner} aria-hidden="true" />
+                        <span><ClockIcon aria-hidden="true" style={{ width: 14, height: 14, verticalAlign: '-2px' }} /> Processing…</span>
+                      </div>
+                    )}
+                  </button>
+                  <div className={styles.cardBody}>
+                    <p className={styles.fileName} title={image.fileName}>{image.fileName}</p>
+                    <p className={styles.fileMeta}>{formatFileSize(image.size)}</p>
+                    <div className={styles.cardActions}>
+                      <button
+                        type="button"
+                        className={`${styles.actionBtn} ${styles.viewBtn}`}
+                        onClick={() => openLightbox(image)}
+                        disabled={!image.thumbnailProcessed}
+                      >
+                        <EyeIcon aria-hidden="true" />
+                        View
+                      </button>
+                      <button
+                        type="button"
+                        className={`${styles.actionBtn} ${styles.deleteBtn}`}
+                        onClick={() => handleDelete(image.id)}
+                      >
+                        <TrashIcon aria-hidden="true" />
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          <footer className={styles.footer}>
+            <p>
+              <strong>Lumina</strong> — an Aspire sample. Azure Blob Storage,
+              Storage Queues and event-triggered Container Apps Jobs.
+            </p>
+          </footer>
+        </main>
+      </div>
 
       {selectedImage && (
-        <div className="modal-overlay" onClick={() => setSelectedImage(null)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <button className="modal-close" onClick={() => setSelectedImage(null)}>×</button>
+        <div
+          className={styles.modalOverlay}
+          onClick={closeLightbox}
+          role="dialog"
+          aria-modal="true"
+          aria-label={`${selectedImage.fileName}, full size preview`}
+        >
+          <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+            <button
+              type="button"
+              className={styles.modalClose}
+              onClick={closeLightbox}
+              ref={closeButtonRef}
+            >
+              <XMarkIcon aria-hidden="true" />
+              <span className="sr-only">Close preview</span>
+            </button>
             <img src={`/api/images/${selectedImage.id}/blob`} alt={selectedImage.fileName} />
-            <div className="modal-info">
-              <p>{selectedImage.fileName}</p>
-              <p>{formatFileSize(selectedImage.size)}</p>
+            <div className={styles.modalInfo}>
+              <p className={styles.fileName}>{selectedImage.fileName}</p>
+              <p className={styles.fileMeta}>{formatFileSize(selectedImage.size)}</p>
             </div>
           </div>
         </div>
       )}
-    </div>
+    </>
   )
 }
 

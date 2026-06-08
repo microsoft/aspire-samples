@@ -1,6 +1,7 @@
 # ASP.NET Core Minimal API + PostgreSQL + Vite
 
-![Screenshot of the Todo List UI for the ASP.NET Core Minimal API + PostgreSQL + Vite sample](./images/vite-csharp-postgres-primary-page.png)
+![Screenshot of the Todo List UI for the ASP.NET Core Minimal API + PostgreSQL + Vite sample](./images/vite-csharp-postgres-primary-page-light.png#gh-light-mode-only)
+![Screenshot of the Todo List UI for the ASP.NET Core Minimal API + PostgreSQL + Vite sample](./images/vite-csharp-postgres-primary-page-dark.png#gh-dark-mode-only)
 
 Todo app with C# Minimal APIs, Entity Framework Core, PostgreSQL, and React TypeScript frontend.
 

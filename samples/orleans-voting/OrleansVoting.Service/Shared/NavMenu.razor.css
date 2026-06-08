@@ -1,62 +1,175 @@
-.navbar-toggler {
-    background-color: rgba(255, 255, 255, 0.1);
+.topbar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: color-mix(in srgb, var(--bg) 82%, transparent);
+    backdrop-filter: blur(14px) saturate(1.2);
+    border-bottom: 1px solid var(--line);
 }
 
-.top-row {
-    height: 3.5rem;
-    background-color: rgba(0,0,0,0.4);
+.topbar-inner {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 0.75rem clamp(1.1rem, 4vw, 2rem);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
 }
 
-.navbar-brand {
-    font-size: 1.1rem;
+.brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.7rem;
+    text-decoration: none;
+    color: var(--ink);
 }
 
-.oi {
-    width: 2rem;
-    font-size: 1.1rem;
-    vertical-align: text-top;
-    top: -2px;
+.brand-mark {
+    display: inline-flex;
+    width: 2.5rem;
+    height: 2.5rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    background: linear-gradient(135deg, color-mix(in srgb, var(--magenta) 26%, transparent), color-mix(in srgb, var(--cyan) 22%, transparent));
+    border: 1px solid var(--line-strong);
+    color: var(--brand-text);
 }
 
-.nav-item {
-    font-size: 0.9rem;
-    padding-bottom: 0.5rem;
+.brand-mark ::deep .icon {
+    width: 1.5rem;
+    height: 1.5rem;
 }
 
-    .nav-item:first-of-type {
-        padding-top: 1rem;
+.brand-text {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+}
+
+.brand-name {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 1.3rem;
+    letter-spacing: -0.02em;
+}
+
+.brand-live {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    color: var(--live-ink);
+    background: var(--live-bg);
+    padding: 0.16rem 0.5rem;
+    border-radius: 999px;
+}
+
+.brand-live-dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: var(--live-ink);
+    animation: live-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes live-pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.35; transform: scale(0.7); }
+}
+
+.topnav {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.nav-ico {
+    display: inline-flex;
+}
+
+.nav-ico ::deep .icon {
+    width: 1.15rem;
+    height: 1.15rem;
+}
+
+.topnav ::deep .nav-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--font-display);
+    font-weight: 700;
+    color: var(--ink);
+    background: var(--surface-2);
+    border: 1px solid var(--line-strong);
+    border-radius: 999px;
+    padding: 0.55rem 1.1rem;
+    text-decoration: none;
+    transition: border-color 0.16s ease, background 0.16s ease, transform 0.12s ease;
+}
+
+.topnav ::deep .nav-link:hover {
+    border-color: var(--magenta);
+    background: var(--surface-3);
+    transform: translateY(-1px);
+}
+
+.topnav ::deep .nav-link.active {
+    color: var(--btn-ink);
+    background: linear-gradient(110deg, var(--btn-bg), var(--btn-bg-2));
+    border-color: transparent;
+}
+
+.nav-toggle {
+    display: none;
+    margin-left: auto;
+    flex-direction: column;
+    gap: 5px;
+    width: 44px;
+    height: 44px;
+    align-items: center;
+    justify-content: center;
+    background: var(--surface-2);
+    border: 1px solid var(--line-strong);
+    border-radius: 12px;
+    cursor: pointer;
+}
+
+.nav-toggle-bar {
+    width: 20px;
+    height: 2px;
+    background: var(--ink);
+    border-radius: 2px;
+}
+
+@media (max-width: 640px) {
+    .nav-toggle {
+        display: inline-flex;
     }
 
-    .nav-item:last-of-type {
-        padding-bottom: 1rem;
+    .topnav {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 100%;
+        margin: 0;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.4rem;
+        padding: 0.8rem clamp(1.1rem, 4vw, 2rem) 1.1rem;
+        background: var(--bg);
+        border-bottom: 1px solid var(--line);
     }
 
-    .nav-item ::deep a {
-        color: #d7d7d7;
-        border-radius: 4px;
-        height: 3rem;
-        display: flex;
-        align-items: center;
-        line-height: 3rem;
-    }
-
-.nav-item ::deep a.active {
-    background-color: rgba(255,255,255,0.25);
-    color: white;
-}
-
-.nav-item ::deep a:hover {
-    background-color: rgba(255,255,255,0.1);
-    color: white;
-}
-
-@media (min-width: 641px) {
-    .navbar-toggler {
+    .topnav.collapsed {
         display: none;
     }
 
-    .collapse {
-        /* Never collapse the sidebar for wide screens */
-        display: block;
+    .topnav ::deep .nav-link {
+        justify-content: center;
     }
 }

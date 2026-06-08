@@ -1,9 +1,12 @@
 ﻿@inherits LayoutComponentBase
 
+<a class="skip-link" href="#main-content">Skip to the catalog</a>
+
 @Body
 
-<div id="blazor-error-ui">
-    An unhandled error has occurred.
+<div id="blazor-error-ui" role="alert" aria-live="assertive">
+    <span class="error-ui-dot" aria-hidden="true"></span>
+    <span class="error-ui-text">The connection to the server was lost.</span>
     <a href="" class="reload">Reload</a>
-    <a class="dismiss">🗙</a>
+    <a class="dismiss" role="button" aria-label="Dismiss this message">✕</a>
 </div>

@@ -1,68 +1,274 @@
+@import "@fontsource-variable/orbitron/index.css";
+@import "@fontsource-variable/jetbrains-mono/index.css";
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Orbitron Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono Variable", ui-monospace, SFMono-Regular, monospace;
+  --color-magenta: #ff2e97;
+  --color-cyan: #2de2e6;
+  --color-violet: #b14aff;
+  --color-amber: #ffb347;
+}
+
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-
   color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
+  /* Day / Miami sunset */
+  --bg-top: #6a4bd0;
+  --bg-mid: #ff8fb1;
+  --bg-bottom: #ffd6a5;
+  --bg-solid: #ffe1ef;
+  --panel: #fff6fb;
+  --panel-2: #fdeaf6;
+  --edge: rgba(176, 38, 131, 0.35);
+  --ink: #2a0a3a;
+  --muted: #4a2b5c;
+  --accent: #b02683;
+  --accent-2: #0a5560;
+  --accent-ink: #ffffff;
+  --grid-line: rgba(176, 38, 131, 0.7);
+  --sun-a: #ff5d8f;
+  --sun-b: #ffcf5c;
+  --glow-blur: 0px;
+  --halo: rgba(255, 93, 143, 0.35);
+
+  /* Button fill (theme-aware, dark enough for white ink in day mode) */
+  --btn-from: #a01e74;
+  --btn-to: #7a2bd0;
+
+  /* Masthead billboard — dark in both themes so neon reads on the sky */
+  --mast-bg: rgba(8, 3, 24, 0.82);
+  --mast-edge: rgba(45, 226, 230, 0.5);
+  --mast-title: #ff5cc8;
+  --mast-sub: #e6d8ff;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-top: #050217;
+    --bg-mid: #1b0942;
+    --bg-bottom: #38106a;
+    --bg-solid: #0a0420;
+    --panel: #160a30;
+    --panel-2: #1d0f3d;
+    --edge: rgba(45, 226, 230, 0.4);
+    --ink: #f4ecff;
+    --muted: #c5b2e8;
+    --accent: #ff5cc8;
+    --accent-2: #2de2e6;
+    --accent-ink: #0a0420;
+    --grid-line: rgba(45, 226, 230, 0.62);
+    --sun-a: #ff2e97;
+    --sun-b: #ffd166;
+    --glow-blur: 16px;
+    --halo: rgba(255, 46, 151, 0.4);
+    --btn-from: #ff5cc8;
+    --btn-to: #b14aff;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  min-height: 100vh;
+  color: var(--ink);
+  background-color: var(--bg-solid);
+  background-image: linear-gradient(
+    180deg,
+    var(--bg-top) 0%,
+    var(--bg-mid) 52%,
+    var(--bg-bottom) 100%
+  );
+  background-attachment: fixed;
+  font-family: var(--font-mono);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
-
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
+#root {
   min-height: 100vh;
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+/* ---------- Synthwave backdrop (decorative) ---------- */
+.synth-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
 }
 
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+/* Neon sun, set off to one side so it clears the content column and
+   crests from behind the panels with classic scanline slits. */
+.synth-sun {
+  position: absolute;
+  left: 82%;
+  top: 27%;
+  width: min(56vw, 380px);
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 36%, var(--sun-b) 0%, var(--sun-a) 74%);
+  -webkit-mask:
+    linear-gradient(#000 0 0) top / 100% 56% no-repeat,
+    repeating-linear-gradient(180deg, #000 0 8px, transparent 8px 15px) bottom /
+      100% 44% no-repeat;
+  mask:
+    linear-gradient(#000 0 0) top / 100% 56% no-repeat,
+    repeating-linear-gradient(180deg, #000 0 8px, transparent 8px 15px) bottom /
+      100% 44% no-repeat;
+  filter: drop-shadow(0 0 72px var(--halo));
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
+/* Glowing horizon line where the sky meets the grid. */
+.synth-horizon {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 54%;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--sun-a) 18%,
+    var(--sun-b) 50%,
+    var(--sun-a) 82%,
+    transparent
+  );
+  box-shadow: 0 0 22px 3px var(--halo);
+}
+
+/* Receding 80s grid floor. */
+.synth-grid {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 260vw;
+  height: 60vh;
+  translate: -50% 0;
+  transform: perspective(44vh) rotateX(73deg);
+  transform-origin: 50% 100%;
+  background-image:
+    linear-gradient(to right, var(--grid-line) 2px, transparent 2px),
+    linear-gradient(to top, var(--grid-line) 2px, transparent 2px);
+  background-size: 4.5vw 5vh;
+  -webkit-mask: linear-gradient(to top, #000 45%, transparent 96%);
+  mask: linear-gradient(to top, #000 45%, transparent 96%);
+  animation: gridRun 6s linear infinite;
+}
+
+@keyframes gridRun {
+  to {
+    background-position-y: 5vh;
   }
-  a:hover {
-    color: #747bff;
+}
+
+/* ---------- Surfaces ---------- */
+.synth-panel {
+  background: var(--panel);
+  border: 1px solid var(--edge);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--edge) 50%, transparent),
+    0 28px 60px -30px var(--halo);
+}
+
+.synth-head {
+  background: linear-gradient(180deg, var(--panel-2), var(--panel));
+  border-bottom: 1px solid var(--edge);
+}
+
+/* Masthead billboard: a dark marquee so neon title/sub stay legible
+   over the bright "Miami sunset" sky in light mode (and the night sky
+   in dark mode). */
+.synth-masthead {
+  background: var(--mast-bg);
+  border: 1px solid var(--mast-edge);
+  border-radius: 18px;
+  padding: 1rem 1.25rem;
+  -webkit-backdrop-filter: blur(8px) saturate(140%);
+  backdrop-filter: blur(8px) saturate(140%);
+  box-shadow: 0 18px 50px -28px var(--halo);
+}
+.synth-masthead .kicker {
+  color: var(--mast-sub);
+}
+.synth-masthead h1 {
+  color: var(--mast-title);
+  text-shadow: 0 0 18px color-mix(in srgb, var(--mast-title) 60%, transparent);
+}
+
+.neon {
+  color: var(--accent);
+  text-shadow: 0 0 var(--glow-blur) color-mix(in srgb, var(--accent) 70%, transparent);
+}
+.neon-2 {
+  color: var(--accent-2);
+  text-shadow: 0 0 var(--glow-blur) color-mix(in srgb, var(--accent-2) 70%, transparent);
+}
+
+.synth-btn {
+  color: var(--accent-ink);
+  background: linear-gradient(120deg, var(--btn-from), var(--btn-to));
+  box-shadow: 0 0 var(--glow-blur) var(--halo);
+}
+.synth-btn:hover {
+  filter: brightness(1.08);
+}
+.synth-btn:focus-visible {
+  outline: 3px solid var(--accent-2);
+  outline-offset: 3px;
+}
+
+.row-rule + .row-rule {
+  border-top: 1px solid color-mix(in srgb, var(--edge) 55%, transparent);
+}
+
+.chip {
+  color: #fff;
+  box-shadow: 0 0 var(--glow-blur) color-mix(in srgb, currentColor 60%, transparent);
+}
+.chip.cold {
+  background: linear-gradient(135deg, #4f7bff, #2f6bff);
+}
+.chip.cool {
+  background: linear-gradient(135deg, #21c7d8, #0a8ea0);
+}
+.chip.mild {
+  background: linear-gradient(135deg, #9b5cff, #6f2dd6);
+}
+.chip.warm {
+  background: linear-gradient(135deg, #ff9d3c, #ef6d17);
+}
+.chip.hot {
+  background: linear-gradient(135deg, #ff4f8b, #e01f63);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .synth-grid {
+    animation: none;
   }
-  button {
-    background-color: #f9f9f9;
+  .synth-btn:hover {
+    filter: none;
+  }
+  .spin {
+    animation: none;
+  }
+}
+
+.spin {
+  animation: spin 900ms linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
   }
 }

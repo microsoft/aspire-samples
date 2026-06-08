@@ -203,7 +203,7 @@ public class AppHostTests(ITestOutputHelper testOutput)
             //    { "ginapp", ["/"] }
             //}),
             new TestEndpoints("DatabaseContainers.AppHost", new() {
-                { "apiservice", ["/alive", "/health", "/todos", "/todos/1", "/catalog", "/catalog/1", "/addressbook", "/addressbook/1", "/swagger"] }
+                { "apiservice", ["/alive", "/health", "/todos", "/todos/1", "/catalog", "/catalog/1", "/addressbook", "/addressbook/1", "/scalar"] }
             }),
             new TestEndpoints("DatabaseMigrations.AppHost", new() {
                 { "api", ["/alive", "/health", "/"] }
@@ -224,8 +224,11 @@ public class AppHostTests(ITestOutputHelper testOutput)
                 { "voting-fe", ["/alive", "/health", "/", "/api/votes"] }
             }),
             new TestEndpoints("VolumeMount.AppHost", new() {
-                { "blazorweb", ["/alive", "/ApplyDatabaseMigrations", "/health", "/"] }
-            }),
+                { "blazorweb", ["/alive", "/health", "/"] }
+            })
+            {
+                WaitForResources = [new("migration", KnownResourceStates.Finished)]
+            },
             new TestEndpoints("ImageGallery.AppHost", new() {
                 { "frontend", ["/alive", "/health", "/"] }
             }),

@@ -2,17 +2,25 @@
 
 @using System.Diagnostics
 
-<PageTitle>Error</PageTitle>
+<PageTitle>Aspire Shop · Error</PageTitle>
 
-<h1 class="text-danger">Error.</h1>
-<h2 class="text-danger">An error occurred while processing your request.</h2>
+<main id="main-content" class="error-page">
+    <div class="error-card">
+        <p class="eyebrow">Error</p>
+        <h1 class="error-title">Something went wrong</h1>
+        <p class="error-lede">Something went wrong while preparing your request. Please try again in a moment.</p>
 
-@if (showRequestId)
-{
-    <p>
-        <strong>Request ID:</strong> <code>@requestId</code>
-    </p>
-}
+        @if (showRequestId)
+        {
+            <p class="error-id">
+                <span>Request ID</span>
+                <code>@requestId</code>
+            </p>
+        }
+
+        <a class="error-home" href="/">Back to the catalog</a>
+    </div>
+</main>
 
 @code {
     private string? requestId;

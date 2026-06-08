@@ -2,9 +2,12 @@
 
 This sample demonstrates integrating a Node.js app and an ASP.NET Core HTTP API using Aspire.
 
+![Screenshot of the weather forecast frontend in the Integrating a Node.js app within an Aspire application sample (light theme)](./images/aspire-with-node-primary-page-light.png#gh-light-mode-only)
+![Screenshot of the weather forecast frontend in the Integrating a Node.js app within an Aspire application sample (dark theme)](./images/aspire-with-node-primary-page-dark.png#gh-dark-mode-only)
+
 The sample consists of two apps:
 
-- **NodeFrontend**: This is a simple Express-based Node.js app that renders a table of weather forecasts retrieved from a backend API and utilizes a Redis cache.
+- **NodeFrontend**: This is a simple Express-based Node.js app that renders an almanac-style weather forecast retrieved from a backend API and utilizes a Redis cache.
 - **AspireWithNode.AspNetCoreApi**: This is an ASP.NET Core HTTP API that returns randomly generated weather forecast data.
 
 ## Prerequisites

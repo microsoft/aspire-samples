@@ -1,6 +1,9 @@
 # RAG Document Q&A with Svelte
 
-![Screenshot of the RAG Document Q&A sample UI](./images/rag-document-qa-svelte-primary-page.png)
+![Athenaeum — Aspire RAG document Q&A (dark theme)](./images/rag-document-qa-svelte-primary-page-dark.png#gh-dark-mode-only)
+![Athenaeum — Aspire RAG document Q&A (light theme)](./images/rag-document-qa-svelte-primary-page-light.png#gh-light-mode-only)
+
+> The uploaded document list, answer, and cited passages shown above are **illustrative** — an OpenAI API key is required for live embeddings and answers. The empty-document and upload error states are captured against the real backend.
 
 Upload documents and ask questions using Retrieval Augmented Generation with vector search.
 

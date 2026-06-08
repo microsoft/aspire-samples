@@ -1,6 +1,7 @@
 # YARP Serving Static Files
 
-![Screenshot of the Vite primary page served through YARP in the YARP Serving Static Files sample](./images/vite-yarp-static-primary-page.png)
+![Screenshot of the Aspire Arcade score counter served through YARP in the YARP Serving Static Files sample (light theme)](./images/vite-yarp-static-primary-page-light.png#gh-light-mode-only)
+![Screenshot of the Aspire Arcade score counter served through YARP in the YARP Serving Static Files sample (dark theme)](./images/vite-yarp-static-primary-page-dark.png#gh-dark-mode-only)
 
 YARP reverse proxy serving a Vite frontend with dual-mode operation (dev HMR + production static files).
 

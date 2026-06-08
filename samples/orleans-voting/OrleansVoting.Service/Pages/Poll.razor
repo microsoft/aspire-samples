@@ -9,55 +9,111 @@
 
 @inject PollService PollService
 @inject DemoService DemoService
+@inject IJSRuntime JS
 
 @if (!string.IsNullOrWhiteSpace(_errorMessage))
 {
-	<div class="alert alert-danger" role="alert">
-		@_errorMessage
-	</div>
+    <div class="gp-alert" role="alert">
+        @_errorMessage
+    </div>
 }
 else if (!_loaded)
 {
-	<h2>Loading poll @(PollId)...</h2>
+    <section class="poll-loading" aria-busy="true">
+        <span class="poll-loading-mark">@Icons.Logo</span>
+        <h2>Loading poll @PollId…</h2>
+        <p>Fetching the latest results.</p>
+    </section>
 }
 else if (!_voted)
 {
-	<h1>@_results.Question</h1>
-	<br />
-	<div>
-		@foreach (var (index, option) in _results.Options.Select((value, index) => (index, value)))
-		{
-			<div class="input-group mb-3">
-				<button class="btn btn-outline-secondary" type="button" id="button-add" @onclick="@(e => VoteForOption(index))">👍</button>
-				<span class="input-group-text col-9">@(option.Option)</span>
-			</div>
-		}
-	</div>
-	<br />
-	<div>
-		<h2>Share this poll: @PollId</h2>
-	</div>
+    <section class="hero">
+        <p class="eyebrow"><span class="eyebrow-ico">@Icons.Bolt</span> Cast your vote</p>
+        <h1>@_results.Question</h1>
+        <p class="hero-sub">Pick an option to cast your vote. Results update in real time as votes are tallied by an Orleans grain.</p>
+    </section>
+
+    <ul class="ballot" aria-label="Answer options">
+        @foreach (var (index, option) in _results.Options.Select((value, index) => (index, value)))
+        {
+            <li>
+                <button class="ballot-option" type="button" disabled="@_isVoting"
+                        aria-label="@($"Vote for {option.Option}")"
+                        @onclick="@(e => VoteForOption(index))">
+                    <span class="ballot-check" aria-hidden="true">@Icons.Check</span>
+                    <span class="ballot-label">@option.Option</span>
+                    <span class="ballot-go" aria-hidden="true">Vote</span>
+                </button>
+            </li>
+        }
+    </ul>
+
+    <div class="share-panel">
+        <span class="share-ico" aria-hidden="true">@Icons.Share</span>
+        <div>
+            <p class="share-title">Share this poll</p>
+            <p class="share-id">Poll code <code>@PollId</code></p>
+        </div>
+    </div>
 }
 else
 {
-	<h1>@_results.Question</h1>
-	<br />
-	<div>
-		@foreach (var (option, votes, percentage) in CalculateResults())
-		{
-			<div class="bg-light p-2 m-2 rounded">
-				<h3>@option:</h3>
-				<div class="progress" style="height: 50px;">
-				  <div class="progress-bar" role="progressbar" style="width: @(percentage)%;" aria-valuenow="@percentage" aria-valuemin="0" aria-valuemax="100"><h4>@percentage% (@votes votes)</h4></div>
-				</div>
-			</div>
-		}
-	</div>
-    <br />
-    <br />
-    <div class="border bg-light">
-        <button class="btn btn-danger" @onclick="DemoTryDoubleVoting">DEMO: try double-voting</button>
-        <button class="btn btn-danger" @onclick="DemoSimulateVoters">DEMO: simulate other voters</button>
+    var results = CalculateResults();
+    var maxVotes = results.Count > 0 ? results.Max(r => r.Votes) : 0;
+    var totalVotes = results.Sum(r => r.Votes);
+    var leader = maxVotes > 0 ? results.FirstOrDefault(r => r.Votes == maxVotes) : default;
+
+    <section class="hero">
+        <p class="eyebrow"><span class="eyebrow-ico">@Icons.Logo</span> Live results</p>
+        <h1>@_results.Question</h1>
+    </section>
+
+    <p class="results-status" role="status" aria-live="polite">
+        @if (totalVotes == 0)
+        {
+            <text>No votes yet.</text>
+        }
+        else
+        {
+            <text>@totalVotes @(totalVotes == 1 ? "vote" : "votes") so far. Leading: @leader.Option at @leader.Percentage%.</text>
+        }
+    </p>
+
+    <ol class="results" aria-label="Poll results">
+        @foreach (var (option, votes, percentage) in results)
+        {
+            var leading = maxVotes > 0 && votes == maxVotes;
+            <li class="result-row @(leading ? "is-leading" : null)">
+                <div class="result-head">
+                    <span class="result-name">
+                        @if (leading)
+                        {
+                            <span class="result-crown" aria-hidden="true">@Icons.Crown</span>
+                        }
+                        @option
+                    </span>
+                    <span class="result-figures">
+                        @if (leading)
+                        {
+                            <span class="result-badge">Leading</span>
+                        }
+                        <span class="result-pct">@percentage%</span>
+                        <span class="result-votes">@votes @(votes == 1 ? "vote" : "votes")</span>
+                    </span>
+                </div>
+                <div class="result-track" role="progressbar"
+                     aria-label="@($"{option}: {percentage} percent, {votes} votes")"
+                     aria-valuenow="@percentage" aria-valuemin="0" aria-valuemax="100">
+                    <span class="result-fill @(leading ? "is-leading" : null)" style="width: @(percentage)%;"></span>
+                </div>
+            </li>
+        }
+    </ol>
+
+    <div class="demo-bar">
+        <span class="demo-bar-label"><span class="demo-ico">@Icons.Sparkles</span> Try the demo</span>
+        <button class="gp-btn gp-btn-demo" type="button" @onclick="DemoTryDoubleVoting">Try double-voting</button>
+        <button class="gp-btn gp-btn-demo" type="button" @onclick="DemoSimulateVoters">Simulate other voters</button>
     </div>
 }
 @code
@@ -67,6 +123,7 @@ else
     private IAsyncDisposable? _subscription;
     private bool _loaded;
     private bool _voted;
+    private bool _isVoting;
     private string? _errorMessage;
 
     private Guid ownerKey = Guid.NewGuid();
@@ -90,6 +147,12 @@ else
 
     private async Task VoteForOption(int index)
     {
+        if (_isVoting)
+        {
+            return;
+        }
+
+        _isVoting = true;
         try
         {
             _results = await PollService.AddVoteAsync(PollId, index);
@@ -98,7 +161,21 @@ else
         catch (Exception exception)
         {
             _errorMessage = exception.Message;
+            return;
         }
+        finally
+        {
+            _isVoting = false;
+        }
+
+        // Celebrate independently — a confetti/JS hiccup must never turn a
+        // successful vote into an error state.
+        try
+        {
+            await JS.InvokeVoidAsync("grainPoll.celebrate");
+        }
+        catch (JSException) { }
+        catch (JSDisconnectedException) { }
     }
 
     private List<(string Option, int Votes, int Percentage)> CalculateResults()

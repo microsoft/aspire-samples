@@ -24,11 +24,15 @@
             ],
             "tsConfig": "tsconfig.app.json",
             "assets": [
-              "src/favicon.ico",
               "src/assets"
             ],
             "styles": [
-              "src/styles.css"
+              "@fontsource/roboto/300.css",
+              "@fontsource/roboto/400.css",
+              "@fontsource/roboto/500.css",
+              "@fontsource/roboto/700.css",
+              "material-symbols/outlined.css",
+              "src/styles.scss"
             ],
             "scripts": []
           },
@@ -38,12 +42,12 @@
                 {
                   "type": "initial",
                   "maximumWarning": "500kb",
-                  "maximumError": "1mb"
+                  "maximumError": "1.5mb"
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "2kb",
-                  "maximumError": "4kb"
+                  "maximumWarning": "8kb",
+                  "maximumError": "12kb"
                 }
               ],
               "outputHashing": "all"
@@ -86,11 +90,10 @@
             ],
             "tsConfig": "tsconfig.spec.json",
             "assets": [
-              "src/favicon.ico",
               "src/assets"
             ],
             "styles": [
-              "src/styles.css"
+              "src/styles.scss"
             ],
             "scripts": []
           }

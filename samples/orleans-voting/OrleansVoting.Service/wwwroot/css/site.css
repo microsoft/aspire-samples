@@ -1,69 +1,421 @@
-@import url('open-iconic/font/css/open-iconic-bootstrap.min.css');
+/* =====================================================================
+   Grain Poll — "live poll game-show" design system
+   Bespoke token system layered over Bootstrap. Dark theme by default,
+   light theme via prefers-color-scheme. Neon accents are reserved for
+   large shapes, bars, badges and borders; text always rides on opaque
+   surfaces to clear WCAG AAA (7:1).
+   ===================================================================== */
+
+:root {
+    color-scheme: dark;
+
+    --bg: #140a24;
+    --bg-deep: #0d0518;
+    --surface: #20113a;
+    --surface-2: #2a1748;
+    --surface-3: #351f5b;
+    --line: rgba(186, 148, 255, 0.16);
+    --line-strong: rgba(186, 148, 255, 0.34);
+
+    --ink: #f7f0ff;
+    --ink-soft: #cdbce6;
+    --ink-faint: #b6a3d8;
+
+    /* Neon stage palette — decorative / large surfaces only */
+    --magenta: #ff49a3;
+    --cyan: #2de2e2;
+    --gold: #ffcb45;
+    --violet: #b072ff;
+
+    /* Accent text colours tuned to clear 7:1 on --surface */
+    --brand-text: #ff95c8;
+    --cyan-text: #4ce6e6;
+    --gold-text: #ffd166;
+    --violet-text: #c8a4ff;
+
+    /* Flip-per-theme button tokens for AAA label contrast */
+    --btn-bg: #ff49a3;
+    --btn-bg-2: #b072ff;
+    --btn-ink: #1a0a2e;
+
+    /* LIVE chip — tuned to clear 7:1 (small bold text) per theme */
+    --live-bg: #ff7ab8;
+    --live-ink: #1a0a2e;
+
+    --ok: #34e0a1;
+    --ok-text: #58e9b4;
+    --danger: #ff5d77;
+    --danger-text: #ff93a3;
+    --danger-soft: rgba(255, 93, 119, 0.14);
+
+    --radius: 20px;
+    --radius-sm: 13px;
+    --radius-pill: 999px;
+    --shadow: 0 24px 60px -28px rgba(8, 3, 20, 0.85);
+    --ring: 0 0 0 3px rgba(255, 73, 163, 0.55);
+
+    --font-display: 'Bricolage Grotesque', 'Plus Jakarta Sans', 'Segoe UI', system-ui, sans-serif;
+    --font-body: 'Plus Jakarta Sans', 'Segoe UI', system-ui, -apple-system, sans-serif;
+    --font-mono: 'Space Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace;
+
+    /* Bootstrap bridge */
+    --bs-body-bg: var(--bg);
+    --bs-body-color: var(--ink);
+    --bs-border-color: var(--line);
+    --bs-primary: var(--magenta);
+    --bs-link-color: var(--brand-text);
+    --bs-link-hover-color: var(--ink);
+    --bs-emphasis-color: var(--ink);
+}
+
+@media (prefers-color-scheme: light) {
+    :root {
+        color-scheme: light;
+
+        --bg: #f6eefb;
+        --bg-deep: #efe3f8;
+        --surface: #ffffff;
+        --surface-2: #f4ecfb;
+        --surface-3: #ebddf7;
+        --line: rgba(86, 33, 126, 0.16);
+        --line-strong: rgba(86, 33, 126, 0.30);
+
+        --ink: #20103a;
+        --ink-soft: #4d3a6c;
+        --ink-faint: #5b4878;
+
+        --magenta: #d6177f;
+        --cyan: #0e8c9c;
+        --gold: #c98a06;
+        --violet: #7b2fd6;
+
+        --brand-text: #b3126a;
+        --cyan-text: #0b6f7c;
+        --gold-text: #6b4a04;
+        --violet-text: #6a23bf;
+
+        --btn-bg: #c11574;
+        --btn-bg-2: #7b2fd6;
+        --btn-ink: #ffffff;
+
+        --live-bg: #9c0f5d;
+        --live-ink: #ffffff;
+
+        --ok: #0e8a5a;
+        --ok-text: #0a7049;
+        --danger: #c8102e;
+        --danger-text: #a90d27;
+        --danger-soft: rgba(200, 16, 46, 0.10);
+
+        --shadow: 0 24px 50px -30px rgba(86, 33, 126, 0.45);
+        --ring: 0 0 0 3px rgba(193, 21, 116, 0.40);
+    }
+}
+
+* {
+    box-sizing: border-box;
+}
 
 html, body {
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    font-family: var(--font-body);
+    background-color: var(--bg);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
 }
 
-.app-title {
-    align-self: center;
-    justify-self: center;
+body {
+    min-height: 100vh;
+    background-image:
+        radial-gradient(1100px 520px at 12% -8%, rgba(255, 73, 163, 0.16), transparent 60%),
+        radial-gradient(900px 480px at 100% 0%, rgba(45, 226, 226, 0.12), transparent 55%),
+        radial-gradient(800px 600px at 50% 120%, rgba(176, 114, 255, 0.14), transparent 60%);
+    background-attachment: fixed;
 }
 
-h1:focus {
+h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    line-height: 1.08;
+}
+
+a {
+    color: var(--brand-text);
+    text-underline-offset: 3px;
+}
+
+a:hover {
+    color: var(--ink);
+}
+
+/* Keyboard focus — visible everywhere */
+:focus-visible {
+    outline: 3px solid var(--magenta);
+    outline-offset: 2px;
+    border-radius: 6px;
+}
+
+h1:focus,
+h1:focus-visible {
     outline: none;
 }
 
-a, .btn-link {
-    color: #0071c1;
+/* Skip link */
+.skip-link {
+    position: absolute;
+    left: 16px;
+    top: -60px;
+    z-index: 200;
+    background: var(--btn-bg);
+    color: var(--btn-ink);
+    padding: 0.6rem 1rem;
+    border-radius: var(--radius-pill);
+    font-weight: 700;
+    text-decoration: none;
+    transition: top 0.18s ease;
 }
 
-.btn-primary {
-    color: #fff;
-    background-color: #1b6ec2;
-    border-color: #1861ac;
+.skip-link:focus {
+    top: 16px;
+    color: var(--btn-ink);
 }
 
-.content {
-    padding-top: 1.1rem;
+.visually-hidden {
+    position: absolute !important;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
 }
 
+/* Inline custom SVG icons */
+.icon {
+    width: 1.25em;
+    height: 1.25em;
+    display: inline-block;
+    vertical-align: -0.18em;
+    flex: none;
+}
+
+/* ---------- Buttons ---------- */
+.gp-btn {
+    -webkit-appearance: none;
+    appearance: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1rem;
+    line-height: 1;
+    padding: 0.85rem 1.5rem;
+    border-radius: var(--radius-pill);
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: transform 0.12s ease, box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+    text-decoration: none;
+}
+
+.gp-btn-primary {
+    color: var(--btn-ink);
+    background: linear-gradient(110deg, var(--btn-bg), var(--btn-bg-2));
+    box-shadow: 0 12px 30px -12px rgba(255, 73, 163, 0.6);
+}
+
+.gp-btn-primary:hover {
+    color: var(--btn-ink);
+    transform: translateY(-2px);
+    box-shadow: 0 18px 38px -12px rgba(255, 73, 163, 0.75);
+}
+
+.gp-btn-primary:active {
+    transform: translateY(0) scale(0.98);
+}
+
+.gp-btn-ghost {
+    color: var(--ink);
+    background: var(--surface-2);
+    border-color: var(--line-strong);
+}
+
+.gp-btn-ghost:hover {
+    color: var(--ink);
+    background: var(--surface-3);
+    border-color: var(--magenta);
+    transform: translateY(-1px);
+}
+
+/* "Demo" utility buttons — clearly secondary, tagged */
+.gp-btn-demo {
+    color: var(--ink);
+    background: transparent;
+    border: 1px dashed var(--line-strong);
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 0.9rem;
+    padding: 0.6rem 1.05rem;
+}
+
+.gp-btn-demo:hover {
+    color: var(--ink);
+    border-color: var(--violet);
+    background: var(--surface-2);
+}
+
+.gp-btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* ---------- Form controls (re-skinned, Bootstrap-compatible) ---------- */
+.gp-field {
+    width: 100%;
+    font-family: var(--font-body);
+    font-size: 1rem;
+    color: var(--ink);
+    background: var(--surface-2);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-sm);
+    padding: 0.8rem 1rem;
+    transition: border-color 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
+}
+
+.gp-field::placeholder {
+    color: var(--ink-faint);
+}
+
+.gp-field:focus {
+    outline: none;
+    border-color: var(--magenta);
+    box-shadow: var(--ring);
+    background: var(--surface);
+}
+
+.gp-label {
+    display: block;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 0.95rem;
+    margin-bottom: 0.4rem;
+    color: var(--ink);
+}
+
+.gp-help {
+    color: var(--ink-faint);
+    font-size: 0.86rem;
+    margin-top: 0.4rem;
+}
+
+/* Validation + autofill */
 .valid.modified:not([type=checkbox]) {
-    outline: 1px solid #26b050;
+    outline: none;
+    border-color: var(--ok);
 }
 
 .invalid {
-    outline: 1px solid red;
+    border-color: var(--danger) !important;
 }
 
 .validation-message {
-    color: red;
+    color: var(--danger-text);
+    font-size: 0.86rem;
 }
 
+input.gp-field:-webkit-autofill,
+input.gp-field:-webkit-autofill:focus {
+    -webkit-text-fill-color: var(--ink);
+    -webkit-box-shadow: 0 0 0 1000px var(--surface-2) inset;
+    caret-color: var(--ink);
+}
+
+/* ---------- Themed Blazor error UI ---------- */
 #blazor-error-ui {
-    background: lightyellow;
-    bottom: 0;
-    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
-    display: none;
-    left: 0;
-    padding: 0.6rem 1.25rem 0.7rem 1.25rem;
     position: fixed;
-    width: 100%;
+    left: 50%;
+    bottom: 1.25rem;
+    transform: translateX(-50%);
+    width: min(640px, calc(100% - 2rem));
+    background: var(--surface);
+    color: var(--ink);
+    border: 1px solid var(--line-strong);
+    border-left: 5px solid var(--gold);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow);
+    padding: 1rem 3rem 1rem 1.25rem;
+    display: none;
     z-index: 1000;
+    font-size: 0.95rem;
 }
 
-    #blazor-error-ui .dismiss {
-        cursor: pointer;
-        position: absolute;
-        right: 0.75rem;
-        top: 0.5rem;
-    }
+#blazor-error-ui .reload {
+    color: var(--brand-text);
+    font-weight: 700;
+    text-decoration: underline;
+    margin-left: 0.35rem;
+}
+
+#blazor-error-ui .dismiss {
+    -webkit-appearance: none;
+    appearance: none;
+    background: transparent;
+    border: 0;
+    color: var(--ink-soft);
+    cursor: pointer;
+    position: absolute;
+    right: 0.6rem;
+    top: 0.5rem;
+    font-size: 1.3rem;
+    line-height: 1;
+    padding: 0.25rem 0.5rem;
+    border-radius: 8px;
+}
+
+#blazor-error-ui .dismiss:hover {
+    color: var(--ink);
+    background: var(--surface-3);
+}
 
 .blazor-error-boundary {
-    background: url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTYiIGhlaWdodD0iNDkiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIG92ZXJmbG93PSJoaWRkZW4iPjxkZWZzPjxjbGlwUGF0aCBpZD0iY2xpcDAiPjxyZWN0IHg9IjIzNSIgeT0iNTEiIHdpZHRoPSI1NiIgaGVpZ2h0PSI0OSIvPjwvY2xpcFBhdGg+PC9kZWZzPjxnIGNsaXAtcGF0aD0idXJsKCNjbGlwMCkiIHRyYW5zZm9ybT0idHJhbnNsYXRlKC0yMzUgLTUxKSI+PHBhdGggZD0iTTI2My41MDYgNTFDMjY0LjcxNyA1MSAyNjUuODEzIDUxLjQ4MzcgMjY2LjYwNiA1Mi4yNjU4TDI2Ny4wNTIgNTIuNzk4NyAyNjcuNTM5IDUzLjYyODMgMjkwLjE4NSA5Mi4xODMxIDI5MC41NDUgOTIuNzk1IDI5MC42NTYgOTIuOTk2QzI5MC44NzcgOTMuNTEzIDI5MSA5NC4wODE1IDI5MSA5NC42NzgyIDI5MSA5Ny4wNjUxIDI4OS4wMzggOTkgMjg2LjYxNyA5OUwyNDAuMzgzIDk5QzIzNy45NjMgOTkgMjM2IDk3LjA2NTEgMjM2IDk0LjY3ODIgMjM2IDk0LjM3OTkgMjM2LjAzMSA5NC4wODg2IDIzNi4wODkgOTMuODA3MkwyMzYuMzM4IDkzLjAxNjIgMjM2Ljg1OCA5Mi4xMzE0IDI1OS40NzMgNTMuNjI5NCAyNTkuOTYxIDUyLjc5ODUgMjYwLjQwNyA1Mi4yNjU4QzI2MS4yIDUxLjQ4MzcgMjYyLjI5NiA1MSAyNjMuNTA2IDUxWk0yNjMuNTg2IDY2LjAxODNDMjYwLjczNyA2Ni4wMTgzIDI1OS4zMTMgNjcuMTI0NSAyNTkuMzEzIDY5LjMzNyAyNTkuMzEzIDY5LjYxMDIgMjU5LjMzMiA2OS44NjA4IDI1OS4zNzEgNzAuMDg4N0wyNjEuNzk1IDg0LjAxNjEgMjY1LjM4IDg0LjAxNjEgMjY3LjgyMSA2OS43NDc1QzI2Ny44NiA2OS43MzA5IDI2Ny44NzkgNjkuNTg3NyAyNjcuODc5IDY5LjMxNzkgMjY3Ljg3OSA2Ny4xMTgyIDI2Ni40NDggNjYuMDE4MyAyNjMuNTg2IDY2LjAxODNaTTI2My41NzYgODYuMDU0N0MyNjEuMDQ5IDg2LjA1NDcgMjU5Ljc4NiA4Ny4zMDA1IDI1OS43ODYgODkuNzkyMSAyNTkuNzg2IDkyLjI4MzcgMjYxLjA0OSA5My41Mjk1IDI2My41NzYgOTMuNTI5NSAyNjYuMTE2IDkzLjUyOTUgMjY3LjM4NyA5Mi4yODM3IDI2Ny4zODcgODkuNzkyMSAyNjcuMzg3IDg3LjMwMDUgMjY2LjExNiA4Ni4wNTQ3IDI2My41NzYgODYuMDU0N1oiIGZpbGw9IiNGRkU1MDAiIGZpbGwtcnVsZT0iZXZlbm9kZCIvPjwvZz48L3N2Zz4=) no-repeat 1rem/1.8rem, #b32121;
-    padding: 1rem 1rem 1rem 3.7rem;
-    color: white;
+    background: var(--danger);
+    padding: 1rem 1rem 1rem 1.25rem;
+    color: #fff;
+    border-radius: var(--radius-sm);
 }
 
-    .blazor-error-boundary::after {
-        content: "An error has occurred."
+.blazor-error-boundary::after {
+    content: "An error has occurred.";
+}
+
+/* ---------- Themed alert (Poll error) ---------- */
+.gp-alert {
+    background: var(--danger-soft);
+    border: 1px solid var(--danger);
+    border-left: 5px solid var(--danger);
+    color: var(--ink);
+    border-radius: var(--radius-sm);
+    padding: 1rem 1.25rem;
+    font-weight: 600;
+}
+
+/* ---------- Reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+        scroll-behavior: auto !important;
     }
+}

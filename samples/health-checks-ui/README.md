@@ -4,7 +4,12 @@ This sample demonstrates configuring [ASP.NET Core Health Checks](https://learn.
 
 ![Screenshot of the HealthChecksUI](./images/healthchecksui.png)
 
-The sample is based on the Aspire Starter App project template and thus consists of a frontend Blazor app that communicates with a backend ASP.NET Core API service and a Redis cache.
+The sample is based on the Aspire Starter App project template and thus consists of a frontend web app that communicates with a backend ASP.NET Core API service and a Redis cache.
+
+The frontend web app shows the health of the sample's services: a status overview, per-service uptime and latency tiles, a page that runs an on-demand health probe, and a live forecast streamed from the API service. It supports both light and dark themes:
+
+![Screenshot of the Aspire Status web frontend](./images/webfrontend-light.png#gh-light-mode-only)
+![Screenshot of the Aspire Status web frontend](./images/webfrontend-dark.png#gh-dark-mode-only)
 
 ## Prerequisites
 

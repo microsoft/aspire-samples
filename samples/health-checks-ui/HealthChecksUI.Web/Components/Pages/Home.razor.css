@@ -1,0 +1,205 @@
+.overview-head {
+    margin-bottom: 1.75rem;
+}
+
+.overview-head h1 {
+    font-size: clamp(1.9rem, 4vw, 2.6rem);
+}
+
+.overview-head .lede {
+    margin-top: 0.65rem;
+}
+
+/* ---- Status banner ----------------------------------------------------- */
+.status-banner {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.15rem 1.35rem;
+    border-radius: var(--radius);
+    border: 1px solid var(--line);
+    background: var(--surface);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 2.5rem;
+}
+
+.status-banner-ok {
+    border-color: color-mix(in srgb, var(--ok) 45%, transparent);
+    background:
+        linear-gradient(0deg, var(--ok-soft), var(--ok-soft)),
+        var(--surface);
+}
+
+.banner-mark {
+    display: grid;
+    place-items: center;
+    color: var(--ok);
+}
+
+.banner-mark ::deep .icon {
+    width: 2rem;
+    height: 2rem;
+}
+
+.banner-body {
+    flex: 1;
+}
+
+.banner-title {
+    font-family: var(--font-display);
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--ink);
+}
+
+.banner-meta {
+    margin-top: 0.15rem;
+    color: var(--ink-soft);
+    font-size: 0.9rem;
+}
+
+.banner-pulse {
+    display: inline-grid;
+    place-items: center;
+    width: 1.4rem;
+    height: 1.4rem;
+}
+
+/* ---- Section ----------------------------------------------------------- */
+.section-title {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 1rem;
+}
+
+/* ---- Tile grid --------------------------------------------------------- */
+.tile-grid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1.1rem;
+}
+
+.tile {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+    box-shadow: var(--shadow-sm);
+    transition: border-color 0.18s ease, transform 0.18s ease;
+}
+
+.tile:hover {
+    border-color: var(--line-strong);
+    transform: translateY(-2px);
+}
+
+.tile-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.85rem;
+}
+
+.tile-icon {
+    display: grid;
+    place-items: center;
+    width: 2.4rem;
+    height: 2.4rem;
+    border-radius: 10px;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    color: var(--brand);
+}
+
+.tile-icon ::deep .icon {
+    width: 1.3rem;
+    height: 1.3rem;
+}
+
+.tile-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--ink-soft);
+}
+
+.tile-status .dot {
+    width: 0.55rem;
+    height: 0.55rem;
+    border-radius: 50%;
+    background: var(--ok);
+    box-shadow: 0 0 0 3px var(--ok-soft);
+}
+
+.tile-name {
+    font-size: 1.12rem;
+    font-weight: 600;
+}
+
+.tile-role {
+    color: var(--ink-soft);
+    font-size: 0.88rem;
+    margin-top: 0.15rem;
+}
+
+.tile-stats {
+    display: flex;
+    gap: 1.75rem;
+    margin: 1.1rem 0 0.9rem;
+}
+
+.tile-stats div {
+    display: flex;
+    flex-direction: column;
+}
+
+.tile-stats dt {
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+}
+
+.tile-stats dd {
+    margin: 0.1rem 0 0;
+    font-family: var(--font-mono);
+    font-size: 1.05rem;
+    font-weight: 500;
+    color: var(--ink);
+}
+
+/* ---- Uptime track ------------------------------------------------------ */
+.uptime-track {
+    display: flex;
+    gap: 2px;
+    height: 1.6rem;
+    align-items: stretch;
+}
+
+.uptime-track .bar {
+    flex: 1;
+    border-radius: 2px;
+    min-width: 2px;
+}
+
+.uptime-track .bar-ok {
+    background: color-mix(in srgb, var(--ok) 55%, transparent);
+}
+
+.uptime-track .bar-warn {
+    background: var(--warn);
+}
+
+.tile-foot {
+    margin-top: 0.5rem;
+    font-size: 0.72rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+}

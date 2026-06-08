@@ -2,6 +2,16 @@
 
 This is a simple .NET app that shows how to use Orleans with Aspire orchestration.
 
+The voting frontend lets you create a poll, share its link, and vote on it. Vote totals are tracked by an Orleans grain and update in real time across every connected viewer. It supports both light and dark themes.
+
+![Screenshot of the Grain Poll live results](./images/grainpoll-results-light.png#gh-light-mode-only)
+![Screenshot of the Grain Poll live results](./images/grainpoll-results-dark.png#gh-dark-mode-only)
+
+Create a poll, share the link, and watch the votes roll in:
+
+![Screenshot of the Grain Poll create page](./images/grainpoll-new-light.png#gh-light-mode-only)
+![Screenshot of the Grain Poll create page](./images/grainpoll-new-dark.png#gh-dark-mode-only)
+
 ## Demonstrates
 
 - How to use Aspire to work with Orleans
@@ -23,8 +33,8 @@ If using the .NET CLI, run `dotnet run` from the `OrleansVoting.AppHost` directo
 
 1. On the **Resources** page, click on one of the endpoints for the listed project. This launches the simple voting app.
 2. In the voting app:
-    1. Enter a poll title, some questions, and click **Create**, *or* click **DEMO: auto-fill poll** to auto-fill the poll.
+    1. Enter a poll question, add some answer options, and click **Create poll**, *or* click **Demo: auto-fill poll** to auto-fill the poll.
     2. On the poll page, click one of the poll options to vote for it.
-    3. The results of the poll are displayed. Click the **DEMO: simulate other voters** button to simulate other voters voting on the poll and watch the results update.
+    3. The results of the poll are displayed. Click the **Simulate other voters** button to simulate other voters voting on the poll and watch the results update.
 
 For more information about using Orleans, see the [Orleans documentation](https://learn.microsoft.com/dotnet/orleans).

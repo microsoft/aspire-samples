@@ -3,6 +3,9 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "engines": {
+    "node": ">=20.19.0"
+  },
   "scripts": {
     "dev": "vite",
     "start": "vite",
@@ -11,10 +14,14 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@fontsource-variable/jetbrains-mono": "5.2.8",
+    "@fontsource-variable/orbitron": "5.2.8",
+    "@tabler/icons-react": "3.44.0",
     "react": "^19.2.6",
     "react-dom": "^19.2.6"
   },
   "devDependencies": {
+    "@tailwindcss/vite": "4.3.0",
     "@types/node": "^25.9.1",
     "@types/react": "^19.2.15",
     "@types/react-dom": "^19.2.3",
@@ -24,6 +31,7 @@
     "eslint": "^10.4.1",
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",
+    "tailwindcss": "4.3.0",
     "typescript": "~6.0.3",
     "vite": "^8.0.16"
   }

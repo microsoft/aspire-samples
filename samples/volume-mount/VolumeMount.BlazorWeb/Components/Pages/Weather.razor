@@ -1,39 +1,44 @@
 ﻿@page "/weather"
 @attribute [StreamRendering]
 
-<PageTitle>Weather</PageTitle>
+<PageTitle>Weather · Vault</PageTitle>
 
-<h1>Weather</h1>
-
-<p>This component demonstrates showing data.</p>
+<div class="page-head">
+    <h1>Weather</h1>
+    <p class="lead">A live five-day outlook, streamed in as the data resolves.</p>
+</div>
 
 @if (forecasts == null)
 {
-    <p><em>Loading...</em></p>
+    <div class="panel">
+        <p class="loading" aria-live="polite">Loading the latest forecast…</p>
+    </div>
 }
 else
 {
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Date</th>
-                <th aria-label="Temperature in Celsius">Temp. (C)</th>
-                <th aria-label="Temperature in Fahrenheit">Temp. (F)</th>
-                <th>Summary</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var forecast in forecasts)
-            {
+    <div class="panel">
+        <table class="table">
+            <thead>
                 <tr>
-                    <td>@forecast.Date.ToShortDateString()</td>
-                    <td>@forecast.TemperatureC</td>
-                    <td>@forecast.TemperatureF</td>
-                    <td>@forecast.Summary</td>
+                    <th>Date</th>
+                    <th aria-label="Temperature in Celsius">Temp. (C)</th>
+                    <th aria-label="Temperature in Fahrenheit">Temp. (F)</th>
+                    <th>Summary</th>
                 </tr>
-            }
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @foreach (var forecast in forecasts)
+                {
+                    <tr>
+                        <td>@forecast.Date.ToShortDateString()</td>
+                        <td>@forecast.TemperatureC</td>
+                        <td>@forecast.TemperatureF</td>
+                        <td>@forecast.Summary</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
 }
 
 @code {
