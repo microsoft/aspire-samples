@@ -39,11 +39,7 @@ internal class CatalogDbInitializer(IServiceProvider serviceProvider, ILogger<Ca
         static List<CatalogBrand> GetPreconfiguredCatalogBrands()
         {
             return [
-                new() { Brand = "Azure" },
-                new() { Brand = ".NET" },
-                new() { Brand = "Visual Studio" },
-                new() { Brand = "SQL Server" },
-                new() { Brand = "Other" }
+                new() { Brand = "Aspire" }
             ];
         }
 
@@ -52,33 +48,38 @@ internal class CatalogDbInitializer(IServiceProvider serviceProvider, ILogger<Ca
             return [
                 new() { Type = "Mug" },
                 new() { Type = "T-Shirt" },
-                new() { Type = "Sheet" },
-                new() { Type = "USB Memory Stick" }
+                new() { Type = "Hoodie" },
+                new() { Type = "Pin Badge" },
+                new() { Type = "Sticker Pack" }
             ];
         }
 
         static List<CatalogItem> GetPreconfiguredItems(DbSet<CatalogBrand> catalogBrands, DbSet<CatalogType> catalogTypes)
         {
-            var dotNet = catalogBrands.First(b => b.Brand == ".NET");
-            var other = catalogBrands.First(b => b.Brand == "Other");
+            var aspire = catalogBrands.First(b => b.Brand == "Aspire");
 
             var mug = catalogTypes.First(c => c.Type == "Mug");
             var tshirt = catalogTypes.First(c => c.Type == "T-Shirt");
-            var sheet = catalogTypes.First(c => c.Type == "Sheet");
+            var hoodie = catalogTypes.First(c => c.Type == "Hoodie");
+            var pinBadge = catalogTypes.First(c => c.Type == "Pin Badge");
+            var stickerPack = catalogTypes.First(c => c.Type == "Sticker Pack");
 
             return [
-                new() { CatalogType = tshirt, CatalogBrand = dotNet, AvailableStock = 100, Description = ".NET Bot Black Hoodie", Name = ".NET Bot Black Hoodie", Price = 19.5M, PictureFileName = "1.png" },
-                new() { CatalogType = mug, CatalogBrand = dotNet, AvailableStock = 100, Description = ".NET Black & White Mug", Name = ".NET Black & White Mug", Price= 8.50M, PictureFileName = "2.png" },
-                new() { CatalogType = tshirt, CatalogBrand = other, AvailableStock = 100, Description = "Prism White T-Shirt", Name = "Prism White T-Shirt", Price = 12, PictureFileName = "3.png" },
-                new() { CatalogType = tshirt, CatalogBrand = dotNet, AvailableStock = 100, Description = ".NET Foundation T-shirt", Name = ".NET Foundation T-shirt", Price = 12, PictureFileName = "4.png" },
-                new() { CatalogType = sheet, CatalogBrand = other, AvailableStock = 100, Description = "Roslyn Red Sheet", Name = "Roslyn Red Sheet", Price = 8.5M, PictureFileName = "5.png" },
-                new() { CatalogType = tshirt, CatalogBrand = dotNet, AvailableStock = 100, Description = ".NET Blue Hoodie", Name = ".NET Blue Hoodie", Price = 12, PictureFileName = "6.png" },
-                new() { CatalogType = tshirt, CatalogBrand = other, AvailableStock = 100, Description = "Roslyn Red T-Shirt", Name = "Roslyn Red T-Shirt", Price = 12, PictureFileName = "7.png" },
-                new() { CatalogType = tshirt, CatalogBrand = other, AvailableStock = 100, Description = "Kudu Purple Hoodie", Name = "Kudu Purple Hoodie", Price = 8.5M, PictureFileName = "8.png" },
-                new() { CatalogType = mug, CatalogBrand = other, AvailableStock = 100, Description = "Cup<T> White Mug", Name = "Cup<T> White Mug", Price = 12, PictureFileName = "9.png" },
-                new() { CatalogType = sheet, CatalogBrand = dotNet, AvailableStock = 100, Description = ".NET Foundation Sheet", Name = ".NET Foundation Sheet", Price = 12, PictureFileName = "10.png" },
-                new() { CatalogType = sheet, CatalogBrand = dotNet, AvailableStock = 100, Description = "Cup<T> Sheet", Name = "Cup<T> Sheet", Price = 8.5M, PictureFileName = "11.png" },
-                new() { CatalogType = tshirt, CatalogBrand = other, AvailableStock = 100, Description = "Prism White TShirt", Name = "Prism White TShirt", Price = 12, PictureFileName = "12.png" }
+                new() { CatalogType = hoodie, CatalogBrand = aspire, AvailableStock = 100, Name = "Aspire Bot Black Hoodie", Description = "A cozy black pullover hoodie featuring the friendly purple Aspire bot mascot.", Price = 19.5M, PictureFileName = "1.png" },
+                new() { CatalogType = mug, CatalogBrand = aspire, AvailableStock = 100, Name = "Aspire Black & White Mug", Description = "A classic enamel mug stamped with the Aspire wordmark in black and white.", Price = 8.50M, PictureFileName = "2.png" },
+                new() { CatalogType = tshirt, CatalogBrand = aspire, AvailableStock = 100, Name = "Aspire Dashboard T-Shirt", Description = "A soft cotton tee celebrating the Aspire developer dashboard.", Price = 12, PictureFileName = "3.png" },
+                new() { CatalogType = tshirt, CatalogBrand = aspire, AvailableStock = 100, Name = "Aspire Logo T-Shirt", Description = "A crisp white tee showcasing the signature Aspire logo.", Price = 12, PictureFileName = "4.png" },
+                new() { CatalogType = pinBadge, CatalogBrand = aspire, AvailableStock = 100, Name = "Aspire Logo Pin Badge", Description = "A pin-back button badge sporting the Aspire mark.", Price = 4.5M, PictureFileName = "5.png" },
+                new() { CatalogType = hoodie, CatalogBrand = aspire, AvailableStock = 100, Name = "Aspire Blue Hoodie", Description = "A blue pullover hoodie finished with the Aspire logo.", Price = 12, PictureFileName = "6.png" },
+                new() { CatalogType = tshirt, CatalogBrand = aspire, AvailableStock = 100, Name = "Aspire Telemetry T-Shirt", Description = "A tee inspired by Aspire's built-in OpenTelemetry tracing.", Price = 12, PictureFileName = "7.png" },
+                new() { CatalogType = hoodie, CatalogBrand = aspire, AvailableStock = 100, Name = "Aspire Purple Hoodie", Description = "A pullover hoodie in Aspire's signature violet.", Price = 8.5M, PictureFileName = "8.png" },
+                new() { CatalogType = mug, CatalogBrand = aspire, AvailableStock = 100, Name = "Aspire Resource Graph Mug", Description = "A ceramic mug featuring the Aspire resource graph.", Price = 12, PictureFileName = "9.png" },
+                new() { CatalogType = pinBadge, CatalogBrand = aspire, AvailableStock = 100, Name = "Aspire Orchestration Pin Badge", Description = "A pin badge celebrating Aspire app orchestration.", Price = 4.5M, PictureFileName = "10.png" },
+                new() { CatalogType = tshirt, CatalogBrand = aspire, AvailableStock = 100, Name = "Aspire Service Discovery T-Shirt", Description = "A tee highlighting Aspire's service discovery.", Price = 12, PictureFileName = "11.png" },
+                new() { CatalogType = tshirt, CatalogBrand = aspire, AvailableStock = 100, Name = "Aspire AppHost T-Shirt", Description = "A tee dedicated to the Aspire AppHost.", Price = 12, PictureFileName = "12.png" },
+                new() { CatalogType = stickerPack, CatalogBrand = aspire, AvailableStock = 100, Name = "Aspire Logo Sticker Pack", Description = "An assorted sticker pack to cover your laptop in Aspire logos.", Price = 5, PictureFileName = "13.png" },
+                new() { CatalogType = stickerPack, CatalogBrand = aspire, AvailableStock = 100, Name = "Aspire Integrations Sticker Pack", Description = "A sticker pack featuring popular Aspire integrations.", Price = 6, PictureFileName = "14.png" },
+                new() { CatalogType = stickerPack, CatalogBrand = aspire, AvailableStock = 100, Name = "Aspire Dashboard Sticker Pack", Description = "A sticker pack inspired by the Aspire dashboard.", Price = 5.5M, PictureFileName = "15.png" }
             ];
         }
 
