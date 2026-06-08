@@ -81,7 +81,7 @@ public partial class MainForm : Form
         _header = new CardPanel
         {
             Dock = DockStyle.Top,
-            Height = 96,
+            Height = 104,
             Margin = new Padding(0, 0, 0, 14),
             ContentPadding = 18,
         };
@@ -116,7 +116,7 @@ public partial class MainForm : Form
         _controlBar = new CardPanel
         {
             Dock = DockStyle.Top,
-            Height = 80,
+            Height = 88,
             Margin = new Padding(0, 0, 0, 14),
             ContentPadding = 16,
         };
@@ -231,14 +231,15 @@ public partial class MainForm : Form
         _footer = new CardPanel
         {
             Dock = DockStyle.Bottom,
-            Height = 46,
+            Height = 50,
             Margin = new Padding(0, 14, 0, 0),
-            ShadowSize = 12,
+            ShadowSize = 10,
             ContentPadding = 8,
         };
+        _footer.Resize += (_, _) => LayoutFooter();
         _footerLabel = new Label
         {
-            Dock = DockStyle.Fill,
+            AutoSize = false,
             BackColor = SkylineTheme.Surface,
             Font = SkylineTheme.FooterFont,
             ForeColor = SkylineTheme.TextSecondary,
@@ -249,6 +250,21 @@ public partial class MainForm : Form
         _footer.Controls.Add(_footerLabel);
     }
 
+    private void LayoutFooter()
+    {
+        var body = Rectangle.Round(_footer.BodyBounds);
+        if (body.Width <= 0)
+        {
+            return;
+        }
+
+        // Inset horizontally past the corner radius so the card's rounded corners and
+        // painted shadow stay visible around the centered footer text (rather than a
+        // full-bleed label squaring off the card).
+        var inset = _footer.CornerRadius;
+        _footerLabel.SetBounds(body.Left + inset, body.Top, Math.Max(0, body.Width - inset * 2), body.Height);
+    }
+
     private void LayoutHeader()
     {
         var c = _header.ContentRectangle;
@@ -257,13 +273,16 @@ public partial class MainForm : Form
             return;
         }
 
-        var markSize = Math.Min(MarkSize, c.Height);
+        // Center the mark and text stack within the white card body so the subtitle
+        // never spills below the card onto the gradient backdrop.
+        var body = Rectangle.Round(_header.BodyBounds);
+        var markSize = Math.Min(MarkSize, body.Height);
         var textX = c.Left + markSize + 18;
 
         var wordSize = _wordmark.PreferredSize;
         var subSize = _subtitle.PreferredSize;
         var totalH = wordSize.Height + subSize.Height + 2;
-        var startY = c.Top + Math.Max(0, (c.Height - totalH) / 2);
+        var startY = body.Top + Math.Max(0, (body.Height - totalH) / 2);
 
         _wordmark.Location = new Point(textX, startY);
         _subtitle.Location = new Point(textX, startY + wordSize.Height + 2);
@@ -272,8 +291,9 @@ public partial class MainForm : Form
     private void DrawHeaderMark(Graphics g)
     {
         var c = _header.ContentRectangle;
-        var markSize = Math.Min(MarkSize, c.Height);
-        var r = new RectangleF(c.Left, c.Top + (c.Height - markSize) / 2f, markSize, markSize);
+        var body = _header.BodyBounds;
+        var markSize = Math.Min(MarkSize, (int)body.Height);
+        var r = new RectangleF(c.Left, body.Top + (body.Height - markSize) / 2f, markSize, markSize);
         SkylineTheme.DrawSkylineMark(g, r, SkylineTheme.AccentCoral, SkylineTheme.AccentAmber);
     }
 
@@ -285,18 +305,24 @@ public partial class MainForm : Form
             return;
         }
 
+        // Vertically center the controls within the white card body rather than the
+        // padded content box. The primary button is taller than the padded area, so
+        // centering it on the body keeps it from spilling past the card's rounded
+        // lower edge onto the gradient backdrop.
+        var body = Rectangle.Round(_controlBar.BodyBounds);
+        int CenterY(int height) => body.Top + Math.Max(0, (body.Height - height) / 2);
+
         const int btnW = 156;
         const int btnH = 44;
-        var by = c.Top + Math.Max(0, (c.Height - btnH) / 2);
-        _btnLoad.SetBounds(c.Left, by, btnW, btnH);
+        _btnLoad.SetBounds(c.Left, CenterY(btnH), btnW, btnH);
 
         var chkX = _btnLoad.Right + 26;
-        _chkForceError.Location = new Point(chkX, c.Top + Math.Max(0, (c.Height - _chkForceError.Height) / 2));
+        _chkForceError.Location = new Point(chkX, CenterY(_chkForceError.Height));
 
         var statusX = _chkForceError.Right + 30;
-        _status.SetBounds(statusX, c.Top, Math.Max(60, c.Right - statusX), c.Height);
+        _status.SetBounds(statusX, body.Top, Math.Max(60, c.Right - statusX), body.Height);
 
-        _progress.SetBounds(c.Left, _controlBar.Height - _controlBar.ShadowSize - 4, c.Width, 5);
+        _progress.SetBounds(c.Left, body.Bottom - 8, c.Width, 5);
     }
 
     private void LayoutStrip()
