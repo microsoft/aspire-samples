@@ -1,0 +1,324 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "golang-api",
+    "version": "1.0.0",
+    "summary": "A tiny, idiomatic Go items API — hosted with Aspire.",
+    "description": "A lightweight **items** API written in **Go** with the [chi](https://github.com/go-chi/chi) router and a thread-safe in-memory store. It ships as a sample for **Aspire**, which runs the Go process during local development and packages it as a container for deployment.\n\nThe store is seeded with three items (`Learn Go`, `Build APIs`, `Deploy with Aspire`) and resets every time the process restarts. Use the **Test Request** button on any operation to try it live against this running instance.\n\n> This is a demo API: there is no authentication, and all data lives in memory.",
+    "contact": {
+      "name": "Aspire samples",
+      "url": "https://github.com/dotnet/aspire-samples"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/license/mit"
+    }
+  },
+  "servers": [
+    {
+      "url": "/",
+      "description": "This running Aspire-hosted instance"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Items",
+      "description": "Create, read, update, and delete items in the in-memory store."
+    },
+    {
+      "name": "System",
+      "description": "Service metadata and health probes used by Aspire."
+    }
+  ],
+  "paths": {
+    "/": {
+      "get": {
+        "tags": ["System"],
+        "operationId": "getApiInfo",
+        "summary": "API information",
+        "description": "Returns service metadata. When opened in a browser (an `Accept: text/html` request) this same route serves the interactive API reference you are reading now.",
+        "responses": {
+          "200": {
+            "description": "Service metadata.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiInfo" },
+                "example": {
+                  "message": "Go API with in-memory storage",
+                  "version": "1.0.0"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "tags": ["System"],
+        "operationId": "getHealth",
+        "summary": "Health check",
+        "description": "Liveness probe used by Aspire's `withHttpHealthCheck`. Always returns `200` while the process is serving.",
+        "responses": {
+          "200": {
+            "description": "The service is healthy.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HealthStatus" },
+                "example": { "status": "healthy" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/items": {
+      "get": {
+        "tags": ["Items"],
+        "operationId": "listItems",
+        "summary": "List all items",
+        "description": "Returns every item currently in the store. Order is not guaranteed.",
+        "responses": {
+          "200": {
+            "description": "The full collection of items.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Item" }
+                },
+                "example": [
+                  { "id": 1, "name": "Learn Go", "completed": false, "createdAt": "2026-01-15T09:24:00Z" },
+                  { "id": 2, "name": "Build APIs", "completed": false, "createdAt": "2026-01-15T09:24:00Z" },
+                  { "id": 3, "name": "Deploy with Aspire", "completed": false, "createdAt": "2026-01-15T09:24:00Z" }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Items"],
+        "operationId": "createItem",
+        "summary": "Create an item",
+        "description": "Adds a new item to the store. The `name` is required and is trimmed to a maximum of 200 characters.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/NewItem" },
+              "example": { "name": "Write integration tests" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The item was created.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Item" },
+                "example": { "id": 4, "name": "Write integration tests", "completed": false, "createdAt": "2026-01-15T09:30:00Z" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "413": { "$ref": "#/components/responses/PayloadTooLarge" }
+        }
+      }
+    },
+    "/items/{id}": {
+      "parameters": [
+        { "$ref": "#/components/parameters/ItemId" }
+      ],
+      "get": {
+        "tags": ["Items"],
+        "operationId": "getItem",
+        "summary": "Get an item by ID",
+        "responses": {
+          "200": {
+            "description": "The requested item.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Item" },
+                "example": { "id": 1, "name": "Learn Go", "completed": false, "createdAt": "2026-01-15T09:24:00Z" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      },
+      "put": {
+        "tags": ["Items"],
+        "operationId": "updateItem",
+        "summary": "Update an item",
+        "description": "Updates the `name` and/or `completed` fields of an existing item. Both fields are optional; omitted fields are left unchanged. An empty body (`{}`) returns the item untouched.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ItemUpdate" },
+              "example": { "completed": true }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The updated item.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Item" },
+                "example": { "id": 1, "name": "Learn Go", "completed": true, "createdAt": "2026-01-15T09:24:00Z" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "413": { "$ref": "#/components/responses/PayloadTooLarge" }
+        }
+      },
+      "delete": {
+        "tags": ["Items"],
+        "operationId": "deleteItem",
+        "summary": "Delete an item",
+        "responses": {
+          "204": { "description": "The item was deleted. No content is returned." },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    }
+  },
+  "components": {
+    "parameters": {
+      "ItemId": {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "The integer identifier of the item.",
+        "schema": { "type": "integer", "minimum": 1 },
+        "example": 1
+      }
+    },
+    "responses": {
+      "BadRequest": {
+        "description": "The request was malformed (for example an invalid ID, an unreadable body, or a missing/too-long name).",
+        "content": {
+          "text/plain": {
+            "schema": { "type": "string" },
+            "example": "Invalid request body"
+          }
+        }
+      },
+      "NotFound": {
+        "description": "No item exists with the given ID.",
+        "content": {
+          "text/plain": {
+            "schema": { "type": "string" },
+            "example": "Item not found"
+          }
+        }
+      },
+      "Conflict": {
+        "description": "The store has reached its capacity and cannot accept more items.",
+        "content": {
+          "text/plain": {
+            "schema": { "type": "string" },
+            "example": "Item limit reached"
+          }
+        }
+      },
+      "PayloadTooLarge": {
+        "description": "The request body exceeded the 1 MiB limit.",
+        "content": {
+          "text/plain": {
+            "schema": { "type": "string" },
+            "example": "Request body too large"
+          }
+        }
+      }
+    },
+    "schemas": {
+      "Item": {
+        "type": "object",
+        "description": "A single item in the store.",
+        "required": ["id", "name", "completed", "createdAt"],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Server-assigned, monotonically increasing identifier.",
+            "examples": [1]
+          },
+          "name": {
+            "type": "string",
+            "description": "Human-readable label for the item.",
+            "minLength": 1,
+            "maxLength": 200,
+            "examples": ["Learn Go"]
+          },
+          "completed": {
+            "type": "boolean",
+            "description": "Whether the item has been completed.",
+            "examples": [false]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "RFC 3339 timestamp set when the item was created.",
+            "examples": ["2026-01-15T09:24:00Z"]
+          }
+        }
+      },
+      "NewItem": {
+        "type": "object",
+        "description": "Payload for creating an item.",
+        "required": ["name"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Label for the new item.",
+            "minLength": 1,
+            "maxLength": 200,
+            "examples": ["Write integration tests"]
+          }
+        }
+      },
+      "ItemUpdate": {
+        "type": "object",
+        "description": "Partial update for an item. Provide only the fields you want to change.",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "New label for the item.",
+            "minLength": 1,
+            "maxLength": 200,
+            "examples": ["Learn Go (advanced)"]
+          },
+          "completed": {
+            "type": "boolean",
+            "description": "New completion state.",
+            "examples": [true]
+          }
+        }
+      },
+      "ApiInfo": {
+        "type": "object",
+        "description": "Service metadata returned from the API root.",
+        "required": ["message", "version"],
+        "properties": {
+          "message": { "type": "string", "examples": ["Go API with in-memory storage"] },
+          "version": { "type": "string", "examples": ["1.0.0"] }
+        }
+      },
+      "HealthStatus": {
+        "type": "object",
+        "description": "Health probe result.",
+        "required": ["status"],
+        "properties": {
+          "status": { "type": "string", "examples": ["healthy"] }
+        }
+      }
+    }
+  }
+}

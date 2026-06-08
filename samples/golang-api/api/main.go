@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	_ "embed"
 	"encoding/json"
 	"errors"
 	"io"
@@ -11,6 +12,7 @@ import (
 	"os"
 	"os/signal"
 	"strconv"
+	"strings"
 	"sync"
 	"syscall"
 	"time"
@@ -19,6 +21,18 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 )
+
+// openAPISpec is the OpenAPI 3.1 document describing this API. It is served
+// verbatim from /openapi.json and powers the Scalar API reference page.
+//
+//go:embed openapi.json
+var openAPISpec []byte
+
+// apiReferenceHTML is the themed Scalar API reference page served as the
+// browser-facing developer UX from / (for browsers) and /reference.
+//
+//go:embed reference.html
+var apiReferenceHTML []byte
 
 const (
 	maxJSONRequestBodyBytes = 1 << 20
@@ -198,6 +212,47 @@ func seedStore(store *Store) error {
 	return nil
 }
 
+// writeAPIReference serves the themed Scalar API reference page.
+func writeAPIReference(w http.ResponseWriter) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	if _, err := w.Write(apiReferenceHTML); err != nil {
+		log.Printf("write API reference: %v", err)
+	}
+}
+
+// prefersHTML reports whether the client's Accept header indicates a preference
+// for an HTML response, i.e. a web browser. Programmatic clients (curl, fetch,
+// SDKs) typically send */* or application/json and keep receiving JSON, so the
+// existing API contract is preserved. Only an explicit text/html with a
+// non-zero quality value opts into the interactive reference.
+func prefersHTML(accept string) bool {
+	for _, part := range strings.Split(accept, ",") {
+		mediaType := strings.TrimSpace(part)
+		if mediaType == "" {
+			continue
+		}
+
+		quality := 1.0
+		if idx := strings.IndexByte(mediaType, ';'); idx >= 0 {
+			params := mediaType[idx+1:]
+			mediaType = strings.TrimSpace(mediaType[:idx])
+			for _, param := range strings.Split(params, ";") {
+				param = strings.TrimSpace(param)
+				if value, ok := strings.CutPrefix(param, "q="); ok {
+					if q, err := strconv.ParseFloat(strings.TrimSpace(value), 64); err == nil {
+						quality = q
+					}
+				}
+			}
+		}
+
+		if strings.EqualFold(mediaType, "text/html") && quality > 0 {
+			return true
+		}
+	}
+	return false
+}
+
 func main() {
 	store := NewStore(maxStoredItems)
 
@@ -212,10 +267,28 @@ func main() {
 	r.Use(middleware.RequestID)
 
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		// Browsers land on the interactive Scalar API reference; programmatic
+		// clients keep receiving the original JSON service metadata.
+		if prefersHTML(r.Header.Get("Accept")) {
+			writeAPIReference(w)
+			return
+		}
+
 		writeJSONResponse(w, map[string]string{
 			"message": "Go API with in-memory storage",
 			"version": "1.0.0",
 		})
+	})
+
+	r.Get("/reference", func(w http.ResponseWriter, r *http.Request) {
+		writeAPIReference(w)
+	})
+
+	r.Get("/openapi.json", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		if _, err := w.Write(openAPISpec); err != nil {
+			log.Printf("write OpenAPI document: %v", err)
+		}
 	})
 
 	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
