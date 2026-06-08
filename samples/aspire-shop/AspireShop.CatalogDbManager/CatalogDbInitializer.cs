@@ -65,12 +65,12 @@ internal class CatalogDbInitializer(IServiceProvider serviceProvider, ILogger<Ca
             var stickerPack = catalogTypes.First(c => c.Type == "Sticker Pack");
 
             return [
-                new() { CatalogType = hoodie, CatalogBrand = aspire, AvailableStock = 100, Name = "Aspire Bot Black Hoodie", Description = "A cozy black pullover hoodie featuring the friendly purple Aspire bot mascot.", Price = 19.5M, PictureFileName = "1.png" },
+                new() { CatalogType = hoodie, CatalogBrand = aspire, AvailableStock = 100, Name = "Aspire Black Hoodie", Description = "A cozy black pullover hoodie featuring the layered Aspire logo on the chest.", Price = 19.5M, PictureFileName = "1.png" },
                 new() { CatalogType = mug, CatalogBrand = aspire, AvailableStock = 100, Name = "Aspire Black & White Mug", Description = "A classic enamel mug stamped with the Aspire wordmark in black and white.", Price = 8.50M, PictureFileName = "2.png" },
                 new() { CatalogType = tshirt, CatalogBrand = aspire, AvailableStock = 100, Name = "Aspire Dashboard T-Shirt", Description = "A soft cotton tee celebrating the Aspire developer dashboard.", Price = 12, PictureFileName = "3.png" },
                 new() { CatalogType = tshirt, CatalogBrand = aspire, AvailableStock = 100, Name = "Aspire Logo T-Shirt", Description = "A crisp white tee showcasing the signature Aspire logo.", Price = 12, PictureFileName = "4.png" },
                 new() { CatalogType = pinBadge, CatalogBrand = aspire, AvailableStock = 100, Name = "Aspire Logo Pin Badge", Description = "A pin-back button badge sporting the Aspire mark.", Price = 4.5M, PictureFileName = "5.png" },
-                new() { CatalogType = hoodie, CatalogBrand = aspire, AvailableStock = 100, Name = "Aspire Blue Hoodie", Description = "A blue pullover hoodie finished with the Aspire logo.", Price = 12, PictureFileName = "6.png" },
+                new() { CatalogType = hoodie, CatalogBrand = aspire, AvailableStock = 100, Name = "Aspire Heather Hoodie", Description = "A heather-gray pullover hoodie finished with the full-color Aspire logo.", Price = 12, PictureFileName = "6.png" },
                 new() { CatalogType = tshirt, CatalogBrand = aspire, AvailableStock = 100, Name = "Aspire Telemetry T-Shirt", Description = "A tee inspired by Aspire's built-in OpenTelemetry tracing.", Price = 12, PictureFileName = "7.png" },
                 new() { CatalogType = hoodie, CatalogBrand = aspire, AvailableStock = 100, Name = "Aspire Purple Hoodie", Description = "A pullover hoodie in Aspire's signature violet.", Price = 8.5M, PictureFileName = "8.png" },
                 new() { CatalogType = mug, CatalogBrand = aspire, AvailableStock = 100, Name = "Aspire Resource Graph Mug", Description = "A ceramic mug featuring the Aspire resource graph.", Price = 12, PictureFileName = "9.png" },
