@@ -9,7 +9,10 @@ public static class ApiEndpoints
 {
     public static WebApplication MapTodosApi(this WebApplication app)
     {
-        app.MapGet("/todos", async (NpgsqlConnection db) =>
+        var todos = app.MapGroup("")
+            .WithTags("Todos");
+
+        todos.MapGet("/todos", async (NpgsqlConnection db) =>
         {
             const string sql = """
                 SELECT Id, Title, IsComplete
@@ -17,9 +20,12 @@ public static class ApiEndpoints
                 """;
 
             return await db.QueryAsync<Todo>(sql);
-        });
+        })
+        .WithSummary("List todos")
+        .WithDescription("Returns every todo item from the PostgreSQL **Todos** database.")
+        .Produces<IEnumerable<Todo>>();
 
-        app.MapGet("/todos/{id}", async (int id, NpgsqlConnection db) =>
+        todos.MapGet("/todos/{id}", async (int id, NpgsqlConnection db) =>
         {
             const string sql = """
                 SELECT Id, Title, IsComplete
@@ -30,14 +36,21 @@ public static class ApiEndpoints
             return await db.QueryFirstOrDefaultAsync<Todo>(sql, new { id }) is { } todo
                 ? Results.Ok(todo)
                 : Results.NotFound();
-        });
+        })
+        .WithSummary("Get a todo by id")
+        .WithDescription("Returns a single todo item from the PostgreSQL **Todos** database.")
+        .Produces<Todo>()
+        .Produces(StatusCodes.Status404NotFound);
 
         return app;
     }
 
     public static WebApplication MapCatalogApi(this WebApplication app)
     {
-        app.MapGet("/catalog", async (MySqlConnection db) =>
+        var catalog = app.MapGroup("")
+            .WithTags("Catalog");
+
+        catalog.MapGet("/catalog", async (MySqlConnection db) =>
         {
             const string sql = """
                 SELECT Id, Name, Description, Price
@@ -45,9 +58,12 @@ public static class ApiEndpoints
                 """;
 
             return await db.QueryAsync<CatalogItem>(sql);
-        });
+        })
+        .WithSummary("List catalog items")
+        .WithDescription("Returns every catalog item from the MySQL **Catalog** database.")
+        .Produces<IEnumerable<CatalogItem>>();
 
-        app.MapGet("/catalog/{id}", async (int id, MySqlConnection db) =>
+        catalog.MapGet("/catalog/{id}", async (int id, MySqlConnection db) =>
         {
             const string sql = """
                 SELECT Id, Name, Description, Price
@@ -58,14 +74,21 @@ public static class ApiEndpoints
             return await db.QueryFirstOrDefaultAsync<CatalogItem>(sql, new { id }) is { } item
                 ? Results.Ok(item)
                 : Results.NotFound();
-        });
+        })
+        .WithSummary("Get a catalog item by id")
+        .WithDescription("Returns a single catalog item from the MySQL **Catalog** database.")
+        .Produces<CatalogItem>()
+        .Produces(StatusCodes.Status404NotFound);
 
         return app;
     }
 
     public static WebApplication MapAddressBookApi(this WebApplication app)
     {
-        app.MapGet("/addressbook", async (SqlConnection db) =>
+        var addressBook = app.MapGroup("")
+            .WithTags("AddressBook");
+
+        addressBook.MapGet("/addressbook", async (SqlConnection db) =>
         {
             const string sql = """
                 SELECT Id, FirstName, LastName, Email, Phone
@@ -73,9 +96,12 @@ public static class ApiEndpoints
                 """;
 
             return await db.QueryAsync<Contact>(sql);
-        });
+        })
+        .WithSummary("List contacts")
+        .WithDescription("Returns every contact from the SQL Server **AddressBook** database.")
+        .Produces<IEnumerable<Contact>>();
 
-        app.MapGet("/addressbook/{id}", async (int id, SqlConnection db) =>
+        addressBook.MapGet("/addressbook/{id}", async (int id, SqlConnection db) =>
         {
             const string sql = """
                 SELECT Id, FirstName, LastName, Email, Phone
@@ -86,7 +112,11 @@ public static class ApiEndpoints
             return await db.QueryFirstOrDefaultAsync<Contact>(sql, new { id }) is { } contact
                 ? Results.Ok(contact)
                 : Results.NotFound();
-        });
+        })
+        .WithSummary("Get a contact by id")
+        .WithDescription("Returns a single contact from the SQL Server **AddressBook** database.")
+        .Produces<Contact>()
+        .Produces(StatusCodes.Status404NotFound);
 
         return app;
     }
