@@ -65,6 +65,49 @@ public class BasketServiceClient(Basket.BasketClient client)
         _ = await client.DeleteBasketAsync(new DeleteCustomerBasketRequest { BuyerId = buyerId });
     }
 
+    public async Task<CustomerBasket> AdjustItemQuantityAsync(string buyerId, int productId, int delta)
+    {
+        var (basket, _) = await GetBasketAsync(buyerId);
+        basket ??= new CustomerBasket(buyerId);
+
+        var item = basket.Items.FirstOrDefault(i => i.ProductId == productId);
+
+        if (item is not null)
+        {
+            // Apply the change to the latest server-side quantity so rapid clicks or
+            // a tampered form can't desync the count. A non-positive result removes the line.
+            var newQuantity = item.Quantity + delta;
+            if (newQuantity < 1)
+            {
+                basket.Items.Remove(item);
+            }
+            else
+            {
+                item.Quantity = Math.Min(newQuantity, MaxQuantityPerItem);
+            }
+        }
+
+        var response = await client.UpdateBasketAsync(MapToCustomerBasketRequest(basket));
+        return MapToCustomerBasket(response);
+    }
+
+    public async Task<CustomerBasket> RemoveItemAsync(string buyerId, int productId)
+    {
+        var (basket, _) = await GetBasketAsync(buyerId);
+        basket ??= new CustomerBasket(buyerId);
+
+        var item = basket.Items.FirstOrDefault(i => i.ProductId == productId);
+        if (item is not null)
+        {
+            basket.Items.Remove(item);
+        }
+
+        var response = await client.UpdateBasketAsync(MapToCustomerBasketRequest(basket));
+        return MapToCustomerBasket(response);
+    }
+
+    private const int MaxQuantityPerItem = 99;
+
     private static CustomerBasketRequest MapToCustomerBasketRequest(CustomerBasket customerBasket)
     {
         var response = new CustomerBasketRequest
