@@ -3,27 +3,27 @@
 
 @inject CatalogServiceClient CatalogService
 
-<PageTitle>Atelier Aspire · The Collection</PageTitle>
+<PageTitle>Aspire Shop · Product catalog</PageTitle>
 
 <header class="topbar">
     <div class="topbar-inner">
-        <a class="brand" href="/" aria-label="Atelier Aspire, home">
+        <a class="brand" href="/" aria-label="Aspire Shop, home">
             <span class="brand-mark" aria-hidden="true">@Icons.Storefront</span>
             <span class="brand-words">
-                <span class="brand-kicker">Atelier</span>
-                <span class="brand-name">Aspire</span>
+                <span class="brand-kicker">Aspire</span>
+                <span class="brand-name">Shop</span>
             </span>
         </a>
-        <p class="brand-tagline">Considered objects for modern living</p>
-        <Cart BasketAvailabilityChanged="HandleBasketAvailabilityChanged" />
+        <p class="brand-tagline">Browse the product catalog and add items to your cart</p>
+        <CartButton BasketAvailabilityChanged="HandleBasketAvailabilityChanged" />
     </div>
 </header>
 
 <main id="main-content" class="shell">
     <section class="collection-head">
-        <p class="eyebrow">The shop · @DateTime.Now.Year</p>
-        <h1 class="collection-title">The Collection</h1>
-        <p class="collection-sub">A rotating selection of pieces, sourced and arranged by hand.</p>
+        <p class="eyebrow">Product catalog</p>
+        <h1 class="collection-title">Browse the catalog</h1>
+        <p class="collection-sub">Products are served by the Catalog service. Add items to your cart and they're stored by the Basket service.</p>
     </section>
 
     @if (catalog is { Data: var data })
@@ -40,10 +40,30 @@
                         </span>
                     </a>
                     <div class="product-body">
+                        @if (item.CatalogBrand is { Brand: var brand })
+                        {
+                            <p class="product-brand">@brand</p>
+                        }
                         <h2 class="product-name">@item.Name</h2>
+                        <div class="product-tags">
+                            @if (item.CatalogType is { Type: var type })
+                            {
+                                <span class="tag tag-type">@type</span>
+                            }
+                            @if (item.AvailableStock > 0)
+                            {
+                                <span class="tag tag-stock">
+                                    <span class="tag-dot" aria-hidden="true"></span>In stock
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="tag tag-out">Out of stock</span>
+                            }
+                        </div>
                         <div class="product-foot">
                             <span class="product-price">@item.Price.ToString("C")</span>
-                            @if (basketIsAvailable)
+                            @if (basketIsAvailable && item.AvailableStock > 0)
                             {
                                 <AddToCart Item="item" />
                             }
@@ -91,7 +111,7 @@
     {
         <div class="catalog-loading" role="status" aria-live="polite">
             <span class="loading-spinner" aria-hidden="true"></span>
-            <p>Bringing the collection together…</p>
+            <p>Loading products from the Catalog service…</p>
         </div>
     }
 </main>

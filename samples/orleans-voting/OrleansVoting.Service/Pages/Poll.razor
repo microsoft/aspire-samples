@@ -21,8 +21,8 @@ else if (!_loaded)
 {
     <section class="poll-loading" aria-busy="true">
         <span class="poll-loading-mark">@Icons.Logo</span>
-        <h2>Tuning in to poll @PollId…</h2>
-        <p>Connecting to the live results feed.</p>
+        <h2>Loading poll @PollId…</h2>
+        <p>Fetching the latest results.</p>
     </section>
 }
 else if (!_voted)
@@ -30,7 +30,7 @@ else if (!_voted)
     <section class="hero">
         <p class="eyebrow"><span class="eyebrow-ico">@Icons.Bolt</span> Cast your vote</p>
         <h1>@_results.Question</h1>
-        <p class="hero-sub">Pick the answer you like best. Results go live the moment you vote.</p>
+        <p class="hero-sub">Pick an option to cast your vote. Results update in real time as votes are tallied by an Orleans grain.</p>
     </section>
 
     <ul class="ballot" aria-label="Answer options">

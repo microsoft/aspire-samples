@@ -2,7 +2,7 @@
 
 This is a simple .NET app that shows how to use Orleans with Aspire orchestration.
 
-The voting frontend has a bespoke "Grain Poll" identity — a live, broadcast-style poll experience with a create-a-poll stage, animated result bars, a winner crown, and a celebratory confetti burst when you vote (CSS/JS, reduced-motion safe), in both light and dark themes. Votes update in real time across every connected viewer via Orleans grains.
+The voting frontend lets you create a poll, share its link, and vote on it. Vote totals are tracked by an Orleans grain and update in real time across every connected viewer. It supports both light and dark themes.
 
 ![Screenshot of the Grain Poll live results](./images/grainpoll-results-light.png#gh-light-mode-only)
 ![Screenshot of the Grain Poll live results](./images/grainpoll-results-dark.png#gh-dark-mode-only)

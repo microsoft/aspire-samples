@@ -10,6 +10,8 @@ public class CatalogDbContext(DbContextOptions<CatalogDbContext> options) : DbCo
     private static readonly Func<CatalogDbContext, int?, int?, int, IAsyncEnumerable<CatalogItem>> GetCatalogItemsAfterQuery =
         EF.CompileAsyncQuery((CatalogDbContext context, int? catalogBrandId, int? after, int pageSize) =>
            context.CatalogItems.AsNoTracking()
+               .Include(ci => ci.CatalogBrand)
+               .Include(ci => ci.CatalogType)
                .Where(ci => catalogBrandId == null || ci.CatalogBrandId == catalogBrandId)
                .Where(ci => after == null || ci.Id >= after)
                .OrderBy(ci => ci.Id)
@@ -18,6 +20,8 @@ public class CatalogDbContext(DbContextOptions<CatalogDbContext> options) : DbCo
     private static readonly Func<CatalogDbContext, int?, int, int, IAsyncEnumerable<CatalogItem>> GetCatalogItemsBeforeQuery =
         EF.CompileAsyncQuery((CatalogDbContext context, int? catalogBrandId, int before, int pageSize) =>
            context.CatalogItems.AsNoTracking()
+               .Include(ci => ci.CatalogBrand)
+               .Include(ci => ci.CatalogType)
                .Where(ci => catalogBrandId == null || ci.CatalogBrandId == catalogBrandId)
                .Where(ci => ci.Id <= before)
                .OrderByDescending(ci => ci.Id)

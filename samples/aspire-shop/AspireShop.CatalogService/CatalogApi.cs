@@ -1,5 +1,6 @@
 ﻿using AspireShop.CatalogDb;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.EntityFrameworkCore;
 
 namespace AspireShop.CatalogService;
 
@@ -41,8 +42,21 @@ public static class CatalogApi
                 firstId,
                 nextId,
                 itemsOnPage.Count < pageSize,
-                itemsOnPage.Take(pageSize)));
+                itemsOnPage.Take(pageSize).Select(ToDto)));
         }
+
+        group.MapGet("items/{catalogItemId:int}", async Task<Results<Ok<CatalogItemDto>, NotFound>> (int catalogItemId, CatalogDbContext catalogContext) =>
+        {
+            var item = await catalogContext.CatalogItems
+                .AsNoTracking()
+                .Include(ci => ci.CatalogBrand)
+                .Include(ci => ci.CatalogType)
+                .FirstOrDefaultAsync(ci => ci.Id == catalogItemId);
+
+            return item is null ? TypedResults.NotFound() : TypedResults.Ok(ToDto(item));
+        })
+        .Produces<CatalogItemDto>()
+        .Produces(StatusCodes.Status404NotFound);
 
         group.MapGet("items/{catalogItemId:int}/image", async (int catalogItemId, CatalogDbContext catalogDbContext, IHostEnvironment environment) =>
         {
@@ -67,6 +81,28 @@ public static class CatalogApi
 
         return group;
     }
+
+    private static CatalogItemDto ToDto(CatalogItem item) => new(
+        item.Id,
+        item.Name,
+        item.Description,
+        item.Price,
+        item.AvailableStock,
+        item.CatalogBrand is { } brand ? new CatalogBrandDto(brand.Id, brand.Brand) : null,
+        item.CatalogType is { } type ? new CatalogTypeDto(type.Id, type.Type) : null);
 }
 
-public record CatalogItemsPage(int FirstId, int NextId, bool IsLastPage, IEnumerable<CatalogItem> Data);
+public record CatalogItemsPage(int FirstId, int NextId, bool IsLastPage, IEnumerable<CatalogItemDto> Data);
+
+public record CatalogItemDto(
+    int Id,
+    string Name,
+    string? Description,
+    decimal Price,
+    int AvailableStock,
+    CatalogBrandDto? CatalogBrand,
+    CatalogTypeDto? CatalogType);
+
+public record CatalogBrandDto(int Id, string Brand);
+
+public record CatalogTypeDto(int Id, string Type);

@@ -3,9 +3,9 @@
 
 <EditForm Model="this" FormName="@($"addtocart-{Item.Id}")" OnSubmit="HandleAddToCart" data-enhance>
     <input type="hidden" name="itemid" value="@Item.Id" />
-    <button type="submit" class="add-button" aria-label="@($"Add {Item.Name} to bag")" title="@($"Add {Item.Name} to bag")">
+    <button type="submit" class="add-button" aria-label="@($"Add {Item.Name} to cart")" title="@($"Add {Item.Name} to cart")">
         <span class="add-icon" aria-hidden="true">@Icons.Plus</span>
-        <span class="add-text">Add to bag</span>
+        <span class="add-text">Add to cart</span>
     </button>
 </EditForm>
 
