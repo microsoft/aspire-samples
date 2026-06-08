@@ -4,6 +4,10 @@
 
 This sample demonstrates Aspire 13's polyglot platform support for Python applications, showcasing a simple CRUD API built with FastAPI and PostgreSQL.
 
+It also ships a bespoke, on-brand **[Scalar](https://github.com/scalar/scalar) API reference** as its developer-facing UX — a themed FastAPI/Python developer portal served at `/scalar`, with the classic Swagger UI still available at `/docs`.
+
+![Scalar API reference for the User API, themed in FastAPI teal with Python blue and yellow accents](./images/python-fastapi-postgres.png)
+
 ## Quick Start
 
 ### Prerequisites
@@ -73,12 +77,19 @@ The FastAPI application provides the following endpoints:
 - `POST /users` - Create a new user
 - `DELETE /users/{id}` - Delete a user
 
+Interactive API documentation is available at:
+
+- `GET /scalar` - Themed [Scalar](https://github.com/scalar/scalar) API reference (the highlighted UX)
+- `GET /docs` - Swagger UI
+- `GET /redoc` - ReDoc
+
 ## How It Works
 
 1. **Virtual Environment**: Aspire automatically creates a `.venv` directory and installs dependencies from `requirements.txt`
 2. **Modular Architecture**: The API is organized into separate modules:
    - `models.py` - Pydantic models for data validation
    - `database.py` - Database connection and repository pattern
+   - `scalar_theme.py` - Custom teal/Python theming for the Scalar API reference
    - `main.py` - FastAPI routes and application setup
 3. **Database Initialization**: On startup, the API creates the `users` table if it doesn't exist
 4. **Connection Management**: Aspire provides PostgreSQL connection via `POSTGRES_*` environment variables (non-.NET connection property pattern)
