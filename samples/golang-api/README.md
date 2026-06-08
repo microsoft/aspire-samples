@@ -1,6 +1,8 @@
 # Go API with In-Memory Storage
 
-REST API built with Go and chi router, using in-memory storage with thread-safe operations.
+![The golang-api Scalar API reference, a Go-cyan themed developer portal on a deep slate canvas](./images/golang-api.png)
+
+REST API built with Go and chi router, using in-memory storage with thread-safe operations. Opening the running app in a browser lands on a themed [Scalar](https://github.com/scalar/scalar) API reference&mdash;a polished, Go-cyan developer portal generated from the service's OpenAPI 3.1 document&mdash;while API clients keep receiving JSON.
 
 This sample demonstrates a **TypeScript AppHost** that runs the Go API directly during local development and switches to a checked-in Dockerfile for Docker Compose publishing.
 
@@ -20,6 +22,7 @@ flowchart LR
 - **withHttpHealthCheck**: Health check endpoint at `/health`
 - **In-Memory Storage**: Thread-safe CRUD operations with sync.RWMutex
 - **Chi Router**: Lightweight, idiomatic HTTP router for Go
+- **Scalar API Reference**: A themed, interactive OpenAPI 3.1 reference served straight from the Go binary
 
 ## Running
 
@@ -66,13 +69,21 @@ else
 
 ## API Endpoints
 
-- `GET /` - API information
+- `GET /` - Themed Scalar API reference in a browser, or JSON service information for non-browser clients (chosen via `Accept`-header content negotiation, so existing JSON consumers are unaffected)
+- `GET /reference` - Themed Scalar API reference (always HTML)
+- `GET /openapi.json` - OpenAPI 3.1 document describing the API
 - `GET /health` - Health check
 - `GET /items` - List all items
 - `GET /items/{id}` - Get item by ID
 - `POST /items` - Create new item
 - `PUT /items/{id}` - Update item
 - `DELETE /items/{id}` - Delete item
+
+## API Reference
+
+The Go binary embeds an OpenAPI 3.1 document (`api/openapi.json`) and a custom-themed Scalar reference page (`api/reference.html`) using `//go:embed`, so no extra services or build steps are required. The reference uses a distinct Go visual identity&mdash;Gopher cyan (`#00ADD8`) accents on a deep slate canvas&mdash;and lets you call the live API straight from the page with the **Test Request** button.
+
+Because `GET /` historically returned JSON, the root is content negotiated: browsers (which send `Accept: text/html`) land on the reference, while curl, fetch, and SDK clients keep receiving the original JSON payload. The reference is also always available at `/reference`.
 
 ## Security Notes
 
