@@ -57,13 +57,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DatabaseMigrations.Migratio
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DatabaseMigrations.ServiceDefaults", "..\samples\database-migrations\DatabaseMigrations.ServiceDefaults\DatabaseMigrations.ServiceDefaults.csproj", "{F0A1F89B-1171-4BC8-A245-5378CBD5CE70}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MetricsApp.AppHost", "..\samples\metrics\MetricsApp.AppHost\MetricsApp.AppHost.csproj", "{4CB38928-0992-4826-9713-6BD923CAA8E5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MetricsApp.AppHost", "..\samples\Metrics\MetricsApp.AppHost\MetricsApp.AppHost.csproj", "{4CB38928-0992-4826-9713-6BD923CAA8E5}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MetricsApp.Client", "..\samples\metrics\MetricsApp.Client\MetricsApp.Client.csproj", "{9BCA02C1-68B5-4E94-805C-43AA910BA865}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MetricsApp.Client", "..\samples\Metrics\MetricsApp.Client\MetricsApp.Client.csproj", "{9BCA02C1-68B5-4E94-805C-43AA910BA865}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MetricsApp", "..\samples\metrics\MetricsApp\MetricsApp.csproj", "{4EA8719F-2AF5-414E-AA10-AA3666E61C2A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MetricsApp", "..\samples\Metrics\MetricsApp\MetricsApp.csproj", "{4EA8719F-2AF5-414E-AA10-AA3666E61C2A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceDefaults", "..\samples\metrics\ServiceDefaults\ServiceDefaults.csproj", "{6D717975-3D02-42A3-B4D2-D03BA3766F1C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceDefaults", "..\samples\Metrics\ServiceDefaults\ServiceDefaults.csproj", "{6D717975-3D02-42A3-B4D2-D03BA3766F1C}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OrleansVoting.AppHost", "..\samples\orleans-voting\OrleansVoting.AppHost\OrleansVoting.AppHost.csproj", "{5FE1DA7B-B4FE-4A3C-BB9B-792A38B33006}"
 EndProject
@@ -122,6 +122,24 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImageGallery.ServiceDefaults", "..\samples\aspire-with-azure-functions\ImageGallery.ServiceDefaults\ImageGallery.ServiceDefaults.csproj", "{AFB99A94-7F9A-4D5A-996D-C266378CAB3F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImageGallery.Shared", "..\samples\aspire-with-azure-functions\ImageGallery.Shared\ImageGallery.Shared.csproj", "{54EBE8CF-AA1D-49B0-BE7A-783E095B8C1A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CustomResources", "CustomResources", "{B0D4FEC5-E8CA-4BF4-A037-5041F6EABB76}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ImageGallery", "ImageGallery", "{251D184E-5CB9-4C8B-9674-1C1376D70939}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PolyglotTaskQueue", "PolyglotTaskQueue", "{3B607C1C-DC47-4E37-A1A4-ECED4EF09E6B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ViteCSharpPostgres", "ViteCSharpPostgres", "{39D04FA1-7050-4D4E-A86C-1E93101AEFEC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CustomResources.AppHost", "..\samples\custom-resources\CustomResources.AppHost\CustomResources.AppHost.csproj", "{785C6E47-FD79-4C5D-9D77-8DFB7A6C087F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImageGallery.Api", "..\samples\image-gallery\api\api.csproj", "{9332610E-B100-4051-89E8-76FF87D56194}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImageGallery.Worker", "..\samples\image-gallery\worker\worker.csproj", "{D44AF02D-BFF2-4DBD-B6AD-D0C5A4CF8A3A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "worker-csharp", "..\samples\polyglot-task-queue\worker-csharp\worker-csharp.csproj", "{FCD41F72-0380-47EC-A418-F19A9518252E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ViteCSharpPostgres.Api", "..\samples\vite-csharp-postgres\api\Api.csproj", "{7E2F4C1A-9B33-4D58-AE10-1C2D3E4F5A6B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -317,6 +335,26 @@ Global
 		{54EBE8CF-AA1D-49B0-BE7A-783E095B8C1A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{54EBE8CF-AA1D-49B0-BE7A-783E095B8C1A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{54EBE8CF-AA1D-49B0-BE7A-783E095B8C1A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{785C6E47-FD79-4C5D-9D77-8DFB7A6C087F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{785C6E47-FD79-4C5D-9D77-8DFB7A6C087F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{785C6E47-FD79-4C5D-9D77-8DFB7A6C087F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{785C6E47-FD79-4C5D-9D77-8DFB7A6C087F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9332610E-B100-4051-89E8-76FF87D56194}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9332610E-B100-4051-89E8-76FF87D56194}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9332610E-B100-4051-89E8-76FF87D56194}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9332610E-B100-4051-89E8-76FF87D56194}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D44AF02D-BFF2-4DBD-B6AD-D0C5A4CF8A3A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D44AF02D-BFF2-4DBD-B6AD-D0C5A4CF8A3A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D44AF02D-BFF2-4DBD-B6AD-D0C5A4CF8A3A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D44AF02D-BFF2-4DBD-B6AD-D0C5A4CF8A3A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FCD41F72-0380-47EC-A418-F19A9518252E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FCD41F72-0380-47EC-A418-F19A9518252E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FCD41F72-0380-47EC-A418-F19A9518252E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FCD41F72-0380-47EC-A418-F19A9518252E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7E2F4C1A-9B33-4D58-AE10-1C2D3E4F5A6B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7E2F4C1A-9B33-4D58-AE10-1C2D3E4F5A6B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7E2F4C1A-9B33-4D58-AE10-1C2D3E4F5A6B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7E2F4C1A-9B33-4D58-AE10-1C2D3E4F5A6B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -380,6 +418,15 @@ Global
 		{6FD28298-8E14-4A2D-BA0E-60D5993C6F7C} = {28616E46-729B-4F5E-B2BD-BA30E12C411C}
 		{AFB99A94-7F9A-4D5A-996D-C266378CAB3F} = {28616E46-729B-4F5E-B2BD-BA30E12C411C}
 		{54EBE8CF-AA1D-49B0-BE7A-783E095B8C1A} = {28616E46-729B-4F5E-B2BD-BA30E12C411C}
+		{785C6E47-FD79-4C5D-9D77-8DFB7A6C087F} = {B0D4FEC5-E8CA-4BF4-A037-5041F6EABB76}
+		{B0D4FEC5-E8CA-4BF4-A037-5041F6EABB76} = {D5E0613C-C510-43CD-A1FD-32A3DF107114}
+		{9332610E-B100-4051-89E8-76FF87D56194} = {251D184E-5CB9-4C8B-9674-1C1376D70939}
+		{D44AF02D-BFF2-4DBD-B6AD-D0C5A4CF8A3A} = {251D184E-5CB9-4C8B-9674-1C1376D70939}
+		{251D184E-5CB9-4C8B-9674-1C1376D70939} = {D5E0613C-C510-43CD-A1FD-32A3DF107114}
+		{FCD41F72-0380-47EC-A418-F19A9518252E} = {3B607C1C-DC47-4E37-A1A4-ECED4EF09E6B}
+		{3B607C1C-DC47-4E37-A1A4-ECED4EF09E6B} = {D5E0613C-C510-43CD-A1FD-32A3DF107114}
+		{7E2F4C1A-9B33-4D58-AE10-1C2D3E4F5A6B} = {39D04FA1-7050-4D4E-A86C-1E93101AEFEC}
+		{39D04FA1-7050-4D4E-A86C-1E93101AEFEC} = {D5E0613C-C510-43CD-A1FD-32A3DF107114}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {87311815-2079-44E3-BA47-CC1B54811047}
