@@ -9,7 +9,7 @@ builder.AddServiceDefaults();
 
 builder.Services.AddDbContextPool<MyDb1Context>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("db1"), sqlOptions =>
-        sqlOptions.MigrationsAssembly("DatabaseMigrations.MigrationService")
+        sqlOptions.MigrationsAssembly(typeof(ApiDbInitializer).Assembly)
     ));
 builder.EnrichSqlServerDbContext<MyDb1Context>();
 
