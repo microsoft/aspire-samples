@@ -24,6 +24,40 @@
         }
     }
 
+    // Lock background scrolling while a quick-look modal is open. The native <dialog> blocks
+    // pointer interaction with the page but does NOT stop wheel/touch scrolling of the body,
+    // so we toggle overflow on <html> and pad for the now-missing scrollbar to avoid a shift.
+    var scrollLocked = false;
+
+    function lockScroll() {
+        if (scrollLocked) {
+            return;
+        }
+        var gap = window.innerWidth - document.documentElement.clientWidth;
+        document.documentElement.style.overflow = "hidden";
+        if (gap > 0) {
+            document.documentElement.style.paddingRight = gap + "px";
+        }
+        scrollLocked = true;
+    }
+
+    function unlockScroll() {
+        if (!scrollLocked) {
+            return;
+        }
+        document.documentElement.style.overflow = "";
+        document.documentElement.style.paddingRight = "";
+        scrollLocked = false;
+    }
+
+    function syncScrollLock() {
+        if (document.querySelector("dialog.quickview[open]")) {
+            lockScroll();
+        } else {
+            unlockScroll();
+        }
+    }
+
     document.addEventListener("click", function (event) {
         // Theme toggle.
         var themeToggle = event.target.closest("[data-theme-toggle]");
@@ -40,6 +74,7 @@
             if (dialog && typeof dialog.showModal === "function" && !dialog.open) {
                 event.preventDefault();
                 dialog.showModal();
+                lockScroll();
             }
             return;
         }
@@ -59,6 +94,14 @@
             event.target.close();
         }
     });
+
+    // Release the scroll lock whenever a quick-look dialog closes. `close` doesn't bubble, so we
+    // listen in the capture phase to catch it for any product's dialog (close button, backdrop, Esc).
+    document.addEventListener("close", function (event) {
+        if (event.target instanceof HTMLDialogElement && event.target.classList.contains("quickview")) {
+            unlockScroll();
+        }
+    }, true);
 
     // Preserve scroll position across the enhanced page refresh that follows cart mutations
     // (add-to-cart, quantity changes, clear). Those forms are marked data-preserve-scroll. Without
@@ -80,7 +123,15 @@
         }
     }
 
+    // After an enhanced refresh, reconcile the scroll lock before restoring scroll: a modal
+    // add-to-cart morphs the dialog's `open` attribute away without firing a `close` event, so
+    // without this the page could stay locked. Unlock first so scrollTo can take effect.
+    function onEnhancedLoad() {
+        syncScrollLock();
+        restoreScroll();
+    }
+
     if (window.Blazor && typeof window.Blazor.addEventListener === "function") {
-        window.Blazor.addEventListener("enhancedload", restoreScroll);
+        window.Blazor.addEventListener("enhancedload", onEnhancedLoad);
     }
 })();
