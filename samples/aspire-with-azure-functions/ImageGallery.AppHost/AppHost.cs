@@ -61,6 +61,8 @@ if (builder.ExecutionContext.IsRunMode)
         });
 }
 
+#pragma warning restore ASPIRECERTIFICATES001
+
 builder.AddProject<Projects.ImageGallery_FrontEnd>("frontend")
        .WithReference(queues)
        .WithReference(blobs)
