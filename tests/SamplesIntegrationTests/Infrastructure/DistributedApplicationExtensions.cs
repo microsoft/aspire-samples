@@ -159,7 +159,7 @@ public static partial class DistributedApplicationExtensions
 
         if (logger.IsEnabled(LogLevel.Information))
         {
-            logger.LogInformation("Waiting for resources [{Resources}] to become healthy.", string.Join(',', resourceTasks.Keys));
+            logger.LogInformation("Waiting for resources [{Resources}] to become healthy or run to completion.", string.Join(',', resourceTasks.Keys));
         }
 
         while (resourceTasks.Count > 0)
@@ -199,7 +199,7 @@ public static partial class DistributedApplicationExtensions
             {
                 if (logger.IsEnabled(LogLevel.Information))
                 {
-                    logger.LogInformation("Still waiting for resources [{Resources}] to become healthy.", string.Join(',', remainingResources));
+                    logger.LogInformation("Still waiting for resources [{Resources}] to become healthy or run to completion.", string.Join(',', remainingResources));
                 }
             }
         }
