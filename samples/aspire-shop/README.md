@@ -3,7 +3,7 @@
 ![Screenshot of the product catalog in the Aspire Shop sample](./images/aspireshop-frontend-light.png#gh-light-mode-only)
 ![Screenshot of the product catalog in the Aspire Shop sample](./images/aspireshop-frontend-dark.png#gh-dark-mode-only)
 
-Browse a product catalog served by the Catalog service and add items to a cart held by the Basket service.
+Browse a product catalog served by the Catalog service and add items to a cart held by the Basket service. Built with [Aspire](https://aspire.dev).
 
 ![Screenshot of more products in the Aspire Shop catalog](./images/aspireshop-frontend-2-light.png#gh-light-mode-only)
 ![Screenshot of more products in the Aspire Shop catalog](./images/aspireshop-frontend-2-dark.png#gh-dark-mode-only)

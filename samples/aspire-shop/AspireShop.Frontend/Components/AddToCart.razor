@@ -1,7 +1,7 @@
 ﻿@inject BasketServiceClient BasketClient
 @inject NavigationManager Navigation
 
-<EditForm Model="this" FormName="@($"addtocart-{Item.Id}")" OnSubmit="HandleAddToCart" data-enhance>
+<EditForm Model="this" FormName="@($"addtocart-{Item.Id}")" OnSubmit="HandleAddToCart" data-enhance data-preserve-scroll>
     <input type="hidden" name="itemid" value="@Item.Id" />
     <button type="submit" class="add-button" aria-label="@($"Add {Item.Name} to cart")" title="@($"Add {Item.Name} to cart")">
         <span class="add-icon" aria-hidden="true">@Icons.Plus</span>
@@ -21,7 +21,10 @@
     {
         await BasketClient.AddToCartAsync("user", ItemId);
 
-        // Preserve query string
-        Navigation.NavigateTo($"/{new Uri(Navigation.Uri).Query}");
+        // Re-request the current page (preserving the pagination query) so a freshly initialized
+        // component tree reflects the updated basket — e.g. the cart count in the top bar. The
+        // form is marked data-preserve-scroll so site.js keeps the scroll position across this
+        // enhanced refresh, avoiding a jarring jump to the top.
+        Navigation.Refresh();
     }
 }
