@@ -1,5 +1,8 @@
 ﻿using Azure.Provisioning.Storage;
 
+// The developer certificate APIs used below to serve the Azure Functions host over HTTPS are experimental.
+#pragma warning disable ASPIRECERTIFICATES001
+
 var builder = DistributedApplication.CreateBuilder(args);
 
 builder.AddAzureContainerAppEnvironment("env");
@@ -34,7 +37,29 @@ var functions = builder.AddAzureFunctionsProject<Projects.ImageGallery_Functions
                             // Queue Data Contributor role is required to send messages to the queue
                             StorageBuiltInRole.StorageQueueDataContributor)
                        .WithHostStorage(storage)
-                       .WithUrlForEndpoint("http", u => u.DisplayText = "Functions App");
+                       .WithUrlForEndpoint("https", u => u.DisplayText = "Functions App");
+
+if (builder.ExecutionContext.IsRunMode)
+{
+    // The Functions project's launchSettings.json passes '--useHttps' to the local Azure Functions host.
+    // Azure Functions Core Tools can't auto-generate a certificate on the .NET build of the tools, so the
+    // trusted ASP.NET Core developer certificate is exported to a password-protected PFX and handed to
+    // 'func host start' via its --cert/--password options. The PFX must be encrypted with a non-empty
+    // password, so an ephemeral one is generated for local development.
+    var functionsCertPassword = builder.AddParameter(
+        "functions-cert-password", () => Guid.NewGuid().ToString("N"), secret: true);
+
+    functions
+        .WithHttpsDeveloperCertificate(functionsCertPassword)
+        .WithHttpsCertificateConfiguration(context =>
+        {
+            context.Arguments.Add("--cert");
+            context.Arguments.Add(context.PfxPath);
+            context.Arguments.Add("--password");
+            context.Arguments.Add(context.Password!);
+            return Task.CompletedTask;
+        });
+}
 
 builder.AddProject<Projects.ImageGallery_FrontEnd>("frontend")
        .WithReference(queues)
