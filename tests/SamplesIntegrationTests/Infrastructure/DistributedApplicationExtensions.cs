@@ -9,6 +9,7 @@ using Aspire.Hosting.Azure;
 using Aspire.Hosting.JavaScript;
 using Aspire.Hosting.Python;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
@@ -131,16 +132,17 @@ public static partial class DistributedApplicationExtensions
     }
 
     /// <summary>
-    /// Waits for all resources in the application to reach one of the specified states.
+    /// Waits for all resources in the application to become healthy or run to completion.
     /// </summary>
     /// <remarks>
-    /// If <paramref name="targetStates"/> is null, the default states are <see cref="KnownResourceStates.Running"/> and <see cref="KnownResourceStates.Hidden"/>.
+    /// Resources with health checks must report <see cref="HealthStatus.Healthy"/>; resources without health
+    /// checks are considered healthy once running. Resources that run to completion (e.g. database migration
+    /// projects) are considered done once they reach one of the <see cref="KnownResourceStates.TerminalStates"/>.
     /// </remarks>
-    public static async Task WaitForResourcesAsync(this DistributedApplication app, IEnumerable<string>? targetStates = null, CancellationToken cancellationToken = default)
+    public static async Task WaitForResourcesAsync(this DistributedApplication app, CancellationToken cancellationToken = default)
     {
         var logger = app.Services.GetRequiredService<ILoggerFactory>().CreateLogger($"{nameof(SamplesIntegrationTests)}.{nameof(WaitForResourcesAsync)}");
 
-        targetStates ??= [KnownResourceStates.Running, ..KnownResourceStates.TerminalStates];
         var applicationModel = app.Services.GetRequiredService<DistributedApplicationModel>();
 
         var resourceTasks = new Dictionary<string, Task<(string Name, string State)>>();
@@ -152,14 +154,12 @@ public static partial class DistributedApplicationExtensions
                 continue;
             }
 
-            resourceTasks[resource.Name] = GetResourceWaitTask(resource.Name, targetStates, cancellationToken);
+            resourceTasks[resource.Name] = GetResourceWaitTask(resource.Name, cancellationToken);
         }
 
         if (logger.IsEnabled(LogLevel.Information))
         {
-            logger.LogInformation("Waiting for resources [{Resources}] to reach one of target states [{TargetStates}].",
-                string.Join(',', resourceTasks.Keys),
-                string.Join(',', targetStates));
+            logger.LogInformation("Waiting for resources [{Resources}] to become healthy.", string.Join(',', resourceTasks.Keys));
         }
 
         while (resourceTasks.Count > 0)
@@ -199,19 +199,21 @@ public static partial class DistributedApplicationExtensions
             {
                 if (logger.IsEnabled(LogLevel.Information))
                 {
-                    logger.LogInformation("Still waiting for resources [{Resources}] to reach one of target states [{TargetStates}].",
-                        string.Join(',', remainingResources),
-                        string.Join(',', targetStates));
+                    logger.LogInformation("Still waiting for resources [{Resources}] to become healthy.", string.Join(',', remainingResources));
                 }
             }
         }
 
         logger.LogInformation("Wait for all resources completed successfully!");
 
-        async Task<(string Name, string State)> GetResourceWaitTask(string resourceName, IEnumerable<string> targetStates, CancellationToken cancellationToken)
+        async Task<(string Name, string State)> GetResourceWaitTask(string resourceName, CancellationToken cancellationToken)
         {
-            var state = await app.ResourceNotifications.WaitForResourceAsync(resourceName, targetStates, cancellationToken);
-            return (resourceName, state);
+            var resourceEvent = await app.ResourceNotifications.WaitForResourceAsync(
+                resourceName,
+                re => re.Snapshot.HealthStatus is HealthStatus.Healthy
+                    || (re.Snapshot.State?.Text is { Length: > 0 } stateText && KnownResourceStates.TerminalStates.Contains(stateText)),
+                cancellationToken);
+            return (resourceName, resourceEvent.Snapshot.State?.Text ?? "Unknown");
         }
     }
 
