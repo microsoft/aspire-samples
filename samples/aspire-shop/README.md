@@ -5,6 +5,9 @@
 
 Browse a product catalog served by the Catalog service and add items to a cart held by the Basket service.
 
+![Screenshot of more products in the Aspire Shop catalog](./images/aspireshop-frontend-2-light.png#gh-light-mode-only)
+![Screenshot of more products in the Aspire Shop catalog](./images/aspireshop-frontend-2-dark.png#gh-dark-mode-only)
+
 ![Screenshot of the shopping cart in the Aspire Shop sample](./images/aspireshop-cart-light.png#gh-light-mode-only)
 ![Screenshot of the shopping cart in the Aspire Shop sample](./images/aspireshop-cart-dark.png#gh-dark-mode-only)
 
