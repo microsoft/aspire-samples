@@ -1,5 +1,4 @@
 ﻿@page "/cart"
-@attribute [StreamRendering(true)]
 
 @inject BasketServiceClient BasketClient
 @inject CatalogServiceClient CatalogService
@@ -17,10 +16,13 @@
             </span>
         </a>
         <p class="brand-tagline">Review the items the Basket service is holding for you</p>
-        <a class="continue-link" href="/">
-            <span class="continue-icon" aria-hidden="true">@Icons.ArrowLeft</span>
-            <span>Continue shopping</span>
-        </a>
+        <div class="topbar-actions">
+            <ThemeToggle />
+            <a class="continue-link" href="/">
+                <span class="continue-icon" aria-hidden="true">@Icons.ArrowLeft</span>
+                <span>Continue shopping</span>
+            </a>
+        </div>
     </div>
 </header>
 
@@ -99,7 +101,7 @@
                             <div class="cart-line-actions">
                                 @if (line.Item is not null)
                                 {
-                                    <EditForm Model="this" FormName="@($"qty-{line.ProductId}")" OnValidSubmit="HandleLineAction" data-enhance class="stepper-form">
+                                    <EditForm Model="this" FormName="@($"qty-{line.ProductId}")" OnValidSubmit="HandleLineAction" data-enhance data-preserve-scroll class="stepper-form">
                                         <input type="hidden" name="ProductId" value="@line.ProductId" />
                                         <div class="stepper" role="group" aria-label="@($"Quantity for {line.Item.Name}")">
                                             <button type="submit" name="Op" value="dec" class="stepper-btn"
@@ -125,7 +127,7 @@
                                 }
                                 else
                                 {
-                                    <EditForm Model="this" FormName="@($"qty-{line.ProductId}")" OnValidSubmit="HandleLineAction" data-enhance class="stepper-form">
+                                    <EditForm Model="this" FormName="@($"qty-{line.ProductId}")" OnValidSubmit="HandleLineAction" data-enhance data-preserve-scroll class="stepper-form">
                                         <input type="hidden" name="ProductId" value="@line.ProductId" />
                                         <button type="submit" name="Op" value="remove" class="line-remove"
                                                 aria-label="Remove unavailable item from cart">
@@ -159,7 +161,7 @@
                             <span>Checkout</span>
                         </button>
                     </EditForm>
-                    <EditForm Model="this" FormName="cart-clear" OnValidSubmit="HandleClear" data-enhance>
+                    <EditForm Model="this" FormName="cart-clear" OnValidSubmit="HandleClear" data-enhance data-preserve-scroll>
                         <button type="submit" class="btn btn-ghost btn-block">Clear cart</button>
                     </EditForm>
                 </aside>
@@ -229,19 +231,26 @@
                 break;
         }
 
-        Navigation.NavigateTo("/cart");
+        // Re-request the page so a freshly initialized component tree reflects the updated basket.
+        // The forms are marked data-preserve-scroll so site.js keeps the scroll position across the
+        // enhanced refresh.
+        Navigation.Refresh();
     }
 
     private async Task HandleCheckout()
     {
         await BasketClient.CheckoutBasketAsync("user");
+
+        // Navigate so the success state is reflected in the URL (and survives a refresh).
         Navigation.NavigateTo("/cart?checkout=success");
     }
 
     private async Task HandleClear()
     {
         await BasketClient.DeleteBasketAsync("user");
-        Navigation.NavigateTo("/cart");
+
+        // Re-request the page so the empty-cart state renders from a fresh basket load.
+        Navigation.Refresh();
     }
 
     private record CartLine(int ProductId, int Quantity, CatalogItem? Item);
