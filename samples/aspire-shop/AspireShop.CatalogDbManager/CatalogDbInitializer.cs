@@ -49,8 +49,10 @@ internal class CatalogDbInitializer(IServiceProvider serviceProvider, ILogger<Ca
                 new() { Type = "Mug" },
                 new() { Type = "T-Shirt" },
                 new() { Type = "Hoodie" },
+                new() { Type = "Jacket" },
+                new() { Type = "Skateboard" },
                 new() { Type = "Pin Badge" },
-                new() { Type = "Sticker Pack" }
+                new() { Type = "Sticker" }
             ];
         }
 
@@ -61,25 +63,27 @@ internal class CatalogDbInitializer(IServiceProvider serviceProvider, ILogger<Ca
             var mug = catalogTypes.First(c => c.Type == "Mug");
             var tshirt = catalogTypes.First(c => c.Type == "T-Shirt");
             var hoodie = catalogTypes.First(c => c.Type == "Hoodie");
+            var jacket = catalogTypes.First(c => c.Type == "Jacket");
+            var skateboard = catalogTypes.First(c => c.Type == "Skateboard");
             var pinBadge = catalogTypes.First(c => c.Type == "Pin Badge");
-            var stickerPack = catalogTypes.First(c => c.Type == "Sticker Pack");
+            var sticker = catalogTypes.First(c => c.Type == "Sticker");
 
             return [
-                new() { CatalogType = hoodie, CatalogBrand = aspire, AvailableStock = 100, Name = "Aspire Black Hoodie", Description = "A cozy black pullover hoodie featuring the layered Aspire logo on the chest.", Price = 19.5M, PictureFileName = "1.png" },
-                new() { CatalogType = mug, CatalogBrand = aspire, AvailableStock = 100, Name = "Aspire Black & White Mug", Description = "A classic enamel mug stamped with the Aspire wordmark in black and white.", Price = 8.50M, PictureFileName = "2.png" },
-                new() { CatalogType = tshirt, CatalogBrand = aspire, AvailableStock = 100, Name = "Aspire Dashboard T-Shirt", Description = "A soft cotton tee celebrating the Aspire developer dashboard.", Price = 12, PictureFileName = "3.png" },
-                new() { CatalogType = tshirt, CatalogBrand = aspire, AvailableStock = 100, Name = "Aspire Logo T-Shirt", Description = "A crisp white tee showcasing the signature Aspire logo.", Price = 12, PictureFileName = "4.png" },
-                new() { CatalogType = pinBadge, CatalogBrand = aspire, AvailableStock = 100, Name = "Aspire Logo Pin Badge", Description = "A pin-back button badge sporting the Aspire mark.", Price = 4.5M, PictureFileName = "5.png" },
-                new() { CatalogType = hoodie, CatalogBrand = aspire, AvailableStock = 100, Name = "Aspire Heather Hoodie", Description = "A heather-gray pullover hoodie finished with the full-color Aspire logo.", Price = 12, PictureFileName = "6.png" },
-                new() { CatalogType = tshirt, CatalogBrand = aspire, AvailableStock = 100, Name = "Aspire Telemetry T-Shirt", Description = "A tee inspired by Aspire's built-in OpenTelemetry tracing.", Price = 12, PictureFileName = "7.png" },
-                new() { CatalogType = hoodie, CatalogBrand = aspire, AvailableStock = 100, Name = "Aspire Purple Hoodie", Description = "A pullover hoodie in Aspire's signature violet.", Price = 8.5M, PictureFileName = "8.png" },
-                new() { CatalogType = mug, CatalogBrand = aspire, AvailableStock = 100, Name = "Aspire Resource Graph Mug", Description = "A ceramic mug featuring the Aspire resource graph.", Price = 12, PictureFileName = "9.png" },
-                new() { CatalogType = pinBadge, CatalogBrand = aspire, AvailableStock = 100, Name = "Aspire Orchestration Pin Badge", Description = "A pin badge celebrating Aspire app orchestration.", Price = 4.5M, PictureFileName = "10.png" },
-                new() { CatalogType = tshirt, CatalogBrand = aspire, AvailableStock = 100, Name = "Aspire Service Discovery T-Shirt", Description = "A tee highlighting Aspire's service discovery.", Price = 12, PictureFileName = "11.png" },
-                new() { CatalogType = tshirt, CatalogBrand = aspire, AvailableStock = 100, Name = "Aspire AppHost T-Shirt", Description = "A tee dedicated to the Aspire AppHost.", Price = 12, PictureFileName = "12.png" },
-                new() { CatalogType = stickerPack, CatalogBrand = aspire, AvailableStock = 100, Name = "Aspire Logo Sticker Pack", Description = "An assorted sticker pack to cover your laptop in Aspire logos.", Price = 5, PictureFileName = "13.png" },
-                new() { CatalogType = stickerPack, CatalogBrand = aspire, AvailableStock = 100, Name = "Aspire Integrations Sticker Pack", Description = "A sticker pack featuring popular Aspire integrations.", Price = 6, PictureFileName = "14.png" },
-                new() { CatalogType = stickerPack, CatalogBrand = aspire, AvailableStock = 100, Name = "Aspire Dashboard Sticker Pack", Description = "A sticker pack inspired by the Aspire dashboard.", Price = 5.5M, PictureFileName = "15.png" }
+                new() { CatalogType = hoodie, CatalogBrand = aspire, AvailableStock = 100, Name = "Aspire Charcoal Hoodie", Description = "A cozy charcoal pullover hoodie with the layered Aspire logo centered on the chest.", Price = 44.00M, PictureFileName = "1.png" },
+                new() { CatalogType = mug, CatalogBrand = aspire, AvailableStock = 100, Name = "Aspire Logo Mug", Description = "A glossy white ceramic mug featuring the layered Aspire logo.", Price = 12.00M, PictureFileName = "2.png" },
+                new() { CatalogType = tshirt, CatalogBrand = aspire, AvailableStock = 100, Name = "Aspire.dev Logo T-Shirt", Description = "A white cotton tee with a left-chest Aspire logo and the aspire.dev wordmark.", Price = 24.00M, PictureFileName = "3.png" },
+                new() { CatalogType = tshirt, CatalogBrand = aspire, AvailableStock = 100, Name = "Aspire OG T-Shirt", Description = "A lavender tee with an \"OG\" graphic and a mosaic band of Aspire logo tiles.", Price = 26.00M, PictureFileName = "4.png" },
+                new() { CatalogType = sticker, CatalogBrand = aspire, AvailableStock = 100, Name = "Aspire Logo Sticker", Description = "A glossy die-cut vinyl sticker of the layered Aspire logo.", Price = 3.50M, PictureFileName = "5.png" },
+                new() { CatalogType = hoodie, CatalogBrand = aspire, AvailableStock = 100, Name = "Aspire All-Over Print Hoodie", Description = "A sky-blue pullover hoodie with an all-over print of repeating Aspire logos.", Price = 52.00M, PictureFileName = "6.png" },
+                new() { CatalogType = tshirt, CatalogBrand = aspire, AvailableStock = 100, Name = "Aspire Red Logo T-Shirt", Description = "A bold red cotton tee with a large, centered Aspire logo.", Price = 22.00M, PictureFileName = "7.png" },
+                new() { CatalogType = hoodie, CatalogBrand = aspire, AvailableStock = 100, Name = "Aspire.dev Zip Hoodie", Description = "A periwinkle full-zip hoodie with a chest Aspire logo and aspire.dev down the sleeve.", Price = 49.50M, PictureFileName = "8.png" },
+                new() { CatalogType = mug, CatalogBrand = aspire, AvailableStock = 100, Name = "Aspire \"Say Bye to YAML\" Mug", Description = "A white ceramic mug with the Aspire logo and a playful \"Say bye to YAML\" message.", Price = 14.00M, PictureFileName = "9.png" },
+                new() { CatalogType = sticker, CatalogBrand = aspire, AvailableStock = 100, Name = "Aspire Logo Sticker Pack", Description = "A pack of glossy die-cut stickers featuring the layered Aspire logo.", Price = 9.00M, PictureFileName = "10.png" },
+                new() { CatalogType = pinBadge, CatalogBrand = aspire, AvailableStock = 100, Name = "Aspire \"No YAML\" Pin Badge", Description = "A round pin-back button badge with the Aspire logo and a \"No YAML\" callout.", Price = 5.00M, PictureFileName = "11.png" },
+                new() { CatalogType = tshirt, CatalogBrand = aspire, AvailableStock = 100, Name = "Aspire \"Goodbye YAML\" T-Shirt", Description = "A white tee with the Aspire logo and a \"Goodbye, YAML \u2014 Hello, Aspire\" slogan.", Price = 24.00M, PictureFileName = "12.png" },
+                new() { CatalogType = tshirt, CatalogBrand = aspire, AvailableStock = 100, Name = "Aspire.dev Ringer T-Shirt", Description = "A white ringer tee with lavender trim, the Aspire logo, and a \"Goodbye, YAML \u2014 Hello, aspire.dev\" slogan.", Price = 26.00M, PictureFileName = "13.png" },
+                new() { CatalogType = jacket, CatalogBrand = aspire, AvailableStock = 100, Name = "Aspire.dev Softshell Jacket", Description = "A tan softshell jacket with a chest Aspire logo and aspire.dev down the sleeve.", Price = 79.00M, PictureFileName = "14.png" },
+                new() { CatalogType = skateboard, CatalogBrand = aspire, AvailableStock = 100, Name = "Aspire Skateboard Deck", Description = "A white maple skateboard deck with the Aspire logo, wordmark, and aspire.dev branding.", Price = 65.00M, PictureFileName = "15.png" }
             ];
         }
 
