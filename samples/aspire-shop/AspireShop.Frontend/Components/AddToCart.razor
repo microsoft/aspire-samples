@@ -1,9 +1,9 @@
 ﻿@inject BasketServiceClient BasketClient
 @inject NavigationManager Navigation
 
-<EditForm Model="this" FormName="@($"addtocart-{Item.Id}")" OnSubmit="HandleAddToCart" data-enhance data-preserve-scroll>
+<EditForm Model="this" FormName="@FormName" OnSubmit="HandleAddToCart" data-enhance data-preserve-scroll>
     <input type="hidden" name="itemid" value="@Item.Id" />
-    <button type="submit" class="add-button" aria-label="@($"Add {Item.Name} to cart")" title="@($"Add {Item.Name} to cart")">
+    <button type="submit" class="@ButtonClass" aria-label="@($"Add {Item.Name} to cart")" title="@($"Add {Item.Name} to cart")">
         <span class="add-icon" aria-hidden="true">@Icons.Plus</span>
         <span class="add-text">Add to cart</span>
     </button>
@@ -14,8 +14,20 @@
     [EditorRequired]
     public required CatalogItem Item { get; set; }
 
+    // Discriminator so the same item can render more than one add-to-cart form on a single page
+    // (e.g. the product card and the quick-look modal) without two enhanced forms sharing a name.
+    [Parameter]
+    public string? Context { get; set; }
+
+    [Parameter]
+    public string ButtonClass { get; set; } = "add-button";
+
     [SupplyParameterFromForm]
     public int ItemId { get; set; }
+
+    private string FormName => string.IsNullOrEmpty(Context)
+        ? $"addtocart-{Item.Id}"
+        : $"addtocart-{Context}-{Item.Id}";
 
     private async Task HandleAddToCart()
     {
