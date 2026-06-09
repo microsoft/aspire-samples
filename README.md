@@ -18,7 +18,7 @@ Samples for [Aspire](https://aspire.dev).
 
 | Sample | Workload languages | AppHost | Deploy | Description |
 | --- | --- | --- | --- | --- |
-| [Integrating Frontend Apps](./samples/aspire-with-javascript) | JavaScript, TypeScript | C# AppHost | Run only | React, Vue, and Angular frontends integrated with Aspire. |
+| [Integrating Frontend Apps](./samples/dotnet/aspire-with-javascript) | JavaScript, TypeScript | C# AppHost | Run only | React, Vue, and Angular frontends integrated with Aspire. |
 | [Node + Redis + Vite](./samples/node-express-redis) | JavaScript, TypeScript | TypeScript AppHost | Docker Compose | Express API + React/Vite frontend + Redis behind YARP. |
 | [Vite + YARP Static Files](./samples/vite-yarp-static) | JavaScript, TypeScript | TypeScript AppHost | Docker Compose | Vite frontend served through YARP in run and publish modes. |
 
@@ -26,18 +26,18 @@ Samples for [Aspire](https://aspire.dev).
 
 | Sample | Workload languages | AppHost | Deploy | Description |
 | --- | --- | --- | --- | --- |
-| [Integrating Python Apps](./samples/aspire-with-python) | Python, JavaScript | C# AppHost | Run only | FastAPI backend + React frontend integrated with Aspire. |
-| [Vite + C# + PostgreSQL](./samples/vite-csharp-postgres) | C#, JavaScript, TypeScript | TypeScript AppHost | Docker Compose | React frontend + C# API + PostgreSQL in a single Aspire app. |
+| [Integrating Python Apps](./samples/dotnet/aspire-with-python) | Python, JavaScript | C# AppHost | Run only | FastAPI backend + React frontend integrated with Aspire. |
+| [Vite + C# + PostgreSQL](./samples/dotnet/vite-csharp-postgres) | C#, JavaScript, TypeScript | TypeScript AppHost | Docker Compose | React frontend + C# API + PostgreSQL in a single Aspire app. |
 | [Vite + React + FastAPI](./samples/vite-react-fastapi) | Python, JavaScript, TypeScript | TypeScript AppHost | Docker Compose | React frontend + FastAPI backend behind YARP. |
-| [Polyglot Task Queue](./samples/polyglot-task-queue) | JavaScript, Python, C# | TypeScript AppHost | Docker Compose | React + Node API + Python/C# workers coordinated through RabbitMQ. |
+| [Polyglot Task Queue](./samples/dotnet/polyglot-task-queue) | JavaScript, Python, C# | TypeScript AppHost | Docker Compose | React + Node API + Python/C# workers coordinated through RabbitMQ. |
 | [RAG Document Q&A](./samples/rag-document-qa-svelte) | Python, JavaScript | TypeScript AppHost | Run only | Svelte frontend + FastAPI + Qdrant + OpenAI. |
 
 ### Backend integrations by language
 
 | Sample | Workload languages | AppHost | Deploy | Description |
 | --- | --- | --- | --- | --- |
-| [Integrating a Node.js App](./samples/aspire-with-node) | JavaScript | C# AppHost | Run only | Integrates a Node.js backend with Aspire. |
-| [Integrating a Go App](./samples/container-build) | Go | C# AppHost | Docker Compose | Builds and runs a Go Gin app from a Dockerfile with Aspire. |
+| [Integrating a Node.js App](./samples/dotnet/aspire-with-node) | JavaScript | C# AppHost | Run only | Integrates a Node.js backend with Aspire. |
+| [Integrating a Go App](./samples/dotnet/container-build) | Go | C# AppHost | Docker Compose | Builds and runs a Go Gin app from a Dockerfile with Aspire. |
 | [Go API](./samples/golang-api) | Go | TypeScript AppHost | Docker Compose | Go + chi API with Aspire-managed run and publish flows. |
 | [Python FastAPI + PostgreSQL](./samples/python-fastapi-postgres) | Python | TypeScript AppHost | Docker Compose | FastAPI CRUD API wired to PostgreSQL and pgAdmin. |
 | [Python OpenAI Agent](./samples/python-openai-agent) | Python | TypeScript AppHost | Docker Compose | FastAPI AI agent sample with OpenAI integration. |
@@ -47,23 +47,23 @@ Samples for [Aspire](https://aspire.dev).
 
 | Sample | Workload languages | AppHost | Deploy | Description |
 | --- | --- | --- | --- | --- |
-| [Azure Functions](./samples/aspire-with-azure-functions) | C# | C# AppHost | Azure | Integrates Azure Functions, ASP.NET Core, and Blazor with Aspire. |
-| [Image Gallery](./samples/image-gallery) | C#, JavaScript, TypeScript | C# AppHost | Azure | Upload and process images with Azure Blob, Queues, SQL, and Container Apps Jobs. |
-| [Custom Metrics Visualization](./samples/Metrics) | C# | C# AppHost | Run only | Collects and visualizes custom metrics with Prometheus and Grafana. |
-| [Standalone Aspire dashboard](./samples/standalone-dashboard) | C# | C# AppHost | Run only | Runs the Aspire dashboard container against any OpenTelemetry source. |
+| [Azure Functions](./samples/dotnet/aspire-with-azure-functions) | C# | C# AppHost | Azure | Integrates Azure Functions, ASP.NET Core, and Blazor with Aspire. |
+| [Image Gallery](./samples/dotnet/image-gallery) | C#, JavaScript, TypeScript | C# AppHost | Azure | Upload and process images with Azure Blob, Queues, SQL, and Container Apps Jobs. |
+| [Custom Metrics Visualization](./samples/dotnet/Metrics) | C# | C# AppHost | Run only | Collects and visualizes custom metrics with Prometheus and Grafana. |
+| [Standalone Aspire dashboard](./samples/dotnet/standalone-dashboard) | C# | C# AppHost | Run only | Runs the Aspire dashboard container against any OpenTelemetry source. |
 
 ### .NET + frontend and platform
 
 | Sample | Workload languages | AppHost | Deploy | Description |
 | --- | --- | --- | --- | --- |
-| [Aspire Shop](./samples/aspire-shop) | C# | C# AppHost | Run only | Distributed e-commerce sample app demonstrating Aspire integration. |
-| [HealthChecksUI](./samples/health-checks-ui) | C# | C# AppHost | Docker Compose | Demonstrates isolated health endpoints with HealthChecksUI. |
-| [Integrating Client Apps](./samples/client-apps-integration) | C# | C# AppHost | Run only | Integrates Windows Forms and WPF apps with Aspire. |
-| [Integrating Orleans](./samples/orleans-voting) | C# | C# AppHost | Run only | Distributed actor model sample built with Orleans. |
-| [Working with Database Containers](./samples/database-containers) | C#, SQL | C# AppHost | Run only | Initializes and uses PostgreSQL, MongoDB, and SQL Server containers. |
-| [Running EF Core Migrations](./samples/database-migrations) | C# | C# AppHost | Run only | Runs Entity Framework Core migrations inside Aspire workflows. |
-| [Persisting Data with Volume Mounts](./samples/volume-mount) | C# | C# AppHost | Run only | Demonstrates data persistence with containers, Azure Storage, and SQL Server. |
-| [Custom Aspire hosting resources](./samples/custom-resources) | C# | C# AppHost | Run only | Demonstrates authoring custom hosting resources with Aspire. |
+| [Aspire Shop](./samples/dotnet/aspire-shop) | C# | C# AppHost | Run only | Distributed e-commerce sample app demonstrating Aspire integration. |
+| [HealthChecksUI](./samples/dotnet/health-checks-ui) | C# | C# AppHost | Docker Compose | Demonstrates isolated health endpoints with HealthChecksUI. |
+| [Integrating Client Apps](./samples/dotnet/client-apps-integration) | C# | C# AppHost | Run only | Integrates Windows Forms and WPF apps with Aspire. |
+| [Integrating Orleans](./samples/dotnet/orleans-voting) | C# | C# AppHost | Run only | Distributed actor model sample built with Orleans. |
+| [Working with Database Containers](./samples/dotnet/database-containers) | C#, SQL | C# AppHost | Run only | Initializes and uses PostgreSQL, MongoDB, and SQL Server containers. |
+| [Running EF Core Migrations](./samples/dotnet/database-migrations) | C# | C# AppHost | Run only | Runs Entity Framework Core migrations inside Aspire workflows. |
+| [Persisting Data with Volume Mounts](./samples/dotnet/volume-mount) | C# | C# AppHost | Run only | Demonstrates data persistence with containers, Azure Storage, and SQL Server. |
+| [Custom Aspire hosting resources](./samples/dotnet/custom-resources) | C# | C# AppHost | Run only | Demonstrates authoring custom hosting resources with Aspire. |
 
 ## eShop
 
