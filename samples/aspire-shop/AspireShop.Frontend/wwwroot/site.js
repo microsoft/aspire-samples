@@ -90,7 +90,7 @@
         }
 
         // Light-dismiss: a click that lands on the dialog element itself is a backdrop click.
-        if (event.target instanceof HTMLDialogElement && event.target.classList.contains("quickview")) {
+        if (window.HTMLDialogElement && event.target instanceof HTMLDialogElement && event.target.classList.contains("quickview")) {
             event.target.close();
         }
     });
@@ -98,7 +98,7 @@
     // Release the scroll lock whenever a quick-look dialog closes. `close` doesn't bubble, so we
     // listen in the capture phase to catch it for any product's dialog (close button, backdrop, Esc).
     document.addEventListener("close", function (event) {
-        if (event.target instanceof HTMLDialogElement && event.target.classList.contains("quickview")) {
+        if (window.HTMLDialogElement && event.target instanceof HTMLDialogElement && event.target.classList.contains("quickview")) {
             unlockScroll();
         }
     }, true);

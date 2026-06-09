@@ -82,7 +82,7 @@
                     <dialog id="qv-@item.Id" class="quickview" aria-label="@item.Name — quick look">
                         <div class="quickview-panel">
                             <div class="quickview-media">
-                                <img src="catalog/images/@item.Id" alt="@item.Name" />
+                                <img src="catalog/images/@item.Id" alt="@item.Name" loading="lazy" decoding="async" fetchpriority="low" />
                                 @if (item.Badge is { Length: > 0 } modalBadge)
                                 {
                                     <span class="product-badge @BadgeClass(modalBadge)">@modalBadge</span>
@@ -208,7 +208,7 @@
         "Special" => "product-badge--special",
         "New arrival" => "product-badge--new",
         "og:image" => "product-badge--og",
-        _ => "product-badge--default"
+        _ => ""
     };
 
     record PaginationInfo(int FirstId, int NextId, bool HasPreviousPage, bool HasNextPage);
