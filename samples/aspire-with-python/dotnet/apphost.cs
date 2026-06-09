@@ -7,14 +7,14 @@ var builder = DistributedApplication.CreateBuilder(args);
 
 var cache = builder.AddRedis("cache");
 
-var app = builder.AddUvicornApp("app", "./app", "main:app")
+var app = builder.AddUvicornApp("app", "../app", "main:app")
     .WithUv()
     .WithExternalHttpEndpoints()
     .WithReference(cache)
     .WaitFor(cache)
     .WithHttpHealthCheck("/health");
 
-var frontend = builder.AddViteApp("frontend", "./frontend")
+var frontend = builder.AddViteApp("frontend", "../frontend")
     .WithReference(app)
     .WaitFor(app);
 

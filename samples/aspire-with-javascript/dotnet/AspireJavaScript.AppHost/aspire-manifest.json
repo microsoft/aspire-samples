@@ -28,8 +28,8 @@
     },
     "angular": {
       "type": "dockerfile.v0",
-      "path": "../AspireJavaScript.Angular/Dockerfile",
-      "context": "../AspireJavaScript.Angular",
+      "path": "../../AspireJavaScript.Angular/Dockerfile",
+      "context": "../../AspireJavaScript.Angular",
       "env": {
         "NODE_ENV": "development",
         "services__weatherapi__http__0": "{weatherapi.bindings.http.url}",
@@ -48,8 +48,8 @@
     },
     "react": {
       "type": "dockerfile.v0",
-      "path": "../AspireJavaScript.React/Dockerfile",
-      "context": "../AspireJavaScript.React",
+      "path": "../../AspireJavaScript.React/Dockerfile",
+      "context": "../../AspireJavaScript.React",
       "env": {
         "NODE_ENV": "development",
         "services__weatherapi__http__0": "{weatherapi.bindings.http.url}",
@@ -69,8 +69,8 @@
     },
     "vue": {
       "type": "dockerfile.v0",
-      "path": "../AspireJavaScript.Vue/Dockerfile",
-      "context": "../AspireJavaScript.Vue",
+      "path": "../../AspireJavaScript.Vue/Dockerfile",
+      "context": "../../AspireJavaScript.Vue",
       "env": {
         "NODE_ENV": "development",
         "services__weatherapi__http__0": "{weatherapi.bindings.http.url}",

@@ -99,7 +99,7 @@ else
 }
 
 // Frontend: Vite+React for upload and gallery UI
-var frontend = builder.AddViteApp("frontend", "./frontend")
+var frontend = builder.AddViteApp("frontend", "../frontend")
     .WithEndpoint("http", e => e.Port = 9080)
     .WithReference(api)
     .WithUrl("", "Image Gallery");
@@ -108,4 +108,3 @@ var frontend = builder.AddViteApp("frontend", "./frontend")
 api.PublishWithContainerFiles(frontend, "wwwroot");
 
 builder.Build().Run();
-

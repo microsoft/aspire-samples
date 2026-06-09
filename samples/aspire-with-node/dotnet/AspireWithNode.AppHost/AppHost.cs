@@ -6,7 +6,7 @@ var cache = builder.AddRedis("cache")
 var weatherapi = builder.AddProject<Projects.AspireWithNode_AspNetCoreApi>("weatherapi")
     .WithHttpHealthCheck("/health");
 
-builder.AddNodeApp("frontend", "../NodeFrontend", "./app.js")
+builder.AddNodeApp("frontend", "../../NodeFrontend", "./app.js")
     .WithNpm()
     .WithRunScript("dev")
     .WithHttpEndpoint(port: 5223, env: "PORT")

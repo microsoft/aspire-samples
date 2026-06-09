@@ -17,17 +17,17 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AspireShop.Frontend", "..\s
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AspireShop.ServiceDefaults", "..\samples\aspire-shop\AspireShop.ServiceDefaults\AspireShop.ServiceDefaults.csproj", "{9F8BE5D7-566D-446C-A867-84A2F6EF3609}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AspireJavaScript.AppHost", "..\samples\aspire-with-javascript\AspireJavaScript.AppHost\AspireJavaScript.AppHost.csproj", "{9932E9F8-85C4-4978-BE21-DF665C0CACCF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AspireJavaScript.AppHost", "..\samples\aspire-with-javascript\dotnet\AspireJavaScript.AppHost\AspireJavaScript.AppHost.csproj", "{9932E9F8-85C4-4978-BE21-DF665C0CACCF}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AspireJavaScript.MinimalApi", "..\samples\aspire-with-javascript\AspireJavaScript.MinimalApi\AspireJavaScript.MinimalApi.csproj", "{68732D90-7FEE-426F-9921-07675EA78E41}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AspireJavaScript.MinimalApi", "..\samples\aspire-with-javascript\dotnet\AspireJavaScript.MinimalApi\AspireJavaScript.MinimalApi.csproj", "{68732D90-7FEE-426F-9921-07675EA78E41}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AspireJavaScript.ServiceDefaults", "..\samples\aspire-with-javascript\AspireJavaScript.ServiceDefaults\AspireJavaScript.ServiceDefaults.csproj", "{B6D057E6-A16A-4B19-BFF0-2646B580A260}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AspireJavaScript.ServiceDefaults", "..\samples\aspire-with-javascript\dotnet\AspireJavaScript.ServiceDefaults\AspireJavaScript.ServiceDefaults.csproj", "{B6D057E6-A16A-4B19-BFF0-2646B580A260}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AspireWithNode.AppHost", "..\samples\aspire-with-node\AspireWithNode.AppHost\AspireWithNode.AppHost.csproj", "{4072FEF6-00F5-4DB2-B2DD-314E7ED0932B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AspireWithNode.AppHost", "..\samples\aspire-with-node\dotnet\AspireWithNode.AppHost\AspireWithNode.AppHost.csproj", "{4072FEF6-00F5-4DB2-B2DD-314E7ED0932B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AspireWithNode.AspNetCoreApi", "..\samples\aspire-with-node\AspireWithNode.AspNetCoreApi\AspireWithNode.AspNetCoreApi.csproj", "{2F5C8620-DD80-4BB4-9052-F8E5D15B3DAC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AspireWithNode.AspNetCoreApi", "..\samples\aspire-with-node\dotnet\AspireWithNode.AspNetCoreApi\AspireWithNode.AspNetCoreApi.csproj", "{2F5C8620-DD80-4BB4-9052-F8E5D15B3DAC}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AspireWithNode.ServiceDefaults", "..\samples\aspire-with-node\AspireWithNode.ServiceDefaults\AspireWithNode.ServiceDefaults.csproj", "{9BA583C4-1AD4-4E34-9182-C01C05A9E619}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AspireWithNode.ServiceDefaults", "..\samples\aspire-with-node\dotnet\AspireWithNode.ServiceDefaults\AspireWithNode.ServiceDefaults.csproj", "{9BA583C4-1AD4-4E34-9182-C01C05A9E619}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ClientAppsIntegration.ApiService", "..\samples\client-apps-integration\ClientAppsIntegration.ApiService\ClientAppsIntegration.ApiService.csproj", "{646CB5FC-0971-433A-9B49-0FB6B94C0673}"
 EndProject
@@ -133,13 +133,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ViteCSharpPostgres", "ViteC
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CustomResources.AppHost", "..\samples\custom-resources\CustomResources.AppHost\CustomResources.AppHost.csproj", "{785C6E47-FD79-4C5D-9D77-8DFB7A6C087F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImageGallery.Api", "..\samples\image-gallery\api\api.csproj", "{9332610E-B100-4051-89E8-76FF87D56194}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImageGallery.Api", "..\samples\image-gallery\dotnet\api\api.csproj", "{9332610E-B100-4051-89E8-76FF87D56194}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImageGallery.Worker", "..\samples\image-gallery\worker\worker.csproj", "{D44AF02D-BFF2-4DBD-B6AD-D0C5A4CF8A3A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImageGallery.Worker", "..\samples\image-gallery\dotnet\worker\worker.csproj", "{D44AF02D-BFF2-4DBD-B6AD-D0C5A4CF8A3A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "worker-csharp", "..\samples\polyglot-task-queue\worker-csharp\worker-csharp.csproj", "{FCD41F72-0380-47EC-A418-F19A9518252E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "worker-csharp", "..\samples\polyglot-task-queue\dotnet\worker-csharp\worker-csharp.csproj", "{FCD41F72-0380-47EC-A418-F19A9518252E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ViteCSharpPostgres.Api", "..\samples\vite-csharp-postgres\api\Api.csproj", "{7E2F4C1A-9B33-4D58-AE10-1C2D3E4F5A6B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ViteCSharpPostgres.Api", "..\samples\vite-csharp-postgres\dotnet\api\Api.csproj", "{7E2F4C1A-9B33-4D58-AE10-1C2D3E4F5A6B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

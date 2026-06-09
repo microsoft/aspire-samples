@@ -3,7 +3,7 @@
 var weatherApi = builder.AddProject<Projects.AspireJavaScript_MinimalApi>("weatherapi")
     .WithExternalHttpEndpoints();
 
-builder.AddJavaScriptApp("angular", "../AspireJavaScript.Angular", runScriptName: "start")
+builder.AddJavaScriptApp("angular", "../../AspireJavaScript.Angular", runScriptName: "start")
     .WithNpm(installCommand: "ci")
     .WithReference(weatherApi)
     .WaitFor(weatherApi)
@@ -11,7 +11,7 @@ builder.AddJavaScriptApp("angular", "../AspireJavaScript.Angular", runScriptName
     .WithExternalHttpEndpoints()
     .PublishAsDockerFile();
 
-builder.AddJavaScriptApp("react", "../AspireJavaScript.React", runScriptName: "start")
+builder.AddJavaScriptApp("react", "../../AspireJavaScript.React", runScriptName: "start")
     .WithNpm(installCommand: "ci")
     .WithReference(weatherApi)
     .WaitFor(weatherApi)
@@ -20,7 +20,7 @@ builder.AddJavaScriptApp("react", "../AspireJavaScript.React", runScriptName: "s
     .WithExternalHttpEndpoints()
     .PublishAsDockerFile();
 
-builder.AddJavaScriptApp("vue", "../AspireJavaScript.Vue")
+builder.AddJavaScriptApp("vue", "../../AspireJavaScript.Vue")
     .WithRunScript("start")
     .WithNpm(installCommand: "ci")
     .WithReference(weatherApi)
@@ -29,7 +29,7 @@ builder.AddJavaScriptApp("vue", "../AspireJavaScript.Vue")
     .WithExternalHttpEndpoints()
     .PublishAsDockerFile();
 
-var reactVite = builder.AddViteApp("reactvite", "../AspireJavaScript.Vite")
+var reactVite = builder.AddViteApp("reactvite", "../../AspireJavaScript.Vite")
     .WithNpm(installCommand: "ci")
     .WithReference(weatherApi)
     .WithEnvironment("BROWSER", "none");
