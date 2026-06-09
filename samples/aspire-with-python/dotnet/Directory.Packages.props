@@ -1,0 +1,10 @@
+<Project>
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageVersion Include="Aspire.Hosting.JavaScript" Version="13.4.0" />
+    <PackageVersion Include="Aspire.Hosting.Python" Version="13.4.0" />
+    <PackageVersion Include="Aspire.Hosting.Redis" Version="13.4.0" />
+  </ItemGroup>
+</Project>

@@ -31,11 +31,11 @@ Every front end is keyboard operable, ships a skip link, announces async state w
 
 If using the Aspire CLI, run `aspire run` from this directory.
 
-If using VS Code, open this directory as a workspace and launch the `AspireJavaScript.AppHost` project using either the Aspire or C# debuggers.
+If using VS Code, open this directory as a workspace and launch the `dotnet/AspireJavaScript.AppHost` project using either the Aspire or C# debuggers.
 
-If using Visual Studio, open the solution file `AspireJavaScript.slnx` and launch/debug the `AspireJavaScript.AppHost` project.
+If using Visual Studio, open the solution file `dotnet/AspireJavaScript.slnx` and launch/debug the `AspireJavaScript.AppHost` project.
 
-If using the .NET CLI, run `dotnet run` from the `AspireShop.AppHost` directory.
+If using the .NET CLI, run `dotnet run` from the `dotnet/AspireJavaScript.AppHost` directory.
 
 ### Experiencing the app
 

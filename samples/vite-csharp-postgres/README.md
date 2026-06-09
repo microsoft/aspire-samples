@@ -70,7 +70,7 @@ const postgres = await builder.addPostgres("postgres")
 
 const db = await postgres.addDatabase("db");
 
-const api = await builder.addCSharpApp("api", "./api")
+const api = await builder.addCSharpApp("api", "./dotnet/api")
     .withHttpHealthCheck({ path: "/health" })
     .withExternalHttpEndpoints()
     .waitFor(db)

@@ -21,4 +21,4 @@ The sample consists of two apps:
 
 If using the Aspire CLI, run `aspire run` from this directory.
 
-If using VS Code, open this directory as a workspace and launch the `apphost.cs` C# file using either the Aspire or C# debuggers.
+If using VS Code, open this directory as a workspace and launch the `dotnet/apphost.cs` C# file using either the Aspire or C# debuggers.
