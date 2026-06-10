@@ -1,6 +1,7 @@
 import contextlib
 import logging
 import os
+import time
 import uuid
 
 import fastapi
@@ -16,6 +17,9 @@ DATABASE_NAME = "tododb"
 CONTAINER_NAME = "todos"
 PARTITION_KEY_PATH = "/UserId"
 DEFAULT_USER_ID = "sampleuser"
+
+MAX_RETRIES = 10
+RETRY_DELAY_SECONDS = 3
 
 
 class TodoCreate(BaseModel):
@@ -33,6 +37,18 @@ class Todo(BaseModel):
 cosmos_container = None
 
 
+def _parse_connection_string(conn_str: str) -> tuple[str, str]:
+    """Parse AccountEndpoint and AccountKey from a Cosmos DB connection string."""
+    parts = dict(
+        part.split("=", 1)
+        for part in conn_str.split(";")
+        if "=" in part
+    )
+    endpoint = parts.get("AccountEndpoint", "")
+    key = parts.get("AccountKey", "")
+    return endpoint, key
+
+
 def get_cosmos_container():
     """Get or create the Cosmos DB container, retrying until the emulator is ready."""
     global cosmos_container
@@ -42,14 +58,40 @@ def get_cosmos_container():
     connection_string = os.getenv("COSMOS_CONNECTIONSTRING", "")
     db_name = os.getenv("COSMOS_DATABASENAME", DATABASE_NAME)
 
-    client = CosmosClient.from_connection_string(connection_string)
-    database = client.create_database_if_not_exists(db_name)
-    container = database.create_container_if_not_exists(
-        id=CONTAINER_NAME,
-        partition_key=PartitionKey(path=PARTITION_KEY_PATH),
-    )
-    cosmos_container = container
-    return container
+    # Parse the connection string to extract the endpoint and key.
+    # The Aspire-injected connection string includes .NET-specific settings
+    # like DisableServerCertificateValidation that the Python SDK doesn't
+    # understand, so we construct the client explicitly.
+    endpoint, key = _parse_connection_string(connection_string)
+    logger.info(f"Connecting to Cosmos DB at {endpoint}, database: {db_name}")
+
+    # The Cosmos DB emulator uses a self-signed certificate, so we must
+    # disable SSL verification. We also retry because the emulator can
+    # take time to become ready.
+    for attempt in range(1, MAX_RETRIES + 1):
+        try:
+            client = CosmosClient(
+                url=endpoint,
+                credential=key,
+                connection_verify=False,
+                enable_endpoint_discovery=False,
+            )
+            database = client.create_database_if_not_exists(db_name)
+            container = database.create_container_if_not_exists(
+                id=CONTAINER_NAME,
+                partition_key=PartitionKey(path=PARTITION_KEY_PATH),
+            )
+            cosmos_container = container
+            logger.info("Connected to Cosmos DB successfully.")
+            return container
+        except Exception as ex:
+            logger.warning(
+                f"Cosmos DB connection attempt {attempt}/{MAX_RETRIES} failed: {ex}"
+            )
+            if attempt < MAX_RETRIES:
+                time.sleep(RETRY_DELAY_SECONDS)
+            else:
+                raise
 
 
 @contextlib.asynccontextmanager

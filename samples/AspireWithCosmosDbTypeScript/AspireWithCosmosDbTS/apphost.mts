@@ -3,7 +3,15 @@ import { createBuilder } from './.aspire/modules/aspire.mjs';
 const builder = await createBuilder();
 
 // Add Azure Cosmos DB and run as the local emulator during development.
-const cosmos = builder.addAzureCosmosDB("cosmos").runAsEmulator();
+// Configure the emulator to use a fixed gateway port and report 127.0.0.1
+// so the Python SDK can connect without being redirected to the container's
+// internal IP address.
+const cosmos = builder.addAzureCosmosDB("cosmos").runAsEmulator({
+    configureContainer: async (emulator) => {
+        await emulator.withGatewayPort({ port: 8081 });
+        await emulator.withEnvironment("AZURE_COSMOS_EMULATOR_IP_ADDRESS_OVERRIDE", "127.0.0.1");
+    }
+});
 
 // Add a database named "tododb" to the Cosmos DB account.
 const tododb = cosmos.addCosmosDatabase("tododb");
