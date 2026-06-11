@@ -88,6 +88,7 @@ public static class CatalogApi
         item.Description,
         item.Price,
         item.AvailableStock,
+        item.Badge,
         item.CatalogBrand is { } brand ? new CatalogBrandDto(brand.Id, brand.Brand) : null,
         item.CatalogType is { } type ? new CatalogTypeDto(type.Id, type.Type) : null);
 }
@@ -100,6 +101,7 @@ public record CatalogItemDto(
     string? Description,
     decimal Price,
     int AvailableStock,
+    string? Badge,
     CatalogBrandDto? CatalogBrand,
     CatalogTypeDto? CatalogType);
 

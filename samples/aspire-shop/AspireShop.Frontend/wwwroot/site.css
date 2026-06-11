@@ -35,7 +35,7 @@
 }
 
 @media (prefers-color-scheme: dark) {
-    :root {
+    :root:not([data-theme]) {
         --bg: #15110d;
         --bg-tint: radial-gradient(120% 80% at 80% -10%, #241a12 0%, rgba(36, 26, 18, 0) 55%);
         --surface: #1f1811;
@@ -59,6 +59,36 @@
     }
 }
 
+/* Manual theme override (set on <html data-theme> by the toggle). When present, it wins over
+   the OS preference above so the choice sticks regardless of system settings. */
+:root[data-theme="light"] {
+    color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #15110d;
+    --bg-tint: radial-gradient(120% 80% at 80% -10%, #241a12 0%, rgba(36, 26, 18, 0) 55%);
+    --surface: #1f1811;
+    --surface-2: #271e16;
+    --ink: #f1e8d9;
+    --ink-soft: #cdbfa9;
+    --muted: #a3947f;
+    --line: #352a1f;
+    --line-strong: #4a3a2a;
+    --accent: #ec9c81;
+    --accent-strong: #f0a98f;
+    --accent-hover: #f6c2ab;
+    --accent-contrast: #20120c;
+    --accent-soft: #2e2017;
+    --price: #93c8a4;
+    --price-strong: #93c8a4;
+    --brass: #ceae6c;
+    --focus: #f0a98f;
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, .4);
+    --shadow-md: 0 10px 24px rgba(0, 0, 0, .5), 0 24px 60px rgba(0, 0, 0, .45);
+}
+
 * {
     box-sizing: border-box;
 }
@@ -70,6 +100,9 @@ html {
 body {
     margin: 0;
     min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
     font-family: var(--font-body);
     color: var(--ink);
     background: var(--bg-tint), var(--bg);
@@ -288,11 +321,83 @@ h1:focus-visible {
     100% { transform: scale(1); opacity: 1; }
 }
 
+/* --- Top bar actions (theme toggle + cart) ------------------------------ */
+.topbar-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: .6rem;
+}
+
+/* The brand tagline's margin-right:auto pushes the actions to the right on wide screens.
+   On narrow screens the tagline is hidden, so the wrapper claims the space itself. */
+.topbar-actions .cart {
+    margin-left: 0;
+}
+
+/* --- Theme toggle -------------------------------------------------------- */
+.theme-toggle {
+    width: 2.6rem;
+    height: 2.6rem;
+    display: inline-grid;
+    place-items: center;
+    padding: 0;
+    border-radius: 50%;
+    border: 1px solid var(--line-strong);
+    background: var(--surface);
+    color: var(--ink);
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+    transition: transform .2s var(--ease), box-shadow .2s var(--ease),
+        border-color .2s var(--ease), background .2s var(--ease), color .2s var(--ease);
+}
+
+.theme-toggle:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--accent);
+    color: var(--accent-strong);
+}
+
+.theme-toggle:active {
+    transform: translateY(0);
+}
+
+.theme-toggle-icon {
+    display: none;
+    line-height: 0;
+}
+
+.theme-toggle-icon .ph {
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+/* Show the icon for the action the user can take: a moon in light mode (switch to dark),
+   a sun in dark mode (switch to light). Effective theme = explicit override, else OS. */
+:root[data-theme="light"] .theme-toggle-icon--moon,
+:root[data-theme="dark"] .theme-toggle-icon--sun {
+    display: inline-flex;
+}
+
+@media (prefers-color-scheme: light) {
+    :root:not([data-theme]) .theme-toggle-icon--moon {
+        display: inline-flex;
+    }
+}
+
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme]) .theme-toggle-icon--sun {
+        display: inline-flex;
+    }
+}
+
 /* --- Shell / collection head -------------------------------------------- */
 .shell {
     max-width: 1240px;
+    width: 100%;
     margin: 0 auto;
     padding: 2.75rem 1.5rem 4rem;
+    flex: 1 0 auto;
 }
 
 .collection-head {
@@ -327,7 +432,6 @@ h1:focus-visible {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
     gap: 1.5rem;
-    view-transition-name: catalog-grid;
 }
 
 .product {
@@ -353,6 +457,20 @@ h1:focus-visible {
     aspect-ratio: 1 / 1;
     background: var(--surface-2);
     overflow: hidden;
+}
+
+.product-media-btn {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+    color: inherit;
+    font: inherit;
 }
 
 .product-media img {
@@ -392,9 +510,54 @@ h1:focus-visible {
 }
 
 .product-media:hover .product-zoom,
-.product-media:focus-visible .product-zoom {
+.product-media-btn:focus-visible .product-zoom {
     opacity: 1;
     transform: translateY(0);
+}
+
+/* --- Product badge (corner pill) ---------------------------------------- */
+.product-badge {
+    position: absolute;
+    top: .75rem;
+    left: .75rem;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    padding: .3rem .65rem;
+    border-radius: 999px;
+    font-size: .68rem;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    line-height: 1;
+    pointer-events: none;
+    background: color-mix(in srgb, var(--ink) 86%, transparent);
+    color: var(--bg);
+    border: 1px solid transparent;
+    box-shadow: var(--shadow-sm);
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+}
+
+.product-badge--new {
+    background: color-mix(in srgb, var(--price) 90%, black 6%);
+    color: var(--accent-contrast);
+}
+
+.product-badge--special {
+    background: color-mix(in srgb, var(--accent-strong) 92%, black 4%);
+    color: var(--accent-contrast);
+}
+
+.product-badge--og {
+    background: color-mix(in srgb, var(--brass) 90%, black 6%);
+    color: var(--accent-contrast);
+}
+
+/* Inside the quick-look modal the badge sits statically above the meta. */
+.quickview-media .product-badge {
+    top: 1rem;
+    left: 1rem;
 }
 
 .product-body {
@@ -455,6 +618,14 @@ h1:focus-visible {
 
 .add-button:active {
     transform: translateY(0) scale(.97);
+}
+
+/* Full-width, slightly larger add-to-cart used inside the quick-look modal. */
+.add-button--block {
+    width: 100%;
+    justify-content: center;
+    padding: .72rem 1.1rem;
+    font-size: .95rem;
 }
 
 .add-icon {
@@ -708,27 +879,6 @@ h1:focus-visible {
 #blazor-error-ui .dismiss {
     font-size: 1.1rem;
     line-height: 1;
-}
-
-/* --- View transitions (progressive enhancement) ------------------------- */
-@view-transition {
-    navigation: auto;
-}
-
-::view-transition-old(catalog-grid) {
-    animation: vt-fade-out .25s var(--ease) both;
-}
-
-::view-transition-new(catalog-grid) {
-    animation: vt-fade-in .35s var(--ease) both;
-}
-
-@keyframes vt-fade-out {
-    to { opacity: 0; transform: translateY(-6px); }
-}
-
-@keyframes vt-fade-in {
-    from { opacity: 0; transform: translateY(10px); }
 }
 
 /* --- Product card enrichment -------------------------------------------- */
@@ -1184,10 +1334,238 @@ h1:focus-visible {
     font-size: .92rem;
 }
 
+/* --- Quick-look modal --------------------------------------------------- */
+.quickview {
+    width: min(1340px, 94vw);
+    max-width: 94vw;
+    max-height: 92vh;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: var(--ink);
+    box-shadow: none;
+    overflow: visible;
+    opacity: 0;
+    transform: translateY(12px) scale(.98);
+    transition: opacity .25s var(--ease), transform .25s var(--ease),
+        overlay .25s var(--ease) allow-discrete, display .25s var(--ease) allow-discrete;
+}
+
+.quickview[open] {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+@starting-style {
+    .quickview[open] {
+        opacity: 0;
+        transform: translateY(12px) scale(.98);
+    }
+}
+
+.quickview::backdrop {
+    background: color-mix(in srgb, #1a120b 55%, transparent);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+    opacity: 0;
+    transition: opacity .25s var(--ease),
+        overlay .25s var(--ease) allow-discrete, display .25s var(--ease) allow-discrete;
+}
+
+.quickview[open]::backdrop {
+    opacity: 1;
+}
+
+@starting-style {
+    .quickview[open]::backdrop {
+        opacity: 0;
+    }
+}
+
+.quickview-panel {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1.9fr) minmax(0, 1fr);
+    gap: 1.25rem;
+    align-items: center;
+    max-height: 92vh;
+}
+
+.quickview-close {
+    position: absolute;
+    top: .75rem;
+    right: .75rem;
+    z-index: 3;
+    width: 2.2rem;
+    height: 2.2rem;
+    display: inline-grid;
+    place-items: center;
+    padding: 0;
+    border-radius: 50%;
+    border: 1px solid var(--line-strong);
+    background: color-mix(in srgb, var(--surface) 85%, transparent);
+    color: var(--ink);
+    cursor: pointer;
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+    transition: transform .2s var(--ease), background .2s var(--ease),
+        color .2s var(--ease), border-color .2s var(--ease);
+}
+
+.quickview-close:hover {
+    background: var(--accent-strong);
+    color: var(--accent-contrast);
+    border-color: transparent;
+    transform: rotate(90deg);
+}
+
+.quickview-close .ph {
+    width: 1.1rem;
+    height: 1.1rem;
+}
+
+.quickview-media {
+    position: relative;
+    align-self: center;
+    background: var(--surface-2);
+    aspect-ratio: 1 / 1;
+    max-height: 92vh;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+}
+
+.quickview-media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.quickview-body {
+    position: relative;
+    align-self: center;
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+    padding: 1.7rem 1.8rem;
+    background: var(--surface);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    max-height: 92vh;
+    overflow-y: auto;
+}
+
+.quickview-name {
+    font-size: 1.6rem;
+    font-weight: 500;
+    color: var(--ink);
+}
+
+.quickview-type {
+    margin: 0;
+    font-size: .78rem;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 600;
+}
+
+.quickview-desc {
+    margin: .35rem 0 0;
+    color: var(--ink-soft);
+    font-size: 1rem;
+    line-height: 1.6;
+}
+
+.quickview-foot {
+    margin-top: auto;
+    padding-top: 1.1rem;
+    display: flex;
+    flex-direction: column;
+    gap: .9rem;
+}
+
+.quickview-price {
+    font-size: 1.4rem;
+}
+
+.quickview-oos {
+    align-self: flex-start;
+    font-size: .8rem;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+.quickview-zoom {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: end center;
+    padding-bottom: 1.1rem;
+    text-decoration: none;
+    background: linear-gradient(to top, color-mix(in srgb, var(--ink) 55%, transparent), transparent 42%);
+    opacity: 0;
+    transition: opacity .2s var(--ease);
+}
+
+.quickview-media:hover .quickview-zoom,
+.quickview-zoom:focus-visible {
+    opacity: 1;
+}
+
+.quickview-zoom-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: .45rem;
+    padding: .55rem 1rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--surface) 90%, transparent);
+    color: var(--ink);
+    font-weight: 600;
+    font-size: .88rem;
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+    box-shadow: var(--shadow-sm);
+    transform: translateY(8px);
+    transition: transform .2s var(--ease);
+}
+
+.quickview-media:hover .quickview-zoom-pill,
+.quickview-zoom:focus-visible .quickview-zoom-pill {
+    transform: translateY(0);
+}
+
+@media (max-width: 760px) {
+    .quickview {
+        width: min(460px, 94vw);
+    }
+
+    .quickview-panel {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+        align-items: stretch;
+        max-height: 92vh;
+        overflow-y: auto;
+    }
+
+    .quickview-media {
+        aspect-ratio: 16 / 11;
+        max-height: 46vh;
+    }
+}
+
 /* --- Responsive ---------------------------------------------------------- */
 @media (max-width: 760px) {
     .brand-tagline {
         display: none;
+    }
+
+    .topbar-actions {
+        margin-left: auto;
     }
 
     .topbar-inner {
@@ -1235,10 +1613,4 @@ h1:focus-visible {
 
     .product:hover { transform: none; }
     .product:hover .product-media img { transform: none; }
-
-    ::view-transition-group(*),
-    ::view-transition-old(*),
-    ::view-transition-new(*) {
-        animation: none !important;
-    }
 }

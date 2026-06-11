@@ -87,6 +87,10 @@ public class CatalogDbContext(DbContextOptions<CatalogDbContext> options) : DbCo
         builder.Property(ci => ci.PictureFileName)
             .IsRequired(false);
 
+        builder.Property(ci => ci.Badge)
+            .IsRequired(false)
+            .HasMaxLength(30);
+
         builder.Ignore(ci => ci.PictureUri);
 
         builder.HasOne(ci => ci.CatalogBrand)
