@@ -15,7 +15,7 @@
 
   <ItemGroup>
     <PackageReference Include="Aspire.Hosting.AppHost" Version="13.4.3" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.8" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.9" />
     <ProjectReference Include="..\OrleansVoting.Service\OrleansVoting.Service.csproj" />
   </ItemGroup>
 
