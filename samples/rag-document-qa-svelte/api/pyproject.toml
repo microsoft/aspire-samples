@@ -8,6 +8,6 @@ dependencies = [
     "uvicorn>=0.47.0",
     "openai>=2.36.0",
     "qdrant-client>=1.18.0",
-    "python-multipart>=0.0.28",
+    "python-multipart>=0.0.31",
     "tiktoken>=0.12.0"
 ]
