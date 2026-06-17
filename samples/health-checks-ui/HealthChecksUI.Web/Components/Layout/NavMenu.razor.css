@@ -1,0 +1,51 @@
+.topnav {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.topnav-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.45rem 0.8rem;
+    border-radius: var(--radius-sm);
+    color: var(--ink-soft);
+    text-decoration: none;
+    font-size: 0.92rem;
+    font-weight: 500;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.topnav-link:hover {
+    background: var(--surface-2);
+    color: var(--ink);
+}
+
+.topnav-link.active {
+    background: color-mix(in srgb, var(--brand) 16%, transparent);
+    color: var(--ink);
+}
+
+.topnav-icon {
+    display: inline-flex;
+    color: var(--brand);
+}
+
+.topnav-icon ::deep .icon {
+    width: 1.05rem;
+    height: 1.05rem;
+}
+
+@media (max-width: 540px) {
+    .topnav {
+        order: 4;
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .topnav-link {
+        flex: 1;
+        justify-content: center;
+    }
+}

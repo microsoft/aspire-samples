@@ -1,0 +1,161 @@
+/* Athenaeum — a scholarly reading-room palette. Dark is the primary
+   identity (a library at night: warm ink, brass, parchment text on solid
+   opaque panels so contrast stays well above WCAG AA). Light is a calm
+   daytime reading room on warm cream. */
+:root {
+  color-scheme: dark;
+
+  --font-serif: "Iowan Old Style", "Palatino Linotype", "Book Antiqua",
+    Georgia, "Times New Roman", serif;
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    Helvetica, Arial, sans-serif;
+
+  --bg: #16120d;
+  --bg-accent: rgba(212, 168, 67, 0.05);
+  --panel: #221c14;
+  --panel-2: #2b2418;
+  --panel-3: #342c1d;
+  --border: #3d3322;
+  --border-strong: #54442d;
+
+  --ink: #f3ead8;
+  --ink-muted: #d2c3a4;
+  --ink-soft: #c7b896;
+
+  --brass: #d8ac46;
+  --brass-strong: #ebc468;
+  --brass-contrast: #1c1709;
+  --brass-soft: #2f2615;
+  --brass-ring: rgba(216, 172, 70, 0.45);
+
+  --success: #9bcf7e;
+  --success-soft: #1f2b16;
+  --danger: #ef9f8e;
+  --danger-strong: #f3b6a8;
+  --danger-soft: #2e1812;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 14px 32px -16px rgba(0, 0, 0, 0.7);
+  --shadow-lg: 0 30px 70px -30px rgba(0, 0, 0, 0.8);
+
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+
+  --maxw: 1120px;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+
+  --bg: #ece2cd;
+  --bg-accent: rgba(138, 106, 24, 0.05);
+  --panel: #fcf8ee;
+  --panel-2: #f4ecda;
+  --panel-3: #ece0c9;
+  --border: #dccdac;
+  --border-strong: #c6b489;
+
+  --ink: #2a2014;
+  --ink-muted: #51422d;
+  --ink-soft: #52422b;
+
+  --brass: #674e11;
+  --brass-strong: #503c08;
+  --brass-contrast: #fffaf0;
+  --brass-soft: #eaddbf;
+  --brass-ring: rgba(138, 106, 24, 0.4);
+
+  --success: #2f6b2a;
+  --success-soft: #e2eed5;
+  --danger: #a23617;
+  --danger-strong: #87290f;
+  --danger-soft: #f3dccf;
+
+  --shadow-sm: 0 1px 2px rgba(74, 56, 24, 0.12);
+  --shadow-md: 0 14px 32px -18px rgba(74, 56, 24, 0.32);
+  --shadow-lg: 0 30px 70px -30px rgba(74, 56, 24, 0.4);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font-sans);
+  color: var(--ink);
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(1100px 600px at 12% -8%, var(--bg-accent), transparent 60%),
+    radial-gradient(900px 520px at 110% 0%, var(--bg-accent), transparent 55%);
+  background-attachment: fixed;
+  min-height: 100vh;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+a {
+  color: var(--brass-strong);
+}
+
+:focus-visible {
+  outline: 3px solid var(--brass);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: fixed;
+  top: 0.75rem;
+  left: 0.75rem;
+  transform: translateY(-160%);
+  z-index: 100;
+  padding: 0.65rem 1.1rem;
+  background: var(--brass);
+  color: var(--brass-contrast);
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  box-shadow: var(--shadow-md);
+  transition: transform 0.18s ease;
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -1,0 +1,74 @@
+.probe-head {
+    margin-bottom: 1.75rem;
+}
+
+.probe-head h1 {
+    font-size: clamp(1.8rem, 4vw, 2.4rem);
+}
+
+.probe-head .lede {
+    margin-top: 0.6rem;
+}
+
+.probe-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    padding: 1.75rem;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--line);
+    background:
+        radial-gradient(40rem 18rem at 0% 0%, color-mix(in srgb, var(--brand) 10%, transparent), transparent 60%),
+        var(--surface);
+    box-shadow: var(--shadow-sm);
+}
+
+.probe-readout {
+    display: flex;
+    align-items: center;
+    gap: 1.1rem;
+}
+
+.probe-readout-line {
+    display: flex;
+    flex-direction: column;
+}
+
+.probe-icon {
+    display: grid;
+    place-items: center;
+    width: 3.4rem;
+    height: 3.4rem;
+    border-radius: 14px;
+    background: var(--surface-2);
+    border: 1px solid var(--line-strong);
+    color: var(--brand);
+}
+
+.probe-icon ::deep .icon {
+    width: 1.7rem;
+    height: 1.7rem;
+}
+
+.probe-count {
+    font-family: var(--font-mono);
+    font-size: 2.8rem;
+    font-weight: 600;
+    line-height: 1;
+    color: var(--ink);
+}
+
+.probe-label {
+    margin-top: 0.25rem;
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+}
+
+.probe-card .btn-action {
+    font-size: 1.02rem;
+    padding: 0.8rem 1.4rem;
+}

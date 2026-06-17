@@ -5,7 +5,11 @@ using System.Diagnostics;
 using System.Net;
 using System.Reflection;
 using System.Security.Cryptography;
+using Aspire.Hosting.Azure;
+using Aspire.Hosting.JavaScript;
+using Aspire.Hosting.Python;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
@@ -15,6 +19,9 @@ namespace SamplesIntegrationTests.Infrastructure;
 
 public static partial class DistributedApplicationExtensions
 {
+    private const string TestVolumePrefix = "aspire-samples-";
+    private static readonly TimeSpan DockerVolumeCleanupTimeout = TimeSpan.FromSeconds(30);
+
     /// <summary>
     /// Ensures all parameters in the application configuration have values set.
     /// </summary>
@@ -33,16 +40,34 @@ public static partial class DistributedApplicationExtensions
     }
 
     /// <summary>
-    /// Replaces all named volumes with anonymous volumes so they're isolated across test runs and from the volume the app uses during development.
+    /// Sets the container lifetime for all container resources in the application.
+    /// </summary>
+    public static TBuilder WithContainersLifetime<TBuilder>(this TBuilder builder, ContainerLifetime containerLifetime)
+        where TBuilder : IDistributedApplicationTestingBuilder
+    {
+        var containerLifetimeAnnotations = builder.Resources.SelectMany(r => r.Annotations
+            .OfType<ContainerLifetimeAnnotation>()
+            .Where(c => c.Lifetime != containerLifetime))
+            .ToList();
+
+        foreach (var annotation in containerLifetimeAnnotations)
+        {
+            annotation.Lifetime = containerLifetime;
+        }
+
+        return builder;
+    }
+
+    /// <summary>
+    /// Replaces all named volumes with randomized names so they're isolated across test runs and from the volume the app uses during development.
     /// </summary>
     /// <remarks>
-    /// Note that if multiple resources share a volume, the volume will instead be given a random name so that it's still shared across those resources in the test run.
+    /// Note that if multiple resources share a volume, they are all assigned the same randomized volume name so the volume remains shared in the test run.
     /// </remarks>
     public static TBuilder WithRandomVolumeNames<TBuilder>(this TBuilder builder)
         where TBuilder : IDistributedApplicationTestingBuilder
     {
-        // Named volumes that aren't shared across resources should be replaced with anonymous volumes.
-        // Named volumes shared by mulitple resources need to have their name randomized but kept shared across those resources.
+        // Named volumes shared by multiple resources need to have their name randomized but kept shared across those resources.
 
         // Find all shared volumes and make a map of their original name to a new randomized name
         var allResourceNamedVolumes = builder.Resources.SelectMany(r => r.Annotations
@@ -57,22 +82,42 @@ public static partial class DistributedApplicationExtensions
             var name = resourceVolume.Volume.Source!;
             if (!seenVolumes.Add(name) && !renamedVolumes.ContainsKey(name))
             {
-                renamedVolumes[name] = $"{name}-{Convert.ToHexString(RandomNumberGenerator.GetBytes(4))}";
+                renamedVolumes[name] = CreateRandomizedVolumeName(name);
             }
         }
 
-        // Replace all named volumes with randomly named or anonymous volumes
+        // Replace all named volumes with randomized names.
         foreach (var resourceVolume in allResourceNamedVolumes)
         {
             var resource = resourceVolume.Resource;
             var volume = resourceVolume.Volume;
-            var newName = renamedVolumes.TryGetValue(volume.Source!, out var randomName) ? randomName : null;
+            var newName = renamedVolumes.TryGetValue(volume.Source!, out var randomName)
+                ? randomName
+                : CreateRandomizedVolumeName(volume.Source!);
             var newMount = new ContainerMountAnnotation(newName, volume.Target, ContainerMountType.Volume, volume.IsReadOnly);
             resource.Annotations.Remove(volume);
             resource.Annotations.Add(newMount);
         }
 
         return builder;
+    }
+
+    public static async Task CleanupRandomizedVolumesAsync(this DistributedApplication app, Action<string>? log = null, CancellationToken cancellationToken = default)
+    {
+        var volumeNames = app.Services.GetRequiredService<DistributedApplicationModel>()
+            .Resources
+            .SelectMany(r => r.Annotations.OfType<ContainerMountAnnotation>())
+            .Where(m => m.Type == ContainerMountType.Volume
+                && !string.IsNullOrEmpty(m.Source)
+                && m.Source.StartsWith(TestVolumePrefix, StringComparison.Ordinal))
+            .Select(m => m.Source!)
+            .Distinct(StringComparer.Ordinal)
+            .ToList();
+
+        if (volumeNames.Count > 0)
+        {
+            await TryRemoveDockerVolumesAsync(volumeNames, log, cancellationToken);
+        }
     }
 
     /// <summary>
@@ -87,18 +132,116 @@ public static partial class DistributedApplicationExtensions
     }
 
     /// <summary>
-    /// Waits for all resources in the application to reach one of the specified states.
+    /// Waits for all resources in the application to become healthy or run to completion.
     /// </summary>
     /// <remarks>
-    /// If <paramref name="targetStates"/> is null, the default states are <see cref="KnownResourceStates.Running"/> and <see cref="KnownResourceStates.Hidden"/>.
+    /// Resources with health checks must report <see cref="HealthStatus.Healthy"/>; resources without health
+    /// checks are considered healthy once running. Resources that run to completion (e.g. database migration
+    /// projects) are considered done once they reach one of the <see cref="KnownResourceStates.TerminalStates"/>.
     /// </remarks>
-    public static Task WaitForResources(this DistributedApplication app, IEnumerable<string>? targetStates = null, CancellationToken cancellationToken = default)
+    public static async Task WaitForResourcesAsync(this DistributedApplication app, CancellationToken cancellationToken = default)
     {
-        targetStates ??= [KnownResourceStates.Running, KnownResourceStates.Hidden];
-        var applicationModel = app.Services.GetRequiredService<DistributedApplicationModel>();
-        var resourceNotificationService = app.Services.GetRequiredService<ResourceNotificationService>();
+        var logger = app.Services.GetRequiredService<ILoggerFactory>().CreateLogger($"{nameof(SamplesIntegrationTests)}.{nameof(WaitForResourcesAsync)}");
 
-        return Task.WhenAll(applicationModel.Resources.Select(r => resourceNotificationService.WaitForResourceAsync(r.Name, targetStates, cancellationToken)));
+        var applicationModel = app.Services.GetRequiredService<DistributedApplicationModel>();
+
+        var resourceTasks = new Dictionary<string, Task<(string Name, string State)>>();
+
+        foreach (var resource in applicationModel.Resources)
+        {
+            if (ShouldSkipResource(resource))
+            {
+                continue;
+            }
+
+            resourceTasks[resource.Name] = GetResourceWaitTask(resource.Name, cancellationToken);
+        }
+
+        if (logger.IsEnabled(LogLevel.Information))
+        {
+            logger.LogInformation("Waiting for resources [{Resources}] to become healthy or run to completion.", string.Join(',', resourceTasks.Keys));
+        }
+
+        while (resourceTasks.Count > 0)
+        {
+            var completedTask = await Task.WhenAny(resourceTasks.Values);
+            var (completedResourceName, targetStateReached) = await completedTask;
+
+            if (targetStateReached == KnownResourceStates.FailedToStart)
+            {
+                throw new DistributedApplicationException($"Resource '{completedResourceName}' failed to start.");
+            }
+
+            resourceTasks.Remove(completedResourceName);
+
+            if (logger.IsEnabled(LogLevel.Information))
+            {
+                logger.LogInformation("Wait for resource '{ResourceName}' completed with state '{ResourceState}'", completedResourceName, targetStateReached);
+            }
+
+            // Ensure resources being waited on still exist
+            var remainingResources = resourceTasks.Keys.ToList();
+            for (var i = remainingResources.Count - 1; i > 0; i--)
+            {
+                var name = remainingResources[i];
+                if (!applicationModel.Resources.Any(r => r.Name == name))
+                {
+                    if (logger.IsEnabled(LogLevel.Information))
+                    {
+                        logger.LogInformation("Resource '{ResourceName}' was deleted while waiting for it.", name);
+                    }
+                    resourceTasks.Remove(name);
+                    remainingResources.RemoveAt(i);
+                }
+            }
+
+            if (resourceTasks.Count > 0)
+            {
+                if (logger.IsEnabled(LogLevel.Information))
+                {
+                    logger.LogInformation("Still waiting for resources [{Resources}] to become healthy or run to completion.", string.Join(',', remainingResources));
+                }
+            }
+        }
+
+        logger.LogInformation("Wait for all resources completed successfully!");
+
+        async Task<(string Name, string State)> GetResourceWaitTask(string resourceName, CancellationToken cancellationToken)
+        {
+            var resourceEvent = await app.ResourceNotifications.WaitForResourceAsync(
+                resourceName,
+                re => re.Snapshot.HealthStatus is HealthStatus.Healthy
+                    || (re.Snapshot.State?.Text is { Length: > 0 } stateText && KnownResourceStates.TerminalStates.Contains(stateText)),
+                cancellationToken);
+            return (resourceName, resourceEvent.Snapshot.State?.Text ?? "Unknown");
+        }
+    }
+
+    // Aspire 13.3 introduced AzureEnvironmentResource, a hidden resource added implicitly
+    // by Aspire.Hosting.Azure for any AddAzure* API to host pipeline/deployment steps. It
+    // has no runtime lifecycle and never publishes a Running/Finished state when resources
+    // run as local emulators, but does not implement IResourceWithoutLifetime - so
+    // WaitForResourceAsync would hang on it forever. Filter it out here as if it did.
+    private static bool ShouldSkipResource(IResource resource)
+    {
+        if (resource is IResourceWithoutLifetime)
+        {
+            return true;
+        }
+
+        if (resource.Annotations.OfType<ExplicitStartupAnnotation>().Any())
+        {
+            return true;
+        }
+
+#pragma warning disable ASPIREAZURE001 // AzureEnvironmentResource is experimental.
+        if (resource is AzureEnvironmentResource)
+        {
+            return true;
+        }
+#pragma warning restore ASPIREAZURE001
+
+        return false;
     }
 
     /// <summary>
@@ -135,14 +278,14 @@ public static partial class DistributedApplicationExtensions
 
         static bool ShouldAssertErrorsForResource(IResource resource)
         {
+#pragma warning disable ASPIREHOSTINGPYTHON001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
             return resource
                 is
                     // Container resources tend to write to stderr for various reasons so only assert projects and executables
                     (ProjectResource or ExecutableResource)
-                    // Node resources tend to have npm modules that write to stderr so ignore them
-                    and not NodeAppResource
-                // Dapr resources write to stderr about deprecated --components-path flag
-                && !resource.Name.EndsWith("-dapr-cli");
+                    // Node & Python resources tend to have modules that write to stderr so ignore them
+                    and not (NodeAppResource or PythonAppResource);
+#pragma warning restore ASPIREHOSTINGPYTHON001
         }
     }
 
@@ -197,19 +340,28 @@ public static partial class DistributedApplicationExtensions
         var projectName = project.GetName();
 
         // First check if the project has a migration endpoint, if it doesn't it will respond with a 404
-        logger.LogInformation("Checking if project '{ProjectName}' has a migration endpoint", projectName);
+        if (logger.IsEnabled(LogLevel.Information))
+        {
+            logger.LogInformation("Checking if project '{ProjectName}' has a migration endpoint", projectName);
+        }
         using (var checkHttpClient = app.CreateHttpClient(project.Name))
         {
             using var emptyDbContextContent = new FormUrlEncodedContent([new("context", "")]);
             using var checkResponse = await checkHttpClient.PostAsync("/ApplyDatabaseMigrations", emptyDbContextContent);
             if (checkResponse.StatusCode == HttpStatusCode.NotFound)
             {
-                logger.LogInformation("Project '{ProjectName}' does not have a migration endpoint", projectName);
+                if (logger.IsEnabled(LogLevel.Information))
+                {
+                    logger.LogInformation("Project '{ProjectName}' does not have a migration endpoint", projectName);
+                }
                 return false;
             }
         }
 
-        logger.LogInformation("Attempting to apply EF migrations for project '{ProjectName}'", projectName);
+        if (logger.IsEnabled(LogLevel.Information))
+        {
+            logger.LogInformation("Attempting to apply EF migrations for project '{ProjectName}'", projectName);
+        }
 
         // Load the project assembly and find all DbContext types
         var projectDirectory = Path.GetDirectoryName(project.GetProjectMetadata().ProjectPath) ?? throw new UnreachableException();
@@ -218,11 +370,14 @@ public static partial class DistributedApplicationExtensions
 #else
         var configuration = "Release";
 #endif
-        var projectAssemblyPath = Path.Combine(projectDirectory, "bin", configuration, "net8.0", $"{projectName}.dll");
+        var projectAssemblyPath = Path.Combine(projectDirectory, "bin", configuration, "net10.0", $"{projectName}.dll");
         var projectAssembly = Assembly.LoadFrom(projectAssemblyPath);
         var dbContextTypes = projectAssembly.GetTypes().Where(t => DerivesFromDbContext(t));
 
-        logger.LogInformation("Found {DbContextCount} DbContext types in project '{ProjectName}'", dbContextTypes.Count(), projectName);
+        if (logger.IsEnabled(LogLevel.Information))
+        {
+            logger.LogInformation("Found {DbContextCount} DbContext types in project '{ProjectName}'", dbContextTypes.Count(), projectName);
+        }
 
         // Call the migration endpoint for each DbContext type
         var migrationsApplied = false;
@@ -230,13 +385,19 @@ public static partial class DistributedApplicationExtensions
         applyMigrationsHttpClient.Timeout = TimeSpan.FromSeconds(240);
         foreach (var dbContextType in dbContextTypes)
         {
-            logger.LogInformation("Applying migrations for DbContext '{DbContextType}' in project '{ProjectName}'", dbContextType.FullName, projectName);
+            if (logger.IsEnabled(LogLevel.Information))
+            {
+                logger.LogInformation("Applying migrations for DbContext '{DbContextType}' in project '{ProjectName}'", dbContextType.FullName, projectName);
+            }
             using var content = new FormUrlEncodedContent([new("context", dbContextType.AssemblyQualifiedName)]);
             using var response = await applyMigrationsHttpClient.PostAsync("/ApplyDatabaseMigrations", content);
             if (response.StatusCode == HttpStatusCode.NoContent)
             {
                 migrationsApplied = true;
-                logger.LogInformation("Migrations applied for DbContext '{DbContextType}' in project '{ProjectName}'", dbContextType.FullName, projectName);
+                if (logger.IsEnabled(LogLevel.Information))
+                {
+                    logger.LogInformation("Migrations applied for DbContext '{DbContextType}' in project '{ProjectName}'", dbContextType.FullName, projectName);
+                }
             }
         }
 
@@ -258,5 +419,90 @@ public static partial class DistributedApplicationExtensions
         }
 
         return false;
+    }
+
+    private static string CreateRandomizedVolumeName(string sourceVolumeName)
+        => $"{TestVolumePrefix}{sourceVolumeName}-{Convert.ToHexString(RandomNumberGenerator.GetBytes(4))}";
+
+    private static async Task TryRemoveDockerVolumesAsync(IReadOnlyList<string> volumeNames, Action<string>? log, CancellationToken cancellationToken)
+    {
+        var volumeNamesText = string.Join(", ", volumeNames);
+        using var process = new Process
+        {
+            StartInfo = new ProcessStartInfo
+            {
+                FileName = "docker",
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            }
+        };
+        process.StartInfo.ArgumentList.Add("volume");
+        process.StartInfo.ArgumentList.Add("rm");
+        process.StartInfo.ArgumentList.Add("-f");
+        foreach (var volumeName in volumeNames)
+        {
+            process.StartInfo.ArgumentList.Add(volumeName);
+        }
+
+        try
+        {
+            if (!process.Start())
+            {
+                log?.Invoke($"Failed to start docker process while cleaning volumes [{volumeNamesText}].");
+                return;
+            }
+
+            using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            timeoutCts.CancelAfter(DockerVolumeCleanupTimeout);
+
+            var stdOutTask = process.StandardOutput.ReadToEndAsync(timeoutCts.Token);
+            var stdErrTask = process.StandardError.ReadToEndAsync(timeoutCts.Token);
+
+            try
+            {
+                await process.WaitForExitAsync(timeoutCts.Token);
+            }
+            catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+            {
+                log?.Invoke($"Timed out cleaning docker volumes [{volumeNamesText}] after {DockerVolumeCleanupTimeout.TotalSeconds:0} seconds.");
+                TryKillProcess(process, log, volumeNamesText);
+                return;
+            }
+
+            var stdOut = (await stdOutTask).Trim();
+            var stdErr = (await stdErrTask).Trim();
+
+            if (process.ExitCode != 0)
+            {
+                log?.Invoke($"Docker volume cleanup for [{volumeNamesText}] exited with code {process.ExitCode}. stdout: {stdOut} stderr: {stdErr}");
+                return;
+            }
+
+            if (!string.IsNullOrEmpty(stdErr))
+            {
+                log?.Invoke($"Docker volume cleanup warning for [{volumeNamesText}]: {stdErr}");
+            }
+        }
+        catch (Exception ex)
+        {
+            log?.Invoke($"Docker volume cleanup failed for [{volumeNamesText}]: {ex.Message}");
+        }
+    }
+
+    private static void TryKillProcess(Process process, Action<string>? log, string volumeName)
+    {
+        try
+        {
+            if (!process.HasExited)
+            {
+                process.Kill(entireProcessTree: true);
+            }
+        }
+        catch (Exception ex)
+        {
+            log?.Invoke($"Failed to terminate docker cleanup process for volume '{volumeName}': {ex.Message}");
+        }
     }
 }

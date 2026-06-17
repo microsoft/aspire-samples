@@ -1,0 +1,227 @@
+<Window x:Class="ClientAppsIntegration.WPF.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ClientAppsIntegration.WPF"
+        mc:Ignorable="d"
+        Title="Skyline — Aspire weather companion"
+        Height="720" Width="1100" MinHeight="620" MinWidth="900"
+        FontFamily="Segoe UI" WindowStartupLocation="CenterScreen"
+        Closing="Window_Closing">
+
+    <Window.Background>
+        <SolidColorBrush Color="#161335" />
+    </Window.Background>
+
+    <Window.Resources>
+        <!-- Brushes (defined inline so the window renders identically when instantiated directly) -->
+        <LinearGradientBrush x:Key="WindowBackgroundBrush" StartPoint="0,0" EndPoint="0,1">
+            <GradientStop Color="#161335" Offset="0" />
+            <GradientStop Color="#3A2A66" Offset="0.58" />
+            <GradientStop Color="#6E3B7A" Offset="1" />
+        </LinearGradientBrush>
+        <SolidColorBrush x:Key="CardBrush" Color="#211E40" />
+        <SolidColorBrush x:Key="CardBorderBrush" Color="#3B356B" />
+        <SolidColorBrush x:Key="TextPrimaryBrush" Color="#F4F2FF" />
+        <SolidColorBrush x:Key="TextSecondaryBrush" Color="#B9B2E0" />
+        <SolidColorBrush x:Key="AccentBrush" Color="#FFB454" />
+        <SolidColorBrush x:Key="AccentDeepBrush" Color="#FF8A5B" />
+        <SolidColorBrush x:Key="ButtonTextBrush" Color="#1A1330" />
+        <SolidColorBrush x:Key="TrackBrush" Color="#2C2752" />
+        <SolidColorBrush x:Key="CoralBrush" Color="#FF7A5C" />
+
+        <!-- Primary action button: rounded amber pill, dark label for AAA contrast -->
+        <Style x:Key="PrimaryButton" TargetType="Button">
+            <Setter Property="Foreground" Value="{StaticResource ButtonTextBrush}" />
+            <Setter Property="FontSize" Value="15" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="SnapsToDevicePixels" Value="True" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="bd" CornerRadius="12" Padding="22,11" BorderThickness="2" BorderBrush="Transparent">
+                            <Border.Background>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                    <GradientStop Color="#FFC470" Offset="0" />
+                                    <GradientStop Color="#FF9F45" Offset="1" />
+                                </LinearGradientBrush>
+                            </Border.Background>
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="#FFCE82" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="#F2913A" />
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="bd" Property="BorderBrush" Value="#F4F2FF" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="bd" Property="Opacity" Value="0.45" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Force-error toggle rendered as an accessible switch (thumb position is the non-color cue) -->
+        <Style x:Key="SwitchToggle" TargetType="CheckBox">
+            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="CheckBox">
+                        <StackPanel Orientation="Horizontal" Background="Transparent">
+                            <Border x:Name="track" Width="46" Height="26" CornerRadius="13"
+                                    Background="{StaticResource TrackBrush}" BorderBrush="{StaticResource CardBorderBrush}"
+                                    BorderThickness="2" VerticalAlignment="Center">
+                                <Ellipse x:Name="thumb" Width="18" Height="18" Fill="{StaticResource TextSecondaryBrush}"
+                                         HorizontalAlignment="Left" Margin="3,0,0,0" />
+                            </Border>
+                            <ContentPresenter Margin="10,0,0,0" VerticalAlignment="Center" />
+                        </StackPanel>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="track" Property="Background" Value="{StaticResource AccentDeepBrush}" />
+                                <Setter TargetName="thumb" Property="Fill" Value="#1A1330" />
+                                <Setter TargetName="thumb" Property="HorizontalAlignment" Value="Right" />
+                                <Setter TargetName="thumb" Property="Margin" Value="0,0,3,0" />
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="track" Property="BorderBrush" Value="#F4F2FF" />
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="track" Property="BorderBrush" Value="#6E3B7A" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Border x:Name="RootBorder" Background="{StaticResource WindowBackgroundBrush}" Padding="28,24,28,22">
+        <Grid x:Name="RootGrid">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <!-- (1) HEADER -->
+            <StackPanel Grid.Row="0" Orientation="Horizontal">
+                <Viewbox Width="46" Height="46" VerticalAlignment="Center">
+                    <Canvas Width="48" Height="48">
+                        <Path Stroke="#FFB454" StrokeThickness="3" StrokeStartLineCap="Round" StrokeEndLineCap="Round"
+                              Data="M24,5 L24,12 M9,11 L13.5,15.5 M39,11 L34.5,15.5 M5,27 L11,27 M43,27 L37,27" />
+                        <Path Fill="#FFC470" Data="M11,31 A13,13 0 0 1 37,31 Z" />
+                        <Line X1="3" Y1="35" X2="45" Y2="35" Stroke="#FF8A5B" StrokeThickness="3" StrokeStartLineCap="Round" StrokeEndLineCap="Round" />
+                        <Line X1="14" Y1="41" X2="34" Y2="41" Stroke="#B9B2E0" StrokeThickness="2.5" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Opacity="0.55" />
+                    </Canvas>
+                </Viewbox>
+                <StackPanel Margin="14,0,0,0" VerticalAlignment="Center">
+                    <TextBlock Text="Skyline" Foreground="{StaticResource TextPrimaryBrush}" FontSize="28" FontWeight="Bold" />
+                    <TextBlock Text="Skyline Dusk · Aspire WPF client" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13.5" Margin="0,1,0,0" />
+                </StackPanel>
+            </StackPanel>
+
+            <!-- (2) CONTROL ROW -->
+            <Border Grid.Row="1" Margin="0,22,0,0" Background="{StaticResource CardBrush}"
+                    BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="16" Padding="20,16">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="24" ShadowDepth="6" Direction="270" Color="#0D0A22" Opacity="0.5" />
+                </Border.Effect>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Button x:Name="btnLoad" Grid.Column="0" Style="{StaticResource PrimaryButton}"
+                            VerticalAlignment="Center" Click="btnLoad_Click"
+                            AutomationProperties.Name="Load forecast" Content="Load forecast" />
+
+                    <CheckBox x:Name="chkForceError" Grid.Column="1" Style="{StaticResource SwitchToggle}"
+                              Margin="22,0,0,0" VerticalAlignment="Center" Content="Force error"
+                              AutomationProperties.Name="Force error" />
+
+                    <StackPanel Grid.Column="2" Margin="22,0,4,0" VerticalAlignment="Center">
+                        <TextBlock x:Name="txtStatus" Text="Ready" Foreground="{StaticResource TextPrimaryBrush}"
+                                   FontSize="14.5" FontWeight="Medium" TextTrimming="CharacterEllipsis"
+                                   AutomationProperties.Name="Status" AutomationProperties.LiveSetting="Polite" />
+                        <ProgressBar x:Name="pbLoading" Margin="0,9,0,0" Width="190" Height="6" HorizontalAlignment="Left"
+                                     IsIndeterminate="True" Foreground="{StaticResource AccentBrush}"
+                                     Background="{StaticResource TrackBrush}" BorderThickness="0"
+                                     Visibility="Collapsed" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- (3) FORECAST STRIP / STATES -->
+            <Grid Grid.Row="2" Margin="0,22,0,0">
+                <!-- success: 5 day cards built in code -->
+                <UniformGrid x:Name="forecastGrid" Rows="1" VerticalAlignment="Center" Visibility="Collapsed" />
+
+                <!-- empty state -->
+                <Border x:Name="emptyState" Background="{StaticResource CardBrush}" BorderBrush="{StaticResource CardBorderBrush}"
+                        BorderThickness="1" CornerRadius="16" Padding="36,32" MaxWidth="460"
+                        HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed">
+                    <Border.Effect>
+                        <DropShadowEffect BlurRadius="24" ShadowDepth="6" Direction="270" Color="#0D0A22" Opacity="0.5" />
+                    </Border.Effect>
+                    <StackPanel>
+                        <Viewbox Width="58" Height="58" HorizontalAlignment="Center">
+                            <Canvas Width="48" Height="48">
+                                <Path Stroke="#FFB454" StrokeThickness="3" StrokeStartLineCap="Round" StrokeEndLineCap="Round"
+                                      Data="M24,5 L24,12 M9,11 L13.5,15.5 M39,11 L34.5,15.5 M5,27 L11,27 M43,27 L37,27" />
+                                <Path Fill="#FFC470" Data="M11,31 A13,13 0 0 1 37,31 Z" />
+                                <Line X1="3" Y1="35" X2="45" Y2="35" Stroke="#FF8A5B" StrokeThickness="3" StrokeStartLineCap="Round" StrokeEndLineCap="Round" />
+                            </Canvas>
+                        </Viewbox>
+                        <TextBlock Text="No forecast yet" Foreground="{StaticResource TextPrimaryBrush}" FontSize="20"
+                                   FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,16,0,0" />
+                        <TextBlock Text="Select Load forecast to call the weather API."
+                                   Foreground="{StaticResource TextSecondaryBrush}" FontSize="14" TextAlignment="Center"
+                                   TextWrapping="Wrap" HorizontalAlignment="Center" Margin="0,6,0,0" />
+                    </StackPanel>
+                </Border>
+
+                <!-- error state -->
+                <Border x:Name="errorState" Background="#2E1C3A" BorderBrush="#C2547A"
+                        BorderThickness="1.5" CornerRadius="16" Padding="36,30" MaxWidth="520"
+                        HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed">
+                    <Border.Effect>
+                        <DropShadowEffect BlurRadius="24" ShadowDepth="6" Direction="270" Color="#0D0A22" Opacity="0.5" />
+                    </Border.Effect>
+                    <StackPanel>
+                        <Viewbox Width="50" Height="50" HorizontalAlignment="Center">
+                            <Canvas Width="48" Height="48">
+                                <Path Data="M24,6 L44,40 L4,40 Z" Stroke="#FF7A5C" StrokeThickness="3" StrokeLineJoin="Round" Fill="#33FF7A5C" />
+                                <Line X1="24" Y1="18" X2="24" Y2="30" Stroke="#FF7A5C" StrokeThickness="3.5" StrokeStartLineCap="Round" StrokeEndLineCap="Round" />
+                                <Ellipse Canvas.Left="21.75" Canvas.Top="33" Width="4.5" Height="4.5" Fill="#FF7A5C" />
+                            </Canvas>
+                        </Viewbox>
+                        <TextBlock Text="Couldn't load the forecast" Foreground="{StaticResource TextPrimaryBrush}" FontSize="19"
+                                   FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,14,0,0" />
+                        <TextBlock x:Name="errorText" Foreground="{StaticResource TextSecondaryBrush}" FontSize="14"
+                                   TextAlignment="Center" TextWrapping="Wrap" HorizontalAlignment="Center" Margin="0,6,0,0" />
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <!-- (4) FOOTER -->
+            <TextBlock Grid.Row="3" Margin="2,18,0,0" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12.5"
+                       Opacity="0.85" Text="Traces, logs, and metrics stream to the Aspire dashboard via OpenTelemetry." />
+        </Grid>
+    </Border>
+
+</Window>

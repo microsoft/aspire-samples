@@ -1,0 +1,217 @@
+.navbar {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0;
+}
+
+.brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    font-weight: 700;
+    font-size: 1.1rem;
+    letter-spacing: -0.01em;
+    color: var(--text);
+}
+
+.brand:hover {
+    text-decoration: none;
+    color: var(--text);
+}
+
+.brand-mark {
+    width: 1.6rem;
+    height: 1.6rem;
+    color: var(--primary);
+}
+
+/* hamburger (CSS-only, no script needed) */
+.nav-toggle {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    opacity: 0;
+}
+
+.nav-toggle-btn {
+    display: none;
+    margin-left: auto;
+    cursor: pointer;
+    padding: 0.4rem;
+    border-radius: var(--radius);
+    color: var(--text);
+}
+
+.nav-toggle-btn svg {
+    width: 1.5rem;
+    height: 1.5rem;
+    display: block;
+}
+
+.nav-toggle:focus-visible + .nav-toggle-btn {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
+.nav-collapse {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 0.15rem;
+}
+
+.nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-left: auto;
+}
+
+.nav-actions form {
+    margin: 0;
+}
+
+/* NavLink renders an <a>, so reach it through ::deep */
+.nav-collapse ::deep .nav-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.5rem 0.7rem;
+    border-radius: var(--radius);
+    color: var(--text-muted);
+    font-weight: 500;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.nav-collapse ::deep .nav-link:hover {
+    color: var(--text);
+    background: var(--surface-2);
+    text-decoration: none;
+}
+
+.nav-collapse ::deep .nav-link.active {
+    color: var(--primary-strong);
+    background: var(--primary-soft);
+}
+
+.nav-collapse ::deep .nav-link svg {
+    width: 1.1rem;
+    height: 1.1rem;
+    flex: none;
+}
+
+.nav-actions ::deep .nav-link.account {
+    max-width: 14rem;
+}
+
+.nav-actions ::deep .nav-link.account span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.link-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    background: none;
+    border: 0;
+    cursor: pointer;
+    padding: 0.5rem 0.7rem;
+    border-radius: var(--radius);
+    color: var(--text-muted);
+    font: inherit;
+    font-weight: 500;
+}
+
+.link-btn:hover {
+    color: var(--text);
+    background: var(--surface-2);
+}
+
+.link-btn svg {
+    width: 1.1rem;
+    height: 1.1rem;
+    flex: none;
+}
+
+.nav-actions ::deep .btn-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: var(--primary);
+    color: var(--primary-contrast);
+    padding: 0.5rem 0.9rem;
+    border-radius: var(--radius);
+    font-weight: 600;
+    box-shadow: 0 6px 16px -6px var(--ring);
+    transition: background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.nav-actions ::deep .btn-cta:hover {
+    background: var(--primary-strong);
+    color: var(--primary-contrast);
+    text-decoration: none;
+    box-shadow: 0 10px 22px -8px var(--ring);
+}
+
+.nav-actions ::deep .btn-cta svg {
+    width: 1.1rem;
+    height: 1.1rem;
+    flex: none;
+}
+
+@media (max-width: 47.99rem) {
+    .navbar {
+        flex-wrap: wrap;
+    }
+
+    .nav-toggle-btn {
+        display: inline-flex;
+    }
+
+    .nav-collapse {
+        flex-basis: 100%;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.2rem;
+        max-height: 0;
+        visibility: hidden;
+        overflow: hidden;
+        transition: max-height 0.25s ease;
+    }
+
+    .nav-toggle:checked ~ .nav-collapse {
+        max-height: 32rem;
+        visibility: visible;
+        padding: 0.5rem 0 0.25rem;
+    }
+
+    .nav-links,
+    .nav-actions {
+        flex-direction: column;
+        align-items: stretch;
+        margin-left: 0;
+        gap: 0.15rem;
+    }
+
+    .nav-actions {
+        margin-top: 0.4rem;
+        padding-top: 0.5rem;
+        border-top: 1px solid var(--border);
+    }
+
+    .nav-collapse ::deep .nav-link,
+    .link-btn,
+    .nav-actions ::deep .btn-cta {
+        justify-content: flex-start;
+    }
+}

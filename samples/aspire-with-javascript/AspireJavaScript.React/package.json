@@ -1,0 +1,38 @@
+{
+  "name": "react-weather",
+  "version": "0.1.0",
+  "private": true,
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "scripts": {
+    "build": "webpack --mode production --config webpack.config.js",
+    "start": "run-script-os",
+    "start:win32": "webpack-dev-server --mode development --hot --env PORT=%PORT%",
+    "start:default": "webpack-dev-server --mode development --hot --env PORT=$PORT"
+  },
+  "dependencies": {
+    "@fontsource-variable/space-grotesk": "5.2.10",
+    "@phosphor-icons/react": "2.1.10",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.29.6",
+    "@babel/preset-env": "^7.29.5",
+    "@babel/preset-react": "^7.28.5",
+    "babel-loader": "^10.1.1",
+    "css-loader": "^7.1.4",
+    "html-webpack-plugin": "^5.6.7",
+    "run-script-os": "^1.1.6",
+    "style-loader": "^4.0.0",
+    "webpack": "^5.107.2",
+    "webpack-cli": "^7.0.3",
+    "webpack-dev-server": "^5.2.5"
+  },
+  "overrides": {
+    "sockjs": {
+      "uuid": "14.0.0"
+    }
+  }
+}

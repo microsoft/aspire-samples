@@ -1,0 +1,23 @@
+@inherits LayoutComponentBase
+
+<a class="skip-link" href="#main-content">Skip to content</a>
+
+<div class="app">
+    <header class="topbar">
+        <div class="topbar-inner">
+            <NavMenu />
+        </div>
+    </header>
+
+    <main id="main-content" class="app-main" tabindex="-1">
+        <div class="container-page">
+            @Body
+        </div>
+    </main>
+</div>
+
+<div id="blazor-error-ui" data-nosnippet>
+    Something went wrong.
+    <a href="." class="reload">Reload</a>
+    <span class="dismiss">🗙</span>
+</div>

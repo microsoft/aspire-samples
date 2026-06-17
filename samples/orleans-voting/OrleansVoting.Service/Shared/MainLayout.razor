@@ -1,0 +1,28 @@
+@using Orleans.Runtime
+@inherits LayoutComponentBase
+@inject ILocalSiloDetails LocalSiloDetails
+
+<PageTitle>Grain Poll</PageTitle>
+
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
+<div class="stage">
+    <NavMenu />
+
+    <main id="main-content" tabindex="-1">
+        <div class="stage-inner">
+            @Body
+        </div>
+    </main>
+
+    <footer class="stage-foot">
+        <span class="stage-foot-mark">@Icons.Bolt</span>
+        <span class="stage-foot-text">
+            Served by Orleans silo
+            <span class="stage-foot-silo">@LocalSiloDetails.SiloAddress.ToString()</span>
+        </span>
+        <a class="stage-foot-src" href="https://github.com/dotnet/aspire-samples/tree/main/samples/orleans-voting" target="_blank" rel="noopener">
+            @Icons.Github <span>View source</span>
+        </a>
+    </footer>
+</div>

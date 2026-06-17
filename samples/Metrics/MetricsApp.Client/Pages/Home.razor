@@ -1,16 +1,70 @@
-﻿@page "/"
+@page "/"
 @inject HttpClient Http
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Telemetry Console · Home</PageTitle>
 
-<h1>Hello, metrics!</h1>
-
-@if (_grafanaUrl != null)
-{
-    <p>
-        View this app's Grafana dashboard at <a href="@_grafanaUrl" target="_blank">@_grafanaUrl</a>.
+<section class="hero panel">
+    <p class="eyebrow">Instrumented workload</p>
+    <h1 class="hero__title">Generate live metrics</h1>
+    <p class="hero__lede">
+        This app is wired up with <strong>OpenTelemetry</strong>. As you move around it,
+        it records instruments such as <code>http.server.request.duration</code> and streams
+        them through Aspire to <strong>Prometheus</strong> and <strong>Grafana</strong> for live dashboards.
     </p>
-}
+
+    <div class="hero__cta">
+        @if (_grafanaUrl is not null)
+        {
+            <a class="btn btn-primary" href="@_grafanaUrl" target="_blank" rel="noopener">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M12 13a5 5 0 0 0 5-5" /><path d="M12 21a9 9 0 1 1 9-9" /><path d="m17 7 4-4" /><path d="M21 8V3h-5" />
+                </svg>
+                Open Grafana dashboard
+            </a>
+            <span class="hero__hint mono">@_grafanaUrl</span>
+        }
+        else
+        {
+            <span class="btn btn-ghost" aria-disabled="true">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="12" cy="12" r="9" /><path d="M12 12 16 9" /><path d="M12 7v1" />
+                </svg>
+                Grafana dashboard
+            </span>
+            <span class="hero__hint">The dashboard link appears here when the app runs under Aspire.</span>
+        }
+    </div>
+</section>
+
+<section class="cards" aria-label="Generate some metrics">
+    <article class="card panel">
+        <span class="card__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 13h3l2-4 3 8 2.5-6 1.5 2h6" />
+            </svg>
+        </span>
+        <h2 class="card__title">Weather feed</h2>
+        <p class="card__text">
+            Fetch forecasts — complete with a little random latency and the occasional fault —
+            to populate request-duration histograms and error counters.
+        </p>
+        <a class="card__link" href="weather">Open Weather <span aria-hidden="true">→</span></a>
+    </article>
+
+    <article class="card panel">
+        <span class="card__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="5" y="11" width="14" height="9" rx="2" /><path d="M8 11V8a4 4 0 0 1 8 0v3" />
+            </svg>
+        </span>
+        <h2 class="card__title">Auth required</h2>
+        <p class="card__text">
+            Sign in and call a protected endpoint to generate authentication and
+            authorized-request metrics alongside the public traffic.
+        </p>
+        <a class="card__link" href="auth">Open Auth <span aria-hidden="true">→</span></a>
+    </article>
+</section>
 
 @code {
     private static string? _grafanaUrl;

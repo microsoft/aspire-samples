@@ -1,0 +1,55 @@
+{
+  "name": "angular-weather",
+  "version": "0.0.0",
+  "engines": {
+    "node": ">=24.15.0"
+  },
+  "scripts": {
+    "ng": "ng",
+    "start": "run-script-os",
+    "start:win32": "ng serve --port %PORT%",
+    "start:default": "ng serve --port $PORT",
+    "build": "ng build",
+    "watch": "ng build --watch --configuration development",
+    "test": "ng test"
+  },
+  "private": true,
+  "dependencies": {
+    "@angular/animations": "^22.0.0",
+    "@angular/cdk": "^22.0.0",
+    "@angular/common": "^22.0.1",
+    "@angular/compiler": "^22.0.1",
+    "@angular/core": "^22.0.0",
+    "@angular/forms": "^22.0.0",
+    "@angular/material": "^22.0.0",
+    "@angular/platform-browser": "^22.0.0",
+    "@angular/platform-browser-dynamic": "^22.0.0",
+    "@angular/router": "^22.0.0",
+    "@fontsource/roboto": "5.2.10",
+    "material-symbols": "0.44.12",
+    "rxjs": "~7.8.2",
+    "tslib": "^2.8.1",
+    "zone.js": "~0.16.2"
+  },
+  "devDependencies": {
+    "@angular-devkit/build-angular": "^22.0.0",
+    "@angular/cli": "^22.0.0",
+    "@angular/compiler-cli": "^22.0.0",
+    "@types/jasmine": "~6.0.0",
+    "jasmine-core": "~6.3.0",
+    "karma": "~6.4.4",
+    "karma-chrome-launcher": "~3.2.0",
+    "karma-coverage": "~2.2.1",
+    "karma-jasmine": "~5.1.0",
+    "karma-jasmine-html-reporter": "~2.2.0",
+    "typescript": "~6.0.3",
+    "run-script-os": "^1.1.6"
+  },
+  "overrides": {
+    "postcss": "8.5.10",
+    "sockjs": {
+      "uuid": "14.0.0"
+    },
+    "webpack-dev-server": "5.2.4"
+  }
+}

@@ -1,0 +1,113 @@
+<a class="skip-link" href="#forecast">Skip to forecast</a>
+
+<div class="brand-stripe" aria-hidden="true"></div>
+
+<header class="masthead">
+  <span class="brand-mark" aria-hidden="true">
+    <mat-icon>partly_cloudy_day</mat-icon>
+  </span>
+  <span class="brand-text">
+    <span class="brand-eyebrow">Aspire · Angular</span>
+    <h1 class="masthead-title"><span class="brand-accent">Angular</span> Weather</h1>
+  </span>
+  <button
+    mat-flat-button
+    class="refresh"
+    type="button"
+    (click)="load()"
+    [disabled]="state() === 'loading'"
+    [attr.aria-label]="state() === 'loading' ? 'Refreshing forecast' : 'Refresh forecast'"
+  >
+    <mat-icon aria-hidden="true" [class.spin]="state() === 'loading'">refresh</mat-icon>
+    <span class="refresh-label">{{ state() === 'loading' ? 'Refreshing' : 'Refresh' }}</span>
+  </button>
+</header>
+
+<main id="forecast" class="page" [attr.aria-busy]="state() === 'loading'">
+  <section class="forecast" aria-labelledby="forecast-heading">
+    <div class="forecast-head">
+      <p class="eyebrow">Five-day outlook</p>
+      <h2 id="forecast-heading" class="forecast-title">Weather forecast</h2>
+    </div>
+
+    <div class="progress-rail" aria-hidden="true">
+      @if (state() === 'loading') {
+        <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+      }
+    </div>
+
+    <p class="status" role="status" aria-live="polite">{{ statusText }}</p>
+
+    @if (state() === 'error') {
+      <div class="notice">
+        <span class="notice-icon" aria-hidden="true"><mat-icon>cloud_off</mat-icon></span>
+        <p class="notice-text">We couldn’t reach the weather service right now.</p>
+        <button mat-stroked-button type="button" class="notice-retry" (click)="load()">
+          <mat-icon aria-hidden="true">refresh</mat-icon>
+          Try again
+        </button>
+      </div>
+    } @else if (lead(); as featured) {
+      <article class="hero" aria-labelledby="hero-day">
+        <div class="hero-when">
+          <p class="hero-eyebrow">Featured day</p>
+          <h3 id="hero-day" class="hero-day">{{ weekday(featured.date) }}</h3>
+          <p class="hero-date">{{ calendarDate(featured.date) }}</p>
+          <p class="hero-summary">{{ featured.summary }}</p>
+        </div>
+        <div class="hero-figure">
+          <span class="hero-figure-icon" aria-hidden="true">
+            <mat-icon>{{ summaryIcon(featured.summary) }}</mat-icon>
+          </span>
+          <p class="hero-temp">
+            <span class="hero-temp-c">{{ featured.temperatureC }}<span class="deg">°</span></span>
+            <span class="hero-temp-f">{{ featured.temperatureF }}°F</span>
+          </p>
+        </div>
+      </article>
+
+      <ul class="forecast-grid">
+        @for (day of rest(); track day.date; let i = $index) {
+          <li class="grid-item" [style.--i]="i">
+            <article class="day" [attr.aria-labelledby]="'day-' + i + '-name'">
+              <header class="day-head">
+                <h3 class="day-name" [id]="'day-' + i + '-name'">{{ shortWeekday(day.date) }}</h3>
+                <p class="day-date">{{ calendarDate(day.date) }}</p>
+              </header>
+              <span class="day-icon" [attr.data-tone]="tempTone(day.temperatureC)" aria-hidden="true">
+                <mat-icon>{{ summaryIcon(day.summary) }}</mat-icon>
+              </span>
+              <dl class="day-stats">
+                <div class="stat">
+                  <dt class="visually-hidden">Temperature</dt>
+                  <dd class="day-temp">
+                    <span class="day-temp-c">{{ day.temperatureC }}°</span>
+                    <span class="day-temp-f">{{ day.temperatureF }}°F</span>
+                  </dd>
+                </div>
+                <div class="stat">
+                  <dt class="visually-hidden">Conditions</dt>
+                  <dd class="day-summary">{{ day.summary }}</dd>
+                </div>
+              </dl>
+            </article>
+          </li>
+        }
+      </ul>
+    } @else if (state() === 'loading') {
+      <div class="hero skeleton" aria-hidden="true"></div>
+      <ul class="forecast-grid" aria-hidden="true">
+        @for (slot of [1, 2, 3, 4]; track slot) {
+          <li class="grid-item"><div class="day skeleton"></div></li>
+        }
+      </ul>
+    } @else {
+      <p class="empty">No forecast data is available right now.</p>
+    }
+  </section>
+
+  <p class="byline">
+    <mat-icon aria-hidden="true">bolt</mat-icon>
+    Powered by <strong>Aspire</strong>
+  </p>
+</main>

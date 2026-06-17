@@ -1,0 +1,42 @@
+{
+	"name": "Aspire Samples",
+	"image": "mcr.microsoft.com/devcontainers/dotnet:dev-10.0",
+	"features": {
+		"ghcr.io/devcontainers/features/azure-cli:1": {},
+		"ghcr.io/azure/azure-dev/azd:0": {},
+        "ghcr.io/jlaundry/devcontainer-features/azure-functions-core-tools:1": { },
+		"ghcr.io/devcontainers/features/docker-in-docker": {},
+		"ghcr.io/dotnet/aspire-devcontainer-feature/dotnetaspire:1": {},
+		"ghcr.io/devcontainers/features/node:1": {},
+		"ghcr.io/devcontainers/features/python:1": {},
+		"ghcr.io/devcontainers/features/go:1": {},
+		"ghcr.io/devcontainers/features/dotnet:2": {
+			"version": "none",
+			"aspNetCoreRuntimeVersions": "10.0"
+		}
+	},
+	"hostRequirements": {
+		"cpus": 8,
+		"memory": "32gb",
+		"storage": "64gb"
+	},
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"ms-azuretools.azure-dev",
+                "microsoft-aspire.aspire-vscode",
+				"GitHub.copilot",
+				"GitHub.copilot-chat"
+			],
+			"settings": {
+				"remote.autoForwardPorts": true,
+				"remote.autoForwardPortsSource": "hybrid",
+				"remote.otherPortsAttributes": {
+					"onAutoForward": "ignore"
+				},
+				"dotnet.defaultSolution": "disable"
+			}
+		}
+	},
+	"postStartCommand": "curl -sSL https://aspire.dev/install.sh | bash"
+}

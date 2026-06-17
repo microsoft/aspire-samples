@@ -1,0 +1,48 @@
+﻿@page "/Error"
+@using System.Diagnostics
+
+<PageTitle>Aspire Status · Error</PageTitle>
+
+<section class="error-page">
+    <span class="error-page-mark" aria-hidden="true">@Icons.TriangleAlert</span>
+    <h1>Something went sideways</h1>
+    <p class="lede">An error occurred while processing your request.</p>
+
+    @if (ShowRequestId)
+    {
+        <p class="error-meta">
+            <span>Request ID</span>
+            <code>@requestId</code>
+        </p>
+    }
+
+    <div class="error-note">
+        <h2>Development mode</h2>
+        <p>
+            Switching to the <strong>Development</strong> environment shows more detail about the error.
+        </p>
+        <p>
+            <strong>The Development environment shouldn't be enabled for deployed applications</strong>
+            because it can leak sensitive information from exceptions to end users. For local debugging,
+            set the <code>ASPNETCORE_ENVIRONMENT</code> variable to <strong>Development</strong> and restart the app.
+        </p>
+    </div>
+
+    <a class="btn-action" href="">
+        <span class="btn-icon" aria-hidden="true">@Icons.Activity</span>
+        Back to overview
+    </a>
+</section>
+
+@code{
+    [CascadingParameter]
+    public HttpContext? HttpContext { get; set; }
+
+    private string? requestId;
+    private bool ShowRequestId => !string.IsNullOrEmpty(requestId);
+
+    protected override void OnInitialized()
+    {
+        requestId = Activity.Current?.Id ?? HttpContext?.TraceIdentifier;
+    }
+}

@@ -1,0 +1,5 @@
+fastapi
+uvicorn[standard]
+psycopg[binary]
+pydantic
+scalar-fastapi==1.8.2

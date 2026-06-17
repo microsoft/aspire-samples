@@ -1,40 +1,113 @@
-<Project Sdk="Microsoft.Build.NoTargets/3.7.0">
+<Project Sdk="Microsoft.Build.NoTargets/3.7.134">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <SamplesDir>$(MSBuildThisFileDirectory)../samples/</SamplesDir>
+    <NodeModules>$(SamplesDir)**/node_modules/**/*.*</NodeModules>
+    <AspireCliCommand Condition="'$(AspireCliCommand)' == '' and '$(ASPIRE_CLI)' != ''">$(ASPIRE_CLI)</AspireCliCommand>
+    <AspireCliCommand Condition="'$(AspireCliCommand)' == ''">aspire</AspireCliCommand>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <SampleSolutions Include="$(SamplesDir)**/*.slnx" Exclude="$(NodeModules)" />
+    <AppHostProjects Include="$(SamplesDir)**/*.AppHost/*.AppHost.csproj" Exclude="$(NodeModules)" />
+    <CandidateSingleFileCSharpAppHostFiles Include="$(SamplesDir)**/apphost.cs" Exclude="$(NodeModules)" />
+    <SingleFileTypeScriptAppHostFiles Include="$(SamplesDir)**/apphost.mts" Exclude="$(NodeModules)" />
+  </ItemGroup>
+
+  <Target Name="BuildSamples" BeforeTargets="Build">
     <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
+      <!-- Support building samples with a specific packages restore location & disabling HTTP cache to mimic CI -->
+      <RestorePackagesPath Condition="'$(NoRestoreCache)' == 'true'">$(MSBuildThisFileDirectory)../.packages</RestorePackagesPath>
+      <RestoreNoHttpCache Condition="'$(RestoreNoHttpCache)' == '' and '$(NoRestoreCache)' == 'true'">true</RestoreNoHttpCache>
     </PropertyGroup>
 
     <ItemGroup>
-        <SampleSln Include="$(MSBuildThisFileDirectory)../samples/**/*.sln" />
-        <AppHostProjects Include="$(MSBuildThisFileDirectory)../samples/**/*.AppHost/*.AppHost.csproj" />
+      <!-- Filter out any apphost.cs that's in a directory that also contains a .csproj file -->
+      <SingleFileCSharpAppHostFiles Include="@(CandidateSingleFileCSharpAppHostFiles)"
+                                    ParentDir="%(CandidateSingleFileCSharpAppHostFiles.RootDir)%(CandidateSingleFileCSharpAppHostFiles.Directory)"
+                                    Condition="$([System.IO.Directory]::GetFiles('%(CandidateSingleFileCSharpAppHostFiles.RootDir)%(CandidateSingleFileCSharpAppHostFiles.Directory)','*.csproj').Length) == 0" />
     </ItemGroup>
 
-    <Target Name="BuildSamples" BeforeTargets="Build">
-        <Message Text="Building @(SampleSln->Count()) samples" Importance="High" />
+    <Message Text="Building @(SampleSolutions->Count()) solution samples, @(SingleFileCSharpAppHostFiles->Count()) single-file C# AppHosts, and @(SingleFileTypeScriptAppHostFiles->Count()) single-file TypeScript AppHosts" Importance="High" />
+    <Message Text="Using Aspire CLI command: $(AspireCliCommand)" Importance="High" Condition="'@(SingleFileTypeScriptAppHostFiles)' != ''" />
 
-        <MSBuild Projects="@(SampleSln)" Targets="Restore" />
-        <MSBuild Projects="@(SampleSln)" Targets="Build" BuildInParallel="True" />
+    <ItemGroup>
+      <!-- Build up list of samples to build -->
+      <BuildsPerSample Include="$(MSBuildThisFile)"
+                      AdditionalProperties="SamplePath=%(SampleSolutions.Identity);RestorePackagesPath=$(RestorePackagesPath);RestoreNoHttpCache=$(RestoreNoHttpCache)" />
+      <BuildsPerSample Include="$(MSBuildThisFile)"
+                      AdditionalProperties="SamplePath=%(SingleFileCSharpAppHostFiles.Identity);RestorePackagesPath=$(RestorePackagesPath);RestoreNoHttpCache=$(RestoreNoHttpCache)" />
+      <BuildsPerSample Include="$(MSBuildThisFile)"
+                      AdditionalProperties="SamplePath=%(SingleFileTypeScriptAppHostFiles.Identity);RestorePackagesPath=$(RestorePackagesPath);RestoreNoHttpCache=$(RestoreNoHttpCache)" />
+    </ItemGroup>
 
-        <Message Text="@(SampleSln->Count()) samples successfully built" Importance="High" />
-    </Target>
+    <!-- Execute the appropriate sample-building target for each sample -->
+    <!-- Restore must be sequential to avoid package cache conflicts: https://github.com/NuGet/Home/issues/10935 (should be fixed in 10.0.200) -->
+    <MSBuild Projects="@(BuildsPerSample)" Targets="RestoreSample" BuildInParallel="False" /> 
+    <MSBuild Projects="@(BuildsPerSample)" Targets="BuildSample" BuildInParallel="True" Properties="PropertyToForceNewEval=true" />
+    <Message Text="@(BuildsPerSample->Count()) samples successfully built" Importance="High" />
+  </Target>
 
-    <!-- Disabling solution publish until fix for https://github.com/dotnet/aspire-samples/pull/214#issuecomment-2067099667 is found -->
-    <!-- <Target Name="PublishSamples" AfterTargets="BuildSamples">
-        <Message Text="Publishing @(SampleSln->Count()) samples" Importance="High" />
+  <!-- This target will be called by the MSBuild task in the BuildSamples target for each sample found.
+       It executes 'dotnet restore Sample.slnx' or 'dotnet restore apphost.cs' for each sample. -->
+  <Target Name="RestoreSample">
+    <ItemGroup>
+      <SampleToBuild Include="$(SamplePath)" />
+      <RestoreArgs Include="dotnet;restore" />
+      <RestoreArgs Include="%(SampleToBuild.Identity)" Condition="%(SampleToBuild.Extension) == '.cs'" />
+      <RestoreArgs Include="-p:RestorePackagesPath=$(RestorePackagesPath)" Condition="'$(RestorePackagesPath)' != ''" />
+      <RestoreArgs Include="--no-http-cache" Condition="'$(RestoreNoHttpCache)' == 'true'" />
+      <RestoreArgs Include="-bl:$([System.IO.Path]::GetFileNameWithoutExtension($([System.IO.Path]::GetDirectoryName(%(SampleToBuild.Identity)))))-restore-{}.binlog" Condition="%(SampleToBuild.Extension) == '.cs'" />
+      <RestoreArgs Include="-bl:%(SampleToBuild.Filename)-restore-{}.binlog" Condition="%(SampleToBuild.Extension) != '.cs'" />
+    </ItemGroup>
+    <Message Text="Restoring sample %(SampleToBuild.Identity)" Importance="High" />
+    <Exec Condition="'%(SampleToBuild.Extension)' != '.mts'" Command="@(RestoreArgs, ' ')" WorkingDirectory="%(SampleToBuild.RootDir)%(SampleToBuild.Directory)"
+          StandardOutputImportance="Normal" StandardErrorImportance="Normal" />
+    <Exec Condition="'%(SampleToBuild.Extension)' == '.mts' and '$(SkipTypeScriptRestore)' != 'true'" Command="&quot;$(AspireCliCommand)&quot; restore --apphost . --non-interactive --nologo" WorkingDirectory="%(SampleToBuild.RootDir)%(SampleToBuild.Directory)"
+          StandardOutputImportance="Normal" StandardErrorImportance="Normal" />
+    <Exec Condition="'%(SampleToBuild.Extension)' == '.mts' and '$(SkipTypeScriptRestore)' != 'true'" Command="npm ci --no-audit --no-fund" WorkingDirectory="%(SampleToBuild.RootDir)%(SampleToBuild.Directory)"
+          StandardOutputImportance="Normal" StandardErrorImportance="Normal" />
+  </Target>
 
-        <MSBuild Projects="@(SampleSln)" Targets="Restore" />
-        <MSBuild Projects="@(SampleSln)" Targets="Publish" BuildInParallel="True" />
+  <!-- This target will be called by the MSBuild task in the BuildSamples target for each sample found.
+       It executes 'dotnet build Sample.slnx' or 'dotnet build apphost.cs' for each sample. -->
+  <Target Name="BuildSample">
+    <ItemGroup>
+      <SampleToBuild Include="$(SamplePath)" />
+      <BuildArgs Include="dotnet;build" />
+      <BuildArgs Include="%(SampleToBuild.Identity)" Condition="%(SampleToBuild.Extension) == '.cs'" />
+      <BuildArgs Include="--no-restore" />
+      <BuildArgs Include="-bl:$([System.IO.Path]::GetFileNameWithoutExtension($([System.IO.Path]::GetDirectoryName(%(SampleToBuild.Identity)))))-build-{}.binlog" Condition="%(SampleToBuild.Extension) == '.cs'" />
+      <BuildArgs Include="-bl:%(SampleToBuild.Filename)-build-{}.binlog" Condition="%(SampleToBuild.Extension) != '.cs'" />
+    </ItemGroup>
+    <Message Text="Building sample %(SampleToBuild.Identity)" Importance="High" />
+    <Exec Condition="'%(SampleToBuild.Extension)' != '.mts'" Command="@(BuildArgs, ' ')" WorkingDirectory="%(SampleToBuild.RootDir)%(SampleToBuild.Directory)"
+          StandardOutputImportance="Normal" StandardErrorImportance="Normal" />
+    <Exec Condition="'%(SampleToBuild.Extension)' == '.mts'" Command="npm run aspire:build" WorkingDirectory="%(SampleToBuild.RootDir)%(SampleToBuild.Directory)"
+          StandardOutputImportance="Normal" StandardErrorImportance="Normal" />
+  </Target>
 
-        <Message Text="@(SampleSln->Count()) samples successfully published" Importance="High" />
+  <!-- Disabling solution publish until fix for
+  https://github.com/dotnet/aspire-samples/pull/214#issuecomment-2067099667 is found -->
+  <!-- <Target Name="PublishSamples" AfterTargets="BuildSamples">
+        <Message Text="Publishing @(SampleSolutions->Count()) samples" Importance="High" />
+
+        <MSBuild Projects="@(SampleSolutions)" Targets="Restore" />
+        <MSBuild Projects="@(SampleSolutions)" Targets="Publish" BuildInParallel="True" />
+
+        <Message Text="@(SampleSolutions->Count()) samples successfully published" Importance="High" />
     </Target> -->
 
-    <Target Name="GenerateAppHostManifests" AfterTargets="PublishSamples">
-        <Message Text="Generating manifests for @(AppHostProjects->Count()) AppHost projects" Importance="High" />
+  <Target Name="GenerateAppHostManifests" AfterTargets="PublishSamples">
+    <Message Text="Generating manifests for @(AppHostProjects->Count()) AppHost projects" Importance="High" />
 
-        <MSBuild Projects="@(AppHostProjects)" Targets="GenerateAspireManifest" BuildInParallel="True">
-            <Output TaskParameter="TargetOutputs" ItemName="GeneratedManifestFiles" />
-        </MSBuild>
+    <MSBuild Projects="@(AppHostProjects)" Targets="GenerateAspireManifest" BuildInParallel="True">
+      <Output TaskParameter="TargetOutputs" ItemName="GeneratedManifestFiles" />
+    </MSBuild>
 
-        <Message Text="Generated manifest for '%(GeneratedManifestFiles.MSBuildSourceProjectFile)'" Importance="High" />
-        <Message Text="@(AppHostProjects->Count()) manifests generated" Importance="High" />
-    </Target>
+    <Message Text="Generated manifest for '%(GeneratedManifestFiles.MSBuildSourceProjectFile)'" Importance="High" />
+    <Message Text="@(AppHostProjects->Count()) manifests generated" Importance="High" />
+  </Target>
+
 </Project>

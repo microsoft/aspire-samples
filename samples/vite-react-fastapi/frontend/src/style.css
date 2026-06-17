@@ -1,0 +1,509 @@
+/* =========================================================================
+   Clay Todos — a soft, puffy claymorphism identity.
+   Built on Open Props tokens (radii, sizes, easings, fonts) with a custom
+   "raised clay" elevation system: soft cast shadows + a hairline top highlight
+   give each surface an inflated, pinched-from-clay feel — without the carved
+   neumorphic craters. Light + dark via prefers-color-scheme.
+   ========================================================================= */
+
+:root {
+  color-scheme: light dark;
+
+  /* Surfaces & ink */
+  --bg-1: #ffe1f0;
+  --bg-2: #e8eaff;
+  --bg-3: #d6fbef;
+  --surface-raised: #fbf5ff; /* pills / blobs floating on the gradient */
+  --well: #efe7fb;           /* recessed input */
+  --text: #241d3a;
+  --muted: #4d4368;
+
+  /* Accent (primary) */
+  --accent: #5a2fd0;
+  --accent-ink: #ffffff;
+  --accent-soft: #ece2ff;
+  --accent-soft-ink: #4a2bb8;
+
+  /* Danger */
+  --danger: #c2185b;
+  --danger-ink: #ffffff;
+  --danger-soft: #ffe2ec;
+  --danger-soft-ink: #97123f;
+
+  /* Done / mint */
+  --done: #0f7a52;
+  --done-text: #5a4f70;
+
+  --focus: #5a2fd0;
+
+  /* Clay elevation ingredients */
+  --hi: rgba(255, 255, 255, 0.9);     /* top highlight */
+  --cast-1: rgba(106, 61, 240, 0.16); /* near cast */
+  --cast-2: rgba(106, 61, 240, 0.32); /* deep cast */
+  --well-shade: rgba(106, 61, 240, 0.2);
+
+  /* Composed shadows */
+  --shadow-card:
+    inset 0 1.5px 0 var(--hi),
+    0 2px 6px -2px var(--cast-1),
+    0 26px 48px -24px var(--cast-2);
+  --shadow-raised:
+    inset 0 1.5px 0 var(--hi),
+    0 1px 2px var(--cast-1),
+    0 12px 20px -14px var(--cast-2);
+  --shadow-raised-hover:
+    inset 0 1.5px 0 var(--hi),
+    0 2px 4px var(--cast-1),
+    0 18px 28px -14px var(--cast-2);
+  --shadow-well:
+    inset 0 2px 5px var(--well-shade),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.7);
+  --shadow-btn:
+    inset 0 1.5px 0 rgba(255, 255, 255, 0.45),
+    0 10px 20px -8px rgba(106, 61, 240, 0.6);
+  --shadow-btn-active:
+    inset 0 2px 5px rgba(0, 0, 0, 0.25);
+
+  /* Open Props derived */
+  --radius-clay: var(--radius-6, 2rem);
+  --radius-pill: var(--radius-round, 999px);
+  --ease-squish: var(--ease-elastic-3, cubic-bezier(0.5, 1.25, 0.75, 1.25));
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-1: #2a1c46;
+    --bg-2: #18132e;
+    --bg-3: #13273a;
+    --surface: #241d3e;        /* the card */
+    --surface-raised: #2f2750; /* pills sit lighter → read as raised */
+    --well: #191430;           /* recessed input is darker than the card */
+    --text: #f3eeff;
+    --muted: #c4b7ec;
+
+    --accent: #b59cff;
+    --accent-ink: #1b1433;
+    --accent-soft: #352b59;
+    --accent-soft-ink: #ddccff;
+
+    --danger: #ff9dc0;
+    --danger-ink: #3a1226;
+    --danger-soft: #3c2342;
+    --danger-soft-ink: #ffc4da;
+
+    --done: #74e6b4;
+    --done-text: #cbbdf0;
+
+    --focus: #b59cff;
+
+    --hi: rgba(255, 255, 255, 0.06);
+    --cast-1: rgba(0, 0, 0, 0.4);
+    --cast-2: rgba(0, 0, 0, 0.7);
+    --well-shade: rgba(0, 0, 0, 0.55);
+
+    --shadow-card:
+      inset 0 1px 0 var(--hi),
+      0 2px 6px -2px var(--cast-1),
+      0 28px 52px -26px var(--cast-2);
+    --shadow-raised:
+      inset 0 1px 0 var(--hi),
+      0 1px 2px var(--cast-1),
+      0 12px 22px -14px var(--cast-2);
+    --shadow-raised-hover:
+      inset 0 1px 0 var(--hi),
+      0 2px 4px var(--cast-1),
+      0 18px 30px -14px var(--cast-2);
+    --shadow-well:
+      inset 0 2px 6px var(--well-shade),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.04);
+    --shadow-btn:
+      inset 0 1px 0 rgba(255, 255, 255, 0.18),
+      0 12px 22px -8px rgba(0, 0, 0, 0.6);
+    --shadow-btn-active:
+      inset 0 2px 6px rgba(0, 0, 0, 0.6);
+  }
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-sans, system-ui, sans-serif);
+  color: var(--text);
+  background:
+    radial-gradient(circle at 12% 16%, var(--bg-1), transparent 45%),
+    radial-gradient(circle at 86% 10%, var(--bg-3), transparent 42%),
+    radial-gradient(circle at 50% 104%, var(--bg-2), transparent 58%),
+    var(--bg-2);
+  background-attachment: fixed;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--size-5, 1.5rem);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* --- Utilities ---------------------------------------------------------- */
+.visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: fixed;
+  top: var(--size-3, 0.75rem);
+  left: 50%;
+  transform: translateX(-50%) translateY(-160%);
+  z-index: 10;
+  padding: 0.75rem 1.25rem;
+  background: var(--accent);
+  color: var(--accent-ink);
+  border-radius: var(--radius-pill);
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: var(--shadow-btn);
+  transition: transform 0.18s var(--ease-squish);
+}
+
+.skip-link:focus-visible {
+  transform: translateX(-50%) translateY(0);
+}
+
+:where(a, button, input, [tabindex]):focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+
+/* --- Layout ------------------------------------------------------------- */
+.page {
+  width: 100%;
+  max-width: 34rem;
+  margin-block: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-5, 1.5rem);
+}
+
+.masthead {
+  display: flex;
+  align-items: center;
+  gap: var(--size-4, 1.1rem);
+  padding-inline: 0.35rem;
+}
+
+.brand-blob {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 3.75rem;
+  height: 3.75rem;
+  border-radius: var(--radius-clay);
+  background: var(--accent-soft);
+  color: var(--accent-soft-ink);
+  box-shadow: var(--shadow-raised);
+}
+
+.brand-blob svg {
+  width: 2rem;
+  height: 2rem;
+}
+
+h1 {
+  font-size: var(--font-size-7, 2.4rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+}
+
+.subtitle {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.35rem;
+  color: var(--muted);
+  font-size: var(--font-size-2, 0.95rem);
+  font-weight: 600;
+}
+
+.subtitle-spark {
+  width: 1.05rem;
+  height: 1.05rem;
+  color: var(--accent);
+  flex: none;
+}
+
+/* --- Card --------------------------------------------------------------- */
+.card {
+  padding: 0;
+  animation: rise-in 0.5s var(--ease-squish) both;
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.985);
+  }
+}
+
+/* --- Add form ----------------------------------------------------------- */
+.add-form {
+  display: flex;
+  gap: var(--size-3, 0.75rem);
+  margin-bottom: var(--size-4, 1.1rem);
+}
+
+#new-todo {
+  flex: 1;
+  min-width: 0;
+  padding: 0.95rem 1.2rem;
+  font-size: var(--font-size-2, 1rem);
+  font-family: inherit;
+  color: var(--text);
+  background: var(--well);
+  border: none;
+  border-radius: var(--radius-pill);
+  box-shadow: var(--shadow-well);
+}
+
+#new-todo::placeholder {
+  color: var(--muted);
+  opacity: 0.85;
+}
+
+.btn-add {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.95rem 1.5rem;
+  font-size: var(--font-size-2, 1rem);
+  font-weight: 800;
+  color: var(--accent-ink);
+  background: var(--accent);
+  border: none;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  box-shadow: var(--shadow-btn);
+  transition:
+    transform 0.16s var(--ease-squish),
+    box-shadow 0.16s ease;
+}
+
+.btn-add svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.btn-add:hover {
+  transform: translateY(-2px);
+}
+
+.btn-add:active {
+  transform: translateY(1px) scale(0.97);
+  box-shadow: var(--shadow-btn-active);
+}
+
+/* --- Tally -------------------------------------------------------------- */
+.tally {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: var(--size-4, 1.1rem);
+  padding-inline: 0.4rem;
+  color: var(--muted);
+  font-size: var(--font-size-1, 0.9rem);
+  font-weight: 600;
+}
+
+.tally strong {
+  color: var(--accent);
+  font-size: var(--font-size-3, 1.1rem);
+  font-weight: 800;
+}
+
+.tally-dot {
+  color: var(--muted);
+  opacity: 0.6;
+}
+
+/* --- Empty state -------------------------------------------------------- */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--size-3, 0.75rem);
+  padding: var(--size-7, 2.5rem) var(--size-4, 1.1rem);
+  color: var(--muted);
+  font-weight: 600;
+  text-align: center;
+}
+
+.empty-blob {
+  display: grid;
+  place-items: center;
+  width: 3.4rem;
+  height: 3.4rem;
+  border-radius: var(--radius-clay);
+  background: var(--accent-soft);
+  color: var(--accent-soft-ink);
+  box-shadow: var(--shadow-raised);
+}
+
+.empty-blob svg {
+  width: 1.7rem;
+  height: 1.7rem;
+}
+
+/* --- Todo list ---------------------------------------------------------- */
+.todo-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-3, 0.75rem);
+}
+
+.todo {
+  display: flex;
+  align-items: center;
+  gap: var(--size-3, 0.75rem);
+  padding: 0.7rem 0.8rem 0.7rem 1rem;
+  background: var(--surface-raised);
+  border-radius: var(--radius-pill);
+  box-shadow: var(--shadow-raised);
+  transition:
+    transform 0.16s var(--ease-squish),
+    box-shadow 0.16s ease;
+}
+
+.todo:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-raised-hover);
+}
+
+.todo-toggle {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+}
+
+/* Hide the native box; the CheckCircle icon is the visual control. */
+.todo-toggle input[type='checkbox'] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.todo-check {
+  flex: none;
+  width: 1.7rem;
+  height: 1.7rem;
+  color: var(--muted);
+  opacity: 0.5;
+  transition:
+    color 0.2s ease,
+    opacity 0.2s ease,
+    transform 0.2s var(--ease-squish);
+}
+
+.todo.is-done .todo-check {
+  color: var(--done);
+  opacity: 1;
+  transform: scale(1.05);
+}
+
+.todo-toggle input:focus-visible + .todo-check {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+  border-radius: var(--radius-pill);
+}
+
+.todo-title {
+  flex: 1;
+  min-width: 0;
+  font-weight: 600;
+  word-break: break-word;
+}
+
+.todo.is-done .todo-title {
+  text-decoration: line-through;
+  text-decoration-thickness: 2px;
+  color: var(--done-text);
+}
+
+.btn-delete {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 2.6rem;
+  height: 2.6rem;
+  color: var(--danger-soft-ink);
+  background: var(--danger-soft);
+  border: none;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  box-shadow:
+    inset 0 1.5px 0 rgba(255, 255, 255, 0.4),
+    0 6px 12px -8px var(--cast-2);
+  transition:
+    transform 0.16s var(--ease-squish),
+    color 0.16s ease,
+    background 0.16s ease;
+}
+
+.btn-delete svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.btn-delete:hover {
+  color: var(--danger-ink);
+  background: var(--danger);
+  transform: translateY(-1px);
+}
+
+.btn-delete:active {
+  transform: scale(0.92);
+}
+
+/* --- View transitions / motion ----------------------------------------- */
+::view-transition-group(root) {
+  animation-duration: 0.32s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .card {
+    animation: none !important;
+  }
+
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}

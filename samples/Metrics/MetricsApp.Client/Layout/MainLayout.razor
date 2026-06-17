@@ -1,16 +1,29 @@
-﻿@inherits LayoutComponentBase
-<div class="page">
-    <div class="sidebar">
+@inherits LayoutComponentBase
+
+<a class="skip-link" href="#main">Skip to main content</a>
+
+<div class="console">
+    <header class="appbar">
+        <a class="brand" href="">
+            <span class="brand__mark" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 12h4l2-7 4 16 3-10 1.5 3H21" />
+                </svg>
+            </span>
+            <span class="brand__text">
+                <span class="brand__name">Telemetry Console</span>
+                <span class="brand__sub">Aspire · OpenTelemetry</span>
+            </span>
+        </a>
+
         <NavMenu />
-    </div>
 
-    <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
-        </div>
+        <span class="appbar__status chip" title="This app is emitting metrics">
+            <span class="dot" aria-hidden="true"></span> live
+        </span>
+    </header>
 
-        <article class="content px-4">
-            @Body
-        </article>
+    <main id="main" class="content" tabindex="-1">
+        @Body
     </main>
 </div>

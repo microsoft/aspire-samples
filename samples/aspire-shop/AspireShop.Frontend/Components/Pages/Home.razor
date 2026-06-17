@@ -1,0 +1,150 @@
+﻿@page "/"
+@attribute [StreamRendering(true)]
+
+@inject CatalogServiceClient CatalogService
+
+<PageTitle>Aspire Shop · Product catalog</PageTitle>
+
+<header class="topbar">
+    <div class="topbar-inner">
+        <a class="brand" href="/" aria-label="Aspire Shop, home">
+            <span class="brand-mark" aria-hidden="true">@Icons.Storefront</span>
+            <span class="brand-words">
+                <span class="brand-kicker">Aspire</span>
+                <span class="brand-name">Shop</span>
+            </span>
+        </a>
+        <p class="brand-tagline">Browse the product catalog and add items to your cart</p>
+        <CartButton BasketAvailabilityChanged="HandleBasketAvailabilityChanged" />
+    </div>
+</header>
+
+<main id="main-content" class="shell">
+    <section class="collection-head">
+        <p class="eyebrow">Product catalog</p>
+        <h1 class="collection-title">Browse the catalog</h1>
+        <p class="collection-sub">Products are served by the Catalog service. Add items to your cart and they're stored by the Basket service.</p>
+    </section>
+
+    @if (catalog is { Data: var data })
+    {
+        <div class="catalog">
+            @foreach (var item in data)
+            {
+                <article class="product" data-id="@item.Id">
+                    <a class="product-media" href="catalog/images/@item.Id" aria-label="View @item.Name full size">
+                        <img src="catalog/images/@item.Id" alt="@item.Name" loading="lazy" />
+                        <span class="product-zoom">
+                            <span class="product-zoom-icon" aria-hidden="true">@Icons.ZoomIn</span>
+                            Quick look
+                        </span>
+                    </a>
+                    <div class="product-body">
+                        @if (item.CatalogBrand is { Brand: var brand })
+                        {
+                            <p class="product-brand">@brand</p>
+                        }
+                        <h2 class="product-name">@item.Name</h2>
+                        <div class="product-tags">
+                            @if (item.CatalogType is { Type: var type })
+                            {
+                                <span class="tag tag-type">@type</span>
+                            }
+                            @if (item.AvailableStock > 0)
+                            {
+                                <span class="tag tag-stock">
+                                    <span class="tag-dot" aria-hidden="true"></span>In stock
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="tag tag-out">Out of stock</span>
+                            }
+                        </div>
+                        <div class="product-foot">
+                            <span class="product-price">@item.Price.ToString("C")</span>
+                            @if (basketIsAvailable && item.AvailableStock > 0)
+                            {
+                                <AddToCart Item="item" />
+                            }
+                        </div>
+                    </div>
+                </article>
+            }
+        </div>
+
+        <nav class="pager" aria-label="Catalog pages">
+            @if (paginationInfo.HasPreviousPage)
+            {
+                <a class="pager-link" rel="prev" href="?before=@paginationInfo.FirstId">
+                    <span class="pager-icon" aria-hidden="true">@Icons.ArrowLeft</span>
+                    <span>Previous</span>
+                </a>
+            }
+            else
+            {
+                <span class="pager-link is-disabled" aria-disabled="true">
+                    <span class="pager-icon" aria-hidden="true">@Icons.ArrowLeft</span>
+                    <span>Previous</span>
+                </span>
+            }
+
+            <span class="pager-rule" aria-hidden="true"></span>
+
+            @if (paginationInfo.HasNextPage)
+            {
+                <a class="pager-link" rel="next" href="?after=@paginationInfo.NextId">
+                    <span>Next</span>
+                    <span class="pager-icon" aria-hidden="true">@Icons.ArrowRight</span>
+                </a>
+            }
+            else
+            {
+                <span class="pager-link is-disabled" aria-disabled="true">
+                    <span>Next</span>
+                    <span class="pager-icon" aria-hidden="true">@Icons.ArrowRight</span>
+                </span>
+            }
+        </nav>
+    }
+    else
+    {
+        <div class="catalog-loading" role="status" aria-live="polite">
+            <span class="loading-spinner" aria-hidden="true"></span>
+            <p>Loading products from the Catalog service…</p>
+        </div>
+    }
+</main>
+
+<AppFooter />
+
+@code {
+    bool basketIsAvailable;
+    CatalogItemsPage? catalog;
+    PaginationInfo paginationInfo = new(FirstId: 0, NextId: 0, HasPreviousPage: false, HasNextPage: false);
+
+    [SupplyParameterFromQuery]
+    public int? Before { get; set; }
+
+    [SupplyParameterFromQuery]
+    public int? After { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        catalog = await CatalogService.GetItemsAsync(Before, After);
+
+        if (catalog is null)
+        {
+            return;
+        }
+
+        paginationInfo = new PaginationInfo(catalog.FirstId, catalog.NextId, catalog.FirstId > 1, !catalog.IsLastPage);
+    }
+
+    private void HandleBasketAvailabilityChanged(bool isAvailable)
+    {
+        basketIsAvailable = isAvailable;
+    }
+
+    record PaginationInfo(int FirstId, int NextId, bool HasPreviousPage, bool HasNextPage);
+}

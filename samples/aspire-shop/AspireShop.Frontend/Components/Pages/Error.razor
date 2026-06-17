@@ -1,0 +1,36 @@
+﻿@page "/Error"
+
+@using System.Diagnostics
+
+<PageTitle>Aspire Shop · Error</PageTitle>
+
+<main id="main-content" class="error-page">
+    <div class="error-card">
+        <p class="eyebrow">Error</p>
+        <h1 class="error-title">Something went wrong</h1>
+        <p class="error-lede">Something went wrong while preparing your request. Please try again in a moment.</p>
+
+        @if (showRequestId)
+        {
+            <p class="error-id">
+                <span>Request ID</span>
+                <code>@requestId</code>
+            </p>
+        }
+
+        <a class="error-home" href="/">Back to the catalog</a>
+    </div>
+</main>
+
+@code {
+    private string? requestId;
+    private bool showRequestId => !string.IsNullOrEmpty(requestId);
+
+    [CascadingParameter]
+    public HttpContext? HttpContext { get; set; }
+
+    protected override void OnInitialized()
+    {
+        requestId = Activity.Current?.Id ?? HttpContext?.TraceIdentifier;
+    }
+}

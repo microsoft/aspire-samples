@@ -1,0 +1,361 @@
+:root {
+  /* Chrome (the "room" around the cabinet) — light theme by default. */
+  --font-pixel: 'Press Start 2P', ui-monospace, 'Cascadia Code', monospace;
+  --font-term: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, monospace;
+
+  --room-bg: #f1e9d6;
+  --room-bg-2: #e7dcc2;
+  --ink: #241c12;
+  --ink-soft: #4a3d2a;
+  --marquee: #9e0f28;
+  --rule: #cdbf9f;
+  --bezel: #2c2622;
+  --bezel-edge: #14110e;
+  --focus: #9e0f28;
+
+  /* The CRT screen — intentionally dark in BOTH themes (it is glass). */
+  --screen-bg: #060a07;
+  --screen-bg-2: #0a1109;
+  --phosphor: #5dff6a;
+  --phosphor-dim: #2bd45f;
+  --amber: #ffce3a;
+  --cyan: #74ecff;
+  --magenta: #ff86e0;
+
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --room-bg: #0b0b14;
+    --room-bg-2: #12121f;
+    --ink: #eef0fb;
+    --ink-soft: #c2c6e0;
+    --marquee: #ff5a7a;
+    --rule: #2a2a3e;
+    --bezel: #1a1a26;
+    --bezel-edge: #07070c;
+    --focus: #74ecff;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--room-bg);
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: var(--font-term);
+  color: var(--ink);
+  background:
+    radial-gradient(120% 90% at 50% -10%, var(--room-bg-2), var(--room-bg) 70%);
+  -webkit-font-smoothing: antialiased;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: -4rem;
+  z-index: 10;
+  padding: 0.6rem 1rem;
+  background: var(--ink);
+  color: var(--room-bg);
+  font-family: var(--font-term);
+  font-size: 0.85rem;
+  text-decoration: none;
+  border-radius: 6px;
+  transition: top 0.15s ease;
+}
+.skip-link:focus {
+  top: 1rem;
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+
+.room {
+  max-width: 46rem;
+  margin: 0 auto;
+  padding: clamp(1.5rem, 5vw, 3.5rem) clamp(1rem, 5vw, 2rem) 2.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(1.25rem, 4vw, 2rem);
+  text-align: center;
+}
+
+/* Marquee header */
+.marquee {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(0.6rem, 3vw, 1.4rem);
+}
+.marquee__title {
+  margin: 0;
+  font-family: var(--font-pixel);
+  font-size: clamp(1.05rem, 4.6vw, 2rem);
+  line-height: 1.3;
+  letter-spacing: 0.02em;
+  color: var(--marquee);
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.25);
+}
+.marquee__star-wrap {
+  display: inline-flex;
+  color: var(--amber);
+}
+.marquee__star {
+  width: clamp(1.4rem, 5vw, 2.1rem);
+  height: clamp(1.4rem, 5vw, 2.1rem);
+  filter: drop-shadow(0 0 4px rgba(255, 206, 58, 0.5));
+}
+
+/* Cabinet + CRT screen */
+.cabinet {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(1.1rem, 4vw, 1.8rem);
+}
+
+.screen {
+  position: relative;
+  width: min(100%, 36rem);
+  padding: clamp(1.4rem, 5vw, 2.2rem) clamp(1.2rem, 5vw, 1.8rem);
+  background:
+    radial-gradient(120% 130% at 50% 0%, var(--screen-bg-2), var(--screen-bg) 75%);
+  border-radius: 18px;
+  border: 3px solid var(--bezel);
+  box-shadow:
+    0 0 0 6px var(--bezel-edge),
+    0 18px 40px rgba(0, 0, 0, 0.45),
+    inset 0 0 60px rgba(0, 0, 0, 0.65);
+  overflow: hidden;
+}
+
+.screen__scanlines,
+.screen__glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+}
+.screen__scanlines {
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0) 0,
+    rgba(0, 0, 0, 0) 2px,
+    rgba(0, 0, 0, 0.28) 3px,
+    rgba(0, 0, 0, 0.28) 4px
+  );
+  mix-blend-mode: multiply;
+  opacity: 0.55;
+}
+.screen__glow {
+  background: radial-gradient(120% 120% at 50% 40%, rgba(93, 255, 106, 0.06), transparent 60%);
+  box-shadow: inset 0 0 70px rgba(0, 0, 0, 0.55);
+}
+
+.readout {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  z-index: 1;
+}
+.stat {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.7rem;
+}
+.stat--hi {
+  align-items: flex-end;
+}
+.stat__label {
+  font-family: var(--font-pixel);
+  font-size: clamp(0.55rem, 2.4vw, 0.72rem);
+  letter-spacing: 0.06em;
+  color: var(--cyan);
+}
+.stat__value {
+  font-family: var(--font-pixel);
+  font-size: clamp(1.3rem, 5vw, 1.85rem);
+  line-height: 1;
+  color: var(--phosphor);
+  text-shadow: 0 0 8px rgba(93, 255, 106, 0.45);
+  font-variant-numeric: tabular-nums;
+}
+.stat__value--hi {
+  color: var(--amber);
+  text-shadow: 0 0 8px rgba(255, 206, 58, 0.4);
+}
+
+.screen__tagline {
+  position: relative;
+  z-index: 1;
+  margin: clamp(1.4rem, 5vw, 2rem) 0 0;
+  font-family: var(--font-pixel);
+  font-size: clamp(0.6rem, 2.8vw, 0.82rem);
+  color: var(--magenta);
+}
+
+.floater {
+  position: absolute;
+  left: 50%;
+  bottom: 38%;
+  z-index: 2;
+  font-family: var(--font-pixel);
+  font-size: 1rem;
+  color: var(--phosphor);
+  text-shadow: 0 0 8px rgba(93, 255, 106, 0.6);
+  pointer-events: none;
+  animation: floatUp 0.7s ease-out forwards;
+}
+
+/* Arcade button */
+.controls {
+  display: flex;
+  justify-content: center;
+}
+.arcade-btn {
+  font-family: var(--font-pixel);
+  font-size: clamp(0.7rem, 3vw, 0.9rem);
+  color: #1a0a0e;
+  background: linear-gradient(180deg, #ff5d6c 0%, #e11d3a 60%, #b3122e 100%);
+  border: 0;
+  border-radius: 14px;
+  padding: 1rem 1.6rem;
+  cursor: pointer;
+  box-shadow:
+    0 6px 0 #7c0d20,
+    0 10px 18px rgba(0, 0, 0, 0.35);
+  transition: transform 0.08s ease, box-shadow 0.08s ease;
+}
+.arcade-btn__cap {
+  display: inline-block;
+  line-height: 1.4;
+}
+.arcade-btn:hover {
+  background: linear-gradient(180deg, #ff6f7d 0%, #ef2444 60%, #c21533 100%);
+}
+.arcade-btn:active {
+  transform: translateY(4px);
+  box-shadow:
+    0 2px 0 #7c0d20,
+    0 4px 10px rgba(0, 0, 0, 0.3);
+}
+.arcade-btn:focus-visible {
+  outline: 4px solid var(--focus);
+  outline-offset: 4px;
+}
+
+/* Hint + credits */
+.hint {
+  max-width: 32rem;
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--ink-soft);
+}
+.hint kbd {
+  font-family: var(--font-term);
+  font-size: 0.85em;
+  padding: 0.1em 0.45em;
+  border-radius: 5px;
+  border: 1px solid var(--rule);
+  background: var(--room-bg-2);
+  color: var(--ink);
+}
+
+.credits {
+  margin-top: 0.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--rule);
+  width: min(100%, 34rem);
+}
+.credits p {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: var(--ink-soft);
+}
+.credits a {
+  color: var(--marquee);
+  font-weight: 600;
+  text-underline-offset: 3px;
+}
+.credits a:focus-visible,
+.skip-link:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+
+@keyframes pop {
+  0% { transform: scale(1); }
+  35% { transform: scale(1.18); }
+  100% { transform: scale(1); }
+}
+@keyframes floatUp {
+  0% { transform: translate(-50%, 0); opacity: 1; }
+  100% { transform: translate(-50%, -2.4rem); opacity: 0; }
+}
+@keyframes flicker {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 0.48; }
+}
+@keyframes blink {
+  0%, 64% { opacity: 1; }
+  65%, 100% { opacity: 0.35; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .stat__value[data-pop='true'] {
+    animation: pop 0.28s ease-out;
+  }
+  .screen__scanlines {
+    animation: flicker 4s steps(2, end) infinite;
+  }
+  .screen__tagline {
+    animation: blink 1.6s steps(1, end) infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .arcade-btn {
+    transition: none;
+  }
+}
+
+@media (max-width: 30rem) {
+  .stat--hi {
+    align-items: flex-start;
+  }
+  .readout {
+    flex-direction: column;
+  }
+}
+
+@media (forced-colors: active) {
+  .screen,
+  .arcade-btn {
+    border: 2px solid CanvasText;
+  }
+}

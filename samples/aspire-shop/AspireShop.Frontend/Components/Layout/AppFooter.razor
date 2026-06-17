@@ -1,0 +1,21 @@
+﻿<footer class="site-footer">
+    <div class="site-footer-inner">
+        <span class="footer-mark" aria-hidden="true">@Icons.Storefront</span>
+        <a href="https://github.com/dotnet/aspire-samples/blob/main/LICENSE"
+           rel="noopener noreferrer" target="_blank" class="footer-link">
+            &copy; @DateTime.Today.Year · MIT Licensed
+        </a>
+        <span class="footer-sep" aria-hidden="true"></span>
+        <span class="footer-meta">@Message</span>
+        <span class="footer-sep" aria-hidden="true"></span>
+        <a href="https://github.com/dotnet/aspire-samples/tree/main/samples/aspire-shop"
+           rel="noopener noreferrer" target="_blank" class="footer-link">
+            <span class="footer-icon" aria-hidden="true">@Icons.GitHub</span>
+            Source on GitHub
+        </a>
+    </div>
+</footer>
+
+@code {
+    string Message = "Built with Aspire";
+}

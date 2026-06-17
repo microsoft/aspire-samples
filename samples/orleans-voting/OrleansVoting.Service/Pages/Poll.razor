@@ -1,0 +1,230 @@
+@page "/p/{PollId}"
+
+@using Orleans.Runtime
+@using OrleansVoting.Data
+@using Orleans
+@using OrleansVoting
+
+@implements IAsyncDisposable
+
+@inject PollService PollService
+@inject DemoService DemoService
+@inject IJSRuntime JS
+
+@if (!string.IsNullOrWhiteSpace(_errorMessage))
+{
+    <div class="gp-alert" role="alert">
+        @_errorMessage
+    </div>
+}
+else if (!_loaded)
+{
+    <section class="poll-loading" aria-busy="true">
+        <span class="poll-loading-mark">@Icons.Logo</span>
+        <h2>Loading poll @PollId…</h2>
+        <p>Fetching the latest results.</p>
+    </section>
+}
+else if (!_voted)
+{
+    <section class="hero">
+        <p class="eyebrow"><span class="eyebrow-ico">@Icons.Bolt</span> Cast your vote</p>
+        <h1>@_results.Question</h1>
+        <p class="hero-sub">Pick an option to cast your vote. Results update in real time as votes are tallied by an Orleans grain.</p>
+    </section>
+
+    <ul class="ballot" aria-label="Answer options">
+        @foreach (var (index, option) in _results.Options.Select((value, index) => (index, value)))
+        {
+            <li>
+                <button class="ballot-option" type="button" disabled="@_isVoting"
+                        aria-label="@($"Vote for {option.Option}")"
+                        @onclick="@(e => VoteForOption(index))">
+                    <span class="ballot-check" aria-hidden="true">@Icons.Check</span>
+                    <span class="ballot-label">@option.Option</span>
+                    <span class="ballot-go" aria-hidden="true">Vote</span>
+                </button>
+            </li>
+        }
+    </ul>
+
+    <div class="share-panel">
+        <span class="share-ico" aria-hidden="true">@Icons.Share</span>
+        <div>
+            <p class="share-title">Share this poll</p>
+            <p class="share-id">Poll code <code>@PollId</code></p>
+        </div>
+    </div>
+}
+else
+{
+    var results = CalculateResults();
+    var maxVotes = results.Count > 0 ? results.Max(r => r.Votes) : 0;
+    var totalVotes = results.Sum(r => r.Votes);
+    var leader = maxVotes > 0 ? results.FirstOrDefault(r => r.Votes == maxVotes) : default;
+
+    <section class="hero">
+        <p class="eyebrow"><span class="eyebrow-ico">@Icons.Logo</span> Live results</p>
+        <h1>@_results.Question</h1>
+    </section>
+
+    <p class="results-status" role="status" aria-live="polite">
+        @if (totalVotes == 0)
+        {
+            <text>No votes yet.</text>
+        }
+        else
+        {
+            <text>@totalVotes @(totalVotes == 1 ? "vote" : "votes") so far. Leading: @leader.Option at @leader.Percentage%.</text>
+        }
+    </p>
+
+    <ol class="results" aria-label="Poll results">
+        @foreach (var (option, votes, percentage) in results)
+        {
+            var leading = maxVotes > 0 && votes == maxVotes;
+            <li class="result-row @(leading ? "is-leading" : null)">
+                <div class="result-head">
+                    <span class="result-name">
+                        @if (leading)
+                        {
+                            <span class="result-crown" aria-hidden="true">@Icons.Crown</span>
+                        }
+                        @option
+                    </span>
+                    <span class="result-figures">
+                        @if (leading)
+                        {
+                            <span class="result-badge">Leading</span>
+                        }
+                        <span class="result-pct">@percentage%</span>
+                        <span class="result-votes">@votes @(votes == 1 ? "vote" : "votes")</span>
+                    </span>
+                </div>
+                <div class="result-track" role="progressbar"
+                     aria-label="@($"{option}: {percentage} percent, {votes} votes")"
+                     aria-valuenow="@percentage" aria-valuemin="0" aria-valuemax="100">
+                    <span class="result-fill @(leading ? "is-leading" : null)" style="width: @(percentage)%;"></span>
+                </div>
+            </li>
+        }
+    </ol>
+
+    <div class="demo-bar">
+        <span class="demo-bar-label"><span class="demo-ico">@Icons.Sparkles</span> Try the demo</span>
+        <button class="gp-btn gp-btn-demo" type="button" @onclick="DemoTryDoubleVoting">Try double-voting</button>
+        <button class="gp-btn gp-btn-demo" type="button" @onclick="DemoSimulateVoters">Simulate other voters</button>
+    </div>
+}
+@code
+{
+    [Parameter] public string PollId { get; set; } = "Poll";
+    private MyPollWatcher? _watcher;
+    private IAsyncDisposable? _subscription;
+    private bool _loaded;
+    private bool _voted;
+    private bool _isVoting;
+    private string? _errorMessage;
+
+    private Guid ownerKey = Guid.NewGuid();
+    private PollState _results = new PollState { Question = "Loading...", Options = new List<(string, int)>() };
+
+	protected override async Task OnInitializedAsync()
+	{
+		try
+		{
+			(_results, _voted) = await PollService.GetPollResultsAsync(PollId);
+			_watcher = new MyPollWatcher(this);
+			_subscription = await PollService.WatchPoll(PollId, _watcher);
+			_loaded = true;
+            await base.OnInitializedAsync();
+        }
+        catch (Exception exception)
+        {
+            _errorMessage = exception.Message;
+        }
+    }
+
+    private async Task VoteForOption(int index)
+    {
+        if (_isVoting)
+        {
+            return;
+        }
+
+        _isVoting = true;
+        try
+        {
+            _results = await PollService.AddVoteAsync(PollId, index);
+            _voted = true;
+        }
+        catch (Exception exception)
+        {
+            _errorMessage = exception.Message;
+            return;
+        }
+        finally
+        {
+            _isVoting = false;
+        }
+
+        // Celebrate independently — a confetti/JS hiccup must never turn a
+        // successful vote into an error state.
+        try
+        {
+            await JS.InvokeVoidAsync("grainPoll.celebrate");
+        }
+        catch (JSException) { }
+        catch (JSDisconnectedException) { }
+    }
+
+    private List<(string Option, int Votes, int Percentage)> CalculateResults()
+    {
+        if (_results?.Options is not {Count: > 0} options) return new();
+        var totalVotes = options.Sum(o => o.Votes);
+        var result = new List<(string Option, int Votes, int Percentage)>();
+        foreach (var val in options)
+        {
+            var percentage = Math.Clamp(val.Votes * 100 / totalVotes, 0, 100);
+            result.Add((val.Option, val.Votes, percentage));
+        }
+
+        return result;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_subscription is not null)
+        {
+            await _subscription.DisposeAsync();
+        }
+    }
+
+    private void DemoTryDoubleVoting()
+    {
+        _voted = false;
+    }
+
+    private void DemoSimulateVoters()
+    {
+        DemoService.SimulateVoters(PollId, 200).Ignore();
+    }
+
+    private void UpdateResults(PollState results)
+    {
+        // We use InvokeAsync to schedule our update on the UI thread,
+        // instead of updating it from a background thread, which is not allowed
+        InvokeAsync(() =>
+        {
+            _results = results;
+            this.StateHasChanged();
+        });
+    }
+
+    private class MyPollWatcher : IPollWatcher
+    {
+        private readonly Poll _page;
+        public MyPollWatcher(Poll page) => _page = page;
+        public void OnPollUpdated(PollState state) => _page.UpdateResults(state);
+    }
+}

@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark light" />
+    <meta name="theme-color" content="#1b1712" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#f3ead8" media="(prefers-color-scheme: light)" />
+    <meta name="description" content="Athenaeum — upload text documents, ask questions, and get answers grounded in cited passages using Retrieval Augmented Generation and vector search, built on Aspire." />
+    <!-- Inline SVG favicon avoids a /favicon.ico 404 in the console. -->
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%231b1712'/%3E%3Cpath d='M16 9c-2.4-1.5-5-1.7-7.5-1.2v13c2.5-.5 5.1-.3 7.5 1.2 2.4-1.5 5-1.7 7.5-1.2v-13C21 7.3 18.4 7.5 16 9Z' fill='none' stroke='%23d4a843' stroke-width='1.7' stroke-linejoin='round'/%3E%3Cpath d='M16 9v13' stroke='%23d4a843' stroke-width='1.7'/%3E%3C/svg%3E"
+    />
+    <title>Athenaeum · RAG Document Q&amp;A</title>
+    <script>
+      // Resolve the theme before first paint to avoid a flash of the wrong palette.
+      (function () {
+        try {
+          var stored = localStorage.getItem('athenaeum-theme');
+          var prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
+          var theme = stored || (prefersLight ? 'light' : 'dark');
+          document.documentElement.dataset.theme = theme;
+        } catch (e) {
+          document.documentElement.dataset.theme = 'dark';
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

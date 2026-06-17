@@ -43,7 +43,15 @@ else
 app.UseStaticFiles();
 app.UseBlazorFrameworkFiles();
 
-await Auth.InitializeTestUserAsync(app.Services);
+// SAMPLE ONLY -- DO NOT KEEP IN PRODUCTION.
+// Seeds a known test user (test@contoso.com / Password1!) so the demo is usable
+// without a sign-up flow. Gating on Development ensures the credentials cannot
+// follow the sample into other environments if the in-memory DB is swapped for
+// a persistent one.
+if (app.Environment.IsDevelopment())
+{
+    await Auth.InitializeTestUserAsync(app.Services);
+}
 
 app.Run();
 

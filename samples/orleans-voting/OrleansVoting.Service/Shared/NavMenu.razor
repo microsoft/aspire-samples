@@ -1,0 +1,39 @@
+<header class="topbar">
+    <div class="topbar-inner">
+        <a class="brand" href="">
+            <span class="brand-mark">@Icons.Logo</span>
+            <span class="brand-text">
+                <span class="brand-name">Grain Poll</span>
+                <span class="brand-live"><span class="brand-live-dot" aria-hidden="true"></span>LIVE</span>
+            </span>
+        </a>
+
+        <button type="button" class="nav-toggle" aria-label="Toggle navigation" aria-expanded="@(!collapseNavMenu)" @onclick="ToggleNavMenu">
+            <span class="nav-toggle-bar"></span>
+            <span class="nav-toggle-bar"></span>
+            <span class="nav-toggle-bar"></span>
+        </button>
+
+        <nav class="@NavMenuCssClass" aria-label="Primary" @onclick="CollapseNavMenu">
+            <NavLink class="nav-link" href="new" Match="NavLinkMatch.All">
+                <span class="nav-ico">@Icons.Ballot</span> New poll
+            </NavLink>
+        </nav>
+    </div>
+</header>
+
+@code {
+    private bool collapseNavMenu = true;
+
+    private string NavMenuCssClass => collapseNavMenu ? "topnav collapsed" : "topnav";
+
+    private void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
+
+    private void CollapseNavMenu()
+    {
+        collapseNavMenu = true;
+    }
+}

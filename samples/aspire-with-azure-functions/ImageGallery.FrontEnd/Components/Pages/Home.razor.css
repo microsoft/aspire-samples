@@ -1,0 +1,166 @@
+.intro { margin-bottom: 1.75rem; max-width: 60ch; }
+
+.eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--amber);
+    font-weight: 700;
+    margin: 0;
+}
+
+.intro__title {
+    margin: 0.35rem 0 0.6rem;
+    font-size: clamp(2rem, 5vw, 2.9rem);
+}
+
+.intro__lede { margin: 0; color: var(--ink-soft); font-size: 1.05rem; }
+
+/* ---- Upload dropzone ------------------------------------------------------ */
+.dropzone {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 1.1rem;
+    padding: 1.4rem 1.6rem;
+    margin-bottom: 2.25rem;
+    border: 1px dashed var(--border-strong);
+    border-radius: var(--radius-lg);
+    background:
+        linear-gradient(180deg, var(--surface), var(--surface-2));
+    cursor: pointer;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+.dropzone:hover {
+    border-color: var(--amber-deep);
+    box-shadow: 0 14px 40px -26px var(--amber-glow);
+}
+.dropzone:focus-within {
+    border-color: var(--amber);
+    box-shadow: var(--ring);
+}
+
+.dropzone__icon {
+    flex: none;
+    width: 3rem;
+    height: 3rem;
+    display: grid;
+    place-items: center;
+    border-radius: var(--radius);
+    background: var(--surface-3);
+    color: var(--amber);
+    border: 1px solid var(--border-strong);
+}
+.dropzone__icon svg { width: 1.6rem; height: 1.6rem; }
+
+.dropzone__text { display: flex; flex-direction: column; gap: 0.15rem; }
+.dropzone__title { font-weight: 700; font-size: 1.05rem; color: var(--ink); }
+.dropzone__hint { font-size: 0.86rem; color: var(--ink-muted); }
+
+/* The native file input covers the whole label so the entire zone is
+   clickable. InputFile renders its own <input>, which doesn't inherit this
+   component's scope attribute, so reach it with ::deep. */
+.dropzone ::deep .dropzone__input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+/* ---- Empty state ---------------------------------------------------------- */
+.empty {
+    text-align: center;
+    padding: 3.5rem 1.5rem;
+    border: 1px dashed var(--border);
+    border-radius: var(--radius-lg);
+    background: rgba(23, 23, 28, 0.45);
+}
+.empty__icon { color: var(--ink-muted); display: inline-grid; place-items: center; }
+.empty__icon svg { width: 2.6rem; height: 2.6rem; }
+.empty__title { margin: 0.9rem 0 0.25rem; font-family: var(--font-serif); font-size: 1.4rem; color: var(--ink); }
+.empty__text { margin: 0; color: var(--ink-muted); }
+
+/* ---- Contact sheet (masonry) ---------------------------------------------- */
+.contact-sheet {
+    column-width: 230px;
+    column-gap: 1rem;
+}
+
+.frame {
+    position: relative;
+    display: block;
+    margin: 0 0 1rem;
+    break-inside: avoid;
+    border-radius: var(--radius);
+    overflow: hidden;
+    border: 1px solid var(--border-strong);
+    background: var(--surface);
+    box-shadow: var(--shadow-frame);
+    transition: transform 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease;
+}
+.frame:hover {
+    transform: translateY(-3px);
+    border-color: var(--amber);
+    box-shadow: 0 18px 40px -18px rgba(0, 0, 0, 0.9), 0 0 0 1px var(--amber-deep);
+}
+
+.frame__img { width: 100%; height: auto; display: block; }
+
+.frame__overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    color: var(--amber-soft);
+    background: linear-gradient(180deg, rgba(8, 8, 10, 0.1), rgba(8, 8, 10, 0.8));
+    opacity: 0;
+    transition: opacity 0.16s ease;
+}
+.frame:hover .frame__overlay,
+.frame:focus-visible .frame__overlay { opacity: 1; }
+.frame__expand { width: 1.7rem; height: 1.7rem; }
+.frame__label { font-size: 0.82rem; font-weight: 600; letter-spacing: 0.02em; }
+
+/* ---- Dialog --------------------------------------------------------------- */
+.dialog-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(6, 6, 8, 0.66);
+    backdrop-filter: blur(3px);
+    z-index: 100;
+}
+
+.dialog {
+    position: fixed;
+    z-index: 101;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: min(26rem, calc(100vw - 2rem));
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+    padding: 1.5rem;
+}
+
+.dialog__header { display: flex; align-items: center; gap: 0.7rem; margin-bottom: 0.75rem; }
+.dialog__icon {
+    flex: none;
+    width: 2.4rem; height: 2.4rem;
+    display: grid; place-items: center;
+    border-radius: var(--radius);
+    background: var(--danger-surface);
+    border: 1px solid var(--danger-border);
+    color: var(--danger);
+}
+.dialog__icon svg { width: 1.35rem; height: 1.35rem; }
+.dialog__title { margin: 0; font-size: 1.2rem; color: var(--ink); }
+.dialog__body { margin: 0 0 1.25rem; color: var(--ink-soft); }
+.dialog__footer { display: flex; justify-content: flex-end; }

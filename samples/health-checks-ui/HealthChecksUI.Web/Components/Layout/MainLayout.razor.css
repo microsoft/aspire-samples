@@ -1,0 +1,151 @@
+.layout {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* ---- App bar ----------------------------------------------------------- */
+.appbar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: color-mix(in srgb, var(--surface) 82%, transparent);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--line);
+}
+
+.appbar-inner {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 0.75rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    flex-wrap: wrap;
+}
+
+.brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.7rem;
+    text-decoration: none;
+    color: var(--ink);
+}
+
+.brand-mark {
+    display: grid;
+    place-items: center;
+    width: 2.2rem;
+    height: 2.2rem;
+    border-radius: 10px;
+    background: var(--surface-2);
+    border: 1px solid var(--line-strong);
+    color: var(--brand);
+}
+
+.brand-mark ::deep .icon {
+    width: 1.3rem;
+    height: 1.3rem;
+}
+
+.brand-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.1;
+}
+
+.brand-name {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 1.06rem;
+    letter-spacing: -0.01em;
+}
+
+.brand-sub {
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+}
+
+.appbar-state {
+    margin-left: auto;
+}
+
+.state-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.85rem;
+    border-radius: 999px;
+    font-size: 0.84rem;
+    font-weight: 600;
+    background: var(--ok-soft);
+    color: var(--ink);
+    border: 1px solid color-mix(in srgb, var(--ok) 40%, transparent);
+}
+
+/* ---- Content ----------------------------------------------------------- */
+.content {
+    flex: 1;
+    width: 100%;
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem 3.5rem;
+}
+
+/* ---- Footer ------------------------------------------------------------ */
+.appfoot {
+    border-top: 1px solid var(--line);
+    background: var(--surface-2);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 1.25rem 1.5rem;
+}
+
+.appfoot-copy {
+    color: var(--ink-faint);
+    font-size: 0.86rem;
+}
+
+.appfoot-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--ink-soft);
+    text-decoration: none;
+    font-size: 0.86rem;
+    font-weight: 600;
+}
+
+.appfoot-link:hover {
+    color: var(--ink);
+}
+
+.appfoot-link ::deep .icon {
+    width: 1rem;
+    height: 1rem;
+}
+
+@media (max-width: 640px) {
+    .appbar-inner {
+        gap: 0.75rem;
+    }
+
+    .appbar-state {
+        order: 3;
+        margin-left: 0;
+        width: 100%;
+    }
+
+    .state-pill {
+        width: 100%;
+        justify-content: center;
+    }
+}

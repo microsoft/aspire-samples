@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light dark">
+    <meta name="description" content="Ember, an AI chat assistant powered by OpenAI and FastAPI, orchestrated by Aspire.">
+    <title>Ember · AI chat assistant</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234f46e5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='4'/%3E%3Cpath d='M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41'/%3E%3C/svg%3E">
+    <style>
+        :root {
+            color-scheme: light dark;
+
+            /* Shared layout rhythm */
+            --measure: 50rem;            /* comfortable conversation width */
+            --pad-x: clamp(1rem, 4vw, 2rem);
+
+            /* Clean slate palette — light theme (default). Neutral surfaces with
+               a single indigo accent for strong, crisp separation. Message
+               body-text pairs target WCAG AAA; UI chrome pairs meet AA. */
+            --canvas: #f5f6f8;
+            --topbar: #ffffff;
+            --card-border: #e4e7ec;
+            --ink: #1a1d24;              /* ~15:1 on light surfaces */
+            --ink-soft: #5a6273;         /* ~5.6:1 on --canvas */
+            --assistant-bg: #ffffff;
+            --assistant-ink: #1a1d24;
+            --assistant-border: #e4e7ec;
+            --user-bg: #4338ca;          /* indigo, ~7.9:1 with white (AAA) */
+            --user-ink: #ffffff;
+            --avatar-user-bg: #4338ca;
+            --avatar-user-ink: #ffffff;
+            --avatar-bot-bg: #eaecfb;
+            --avatar-bot-ink: #4338ca;
+            --accent: #4f46e5;           /* indigo CTA */
+            --accent-2: #7c3aed;         /* violet, for the brand gradient */
+            --accent-ink: #ffffff;
+            --skip-bg: #4338ca;          /* white text ~7.9:1 */
+            --skip-ink: #ffffff;
+            --composer-bg: rgba(255, 255, 255, 0.85);
+            --field-bg: #ffffff;
+            --field-ink: #1a1d24;
+            --field-border: #d3d8e0;
+            --placeholder: #6b7280;      /* ~4.8:1 on --field-bg */
+            --chip-bg: #ffffff;
+            --chip-hover: #f0f1f6;
+            --chip-ink: #353b48;
+            --chip-border: #dfe3ea;
+            --notice-bg: #fef6e7;
+            --notice-ink: #6b4e13;
+            --notice-border: #f3dca8;
+            --dot: #6366f1;
+            --focus: #4f46e5;
+            --dock-shadow: 0 -16px 32px -28px rgba(20, 24, 40, 0.45);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --canvas: #0e1016;
+                --topbar: #161922;
+                --card-border: #262b37;
+                --ink: #e8eaf0;          /* ~14:1 on dark surfaces */
+                --ink-soft: #9aa3b5;     /* ~6.6:1 on --canvas */
+                --assistant-bg: #181c25;
+                --assistant-ink: #e8eaf0;
+                --assistant-border: #2a3040;
+                --user-bg: #4f46e5;      /* indigo, ~6.3:1 with white */
+                --user-ink: #ffffff;
+                --avatar-user-bg: #4f46e5;
+                --avatar-user-ink: #ffffff;
+                --avatar-bot-bg: #232a3f;
+                --avatar-bot-ink: #aab4ff;
+                --accent: #6366f1;       /* brighter indigo CTA on dark */
+                --accent-2: #8b5cf6;     /* violet, for the brand gradient */
+                --accent-ink: #ffffff;
+                --skip-bg: #6366f1;
+                --skip-ink: #ffffff;
+                --composer-bg: rgba(14, 16, 22, 0.85);
+                --field-bg: #181c25;
+                --field-ink: #e8eaf0;
+                --field-border: #333a4b;
+                --placeholder: #8b94a7;
+                --chip-bg: #181c25;
+                --chip-hover: #202633;
+                --chip-ink: #c5ccda;
+                --chip-border: #2a3040;
+                --notice-bg: #2c2616;
+                --notice-ink: #f0dca6;
+                --notice-border: #534828;
+                --dot: #818cf8;
+                --focus: #818cf8;
+                --dock-shadow: 0 -16px 32px -28px rgba(0, 0, 0, 0.8);
+            }
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html { -webkit-text-size-adjust: 100%; }
+
+        body {
+            font-family: ui-rounded, 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+            min-height: 100vh;
+            min-height: 100dvh;
+            color: var(--ink);
+            background: var(--canvas);
+            line-height: 1.5;
+        }
+
+        /* Skip link */
+        .skip-link {
+            position: absolute;
+            left: 0.75rem;
+            top: -3.5rem;
+            z-index: 20;
+            background: var(--skip-bg);
+            color: var(--skip-ink);
+            padding: 0.6rem 1rem;
+            border-radius: 0 0 0.6rem 0.6rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: top 0.15s ease;
+        }
+        .skip-link:focus { top: 0; }
+
+        .visually-hidden {
+            position: absolute !important;
+            width: 1px; height: 1px;
+            padding: 0; margin: -1px;
+            overflow: hidden; clip: rect(0 0 0 0);
+            white-space: nowrap; border: 0;
+        }
+
+        :focus-visible {
+            outline: 3px solid var(--focus);
+            outline-offset: 2px;
+        }
+
+        /* Full-viewport app shell on a flat, intentional canvas. */
+        .app {
+            min-height: 100vh;
+            min-height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            background: var(--canvas);
+        }
+
+        .topbar {
+            background: var(--topbar);
+            border-bottom: 1px solid var(--card-border);
+        }
+        .topbar__inner {
+            width: min(100%, var(--measure));
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+            padding: 0.95rem var(--pad-x);
+        }
+
+        .brand-mark {
+            display: grid;
+            place-items: center;
+            width: 2.75rem;
+            height: 2.75rem;
+            flex: none;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
+            color: #ffffff;
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+        }
+        .brand-mark svg { width: 1.6rem; height: 1.6rem; }
+
+        .brand-text h1 {
+            font-size: 1.2rem;
+            letter-spacing: -0.01em;
+            line-height: 1.1;
+        }
+        .brand-text p {
+            font-size: 0.85rem;
+            color: var(--ink-soft);
+            margin-top: 0.1rem;
+        }
+
+        .chat-main {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .notice {
+            width: min(100%, var(--measure));
+            margin: 0.85rem auto 0;
+            padding: 0.7rem 1rem;
+            border-radius: 0.75rem;
+            background: var(--notice-bg);
+            color: var(--notice-ink);
+            border: 1px solid var(--notice-border);
+            font-size: 0.88rem;
+        }
+        .notice[hidden] { display: none; }
+
+        .log {
+            flex: 1;
+            overflow-y: auto;
+            padding: clamp(1rem, 3vw, 1.75rem) 0;
+            scroll-behavior: smooth;
+        }
+
+        .thread {
+            width: min(100%, var(--measure));
+            margin: 0 auto;
+            padding: 0 var(--pad-x);
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .msg {
+            display: flex;
+            gap: 0.65rem;
+            max-width: min(85%, 38rem);
+            align-items: flex-end;
+        }
+        .msg--user { align-self: flex-end; flex-direction: row-reverse; }
+        .msg--assistant { align-self: flex-start; }
+
+        .msg__avatar {
+            width: 2.1rem;
+            height: 2.1rem;
+            flex: none;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+        }
+        .msg__avatar svg { width: 1.15rem; height: 1.15rem; }
+        .msg--user .msg__avatar {
+            background: var(--avatar-user-bg);
+            color: var(--avatar-user-ink);
+        }
+        .msg--assistant .msg__avatar {
+            background: var(--avatar-bot-bg);
+            color: var(--avatar-bot-ink);
+        }
+
+        .msg__bubble {
+            padding: 0.7rem 0.95rem;
+            border-radius: 1.15rem;
+            overflow-wrap: anywhere;
+            word-break: break-word;
+            white-space: pre-wrap;
+        }
+        .msg--user .msg__bubble {
+            background: var(--user-bg);
+            color: var(--user-ink);
+            border-bottom-right-radius: 0.35rem;
+            box-shadow: 0 6px 16px -10px rgba(67, 56, 202, 0.6);
+        }
+        .msg--assistant .msg__bubble {
+            background: var(--assistant-bg);
+            color: var(--assistant-ink);
+            border: 1px solid var(--assistant-border);
+            border-bottom-left-radius: 0.35rem;
+        }
+
+        /* Typing indicator */
+        .typing {
+            display: inline-flex;
+            gap: 0.3rem;
+            align-items: center;
+        }
+        .typing__dot {
+            width: 0.5rem;
+            height: 0.5rem;
+            border-radius: 50%;
+            background: var(--dot);
+            opacity: 1;
+        }
+
+        .dock {
+            background: var(--composer-bg);
+            border-top: 1px solid var(--card-border);
+            box-shadow: var(--dock-shadow);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        .suggestions {
+            width: min(100%, var(--measure));
+            margin: 0 auto;
+            padding: 0.85rem var(--pad-x) 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        .suggestions[hidden] { display: none; }
+
+        .suggestion {
+            font: inherit;
+            font-size: 0.875rem;
+            color: var(--chip-ink);
+            background: var(--chip-bg);
+            border: 1px solid var(--chip-border);
+            border-radius: 999px;
+            padding: 0.45rem 0.9rem;
+            cursor: pointer;
+        }
+
+        .composer {
+            width: min(100%, var(--measure));
+            margin: 0 auto;
+            display: flex;
+            align-items: flex-end;
+            gap: 0.6rem;
+            padding: 0.85rem var(--pad-x) 0.5rem;
+        }
+
+        .field {
+            flex: 1;
+            resize: none;
+            font: inherit;
+            color: var(--field-ink);
+            background: var(--field-bg);
+            border: 1.5px solid var(--field-border);
+            border-radius: 1rem;
+            padding: 0.7rem 0.95rem;
+        }
+        .field::placeholder { color: var(--placeholder); opacity: 1; }
+
+        .send {
+            flex: none;
+            width: 2.85rem;
+            height: 2.85rem;
+            display: grid;
+            place-items: center;
+            border: none;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
+            color: var(--accent-ink);
+            cursor: pointer;
+        }
+        .send svg { width: 1.35rem; height: 1.35rem; }
+        .send:disabled { opacity: 0.55; cursor: not-allowed; }
+
+        .composer-hint {
+            width: min(100%, var(--measure));
+            margin: 0 auto;
+            padding: 0 var(--pad-x) 0.85rem;
+            font-size: 0.78rem;
+            color: var(--ink-soft);
+            text-align: center;
+        }
+
+        @media (prefers-reduced-motion: no-preference) {
+            .msg { animation: rise 0.32s ease both; }
+            .send { transition: transform 0.15s ease, filter 0.15s ease; }
+            .send:not(:disabled):hover { transform: translateY(-1px); filter: brightness(1.05); }
+            .suggestion { transition: background 0.15s ease, transform 0.15s ease; }
+            .suggestion:hover { background: var(--chip-hover); transform: translateY(-1px); }
+            .typing__dot { animation: bounce 1.3s ease-in-out infinite; }
+            .typing__dot:nth-child(2) { animation-delay: 0.18s; }
+            .typing__dot:nth-child(3) { animation-delay: 0.36s; }
+
+            @keyframes rise {
+                from { opacity: 0; transform: translateY(8px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            @keyframes bounce {
+                0%, 70%, 100% { transform: translateY(0); opacity: 0.55; }
+                35% { transform: translateY(-0.32rem); opacity: 1; }
+            }
+        }
+    </style>
+</head>
+<body>
+    <a class="skip-link" href="#messageInput">Skip to the message box</a>
+
+    <div class="app">
+        <header class="topbar">
+            <div class="topbar__inner">
+                <span class="brand-mark" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+                </span>
+                <div class="brand-text">
+                    <h1>Ember</h1>
+                    <p>AI assistant · OpenAI + FastAPI on Aspire</p>
+                </div>
+            </div>
+        </header>
+
+        <main class="chat-main" id="main">
+            <p class="notice" id="notice" role="status" hidden></p>
+
+            <div class="log" id="messages" role="log" aria-live="polite" aria-label="Conversation with Ember">
+                <ol class="thread" id="thread">
+                    <li class="msg msg--assistant">
+                        <span class="msg__avatar" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l1.9 5.8a2 2 0 0 0 1.3 1.3L21 12l-5.8 1.9a2 2 0 0 0-1.3 1.3L12 21l-1.9-5.8a2 2 0 0 0-1.3-1.3L3 12l5.8-1.9a2 2 0 0 0 1.3-1.3z"/></svg>
+                        </span>
+                        <div class="msg__bubble"><span class="visually-hidden">Ember: </span>Hi! I&rsquo;m an AI assistant running on OpenAI and FastAPI &mdash; ask me anything.</div>
+                    </li>
+                </ol>
+            </div>
+
+            <div class="dock">
+                <div class="suggestions" id="suggestions" role="group" aria-label="Suggested prompts">
+                    <button type="button" class="suggestion" data-prompt="What can you help me with?">What can you help me with?</button>
+                    <button type="button" class="suggestion" data-prompt="Explain what Aspire does in one sentence.">Explain what Aspire does</button>
+                    <button type="button" class="suggestion" data-prompt="Share a quick FastAPI tip.">Share a FastAPI tip</button>
+                </div>
+
+                <form class="composer" id="composer" autocomplete="off">
+                    <label class="visually-hidden" for="messageInput">Type your message to Ember</label>
+                    <textarea
+                        class="field"
+                        id="messageInput"
+                        name="message"
+                        rows="1"
+                        placeholder="Message Ember&hellip;"
+                        enterkeyhint="send"></textarea>
+                    <button class="send" id="sendButton" type="submit" aria-label="Send message">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 7-7 7 7"/><path d="M12 19V5"/></svg>
+                    </button>
+                </form>
+
+                <p class="composer-hint">Ember is a demo assistant and can make mistakes &mdash; verify anything important.</p>
+            </div>
+        </main>
+    </div>
+
+    <!-- Polite, screen-reader-only status. Present and empty at load so the
+         very first announcement is reliably picked up. -->
+    <p class="visually-hidden" id="liveStatus" role="status" aria-live="polite"></p>
+
+    <script>
+        const log = document.getElementById('messages');
+        const thread = document.getElementById('thread');
+        const input = document.getElementById('messageInput');
+        const sendButton = document.getElementById('sendButton');
+        const composer = document.getElementById('composer');
+        const liveStatus = document.getElementById('liveStatus');
+        const notice = document.getElementById('notice');
+        const suggestions = document.getElementById('suggestions');
+
+        const ICONS = {
+            user: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
+            assistant: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l1.9 5.8a2 2 0 0 0 1.3 1.3L21 12l-5.8 1.9a2 2 0 0 0-1.3 1.3L12 21l-1.9-5.8a2 2 0 0 0-1.3-1.3L3 12l5.8-1.9a2 2 0 0 0 1.3-1.3z"/></svg>'
+        };
+
+        // Unique session id, with a fallback for environments without crypto.randomUUID.
+        const sessionId = (window.crypto && crypto.randomUUID)
+            ? 'session-' + crypto.randomUUID()
+            : 'session-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+
+        let sending = false;
+
+        function nearBottom() {
+            return log.scrollHeight - log.scrollTop - log.clientHeight < 80;
+        }
+
+        function addMessage(role, text) {
+            const wasNear = nearBottom();
+
+            const li = document.createElement('li');
+            li.className = 'msg msg--' + role;
+
+            const avatar = document.createElement('span');
+            avatar.className = 'msg__avatar';
+            avatar.setAttribute('aria-hidden', 'true');
+            avatar.innerHTML = role === 'user' ? ICONS.user : ICONS.assistant;
+
+            const bubble = document.createElement('div');
+            bubble.className = 'msg__bubble';
+            // Visually-hidden speaker label so the aria-live log reads "You:"
+            // or "Ember:" before each message for non-visual users.
+            const speaker = document.createElement('span');
+            speaker.className = 'visually-hidden';
+            speaker.textContent = role === 'user' ? 'You: ' : 'Ember: ';
+            bubble.appendChild(speaker);
+            bubble.appendChild(document.createTextNode(text));
+
+            li.appendChild(avatar);
+            li.appendChild(bubble);
+            thread.appendChild(li);
+
+            if (wasNear) {
+                log.scrollTop = log.scrollHeight;
+            }
+        }
+
+        function showTyping() {
+            if (document.getElementById('typing')) return;
+
+            const li = document.createElement('li');
+            li.className = 'msg msg--assistant';
+            li.id = 'typing';
+            li.setAttribute('aria-hidden', 'true');
+
+            const avatar = document.createElement('span');
+            avatar.className = 'msg__avatar';
+            avatar.innerHTML = ICONS.assistant;
+
+            const bubble = document.createElement('div');
+            bubble.className = 'msg__bubble';
+            bubble.innerHTML = '<span class="typing"><span class="typing__dot"></span><span class="typing__dot"></span><span class="typing__dot"></span></span>';
+
+            li.appendChild(avatar);
+            li.appendChild(bubble);
+            thread.appendChild(li);
+            log.scrollTop = log.scrollHeight;
+
+            liveStatus.textContent = 'Ember is typing…';
+        }
+
+        function hideTyping() {
+            const el = document.getElementById('typing');
+            if (el) el.remove();
+            liveStatus.textContent = '';
+        }
+
+        // Quick-start prompts only make sense before a conversation begins.
+        function hideSuggestions() {
+            if (suggestions && !suggestions.hidden) {
+                suggestions.hidden = true;
+            }
+        }
+
+        async function sendMessage() {
+            if (sending) return;
+            const text = input.value.trim();
+            if (!text) return;
+
+            sending = true;
+            sendButton.disabled = true;   // Keep the input focusable during the await.
+            hideSuggestions();
+
+            addMessage('user', text);
+            input.value = '';
+            showTyping();
+
+            try {
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: text, session_id: sessionId })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Request failed with status ' + response.status);
+                }
+
+                const data = await response.json();
+                hideTyping();
+                addMessage('assistant', (data && data.response) ? data.response : 'I didn\u2019t catch a reply that time. Could you try again?');
+            } catch (error) {
+                hideTyping();
+                addMessage('assistant', 'Sorry, I couldn\u2019t reach the AI service just now. Please try again.');
+                liveStatus.textContent = 'Ember is unavailable right now. Please try again.';
+            } finally {
+                sending = false;
+                sendButton.disabled = false;
+                input.focus();
+            }
+        }
+
+        composer.addEventListener('submit', (e) => {
+            e.preventDefault();
+            sendMessage();
+        });
+
+        // Enter sends; Shift+Enter inserts a newline. Honour IME composition so
+        // confirming a CJK candidate with Enter does not submit prematurely.
+        // Track composition explicitly as a fallback for browsers/IMEs where the
+        // keydown event's isComposing flag is unreliable.
+        let composing = false;
+        input.addEventListener('compositionstart', () => { composing = true; });
+        input.addEventListener('compositionend', () => { composing = false; });
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey && !e.isComposing && !composing) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        // Suggested prompts seed the composer so the visitor can review and send.
+        if (suggestions) {
+            suggestions.addEventListener('click', (e) => {
+                const button = e.target.closest('.suggestion');
+                if (!button) return;
+                input.value = button.dataset.prompt || button.textContent.trim();
+                input.focus();
+            });
+        }
+
+        // Surface the graceful "AI paused" state without a hard error.
+        fetch('/health')
+            .then((res) => res.json())
+            .then((data) => {
+                if (data && data.openai_available === false) {
+                    notice.textContent = 'Ember isn\u2019t connected to an AI model right now, so replies are paused. Add an OpenAI API key to enable live answers — the rest of the page still works.';
+                    notice.hidden = false;
+                }
+            })
+            .catch(() => { /* Network hiccup on health check is non-fatal; stay quiet. */ });
+
+        input.focus();
+    </script>
+</body>
+</html>

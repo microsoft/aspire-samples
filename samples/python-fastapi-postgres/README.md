@@ -1,0 +1,136 @@
+# Python FastAPI + PostgreSQL Sample
+
+**FastAPI REST API with PostgreSQL database using Aspire Python support.**
+
+This sample demonstrates Aspire 13's polyglot platform support for Python applications, showcasing a simple CRUD API built with FastAPI and PostgreSQL.
+
+It also ships a bespoke, on-brand **[Scalar](https://github.com/scalar/scalar) API reference** as its developer-facing UX — a themed FastAPI/Python developer portal served at `/scalar`, with the classic Swagger UI still available at `/docs`.
+
+![Scalar API reference for the User API, themed in FastAPI teal with Python blue and yellow accents](./images/python-fastapi-postgres.png)
+
+## Quick Start
+
+### Prerequisites
+
+- [Aspire CLI](https://aspire.dev/get-started/install-cli/)
+- [Docker](https://docs.docker.com/get-docker/)
+- [Python 3.8+](https://www.python.org/)
+
+### Commands
+
+```bash
+aspire run      # Run locally
+aspire deploy   # Deploy to Docker Compose
+aspire do docker-compose-down-dc  # Teardown deployment
+```
+
+## Overview
+
+The application consists of:
+
+- **Aspire AppHost** - Orchestrates the Python API and PostgreSQL database
+- **FastAPI API** - Python web API with CRUD operations for users
+- **PostgreSQL** - Database for storing user data
+- **pgAdmin** - Web-based PostgreSQL administration tool for local/demo use
+
+## Key Code
+
+The `apphost.mts` configuration demonstrates Aspire 13's Python support:
+
+```ts
+import { createBuilder } from "./.aspire/modules/aspire.mjs";
+
+const builder = await createBuilder();
+
+await builder.addDockerComposeEnvironment("dc");
+
+const postgres = await builder.addPostgres("postgres")
+    .withPgAdmin();
+const db = await postgres.addDatabase("db");
+
+await builder.addUvicornApp("api", "./api", "main:app")
+    .withExternalHttpEndpoints()
+    .waitFor(db)
+    .withReference(db)
+    .withReference(postgres);
+
+await builder.build().run();
+```
+
+Key features:
+
+- **Python Polyglot Support**: Uses `addUvicornApp` to run FastAPI applications
+- **PgAdmin Integration**: `.withPgAdmin()` adds a web-based database management tool for local/demo use
+- **Startup Dependencies**: `.waitFor(db)` ensures the database is ready before starting the API
+- **Database Connection**: Aspire provides connection properties via `POSTGRES_*` environment variables
+- **External HTTP Endpoints**: Enables external access to the API
+- **Docker Compose Deployment**: Ready for containerized deployment
+
+## API Endpoints
+
+The FastAPI application provides the following endpoints:
+
+- `GET /` - API information
+- `GET /health` - Health check with database connectivity test
+- `GET /users?limit=100&offset=0` - List users with capped pagination
+- `GET /users/{id}` - Get a specific user
+- `POST /users` - Create a new user
+- `DELETE /users/{id}` - Delete a user
+
+Interactive API documentation is available at:
+
+- `GET /scalar` - Themed [Scalar](https://github.com/scalar/scalar) API reference (the highlighted UX)
+- `GET /docs` - Swagger UI
+- `GET /redoc` - ReDoc
+
+## How It Works
+
+1. **Virtual Environment**: Aspire automatically creates a `.venv` directory and installs dependencies from `requirements.txt`
+2. **Modular Architecture**: The API is organized into separate modules:
+   - `models.py` - Pydantic models for data validation
+   - `database.py` - Database connection and repository pattern
+   - `scalar_theme.py` - Custom teal/Python theming for the Scalar API reference
+   - `main.py` - FastAPI routes and application setup
+3. **Database Initialization**: On startup, the API creates the `users` table if it doesn't exist
+4. **Connection Management**: Aspire provides PostgreSQL connection via `POSTGRES_*` environment variables (non-.NET connection property pattern)
+5. **Startup Dependencies**: The API waits for PostgreSQL to be ready before starting
+6. **Development Experience**: Zero configuration - Aspire handles virtual environment, dependency installation, and process management
+
+## Security Notes
+
+This sample is intentionally simple demo code. The API exposes public, unauthenticated CRUD endpoints and does not implement CSRF protection, rate limiting, authorization, or user/session management. Before using this pattern in production, add authentication and authorization, apply rate limits, review CSRF requirements for browser clients, and follow the [FastAPI security documentation](https://fastapi.tiangolo.com/tutorial/security/) and [OWASP API Security Top 10](https://owasp.org/API-Security/editions/2023/en/0x11-t10/).
+
+The `POST /users` payload uses Pydantic field constraints for `name` and `email`, and `GET /users` uses bounded `limit` and `offset` query parameters to avoid returning an unbounded result set. The email check is a lightweight constrained-string pattern to avoid adding the optional `email-validator` package required by Pydantic `EmailStr`; use `EmailStr` or stricter domain-specific validation if your application needs full email address validation. See the [FastAPI request body field documentation](https://fastapi.tiangolo.com/tutorial/body-fields/) and [Pydantic field validation documentation](https://docs.pydantic.dev/latest/concepts/fields/) for more validation options.
+
+The startup database creation path composes the database identifier with `psycopg.sql.Identifier` instead of string interpolation. In this Aspire sample, `DB_DATABASE` is generated by the AppHost and trusted for local development, but production code should still quote or validate SQL identifiers and prefer least-privilege credentials that cannot create arbitrary databases. See the [Psycopg SQL composition documentation](https://www.psycopg.org/psycopg3/docs/api/sql.html).
+
+pgAdmin is included as local/demo tooling through `.withPgAdmin()`. Do not expose pgAdmin publicly without strong authentication, network restrictions, TLS, secret management, and operational monitoring.
+
+## VS Code Integration
+
+This sample includes VS Code configuration for Python development:
+
+- **`.vscode/settings.json`**: Configures the Python interpreter to use the Aspire-created virtual environment
+- After running `aspire run`, open the sample in VS Code for full IntelliSense and debugging support
+- The virtual environment at `api/.venv` will be automatically detected
+
+## Deployment
+
+The sample uses Docker Compose for deployment. Run:
+
+```bash
+aspire deploy
+```
+
+This will:
+
+1. Generate a Dockerfile for the Python application
+2. Install dependencies and create a container image
+3. Generate Docker Compose files with PostgreSQL
+4. Deploy the complete application stack
+
+To teardown:
+
+```bash
+aspire do docker-compose-down-dc
+```

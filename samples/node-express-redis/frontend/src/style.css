@@ -1,0 +1,120 @@
+/* =========================================================================
+   Visit Counter — "Memphis-pop" stat dashboard (global layer).
+   Holds design tokens, the page background + scattered geometric confetti,
+   resets, and motion preferences. Component styling lives in App.module.css
+   (CSS Modules). Light + dark via prefers-color-scheme.
+   ========================================================================= */
+
+:root {
+  color-scheme: light dark;
+
+  /* Memphis primaries */
+  --c-yellow: #ffd43b;
+  --c-coral: #ff8787;
+  --c-sky: #74c0fc;
+  --c-green: #69db7c;
+  --c-pink: #faa2c1;
+  --c-orange: #ffc078;
+  --c-red: #ff6b6b;
+  --c-blue: #4dabf7;
+  --c-violet: #b197fc;
+
+  /* Surfaces & ink */
+  --page: #fff8e7;
+  --panel: #ffffff;
+  --ink: #141414; /* borders, hard shadows, page text */
+  --ink-soft: #4a4534; /* muted page text */
+  --card-ink: #141414; /* text inside bright cards (always dark) */
+
+  --border-w: 3px;
+  --shadow-x: 6px;
+  --shadow-y: 6px;
+
+  --dot: rgba(20, 20, 20, 0.14);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --page: #17171f;
+    --panel: #23232f;
+    --ink: #f7f0dd; /* borders, hard shadows, page text */
+    --ink-soft: #c9c3ad;
+    --card-ink: #141414; /* cards stay bright, so keep dark text */
+
+    --dot: rgba(247, 240, 221, 0.12);
+  }
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  color: var(--ink);
+  background-color: var(--page);
+  /* dotted Memphis grid */
+  background-image: radial-gradient(var(--dot) 2px, transparent 2px);
+  background-size: 26px 26px;
+  background-position: -8px -8px;
+  min-height: 100dvh;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: fixed;
+  top: 0.85rem;
+  left: 50%;
+  transform: translateX(-50%) translateY(-200%);
+  z-index: 20;
+  padding: 0.7rem 1.2rem;
+  background: var(--c-yellow);
+  color: #141414;
+  border: 3px solid #141414;
+  border-radius: 4px;
+  font-weight: 800;
+  text-decoration: none;
+  box-shadow: 5px 5px 0 #141414;
+}
+
+.skip-link:focus-visible {
+  transform: translateX(-50%) translateY(0);
+}
+
+:where(a, button, [tabindex]):focus-visible {
+  outline: 4px solid var(--c-blue);
+  outline-offset: 3px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :where(a, button, [tabindex]):focus-visible {
+    outline-color: var(--c-yellow);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -1,0 +1,248 @@
+﻿@page "/cart"
+@attribute [StreamRendering(true)]
+
+@inject BasketServiceClient BasketClient
+@inject CatalogServiceClient CatalogService
+@inject NavigationManager Navigation
+
+<PageTitle>Aspire Shop · Your cart</PageTitle>
+
+<header class="topbar">
+    <div class="topbar-inner">
+        <a class="brand" href="/" aria-label="Aspire Shop, home">
+            <span class="brand-mark" aria-hidden="true">@Icons.Storefront</span>
+            <span class="brand-words">
+                <span class="brand-kicker">Aspire</span>
+                <span class="brand-name">Shop</span>
+            </span>
+        </a>
+        <p class="brand-tagline">Review the items the Basket service is holding for you</p>
+        <a class="continue-link" href="/">
+            <span class="continue-icon" aria-hidden="true">@Icons.ArrowLeft</span>
+            <span>Continue shopping</span>
+        </a>
+    </div>
+</header>
+
+<main id="main-content" class="shell">
+    <section class="collection-head collection-head--left">
+        <p class="eyebrow">Your cart</p>
+        <h1 class="collection-title cart-title">Your cart</h1>
+        <p class="collection-sub">Items are held by the Basket service over gRPC. Prices come from the Catalog service.</p>
+    </section>
+
+    @if (loaded)
+    {
+        @if (!basketIsAvailable)
+        {
+            <div class="cart-notice" role="status">
+                <span class="cart-notice-icon" aria-hidden="true">@Icons.Handbag</span>
+                <div>
+                    <p class="cart-notice-title">The Basket service is unavailable</p>
+                    <p class="cart-notice-text">Your cart can't be loaded right now. Start the Basket service and try again.</p>
+                </div>
+            </div>
+        }
+        else if (checkoutComplete)
+        {
+            <div class="cart-empty">
+                <span class="cart-empty-icon cart-empty-icon--ok" aria-hidden="true">@Icons.Check</span>
+                <h2 class="cart-empty-title">Order placed</h2>
+                <p class="cart-empty-text">Thanks! The Basket service checked out your cart and cleared it.</p>
+                <a class="btn btn-primary" href="/">Browse the catalog</a>
+            </div>
+        }
+        else if (lines.Count == 0)
+        {
+            <div class="cart-empty">
+                <span class="cart-empty-icon" aria-hidden="true">@Icons.Handbag</span>
+                <h2 class="cart-empty-title">Your cart is empty</h2>
+                <p class="cart-empty-text">Add products from the catalog and they'll be saved here by the Basket service.</p>
+                <a class="btn btn-primary" href="/">Browse the catalog</a>
+            </div>
+        }
+        else
+        {
+            <div class="cart-layout">
+                <ul class="cart-lines">
+                    @foreach (var line in lines)
+                    {
+                        <li class="cart-line @(line.Item is null ? "is-unavailable" : null)">
+                            <div class="cart-line-media">
+                                @if (line.Item is not null)
+                                {
+                                    <img src="catalog/images/@line.ProductId" alt="@line.Item.Name" loading="lazy" />
+                                }
+                                else
+                                {
+                                    <span class="cart-line-media-fallback" aria-hidden="true">@Icons.Handbag</span>
+                                }
+                            </div>
+
+                            <div class="cart-line-info">
+                                @if (line.Item is not null)
+                                {
+                                    @if (line.Item.CatalogBrand is { Brand: var brand })
+                                    {
+                                        <p class="cart-line-brand">@brand</p>
+                                    }
+                                    <h2 class="cart-line-name">@line.Item.Name</h2>
+                                    <p class="cart-line-unit">@line.Item.Price.ToString("C") each</p>
+                                }
+                                else
+                                {
+                                    <h2 class="cart-line-name">Item no longer available</h2>
+                                    <p class="cart-line-unit">This product was removed from the catalog. Remove it to continue.</p>
+                                }
+                            </div>
+
+                            <div class="cart-line-actions">
+                                @if (line.Item is not null)
+                                {
+                                    <EditForm Model="this" FormName="@($"qty-{line.ProductId}")" OnValidSubmit="HandleLineAction" data-enhance class="stepper-form">
+                                        <input type="hidden" name="ProductId" value="@line.ProductId" />
+                                        <div class="stepper" role="group" aria-label="@($"Quantity for {line.Item.Name}")">
+                                            <button type="submit" name="Op" value="dec" class="stepper-btn"
+                                                    aria-label="@($"Decrease quantity of {line.Item.Name}")">
+                                                <span aria-hidden="true">@Icons.Minus</span>
+                                            </button>
+                                            <span class="stepper-value" aria-live="polite">@line.Quantity</span>
+                                            <button type="submit" name="Op" value="inc" class="stepper-btn"
+                                                    aria-label="@($"Increase quantity of {line.Item.Name}")">
+                                                <span aria-hidden="true">@Icons.Plus</span>
+                                            </button>
+                                        </div>
+                                        <button type="submit" name="Op" value="remove" class="line-remove"
+                                                aria-label="@($"Remove {line.Item.Name} from cart")">
+                                            <span aria-hidden="true">@Icons.Trash</span>
+                                            <span class="line-remove-text">Remove</span>
+                                        </button>
+                                    </EditForm>
+
+                                    <p class="cart-line-total" aria-label="@($"Line total {(line.Item.Price * line.Quantity).ToString("C")}")">
+                                        @((line.Item.Price * line.Quantity).ToString("C"))
+                                    </p>
+                                }
+                                else
+                                {
+                                    <EditForm Model="this" FormName="@($"qty-{line.ProductId}")" OnValidSubmit="HandleLineAction" data-enhance class="stepper-form">
+                                        <input type="hidden" name="ProductId" value="@line.ProductId" />
+                                        <button type="submit" name="Op" value="remove" class="line-remove"
+                                                aria-label="Remove unavailable item from cart">
+                                            <span aria-hidden="true">@Icons.Trash</span>
+                                            <span class="line-remove-text">Remove</span>
+                                        </button>
+                                    </EditForm>
+                                }
+                            </div>
+                        </li>
+                    }
+                </ul>
+
+                <aside class="cart-summary" aria-label="Order summary">
+                    <h2 class="summary-title">Summary</h2>
+                    <dl class="summary-rows">
+                        <div class="summary-row">
+                            <dt>Items</dt>
+                            <dd>@TotalItemCount</dd>
+                        </div>
+                        <div class="summary-row summary-row--total">
+                            <dt>Subtotal</dt>
+                            <dd>@Subtotal.ToString("C")</dd>
+                        </div>
+                    </dl>
+                    <p class="summary-note">Subtotal is calculated from current Catalog service prices.</p>
+
+                    <EditForm Model="this" FormName="cart-checkout" OnValidSubmit="HandleCheckout" data-enhance>
+                        <button type="submit" class="btn btn-primary btn-block">
+                            <span class="btn-icon" aria-hidden="true">@Icons.Check</span>
+                            <span>Checkout</span>
+                        </button>
+                    </EditForm>
+                    <EditForm Model="this" FormName="cart-clear" OnValidSubmit="HandleClear" data-enhance>
+                        <button type="submit" class="btn btn-ghost btn-block">Clear cart</button>
+                    </EditForm>
+                </aside>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="catalog-loading" role="status" aria-live="polite">
+            <span class="loading-spinner" aria-hidden="true"></span>
+            <p>Loading your cart from the Basket service…</p>
+        </div>
+    }
+</main>
+
+<AppFooter />
+
+@code {
+    bool loaded;
+    bool basketIsAvailable;
+    bool checkoutComplete;
+    List<CartLine> lines = new();
+
+    [SupplyParameterFromForm]
+    public int ProductId { get; set; }
+
+    [SupplyParameterFromForm]
+    public string? Op { get; set; }
+
+    [SupplyParameterFromQuery]
+    public string? Checkout { get; set; }
+
+    int TotalItemCount => lines.Where(l => l.Item is not null).Sum(l => l.Quantity);
+
+    decimal Subtotal => lines.Where(l => l.Item is not null).Sum(l => l.Item!.Price * l.Quantity);
+
+    protected override async Task OnInitializedAsync()
+    {
+        var (basket, available) = await BasketClient.GetBasketAsync("user");
+        basketIsAvailable = available;
+
+        var hasItems = basket is { Items.Count: > 0 };
+        checkoutComplete = string.Equals(Checkout, "success", StringComparison.Ordinal) && !hasItems;
+
+        if (available && hasItems)
+        {
+            var resolved = await Task.WhenAll(basket!.Items.Select(async item =>
+                new CartLine(item.ProductId, item.Quantity, await CatalogService.GetItemAsync(item.ProductId))));
+            lines = resolved.ToList();
+        }
+
+        loaded = true;
+    }
+
+    private async Task HandleLineAction()
+    {
+        switch (Op)
+        {
+            case "inc":
+                await BasketClient.AdjustItemQuantityAsync("user", ProductId, 1);
+                break;
+            case "dec":
+                await BasketClient.AdjustItemQuantityAsync("user", ProductId, -1);
+                break;
+            case "remove":
+                await BasketClient.RemoveItemAsync("user", ProductId);
+                break;
+        }
+
+        Navigation.NavigateTo("/cart");
+    }
+
+    private async Task HandleCheckout()
+    {
+        await BasketClient.CheckoutBasketAsync("user");
+        Navigation.NavigateTo("/cart?checkout=success");
+    }
+
+    private async Task HandleClear()
+    {
+        await BasketClient.DeleteBasketAsync("user");
+        Navigation.NavigateTo("/cart");
+    }
+
+    private record CartLine(int ProductId, int Quantity, CatalogItem? Item);
+}

@@ -1,0 +1,36 @@
+﻿@inject BasketServiceClient BasketClient
+
+<div class="cart">
+    @if (basketIsAvailable)
+    {
+        <a class="cart-button" href="/cart" aria-label="@CartLabel">
+            <span class="cart-icon" aria-hidden="true">@Icons.Handbag</span>
+            <span class="cart-count @(ItemCount == 0 ? "is-empty" : null)" aria-hidden="true">@ItemCount</span>
+            <span class="cart-text">Cart</span>
+        </a>
+    }
+</div>
+
+@code {
+    CustomerBasket? customerBasket;
+    bool basketIsAvailable;
+
+    int ItemCount => customerBasket?.TotalItemCount ?? 0;
+
+    string CartLabel => ItemCount switch
+    {
+        0 => "View cart, currently empty",
+        1 => "View cart with 1 item",
+        _ => $"View cart with {ItemCount} items"
+    };
+
+    [Parameter]
+    public EventCallback<bool> BasketAvailabilityChanged { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        (customerBasket, basketIsAvailable) = await BasketClient.GetBasketAsync("user");
+
+        await BasketAvailabilityChanged.InvokeAsync(basketIsAvailable);
+    }
+}

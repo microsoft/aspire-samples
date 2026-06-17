@@ -1,0 +1,185 @@
+/* ==========================================================================
+   Darkroom Studio — bespoke theme for the Aspire "Image Gallery" sample
+   (Blazor Server + Azure Functions). A photographer's darkroom: near-black
+   walls, warm amber safelight accent, editorial serif display, framed prints
+   on a contact-sheet wall. Intentionally dark-only (the counterpart to the
+   bright React image-gallery sample). Custom inline-SVG aperture iconography.
+   ========================================================================== */
+
+:root {
+    color-scheme: dark;
+
+    --font-serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Times New Roman", serif;
+    --font-sans: ui-sans-serif, system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: ui-monospace, "Cascadia Code", "SF Mono", Consolas, monospace;
+
+    --bg: #0c0c0f;
+    --bg-2: #08080a;
+    --surface: #17171c;
+    --surface-2: #1e1e24;
+    --surface-3: #26262e;
+    --border: #2c2c35;
+    --border-strong: #3c3c48;
+
+    --ink: #f4efe6;
+    --ink-soft: #d3ccbf;
+    --ink-muted: #aaa395;
+
+    --amber: #f4a838;
+    --amber-soft: #f7c170;
+    --amber-deep: #c97f1e;
+    --amber-ink: #1a1206;
+    --amber-glow: rgba(244, 168, 56, 0.28);
+
+    --danger: #ff9a9a;
+    --danger-surface: #2a1414;
+    --danger-border: #6b2626;
+
+    --radius: 5px;
+    --radius-lg: 9px;
+    --shadow: 0 2px 6px rgba(0, 0, 0, 0.5), 0 18px 44px -22px rgba(0, 0, 0, 0.9);
+    --shadow-frame: 0 1px 2px rgba(0, 0, 0, 0.6), 0 14px 30px -16px rgba(0, 0, 0, 0.85);
+    --ring: 0 0 0 3px var(--amber-glow), 0 0 0 1px var(--amber);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body { margin: 0; padding: 0; }
+
+html { height: 100%; }
+
+body {
+    min-height: 100%;
+    font-family: var(--font-sans);
+    color: var(--ink);
+    background-color: var(--bg);
+    background-image:
+        radial-gradient(120% 80% at 50% -10%, #16131a 0%, var(--bg) 55%, var(--bg-2) 100%);
+    background-attachment: fixed;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+}
+
+/* Fine film-grain overlay (decorative). */
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.045;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+h1, h2, h3 { font-family: var(--font-serif); font-weight: 600; line-height: 1.15; letter-spacing: -0.01em; }
+h1:focus, h1:focus-visible { outline: none; box-shadow: none; }
+
+a { color: var(--amber-soft); text-underline-offset: 2px; }
+a:hover { color: var(--amber); }
+
+code, .mono { font-family: var(--font-mono); }
+
+:focus-visible {
+    outline: none;
+    box-shadow: var(--ring);
+    border-radius: var(--radius);
+}
+
+.visually-hidden {
+    position: absolute !important;
+    width: 1px; height: 1px;
+    padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0 0 0 0);
+    white-space: nowrap; border: 0;
+}
+
+.skip-link {
+    position: absolute;
+    left: 1rem;
+    top: -3rem;
+    z-index: 50;
+    background: var(--amber);
+    color: var(--amber-ink);
+    padding: 0.55rem 0.95rem;
+    border-radius: 0 0 var(--radius) var(--radius);
+    font-weight: 700;
+    text-decoration: none;
+    transition: top 0.15s ease;
+}
+.skip-link:focus { top: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* ---- Buttons -------------------------------------------------------------- */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font: inherit;
+    font-weight: 600;
+    line-height: 1;
+    padding: 0.62rem 1.1rem;
+    border-radius: var(--radius);
+    border: 1px solid transparent;
+    cursor: pointer;
+    text-decoration: none;
+    transition: transform 0.12s ease, background-color 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
+}
+.btn:hover { transform: translateY(-1px); }
+.btn:active { transform: translateY(0); }
+
+.btn-amber {
+    background: var(--amber);
+    color: var(--amber-ink);
+    box-shadow: 0 8px 22px -12px var(--amber-glow);
+}
+.btn-amber:hover { background: var(--amber-soft); color: var(--amber-ink); }
+
+.btn-ghost {
+    background: var(--surface-2);
+    color: var(--ink);
+    border-color: var(--border-strong);
+}
+.btn-ghost:hover { background: var(--surface-3); color: var(--ink); }
+
+.btn .icon { width: 1.1rem; height: 1.1rem; }
+
+/* ---- Error UI / boundary -------------------------------------------------- */
+#blazor-error-ui {
+    color-scheme: dark;
+    background: #2a1206;
+    color: var(--amber-soft);
+    border-top: 2px solid var(--amber-deep);
+    bottom: 0; left: 0;
+    box-shadow: 0 -8px 30px -10px rgba(0, 0, 0, 0.7);
+    box-sizing: border-box;
+    display: none;
+    padding: 0.7rem 1.25rem;
+    position: fixed;
+    width: 100%;
+    z-index: 1000;
+}
+#blazor-error-ui .reload { color: var(--amber-soft); margin: 0 0.75rem; }
+#blazor-error-ui .dismiss { cursor: pointer; position: absolute; right: 1rem; top: 0.6rem; }
+
+.blazor-error-boundary {
+    background: var(--danger-surface);
+    border: 1px solid var(--danger-border);
+    border-radius: var(--radius);
+    padding: 1rem 1.25rem;
+    color: var(--danger);
+}
+.blazor-error-boundary::after { content: "A frame failed to develop. Please reload."; }
+
+/* ---- Form validation (kept for parity) ------------------------------------ */
+.valid.modified:not([type=checkbox]) { outline: 1px solid #3f7d4f; }
+.invalid { outline: 1px solid var(--danger-border); }
+.validation-message { color: var(--danger); }

@@ -5,12 +5,15 @@ registries:
     url: https://api.nuget.org/v3/index.json
 updates:
   - package-ecosystem: nuget
-    directory: "/"
+    directory: "/.github"
     registries:
       - public-nuget
     schedule:
       interval: daily
     open-pull-requests-limit: 15
+    ignore:
+       # See https://github.com/dotnet/aspire/issues/7123
+      - dependency-name: "OpenTelemetry.*"
     groups:
       Aspire:
         patterns:
@@ -45,43 +48,101 @@ updates:
       - area-engineering-systems
 
   - package-ecosystem: npm
-    directory: "samples/AspireWithJavaScript/AspireJavaScript.Angular"
+    directory: "samples/aspire-with-javascript/AspireJavaScript.Angular"
     schedule:
       interval: weekly
     open-pull-requests-limit: 1
     groups:
-      all-dependencies:
+      angular-core:
+        patterns:
+          - "@angular/*"
+          - "zone.js"
+          - "rxjs"
+      angular-tooling:
+        patterns:
+          - "@angular-devkit/*"
+          - "typescript"
+          - "@types/*"
+          - "eslint*"
+          - "karma*"
+          - "webpack*"
+      misc-deps:
         patterns:
           - "*"
     labels:
       - area-engineering-systems
 
   - package-ecosystem: npm
-    directory: "samples/AspireWithJavaScript/AspireJavaScript.React"
+    directory: "samples/aspire-with-javascript/AspireJavaScript.React"
     schedule:
       interval: weekly
     open-pull-requests-limit: 1
     groups:
-      all-dependencies:
+      react-core:
+        patterns:
+          - "react"
+          - "react-dom"
+      react-tooling:
+        patterns:
+          - "typescript"
+          - "@types/*"
+          - "eslint*"
+          - "jest*"
+          - "vite*"
+          - "@vitejs/*"
+          - "webpack*"
+      misc-deps:
         patterns:
           - "*"
     labels:
       - area-engineering-systems
 
   - package-ecosystem: npm
-    directory: "samples/AspireWithJavaScript/AspireJavaScript.Vue"
+    directory: "samples/aspire-with-javascript/AspireJavaScript.Vue"
     schedule:
       interval: weekly
     open-pull-requests-limit: 1
     groups:
-      all-dependencies:
+      vue-core:
+        patterns:
+          - "vue"
+          - "@vue/*"
+          - "vue-router"
+          - "pinia"
+      vue-tooling:
+        patterns:
+          - "vite*"
+          - "@vitejs/*"
+          - "typescript"
+          - "@types/*"
+          - "eslint*"
+      misc-deps:
         patterns:
           - "*"
     labels:
       - area-engineering-systems
 
   - package-ecosystem: npm
-    directory: "samples/AspireWithNode/NodeFrontend"
+    directory: "samples/aspire-with-javascript/AspireJavaScript.Vite"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 1
+    groups:
+      vite-tooling:
+        patterns:
+          - "vite*"
+          - "@vitejs/*"
+          - "typescript"
+          - "@types/*"
+          - "eslint*"
+      misc-deps:
+        patterns:
+          - "*"
+    labels:
+      - area-engineering-systems
+
+  - package-ecosystem: npm
+    directory: "samples/aspire-with-node/NodeFrontend"
     schedule:
       interval: weekly
     open-pull-requests-limit: 1

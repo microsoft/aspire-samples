@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#0e7490" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0b1622" media="(prefers-color-scheme: dark)" />
+    <meta name="description" content="Lumina — a media library for uploading images and watching thumbnails generate, built on Aspire." />
+    <!-- Inline SVG favicon avoids a /favicon.ico 404 in the console. -->
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230e7490'/%3E%3Ccircle cx='16' cy='16' r='8.5' fill='none' stroke='%23ffffff' stroke-width='2.4'/%3E%3Ccircle cx='16' cy='16' r='3' fill='%23ffffff'/%3E%3Cpath d='M16 7.5 16 12 M24.5 16 20 16 M16 24.5 16 20 M7.5 16 12 16' stroke='%23ffffff' stroke-width='2.2' stroke-linecap='round'/%3E%3C/svg%3E"
+    />
+    <title>Lumina · Media Library</title>
+    <script>
+      // Resolve the theme before first paint to avoid a flash of the wrong palette.
+      (function () {
+        try {
+          var stored = localStorage.getItem('lumina-theme');
+          var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          var theme = stored || (prefersDark ? 'dark' : 'light');
+          document.documentElement.dataset.theme = theme;
+        } catch (e) {
+          document.documentElement.dataset.theme = 'light';
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
