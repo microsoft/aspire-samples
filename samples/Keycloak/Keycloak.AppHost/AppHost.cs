@@ -1,4 +1,6 @@
-﻿var builder = DistributedApplication.CreateBuilder(args);
+﻿#pragma warning disable ASPIRECERTIFICATES001
+
+var builder = DistributedApplication.CreateBuilder(args);
 
 // The default value of these parameters is set in the appsettings.json file.
 // These values are modeled as parameters so they can be overridden for different environments, etc.
@@ -20,19 +22,33 @@ var webRazorPagesClientSecret = builder.AddParameter("web-razorpages-client-secr
     .WithGeneratedDefault(new() { MinLength = 32, Special = false });
 
 var keycloak = builder.AddKeycloak("keycloak")
-    .WithImageTag("25.0")
     .WithDataVolume()
-    .RunWithHttpsDevCertificate();
+    .WithHttpsDeveloperCertificate();
+
+if (builder.ExecutionContext.IsRunMode)
+{
+    keycloak
+        .WithEnvironment("KC_HOSTNAME", "localhost")
+        // Without disabling HTTP/2 you can hit HTTP 431 Header too large errors in Keycloak.
+        // Related issues:
+        // https://github.com/keycloak/keycloak/discussions/10236
+        // https://github.com/keycloak/keycloak/issues/13933
+        // https://github.com/quarkusio/quarkus/issues/33692
+        .WithEnvironment("QUARKUS_HTTP_HTTP2", "false");
+}
 
 var apiWeather = builder.AddProject<Projects.Keycloak_Api_Weather>("api-weather")
     .WithReference(keycloak)
+    .WaitFor(keycloak)
     .WithEnvironment("Authentication__Keycloak__Realm", keycloakRealmName)
     .WithEnvironment("Authentication__Schemes__Bearer__ValidAudience", apiWeatherClientId);
 
 var webBlazorSsr = builder.AddProject<Projects.Keycloak_Web_BlazorSSR>("web-blazorssr")
     .WithExternalHttpEndpoints()
     .WithReference(keycloak)
+    .WaitFor(keycloak)
     .WithReference(apiWeather)
+    .WaitFor(apiWeather)
     .WithEnvironment("Authentication__Keycloak__Realm", keycloakRealmName)
     .WithEnvironment("Authentication__Schemes__OpenIdConnect__ClientId", webBlazorSsrClientId)
     .WithEnvironment("Authentication__Schemes__OpenIdConnect__ClientSecret", webBlazorSSRClientSecret);
@@ -40,7 +56,9 @@ var webBlazorSsr = builder.AddProject<Projects.Keycloak_Web_BlazorSSR>("web-blaz
 var webRazorPages = builder.AddProject<Projects.Keycloak_Web_RazorPages>("web-razorpages")
     .WithExternalHttpEndpoints()
     .WithReference(keycloak)
+    .WaitFor(keycloak)
     .WithReference(apiWeather)
+    .WaitFor(apiWeather)
     .WithEnvironment("Authentication__Keycloak__Realm", keycloakRealmName)
     .WithEnvironment("Authentication__Schemes__OpenIdConnect__ClientId", webRazorPagesClientId)
     .WithEnvironment("Authentication__Schemes__OpenIdConnect__ClientSecret", webRazorPagesClientSecret);

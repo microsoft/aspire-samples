@@ -1,11 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+  <Sdk Name="Aspire.AppHost.Sdk" Version="13.4.5" />
+
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <IsAspireHost>true</IsAspireHost>
     <UserSecretsId>864eaa3d-4c88-4106-a53f-d34295182462</UserSecretsId>
   </PropertyGroup>
 
@@ -16,9 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Aspire.Hosting.AppHost" Version="8.1.0" />
-    <PackageReference Include="Aspire.Hosting.Keycloak" Version="8.1.0-preview.1.24373.2" />
-    <PackageReference Include="System.IO.Hashing" Version="8.0.0" />
+    <PackageReference Include="Aspire.Hosting.Keycloak" Version="13.4.5-preview.1.26316.12" />
   </ItemGroup>
 
   <ItemGroup>

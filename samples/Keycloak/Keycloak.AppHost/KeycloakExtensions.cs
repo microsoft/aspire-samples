@@ -3,38 +3,6 @@
 public static class KeycloakExtensions
 {
     /// <summary>
-    /// Configures the Keycloak container to use the ASP.NET Core HTTPS development certificate created by <c>dotnet dev-certs</c> when
-    /// <paramref name="builder"/><c>.ExecutionContext.IsRunMode == true</c>.
-    /// </summary>
-    /// <remarks>
-    /// See <see href="https://learn.microsoft.com/dotnet/core/tools/dotnet-dev-certs">https://learn.microsoft.com/dotnet/core/tools/dotnet-dev-certs</see>
-    /// for more information on the <c>dotnet dev-certs</c> tool.<br/>
-    /// See <see href="https://learn.microsoft.com/aspnet/core/security/enforcing-ssl#trust-the-aspnet-core-https-development-certificate-on-windows-and-macos">
-    /// https://learn.microsoft.com/aspnet/core/security/enforcing-ssl</see>
-    /// for more information on the ASP.NET Core HTTPS development certificate.
-    /// </remarks>
-    public static IResourceBuilder<KeycloakResource> RunWithHttpsDevCertificate(this IResourceBuilder<KeycloakResource> builder, int targetPort = 8443)
-    {
-        if (builder.ApplicationBuilder.ExecutionContext.IsRunMode)
-        {
-            // Mount the ASP.NET Core HTTPS devlopment certificate in the Keycloak container and configure Keycloak to it
-            // via the KC_HTTPS_CERTIFICATE_FILE and KC_HTTPS_CERTIFICATE_KEY_FILE environment variables.
-            builder
-                .RunWithHttpsDevCertificate("KC_HTTPS_CERTIFICATE_FILE", "KC_HTTPS_CERTIFICATE_KEY_FILE")
-                .WithHttpsEndpoint(env: "KC_HTTPS_PORT", targetPort: targetPort)
-                .WithEnvironment("KC_HOSTNAME", "localhost")
-                // Without disabling HTTP/2 you can hit HTTP 431 Header too large errors in Keycloak.
-                // Related issues:
-                // https://github.com/keycloak/keycloak/discussions/10236
-                // https://github.com/keycloak/keycloak/issues/13933
-                // https://github.com/quarkusio/quarkus/issues/33692
-                .WithEnvironment("QUARKUS_HTTP_HTTP2", "false");
-        }
-
-        return builder;
-    }
-
-    /// <summary>
     /// Configures the Keycloak container with the sample realm.
     /// </summary>
     /// <remarks>
@@ -67,7 +35,7 @@ public static class KeycloakExtensions
         IEnumerable<KeycloakClientDetails> clientDetails)
     {
         builder
-            .WithRealmImport("realms", isReadOnly: true)
+            .WithRealmImport("realms")
             .WithEnvironment("REALM_NAME", realmName)
             .WithEnvironment("REALM_DISPLAY_NAME", displayName)
             // Ensure HSTS is not enabled in run mode to avoid browser caching issues when developing.
