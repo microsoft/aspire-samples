@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Aspire.Hosting.AppHost" Version="13.4.4" />
+    <PackageReference Include="Aspire.Hosting.AppHost" Version="13.4.5" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.9" />
     <ProjectReference Include="..\MetricsApp\MetricsApp.csproj" />
   </ItemGroup>
