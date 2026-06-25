@@ -3,6 +3,9 @@
     "path": "apphost.mts",
     "language": "typescript/nodejs"
   },
+  "sdk": {
+    "version": "13.4.6"
+  },
   "channel": "stable",
   "profiles": {
     "https": {
@@ -22,8 +25,8 @@
     }
   },
   "packages": {
-    "Aspire.Hosting.JavaScript": "13.4.5",
-    "Aspire.Hosting.OpenAI": "13.4.5",
-    "Aspire.Hosting.Python": "13.4.5"
+    "Aspire.Hosting.JavaScript": "13.4.6",
+    "Aspire.Hosting.OpenAI": "13.4.6",
+    "Aspire.Hosting.Python": "13.4.6"
   }
 }

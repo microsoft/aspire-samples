@@ -50,10 +50,21 @@ class ChatResponse(pydantic.BaseModel):
 @app.post("/api/chat")
 async def chat_completion(request: ChatRequest) -> ChatResponse:
     """Chat completion endpoint using OpenAI."""
+    allowed_roles = {"user", "assistant"}
+    for message in request.messages:
+        if message.role not in allowed_roles:
+            raise fastapi.HTTPException(
+                status_code=400,
+                detail=f"Invalid role '{message.role}'. Allowed roles are: {allowed_roles}",
+            )
+        
     messages = [{"role": m.role, "content": m.content} for m in request.messages]
 
     try:
-        response = openai_client.chat.completions.create(
+        import asyncio
+
+        response = await asyncio.to_thread(
+            openai_client.chat.completions.create,
             model=chat_model,
             messages=messages,
         )
