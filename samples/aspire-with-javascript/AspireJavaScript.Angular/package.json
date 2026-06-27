@@ -46,10 +46,12 @@
     "run-script-os": "^1.1.6"
   },
   "overrides": {
+    "@babel/core": "7.29.7",
+    "http-proxy-middleware": "3.0.7",
     "postcss": "8.5.10",
     "sockjs": {
       "uuid": "14.0.0"
     },
-    "webpack-dev-server": "5.2.4"
+    "webpack-dev-server": "5.2.5"
   }
 }
