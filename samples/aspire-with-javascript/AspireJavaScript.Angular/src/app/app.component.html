@@ -22,7 +22,10 @@
     <span class="refresh-label">{{ state() === 'loading' ? 'Refreshing' : 'Refresh' }}</span>
   </button>
 </header>
-
+<section class="learning-banner">
+  <h2>My Angular + .NET Aspire Learning Project</h2>
+  <p>This application is running locally from my GitHub fork.</p>
+</section>
 <main id="forecast" class="page" [attr.aria-busy]="state() === 'loading'">
   <section class="forecast" aria-labelledby="forecast-heading">
     <div class="forecast-head">
