@@ -15,6 +15,7 @@ import {
 import styles from "./App.module.css";
 
 const SUMMARY_ICONS = {
+  Ducky: Rain,
   Freezing: Snowflake,
   Bracing: Wind,
   Chilly: CloudSnow,
