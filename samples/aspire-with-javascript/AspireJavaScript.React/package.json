@@ -31,6 +31,8 @@
     "webpack-dev-server": "^5.2.5"
   },
   "overrides": {
+    "http-proxy-middleware": "2.0.10",
+    "ws": "8.21.0",
     "sockjs": {
       "uuid": "14.0.0"
     }

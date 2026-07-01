@@ -4,7 +4,7 @@
     "language": "typescript/nodejs"
   },
   "sdk": {
-    "version": "13.4.0"
+    "version": "13.4.6"
   },
   "profiles": {
     "https": {
@@ -16,9 +16,9 @@
     }
   },
   "packages": {
-    "Aspire.Hosting.JavaScript": "13.4.0",
-    "Aspire.Hosting.Redis": "13.4.0",
-    "Aspire.Hosting.Yarp": "13.4.0",
-    "Aspire.Hosting.Docker": "13.4.0"
+    "Aspire.Hosting.JavaScript": "13.4.6",
+    "Aspire.Hosting.Redis": "13.4.6",
+    "Aspire.Hosting.Yarp": "13.4.6",
+    "Aspire.Hosting.Docker": "13.4.6"
   }
 }
