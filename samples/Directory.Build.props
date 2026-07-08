@@ -1,5 +1,10 @@
 <Project>
   <PropertyGroup>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <!-- Audit only direct dependencies. Transitive packages are owned by upstream
+         (e.g. Aspire, ASP.NET Core), so newly disclosed CVEs in them should not
+         break the build for every sample. Direct references are still audited and,
+         combined with TreatWarningsAsErrors, still fail the build. -->
+    <NuGetAuditMode>direct</NuGetAuditMode>
   </PropertyGroup>
 </Project>
