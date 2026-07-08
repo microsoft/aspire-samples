@@ -1,0 +1,1749 @@
+:root {
+  --panel-bg: rgba(17, 22, 38, 0.82);
+  --panel-solid: rgba(17, 22, 38, 0.97);
+  --panel-border: rgba(255, 255, 255, 0.12);
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-tertiary: #94a3b8;
+  --accent: #8b5cf0;
+  --accent-start: #7a54e8;
+  --accent-end: #8e46d6;
+  --focus-color: #b79cf8;
+  --precip: #7dd3fc;
+  --sun: #f5b545;
+  --track: rgba(255, 255, 255, 0.1);
+  --control-bg: rgba(255, 255, 255, 0.06);
+  --control-bg-hover: rgba(255, 255, 255, 0.13);
+  --control-radius: 0.65rem;
+  --error-bg: rgba(220, 38, 38, 0.16);
+  --error-border: #ef4444;
+  --error-text: #fca5a5;
+  --panel-shadow: 0 16px 48px -14px rgba(11, 9, 30, 0.62), inset 0 1px 0 rgba(255, 255, 255, 0.09);
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+#root {
+  width: 100%;
+  overflow: hidden;
+}
+
+.app {
+  position: relative;
+  height: 100vh;
+  height: 100dvh;
+  width: 100vw;
+  overflow: hidden;
+  font-family: 'Geist Variable', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  color: var(--text-primary);
+}
+
+/* Weather-driven ambiance: a soft tint at the top of the map that shifts with the
+   current conditions and day / night. Sits above the map tiles, below the panels. */
+.app::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: radial-gradient(140% 72% at 50% -22%, var(--sky-tint, transparent), transparent 62%);
+  transition: opacity 0.6s ease;
+}
+
+/* Map fills the whole viewport and sits behind the overlays. */
+.map {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  width: 100%;
+  background: #0b1020;
+  z-index: 0;
+}
+
+/* Default cursor invites a click to drop a pin; Space switches to a pan grab. */
+.leaflet-container {
+  cursor: crosshair;
+}
+
+.app.pan-mode .leaflet-container {
+  cursor: grab;
+}
+
+.app.pan-mode .leaflet-container:active {
+  cursor: grabbing;
+}
+
+/* Subtle grain on the glass panels to break up flat surfaces. */
+.control-pane,
+.radar-bar,
+.pane-launcher {
+  background-image: var(--grain);
+  background-blend-mode: soft-light;
+}
+
+/* Sleek, theme-matched scrollbars. The browser defaults clash with the glass panels. */
+.pane-body,
+.search-results {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.45) transparent;
+}
+
+.pane-body::-webkit-scrollbar,
+.search-results::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+.pane-body::-webkit-scrollbar-track,
+.search-results::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 0.6rem 0;
+}
+
+.pane-body::-webkit-scrollbar-thumb,
+.search-results::-webkit-scrollbar-thumb {
+  background-color: rgba(148, 163, 184, 0.35);
+  border-radius: 999px;
+  border: 3px solid transparent;
+  background-clip: padding-box;
+}
+
+.pane-body:hover::-webkit-scrollbar-thumb,
+.search-results:hover::-webkit-scrollbar-thumb {
+  background-color: rgba(148, 163, 184, 0.55);
+}
+
+.pane-body::-webkit-scrollbar-thumb:hover,
+.search-results::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(148, 163, 184, 0.8);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Reticle marker dropped at the selected point. */
+.map-reticle {
+  color: var(--accent-end);
+  pointer-events: none;
+  filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.7));
+}
+
+.map-reticle .reticle-inner {
+  display: block;
+  transform-origin: center;
+  animation: reticle-drop 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes reticle-drop {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.map-reticle .reticle-ping {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 46px;
+  height: 46px;
+  margin: -23px 0 0 -23px;
+  border: 2px solid var(--accent-end);
+  border-radius: 50%;
+  pointer-events: none;
+  animation: reticle-ping 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes reticle-ping {
+  from {
+    opacity: 0.55;
+    transform: scale(0.4);
+  }
+  to {
+    opacity: 0;
+    transform: scale(2.4);
+  }
+}
+
+/* Single control pane (docked left). */
+.control-pane {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  width: 360px;
+  max-width: calc(100vw - 2rem);
+  max-height: calc(100dvh - 2rem);
+  font-variant-numeric: tabular-nums;
+  background: var(--panel-bg);
+  backdrop-filter: blur(14px);
+  border: 1px solid var(--panel-border);
+  border-radius: 1rem;
+  box-shadow: var(--panel-shadow);
+  overflow: hidden;
+  transition: transform 0.42s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.32s ease;
+}
+
+.control-pane.collapsed {
+  transform: translateX(calc(-100% - 1.5rem));
+  opacity: 0;
+  pointer-events: none;
+}
+
+.pane-head {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-shrink: 0;
+  padding: 0.7rem 0.85rem;
+  border-bottom: 1px solid var(--panel-border);
+}
+
+.pane-logo {
+  height: 2.1rem;
+  width: auto;
+  flex-shrink: 0;
+}
+
+.pane-title-wrap {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.pane-title {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+
+.pane-subtitle {
+  font-size: 0.72rem;
+  color: var(--text-tertiary);
+  margin: 0.1rem 0 0;
+}
+
+.pane-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  padding: 0.85rem;
+  overflow-y: auto;
+}
+
+/* One button system for every control. */
+.control-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  height: 2.4rem;
+  min-width: 2.4rem;
+  padding: 0 0.65rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: var(--control-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--control-radius);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.1s ease;
+}
+
+.control-btn:hover {
+  background: var(--control-bg-hover);
+  color: var(--text-primary);
+  transform: translateY(-1px);
+}
+
+.control-btn:active {
+  transform: translateY(1px) scale(0.98);
+}
+
+.control-btn:focus-visible {
+  outline: 2px solid var(--focus-color);
+  outline-offset: 1px;
+}
+
+.control-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.control-btn svg {
+  flex-shrink: 0;
+}
+
+.control-toggle.is-on {
+  background: linear-gradient(135deg, var(--accent-start) 0%, var(--accent-end) 100%);
+  color: #fff;
+  border-color: transparent;
+}
+
+.pane-hide {
+  color: var(--text-secondary);
+}
+
+/* Radar layer toggle: an icon-only square that stacks above the bottom-right zoom
+   control and matches its width, radius, and glass so they read as one control column. */
+.map-radar {
+  position: absolute;
+  right: 0.625rem;
+  bottom: 6.75rem;
+  z-index: 1000;
+  width: 2.4rem;
+  padding: 0;
+  background: var(--panel-bg);
+  backdrop-filter: blur(14px);
+  box-shadow: var(--panel-shadow);
+}
+
+.map-radar:hover {
+  background: var(--panel-solid);
+}
+
+/* Map-style switcher: a layers button stacked above the radar chip + a popup menu. */
+.map-style-control {
+  position: absolute;
+  right: 0.625rem;
+  bottom: 9.75rem;
+  z-index: 1000;
+}
+
+.map-style {
+  width: 2.4rem;
+  padding: 0;
+  background: var(--panel-bg);
+  backdrop-filter: blur(14px);
+  box-shadow: var(--panel-shadow);
+}
+
+.map-style:hover {
+  background: var(--panel-solid);
+}
+
+.map-style-menu {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 0.4rem);
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 11rem;
+  padding: 0.3rem;
+  background: var(--panel-bg);
+  backdrop-filter: blur(14px);
+  border: 1px solid var(--panel-border);
+  border-radius: 0.75rem;
+  box-shadow: var(--panel-shadow);
+  animation: wx-rise 0.18s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.map-style-option {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  width: 100%;
+  padding: 0.3rem 0.4rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-align: left;
+  color: var(--text-secondary);
+  background: transparent;
+  border: none;
+  border-radius: 0.55rem;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.map-style-thumb {
+  width: 2.6rem;
+  height: 1.8rem;
+  flex-shrink: 0;
+  object-fit: cover;
+  border-radius: 0.35rem;
+  border: 1px solid var(--panel-border);
+  background: rgba(148, 163, 184, 0.18);
+}
+
+.map-style-option.is-active .map-style-thumb {
+  border-color: rgba(255, 255, 255, 0.55);
+}
+
+.map-style-option:hover {
+  background: var(--control-bg-hover);
+  color: var(--text-primary);
+}
+
+.map-style-option.is-active {
+  background: linear-gradient(135deg, var(--accent-start) 0%, var(--accent-end) 100%);
+  color: #fff;
+}
+
+.map-style-option:focus-visible {
+  outline: 2px solid var(--focus-color);
+  outline-offset: -2px;
+}
+
+/* The sweep arm rotates while radar is active. */
+.map-radar.is-on .radar-sweep {
+  transform-box: view-box;
+  transform-origin: 12px 12px;
+  animation: radar-sweep 2.4s linear infinite;
+}
+
+@keyframes radar-sweep {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.search-input {
+  flex: 1;
+  min-width: 0;
+  height: 2.4rem;
+  padding: 0 0.7rem;
+  font-size: 0.85rem;
+  color: var(--text-primary);
+  background: var(--control-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--control-radius);
+  outline: none;
+}
+
+.search-input::placeholder {
+  color: var(--text-tertiary);
+}
+
+.search-input:focus-visible {
+  outline: 2px solid var(--focus-color);
+  outline-offset: 1px;
+}
+
+.search-results {
+  position: absolute;
+  top: calc(100% + 0.35rem);
+  left: 0;
+  right: 0;
+  z-index: 1200;
+  margin: 0;
+  padding: 0.25rem;
+  list-style: none;
+  background: rgba(17, 22, 38, 0.98);
+  border: 1px solid var(--panel-border);
+  border-radius: 0.6rem;
+  box-shadow: var(--panel-shadow);
+  max-height: 240px;
+  overflow-y: auto;
+  animation: sr-in 0.14s ease-out;
+}
+
+@keyframes sr-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.search-result {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  width: 100%;
+  text-align: left;
+  padding: 0.4rem 0.5rem;
+  background: transparent;
+  border: none;
+  border-radius: 0.4rem;
+  cursor: pointer;
+  color: var(--text-primary);
+  transition: background 0.12s ease;
+}
+
+.search-result:hover,
+.search-result:focus-visible,
+.search-result.active {
+  background: rgba(255, 255, 255, 0.08);
+  outline: none;
+}
+
+.sr-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.sr-meta {
+  font-size: 0.7rem;
+  color: var(--text-tertiary);
+}
+
+.search-status {
+  padding: 0.5rem 0.55rem;
+  font-size: 0.78rem;
+  color: var(--text-tertiary);
+}
+
+.sr-match {
+  background: transparent;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.control-error {
+  margin: 0;
+  font-size: 0.72rem;
+  color: var(--error-text);
+}
+
+.weather {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.loc-spinner {
+  display: inline-block;
+  width: 13px;
+  height: 13px;
+  margin-left: 0.5rem;
+  vertical-align: -1px;
+  border: 2px solid rgba(148, 163, 184, 0.35);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+/* Compact launcher shown when the pane is hidden. */
+.pane-launcher {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.45rem 0.85rem 0.45rem 0.6rem;
+  color: var(--text-primary);
+  background: var(--panel-bg);
+  backdrop-filter: blur(14px);
+  border: 1px solid var(--panel-border);
+  border-radius: 0.85rem;
+  box-shadow: var(--panel-shadow);
+  cursor: pointer;
+  animation: launcher-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+  transition: background 0.2s ease, transform 0.1s ease;
+}
+
+.pane-launcher:hover {
+  background: var(--panel-solid);
+}
+
+.pane-launcher:active {
+  transform: translateY(1px) scale(0.99);
+}
+
+.pane-launcher:focus-visible {
+  outline: 2px solid var(--focus-color);
+  outline-offset: 2px;
+}
+
+.launcher-icon {
+  display: flex;
+  flex-shrink: 0;
+  color: var(--accent-end);
+}
+
+.launcher-readout {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+  line-height: 1.1;
+}
+
+.launcher-temp {
+  font-size: 1.1rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.launcher-place {
+  max-width: 44vw;
+  overflow: hidden;
+  font-size: 0.68rem;
+  color: var(--text-tertiary);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.launcher-expand {
+  display: flex;
+  align-items: center;
+  margin-left: 0.1rem;
+  color: var(--text-tertiary);
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.pane-launcher:hover .launcher-expand {
+  color: var(--accent-end);
+  transform: translateX(3px);
+}
+
+@keyframes launcher-in {
+  from {
+    opacity: 0;
+    transform: translateX(-14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+/* Location heading (top of the weather section). */
+.location {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.location-name {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin: 0;
+  line-height: 1.2;
+  text-wrap: balance;
+}
+
+.location-detail {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-top: 0.1rem;
+}
+
+.location-tz {
+  font-size: 0.72rem;
+  color: var(--text-tertiary);
+}
+
+/* Temperature unit segmented toggle. */
+.unit-toggle {
+  display: flex;
+  gap: 0.15rem;
+  margin: 0;
+  padding: 0.2rem;
+  background: rgba(8, 11, 22, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--control-radius);
+  flex-shrink: 0;
+}
+
+.unit-option {
+  height: 1.9rem;
+  min-width: 2.2rem;
+  padding: 0 0.55rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: transparent;
+  border: none;
+  border-radius: calc(var(--control-radius) - 0.25rem);
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.unit-option[aria-pressed='true'] {
+  background: linear-gradient(135deg, var(--accent-start) 0%, var(--accent-end) 100%);
+  color: #fff;
+}
+
+.unit-option:focus-visible {
+  outline: 2px solid var(--focus-color);
+  outline-offset: 1px;
+}
+
+/* Current conditions card: the elevated "now" moment above the hourly strip. */
+.now-card {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  padding: 0.95rem 1.05rem 0.9rem;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 1rem;
+  background:
+    radial-gradient(120% 88% at 92% 4%, var(--now-glow, transparent), transparent 60%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.035));
+  box-shadow: 0 10px 26px -14px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  animation: wx-rise 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.now-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+
+.now-place {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.now-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.now-readout {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.hero-temp {
+  font-size: 3.7rem;
+  font-weight: 600;
+  line-height: 0.95;
+  letter-spacing: -0.035em;
+  color: var(--text-primary);
+}
+
+.hero-condition {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  margin-top: 0.4rem;
+}
+
+.now-icon {
+  flex-shrink: 0;
+  filter: drop-shadow(0 8px 18px rgba(8, 10, 24, 0.45));
+  animation: wx-float 4.5s ease-in-out infinite;
+}
+
+@keyframes wx-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes wx-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+.now-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.09);
+  font-size: 0.82rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.now-feels {
+  color: var(--text-secondary);
+}
+
+.now-feels b {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.now-range {
+  display: flex;
+  gap: 0.7rem;
+  margin-left: auto;
+}
+
+.now-hl {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.now-hl-arrow {
+  display: inline-flex;
+}
+
+.now-hl-val {
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+/* Hourly strip: the next 8 hours share the width evenly so nothing is clipped. */
+.hourly {
+  display: flex;
+  flex-shrink: 0;
+  gap: 0.15rem;
+  padding: 0.1rem 0;
+}
+
+.hour {
+  display: flex;
+  flex: 1 1 0;
+  min-width: 0;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.45rem 0.15rem;
+  border-radius: 0.7rem;
+  animation: wx-rise 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.hour:first-child {
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.hour-label {
+  font-size: 0.66rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  color: var(--text-tertiary);
+}
+
+.hour-temp {
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Current metrics. */
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.6rem;
+  margin: 0;
+  padding: 0.85rem 0;
+  border-top: 1px solid var(--panel-border);
+  border-bottom: 1px solid var(--panel-border);
+  animation: wx-rise 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
+}
+
+.metrics > div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.metrics dt {
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-tertiary);
+}
+
+.metrics dd {
+  margin: 0;
+  font-size: 0.98rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.metrics dd small {
+  font-size: 0.68rem;
+  font-weight: 500;
+  color: var(--text-tertiary);
+}
+
+/* Sunrise / sunset. */
+.sun {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  animation: wx-rise 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.16s both;
+}
+
+.sun-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.sun-item svg {
+  color: var(--sun);
+  flex-shrink: 0;
+}
+
+.sun-label {
+  flex: 1;
+  font-size: 0.72rem;
+  color: var(--text-tertiary);
+}
+
+.sun-time {
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 5-day forecast rows with temperature range bars. */
+.forecast {
+  display: flex;
+  flex-direction: column;
+}
+
+.fc-row {
+  display: grid;
+  grid-template-columns: 3.2rem 1.5rem 2.1rem minmax(44px, 1fr) 2.1rem;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.4rem 0;
+  animation: fc-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.fc-row + .fc-row {
+  border-top: 1px solid var(--panel-border);
+}
+
+@keyframes fc-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fc-daycol {
+  display: flex;
+  flex-direction: column;
+  gap: 0.05rem;
+}
+
+.fc-day {
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.fc-precip {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 0.62rem;
+  color: var(--precip);
+  white-space: nowrap;
+}
+
+.fc-icon {
+  justify-self: center;
+}
+
+.fc-lo {
+  font-size: 0.82rem;
+  color: var(--text-tertiary);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.fc-hi {
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.fc-bar {
+  position: relative;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--track);
+  overflow: hidden;
+}
+
+.fc-fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: 999px;
+}
+
+.drop-icon {
+  flex-shrink: 0;
+}
+
+.error {
+  background: var(--error-bg);
+  border: 1px solid var(--error-border);
+  color: var(--error-text);
+  padding: 0.6rem 0.8rem;
+  border-radius: 0.6rem;
+  font-size: 0.82rem;
+}
+
+.panel-footer {
+  margin: 0;
+  font-size: 0.68rem;
+  color: var(--text-tertiary);
+  text-align: center;
+}
+
+.panel-footer a {
+  color: var(--text-secondary);
+}
+
+/* Leaflet controls, matched to the app's button system. */
+.leaflet-control-attribution {
+  background: rgba(17, 22, 38, 0.7) !important;
+  color: var(--text-tertiary) !important;
+}
+
+.leaflet-control-attribution a {
+  color: var(--text-secondary) !important;
+}
+
+.leaflet-bar {
+  border: none !important;
+  border-radius: var(--control-radius) !important;
+  box-shadow: var(--panel-shadow) !important;
+  overflow: hidden;
+}
+
+.leaflet-bar a {
+  width: 2.4rem !important;
+  height: 2.4rem !important;
+  line-height: 2.4rem !important;
+  font-size: 1.2rem !important;
+  background: var(--panel-bg) !important;
+  color: var(--text-primary) !important;
+  border-bottom: 1px solid var(--panel-border) !important;
+  backdrop-filter: blur(14px);
+}
+
+.leaflet-bar a:hover {
+  background: rgba(40, 48, 74, 0.92) !important;
+}
+
+.radar-glyph {
+  flex-shrink: 0;
+}
+
+/* Stacked, preloaded radar frames crossfade instead of hard-swapping (no flash).
+   Gated on .radar-anim so enabling radar does not fade every frame in at once. */
+.radar-anim .radar-frame-layer {
+  transition: opacity 0.35s ease;
+}
+
+/* Full-width radar timeline, docked along the bottom of the map beneath the pane. */
+.radar-bar {
+  position: absolute;
+  bottom: 1.65rem;
+  left: 1rem;
+  right: 4.5rem;
+  z-index: 900;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.5rem 0.9rem;
+  font-variant-numeric: tabular-nums;
+  background: var(--panel-bg);
+  backdrop-filter: blur(14px);
+  border: 1px solid var(--panel-border);
+  border-radius: 0.85rem;
+  box-shadow: var(--panel-shadow);
+  animation: radar-bar-in 0.42s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@media (min-width: 769px) {
+  /* When the radar timeline is docked along the bottom, shorten the pane so the
+     full-width bar stays fully visible beneath it instead of being pushed aside. */
+  .control-pane.radar-active {
+    max-height: calc(100dvh - 6.5rem);
+  }
+}
+
+.radar-play {
+  flex-shrink: 0;
+  color: var(--text-primary);
+}
+
+.radar-track {
+  position: relative;
+  flex: 1 1 auto;
+  height: 2.2rem;
+  min-width: 0;
+}
+
+/* The rail spans exactly the thumb's travel so ticks, fill, and thumb all line up. */
+.radar-rail {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 16px;
+}
+
+.radar-rail-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 3px;
+  transform: translateY(-50%);
+  background: var(--track);
+  border-radius: 2px;
+}
+
+.radar-rail-fill {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  height: 3px;
+  width: var(--radar-progress, 0%);
+  transform: translateY(-50%);
+  background: linear-gradient(90deg, var(--accent-start), var(--accent-end));
+  border-radius: 2px;
+  transition: width 0.5s ease;
+}
+
+/* Interval hashes: one per frame, evenly spaced across the rail. */
+.radar-ticks {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  pointer-events: none;
+}
+
+.radar-tick {
+  width: 2px;
+  height: 8px;
+  background: rgba(148, 163, 184, 0.62);
+  border-radius: 1px;
+  transition: height 0.2s ease, background 0.2s ease;
+}
+
+.radar-tick.is-forecast {
+  background: rgba(139, 92, 240, 0.7);
+}
+
+.radar-tick.is-active {
+  height: 10px;
+  background: var(--accent-end);
+}
+
+/* The boundary between observed and forecast frames: "now". */
+.radar-tick.is-now {
+  height: 15px;
+  width: 2px;
+  background: var(--text-primary);
+}
+
+/* The hashmark currently under the pointer gets brightened to confirm the read. */
+.radar-tick.is-hover {
+  background: var(--text-primary);
+}
+
+/* Floating tooltip naming the time of the hashmark under the pointer. */
+.radar-hover-tip {
+  position: absolute;
+  bottom: calc(100% + 0.6rem);
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--text-primary);
+  background: var(--panel-solid);
+  border: 1px solid var(--panel-border);
+  border-radius: 0.45rem;
+  box-shadow: var(--panel-shadow);
+  pointer-events: none;
+  font-variant-numeric: tabular-nums;
+  z-index: 6;
+}
+
+/* Small caret under the tooltip aimed at the hashmark. */
+.radar-hover-tip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: var(--panel-solid);
+}
+
+.radar-hover-tag {
+  padding: 0.02rem 0.32rem;
+  font-size: 0.58rem;
+  color: var(--accent-end);
+  background: rgba(139, 92, 240, 0.18);
+  border-radius: 999px;
+}
+
+.radar-thumb {
+  position: absolute;
+  left: var(--radar-progress, 0%);
+  top: 50%;
+  width: 13px;
+  height: 13px;
+  transform: translate(-50%, -50%);
+  background: #fff;
+  border: 2px solid var(--accent-end);
+  border-radius: 50%;
+  box-shadow: 0 1px 5px rgba(6, 8, 20, 0.5);
+  transition: left 0.5s ease;
+}
+
+/* While dragging, drop the glide so the thumb tracks the cursor exactly. */
+.radar-track.is-scrubbing .radar-rail-fill,
+.radar-track.is-scrubbing .radar-thumb {
+  transition: none;
+}
+
+.radar-track:has(.radar-range:focus-visible) .radar-thumb {
+  box-shadow: 0 0 0 3px var(--focus-color);
+}
+
+/* A transparent native range on top provides drag + keyboard; the visuals are custom. */
+.radar-range {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  background: transparent;
+  -webkit-appearance: none;
+  appearance: none;
+  cursor: pointer;
+}
+
+.radar-range::-webkit-slider-runnable-track {
+  background: transparent;
+}
+
+.radar-range::-moz-range-track {
+  background: transparent;
+}
+
+.radar-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  background: transparent;
+  border: none;
+  cursor: grab;
+}
+
+.radar-range::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  background: transparent;
+  border: none;
+  cursor: grab;
+}
+
+.radar-range:active::-webkit-slider-thumb {
+  cursor: grabbing;
+}
+
+.radar-range:focus {
+  outline: none;
+}
+
+.radar-time {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.4rem;
+  flex-shrink: 0;
+  min-width: 6.5rem;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.radar-tag {
+  padding: 0.05rem 0.4rem;
+  font-size: 0.62rem;
+  font-weight: 600;
+  color: var(--accent-end);
+  background: rgba(139, 92, 240, 0.18);
+  border-radius: 999px;
+}
+
+/* Compact key explaining the radar precipitation colors, shown while radar is on. */
+.radar-legend {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 900;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  width: 11rem;
+  padding: 0.5rem 0.65rem;
+  background: var(--panel-bg);
+  backdrop-filter: blur(14px);
+  border: 1px solid var(--panel-border);
+  border-radius: 0.7rem;
+  box-shadow: var(--panel-shadow);
+  animation: radar-bar-in 0.42s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.radar-legend-title {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.radar-legend-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.64rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.radar-legend-scale {
+  flex: 1 1 auto;
+  height: 0.5rem;
+  border-radius: 999px;
+  /* Matches RainViewer color scheme 4 (light->heavy): cyan/blue drizzle ->
+     blue light rain -> yellow -> orange -> red -> magenta extreme. Verified by
+     sampling the actual radar tiles; scheme 4 has no green. */
+  background: linear-gradient(
+    90deg,
+    #88ddee 0%,
+    #00a3e0 15%,
+    #005588 30%,
+    #ffee00 45%,
+    #ffaa00 60%,
+    #ff4400 75%,
+    #c10000 88%,
+    #ff5cff 100%
+  );
+}
+
+@keyframes radar-bar-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 768px) {
+  /* Pane becomes a full-width top drawer that slides up to hide. */
+  .control-pane {
+    top: 0.75rem;
+    left: 0.75rem;
+    right: 0.75rem;
+    width: auto;
+    max-width: none;
+    max-height: calc(100dvh - 1.5rem);
+  }
+
+  /* Tighten the forecast's vertical rhythm on phones so the whole thing fits the
+     tall pane with little or no scrolling. */
+  .pane-body {
+    gap: 0.55rem;
+  }
+
+  .weather {
+    gap: 0.5rem;
+  }
+
+  .now-card {
+    gap: 0.6rem;
+    padding: 0.8rem 0.95rem 0.75rem;
+  }
+
+  .hero-temp {
+    font-size: 3.05rem;
+  }
+
+  .now-meta {
+    padding-top: 0.55rem;
+  }
+
+  .hour {
+    gap: 0.25rem;
+    padding: 0.3rem 0.15rem;
+  }
+
+  .metrics {
+    padding: 0.55rem 0;
+  }
+
+  .fc-row {
+    padding: 0.26rem 0;
+  }
+
+  .control-pane.collapsed {
+    transform: translateY(calc(-100% - 1.5rem));
+  }
+
+  .pane-launcher {
+    top: 0.75rem;
+    left: 0.75rem;
+  }
+
+  /* Radar timeline spans the bottom; the pane sits up top, so the left is free. */
+  .radar-bar {
+    left: 0.75rem;
+    right: 4rem;
+    bottom: 0.75rem;
+  }
+
+  /* Sit above the taller touch-sized zoom control. */
+  .map-radar {
+    bottom: 7.5rem;
+  }
+
+  /* Layers button stacks above the touch-bumped radar chip (avoids a 2px overlap). */
+  .map-style-control {
+    bottom: 10.5rem;
+  }
+
+  /* Move the legend off the top drawer to sit above the timeline. */
+  .radar-legend {
+    top: auto;
+    right: auto;
+    bottom: 4rem;
+    left: 0.75rem;
+  }
+
+  /* When the forecast pane is open it covers the map, so hide the map-only
+     controls that would otherwise collide with it. They return in map mode
+     (pane collapsed). Pinch-zoom still works while the buttons are hidden. */
+  .app:has(> .control-pane:not(.collapsed)) :is(
+    .map-style-control,
+    .map-radar,
+    .leaflet-control-zoom,
+    .radar-bar,
+    .radar-legend
+  ) {
+    display: none;
+  }
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .control-btn,
+  .unit-option {
+    min-height: 2.5rem;
+  }
+
+  .search-input {
+    height: 2.5rem;
+  }
+}
+
+.unit-option {
+  transition: background 0.2s ease, color 0.2s ease, transform 0.1s ease;
+}
+
+.unit-option:active {
+  transform: translateY(1px) scale(0.98);
+}
+
+/* Loading skeleton that mirrors the panel's shape. */
+.wx-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.sk-hero {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.sk-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.sk-hourly {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.sk-hour {
+  flex: 1;
+  height: 3.2rem;
+}
+
+.sk-meta {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+  padding: 0.8rem 0;
+  border-top: 1px solid var(--panel-border);
+  border-bottom: 1px solid var(--panel-border);
+}
+
+.sk-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.sk-row {
+  height: 1.8rem;
+}
+
+.sk-block {
+  display: block;
+  border-radius: 0.5rem;
+  background: linear-gradient(
+    100deg,
+    rgba(255, 255, 255, 0.05) 30%,
+    rgba(255, 255, 255, 0.13) 50%,
+    rgba(255, 255, 255, 0.05) 70%
+  );
+  background-size: 200% 100%;
+  animation: sk-shimmer 1.3s ease-in-out infinite;
+}
+
+.sk-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.sk-temp {
+  width: 6rem;
+  height: 2.6rem;
+}
+
+.sk-label {
+  width: 8rem;
+  height: 0.9rem;
+}
+
+.sk-cell {
+  height: 2.4rem;
+}
+
+@keyframes sk-shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
+/* Solid fallback when the user prefers reduced transparency. */
+@media (prefers-reduced-transparency: reduce) {
+  .control-pane,
+  .radar-bar,
+  .radar-legend,
+  .pane-launcher,
+  .map-radar,
+  .map-style,
+  .map-style-menu,
+  .search-results {
+    background: var(--panel-solid);
+    backdrop-filter: none;
+  }
+
+  .app::before {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner,
+  .loc-spinner,
+  .map-reticle .reticle-inner,
+  .map-reticle .reticle-ping,
+  .sk-block,
+  .fc-row,
+  .now-card,
+  .now-icon,
+  .hour,
+  .metrics,
+  .sun,
+  .radar-bar,
+  .radar-legend,
+  .pane-launcher,
+  .radar-sweep,
+  .map-style-menu,
+  .search-results {
+    animation: none;
+  }
+
+  .control-pane,
+  .radar-bar,
+  .radar-rail-fill,
+  .radar-thumb,
+  .radar-frame-layer {
+    transition: none;
+  }
+}
+
+/* Light mode: frosted-white cards over the light map (system preference). */
+@media (prefers-color-scheme: light) {
+  :root {
+    --panel-bg: rgba(255, 255, 255, 0.82);
+    --panel-solid: rgba(255, 255, 255, 0.97);
+    --panel-border: rgba(15, 23, 42, 0.1);
+    --text-primary: #0f172a;
+    --text-secondary: #334155;
+    --text-tertiary: #64748b;
+    --focus-color: #7c3aed;
+    --error-bg: rgba(220, 38, 38, 0.1);
+    --error-border: #dc2626;
+    --error-text: #b91c1c;
+    --precip: #0369a1;
+    --sun: #d97706;
+    --track: rgba(15, 23, 42, 0.1);
+    --control-bg: rgba(15, 23, 42, 0.05);
+    --control-bg-hover: rgba(15, 23, 42, 0.1);
+    --panel-shadow: 0 14px 40px -12px rgba(15, 23, 42, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  }
+
+  .search-results {
+    background: rgba(255, 255, 255, 0.98);
+  }
+
+  .search-result:hover,
+  .search-result:focus-visible,
+  .search-result.active {
+    background: rgba(15, 23, 42, 0.06);
+  }
+
+  .hour:first-child {
+    background: rgba(15, 23, 42, 0.05);
+  }
+
+  .now-card {
+    border-color: rgba(15, 23, 42, 0.12);
+    background:
+      radial-gradient(120% 88% at 92% 4%, var(--now-glow, transparent), transparent 60%),
+      linear-gradient(180deg, rgba(15, 23, 42, 0.06), rgba(15, 23, 42, 0.025));
+    box-shadow: 0 10px 26px -16px rgba(15, 23, 42, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  }
+
+  .unit-toggle {
+    background: rgba(15, 23, 42, 0.08);
+    border-color: rgba(15, 23, 42, 0.12);
+  }
+
+  .now-meta {
+    border-top-color: rgba(15, 23, 42, 0.12);
+  }
+
+  .spinner {
+    border-color: rgba(15, 23, 42, 0.2);
+    border-top-color: var(--accent);
+  }
+
+  .sk-block {
+    background: linear-gradient(
+      100deg,
+      rgba(15, 23, 42, 0.05) 30%,
+      rgba(15, 23, 42, 0.11) 50%,
+      rgba(15, 23, 42, 0.05) 70%
+    );
+    background-size: 200% 100%;
+  }
+
+  .leaflet-control-attribution {
+    background: rgba(255, 255, 255, 0.82) !important;
+    color: var(--text-tertiary) !important;
+  }
+
+  .leaflet-control-attribution a {
+    color: var(--text-secondary) !important;
+  }
+
+  .leaflet-bar a {
+    background: var(--panel-solid) !important;
+    color: var(--text-primary) !important;
+    border-bottom-color: var(--panel-border) !important;
+  }
+
+  .leaflet-bar a:hover {
+    background: rgba(226, 232, 240, 0.98) !important;
+  }
+}
