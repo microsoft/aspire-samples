@@ -22,7 +22,7 @@
   },
   "devDependencies": {
     "@tailwindcss/vite": "4.3.2",
-    "@types/node": "^26.0.1",
+    "@types/node": "^26.1.0",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@typescript-eslint/eslint-plugin": "^8.62.1",
@@ -33,6 +33,6 @@
     "eslint-plugin-react-refresh": "^0.5.3",
     "tailwindcss": "4.3.2",
     "typescript": "~6.0.3",
-    "vite": "^8.1.2"
+    "vite": "^8.1.3"
   }
 }
