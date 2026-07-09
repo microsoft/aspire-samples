@@ -2,7 +2,7 @@
   "profiles": {
     "ImageGalleryFunctions": {
       "commandName": "Project",
-      "commandLineArgs": "--port 7221",
+      "commandLineArgs": "--port 7221 --useHttps",
       "launchBrowser": false
     }
   }
