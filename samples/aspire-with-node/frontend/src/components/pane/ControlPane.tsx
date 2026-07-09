@@ -39,6 +39,7 @@ export function ControlPane({
       className={`control-pane ${collapsed ? 'collapsed' : ''} ${radarActive ? 'radar-active' : ''}`}
       aria-label="Weather controls"
       aria-hidden={collapsed}
+      inert={collapsed}
     >
       <PaneHeader isTouch={isTouch} onHide={onHide} />
 

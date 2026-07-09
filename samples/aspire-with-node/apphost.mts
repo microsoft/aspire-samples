@@ -17,8 +17,8 @@ const weather = await builder
 // Run the Express API and expose its HTTP endpoint externally.
 // The API is written in TypeScript; load the tsx runtime so Node can execute
 // `.ts` files directly (native type stripping is only unflagged in Node >= 22.18).
-const app = await builder
-    .addNodeApp("app", "./api", "src/index.ts")
+const api = await builder
+    .addNodeApp("api", "./api", "src/index.ts")
     .withEnvironment("NODE_OPTIONS", "--import tsx")
     .withReference(weather)
     .withEnvironment("OPEN_METEO_URL", openMeteoUrl)
@@ -31,11 +31,11 @@ const app = await builder
 // Run the Vite frontend after the API and inject the API URL for local proxying.
 const frontend = await builder
     .addViteApp("frontend", "./frontend")
-    .withReference(app)
-    .waitFor(app)
+    .withReference(api)
+    .waitFor(api)
     .withBrowserDebugger();
 
 // Bundle the frontend build output into the API container for publish/deploy.
-await app.publishWithContainerFiles(frontend, "./static");
+await api.publishWithContainerFiles(frontend, "./static");
 
 await builder.build().run();

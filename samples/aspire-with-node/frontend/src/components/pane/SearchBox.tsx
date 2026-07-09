@@ -80,18 +80,14 @@ export function SearchBox({ search, onLocate }: SearchBoxProps) {
                 id={`search-option-${index}`}
                 role="option"
                 aria-selected={index === activeIndex}
+                className={`search-result ${index === activeIndex ? 'active' : ''}`}
+                onClick={() => selectResult(result)}
+                onMouseMove={() => setActiveIndex(index)}
               >
-                <button
-                  type="button"
-                  className={`search-result ${index === activeIndex ? 'active' : ''}`}
-                  onClick={() => selectResult(result)}
-                  onMouseMove={() => setActiveIndex(index)}
-                >
-                  <span className="sr-name">{highlightMatch(result.name, query)}</span>
-                  <span className="sr-meta">
-                    {[result.region, result.country].filter(Boolean).join(', ')}
-                  </span>
-                </button>
+                <span className="sr-name">{highlightMatch(result.name, query)}</span>
+                <span className="sr-meta">
+                  {[result.region, result.country].filter(Boolean).join(', ')}
+                </span>
               </li>
             ))
           )}

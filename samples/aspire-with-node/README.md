@@ -46,7 +46,7 @@ flowchart LR
 ## Prerequisites
 
 - [Aspire development environment](https://aspire.dev/get-started/prerequisites/)
-- [Node.js](https://nodejs.org) - at least version 22.13
+- [Node.js](https://nodejs.org) - version 20.19+, 22.13+, or 24+ (see the `engines` field in `package.json`)
 
 ## Running the app
 
