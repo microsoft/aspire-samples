@@ -1,5 +1,4 @@
 ﻿@page "/"
-@attribute [StreamRendering(true)]
 
 @inject CatalogServiceClient CatalogService
 
@@ -15,7 +14,10 @@
             </span>
         </a>
         <p class="brand-tagline">Browse the product catalog and add items to your cart</p>
-        <CartButton BasketAvailabilityChanged="HandleBasketAvailabilityChanged" />
+        <div class="topbar-actions">
+            <CartButton BasketAvailabilityChanged="HandleBasketAvailabilityChanged" />
+            <ThemeToggle />
+        </div>
     </div>
 </header>
 
@@ -32,13 +34,20 @@
             @foreach (var item in data)
             {
                 <article class="product" data-id="@item.Id">
-                    <a class="product-media" href="catalog/images/@item.Id" aria-label="View @item.Name full size">
-                        <img src="catalog/images/@item.Id" alt="@item.Name" loading="lazy" />
-                        <span class="product-zoom">
-                            <span class="product-zoom-icon" aria-hidden="true">@Icons.ZoomIn</span>
-                            Quick look
-                        </span>
-                    </a>
+                    <div class="product-media">
+                        <button type="button" class="product-media-btn" data-quickview="qv-@item.Id"
+                                aria-haspopup="dialog" aria-label="Quick look at @item.Name">
+                            <img src="catalog/images/@item.Id" alt="@item.Name" loading="lazy" />
+                            <span class="product-zoom">
+                                <span class="product-zoom-icon" aria-hidden="true">@Icons.ZoomIn</span>
+                                Quick look
+                            </span>
+                        </button>
+                        @if (item.Badge is { Length: > 0 } badge)
+                        {
+                            <span class="product-badge @BadgeClass(badge)">@badge</span>
+                        }
+                    </div>
                     <div class="product-body">
                         @if (item.CatalogBrand is { Brand: var brand })
                         {
@@ -69,6 +78,54 @@
                             }
                         </div>
                     </div>
+
+                    <dialog id="qv-@item.Id" class="quickview" aria-label="@item.Name — quick look">
+                        <div class="quickview-panel">
+                            <div class="quickview-media">
+                                <img src="catalog/images/@item.Id" alt="@item.Name" loading="lazy" decoding="async" fetchpriority="low" />
+                                @if (item.Badge is { Length: > 0 } modalBadge)
+                                {
+                                    <span class="product-badge @BadgeClass(modalBadge)">@modalBadge</span>
+                                }
+                                <a class="quickview-zoom" href="catalog/images/@item.Id" target="_blank" rel="noopener noreferrer"
+                                   aria-label="View the full image of @item.Name">
+                                    <span class="quickview-zoom-pill">
+                                        <span class="product-zoom-icon" aria-hidden="true">@Icons.ZoomIn</span>
+                                        View full image
+                                    </span>
+                                </a>
+                            </div>
+                            <div class="quickview-body">
+                                <button type="button" class="quickview-close" data-quickview-close aria-label="Close quick look">
+                                    @Icons.Close
+                                </button>
+                                @if (item.CatalogBrand is { Brand: var modalBrand })
+                                {
+                                    <p class="product-brand">@modalBrand</p>
+                                }
+                                <h2 class="quickview-name">@item.Name</h2>
+                                @if (item.CatalogType is { Type: var modalType })
+                                {
+                                    <p class="quickview-type">@modalType</p>
+                                }
+                                @if (!string.IsNullOrWhiteSpace(item.Description))
+                                {
+                                    <p class="quickview-desc">@item.Description</p>
+                                }
+                                <div class="quickview-foot">
+                                    <span class="product-price quickview-price">@item.Price.ToString("C")</span>
+                                    @if (basketIsAvailable && item.AvailableStock > 0)
+                                    {
+                                        <AddToCart Item="item" Context="modal" ButtonClass="add-button add-button--block" />
+                                    }
+                                    else if (item.AvailableStock <= 0)
+                                    {
+                                        <span class="quickview-oos">Out of stock</span>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </dialog>
                 </article>
             }
         </div>
@@ -145,6 +202,14 @@
     {
         basketIsAvailable = isAvailable;
     }
+
+    private static string BadgeClass(string badge) => badge switch
+    {
+        "Special" => "product-badge--special",
+        "New arrival" => "product-badge--new",
+        "og:image" => "product-badge--og",
+        _ => ""
+    };
 
     record PaginationInfo(int FirstId, int NextId, bool HasPreviousPage, bool HasNextPage);
 }

@@ -10,6 +10,17 @@
     <meta name="color-scheme" content="light dark" />
     <meta name="theme-color" content="#f3ede3" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#14100c" media="(prefers-color-scheme: dark)" />
+    <script>
+        // Apply the saved theme before first paint to avoid a flash of the wrong color scheme.
+        (function () {
+            try {
+                var t = localStorage.getItem('aspireshop-theme');
+                if (t === 'light' || t === 'dark') {
+                    document.documentElement.setAttribute('data-theme', t);
+                }
+            } catch (e) { /* localStorage unavailable */ }
+        })();
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="stylesheet"
@@ -21,6 +32,7 @@
 <body>
     <Routes />
     <script src="_framework/blazor.web.js"></script>
+    <script src="site.js"></script>
 </body>
 
 </html>

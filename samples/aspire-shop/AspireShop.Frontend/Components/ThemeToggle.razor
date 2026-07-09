@@ -1,0 +1,9 @@
+@* Light/dark theme toggle. Theme state lives on <html data-theme> and is persisted to
+   localStorage by site.js; CSS swaps the visible icon based on the effective theme, so this
+   works even before the script runs and stays correct across enhanced navigation. *@
+
+<button type="button" class="theme-toggle" data-theme-toggle
+        aria-label="Toggle light and dark theme" title="Toggle light and dark theme">
+    <span class="theme-toggle-icon theme-toggle-icon--sun" aria-hidden="true">@Icons.Sun</span>
+    <span class="theme-toggle-icon theme-toggle-icon--moon" aria-hidden="true">@Icons.Moon</span>
+</button>

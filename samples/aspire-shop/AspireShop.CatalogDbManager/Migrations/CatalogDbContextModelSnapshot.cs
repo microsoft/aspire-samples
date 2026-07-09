@@ -16,7 +16,7 @@ namespace AspireShop.CatalogDbManager.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.10")
+                .HasAnnotation("ProductVersion", "10.0.9")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -58,6 +58,10 @@ namespace AspireShop.CatalogDbManager.Migrations
 
                     b.Property<int>("AvailableStock")
                         .HasColumnType("integer");
+
+                    b.Property<string>("Badge")
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
 
                     b.Property<int>("CatalogBrandId")
                         .HasColumnType("integer");

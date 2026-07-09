@@ -45,6 +45,7 @@ public record CatalogItem
     public string? Description { get; init; }
     public decimal Price { get; init; }
     public int AvailableStock { get; init; }
+    public string? Badge { get; init; }
     public CatalogBrandRef? CatalogBrand { get; init; }
     public CatalogTypeRef? CatalogType { get; init; }
 }

@@ -55,6 +55,7 @@ namespace AspireShop.CatalogDbManager.Migrations
                     Description = table.Column<string>(type: "text", nullable: true),
                     Price = table.Column<decimal>(type: "numeric", nullable: false),
                     PictureFileName = table.Column<string>(type: "text", nullable: true),
+                    Badge = table.Column<string>(type: "character varying(30)", maxLength: 30, nullable: true),
                     CatalogTypeId = table.Column<int>(type: "integer", nullable: false),
                     CatalogBrandId = table.Column<int>(type: "integer", nullable: false),
                     AvailableStock = table.Column<int>(type: "integer", nullable: false),

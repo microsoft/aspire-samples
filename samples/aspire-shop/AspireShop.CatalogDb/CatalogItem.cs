@@ -9,6 +9,11 @@ public class CatalogItem
     public required string PictureFileName { get; set; }
     public string? PictureUri { get; set; }
 
+    /// <summary>
+    /// Optional merchandising label shown on the product (e.g. "New arrival", "Special").
+    /// </summary>
+    public string? Badge { get; set; }
+
     public int CatalogTypeId { get; set; }
     public required CatalogType CatalogType { get; set; }
 
