@@ -32,8 +32,7 @@ const api = await builder
 const frontend = await builder
     .addViteApp("frontend", "./frontend")
     .withReference(api)
-    .waitFor(api)
-    .withBrowserDebugger();
+    .waitFor(api);
 
 // Bundle the frontend build output into the API container for publish/deploy.
 await api.publishWithContainerFiles(frontend, "./static");

@@ -4,9 +4,8 @@
     "language": "typescript/nodejs"
   },
   "sdk": {
-    "version": "13.5.0-preview.1.26352.2"
+    "version": "13.4.0"
   },
-  "channel": "daily",
   "profiles": {
     "https": {
       "applicationUrl": "https://localhost:17183;http://localhost:15229",
@@ -25,6 +24,6 @@
     }
   },
   "packages": {
-    "Aspire.Hosting.JavaScript": "13.5.0-preview.1.26352.2"
+    "Aspire.Hosting.JavaScript": "13.4.0"
   }
 }

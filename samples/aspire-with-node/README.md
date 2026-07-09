@@ -39,7 +39,6 @@ flowchart LR
 - **addViteApp**: run the React + Vite frontend with hot module replacement.
 - **withReference + waitFor**: inject the Open-Meteo URL into the API and the API URL into the frontend, and order startup so the frontend waits for the API.
 - **withHttpEndpoint / withExternalHttpEndpoints / withUrlForEndpoint**: configure and label the endpoints shown in the dashboard.
-- **withBrowserDebugger**: stream the frontend's browser console, network activity, and screenshots into the Aspire dashboard.
 - **publishWithContainerFiles**: bundle the Vite build output into the API container so a single container serves both the SPA and the API in publish mode.
 - **OpenTelemetry**: distributed traces, metrics, and structured logs from the Node.js API, viewable in the dashboard.
 
@@ -76,6 +75,10 @@ For production applications, see the [Node.js security best practices](https://n
 
 ## Attributions
 
-- Weather data by [Open-Meteo](https://open-meteo.com).
+This sample relies on several free, community-maintained data sources. If you build on it, please honor their attribution and licensing requirements:
+
+- **Weather data by [Open-Meteo](https://open-meteo.com)** — current conditions and forecasts are provided by the Open-Meteo API, licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
+- **Map data © [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors** — the base map geometry comes from the OpenStreetMap project and is available under the [Open Database License (ODbL)](https://www.openstreetmap.org/copyright).
 - Radar imagery by [RainViewer](https://www.rainviewer.com).
-- Basemap tiles from [OpenStreetMap](https://www.openstreetmap.org/copyright), [CARTO](https://carto.com/attributions), and [Esri](https://www.esri.com); reverse geocoding by [BigDataCloud](https://www.bigdatacloud.com).
+- Basemap tiles rendered by [CARTO](https://carto.com/attributions) and [Esri](https://www.esri.com).
+- Reverse geocoding by [BigDataCloud](https://www.bigdatacloud.com).
