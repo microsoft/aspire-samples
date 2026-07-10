@@ -20,7 +20,7 @@
     <PackageVersion Include="Microsoft.Azure.Functions.Worker.Sdk" Version="2.1.0" />
     <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.10" />
     <PackageVersion Include="MessagePack" Version="3.1.8" />
-    <PackageVersion Include="Microsoft.OpenApi" Version="3.8.0" />
+    <PackageVersion Include="Microsoft.OpenApi" Version="2.10.0" />
     <!-- Microsoft Extensions -->
     <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="10.8.0" />
     <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery" Version="10.8.0" />
