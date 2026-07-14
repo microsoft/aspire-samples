@@ -20,6 +20,7 @@ Samples for [Aspire](https://aspire.dev).
 | --- | --- | --- | --- | --- |
 | [Integrating Frontend Apps](./samples/aspire-with-javascript) | JavaScript, TypeScript | C# AppHost | Run only | React, Vue, and Angular frontends integrated with Aspire. |
 | [Node + Redis + Vite](./samples/node-express-redis) | JavaScript, TypeScript | TypeScript AppHost | Docker Compose | Express API + React/Vite frontend + Redis behind YARP. |
+| [Node.js Weather Explorer](./samples/aspire-with-node) | JavaScript, TypeScript | TypeScript AppHost | Run only | Interactive Leaflet weather map; Express + OpenTelemetry API over the Open-Meteo external service. |
 | [Vite + YARP Static Files](./samples/vite-yarp-static) | JavaScript, TypeScript | TypeScript AppHost | Docker Compose | Vite frontend served through YARP in run and publish modes. |
 
 ### Polyglot full-stack
@@ -36,7 +37,6 @@ Samples for [Aspire](https://aspire.dev).
 
 | Sample | Workload languages | AppHost | Deploy | Description |
 | --- | --- | --- | --- | --- |
-| [Integrating a Node.js App](./samples/aspire-with-node) | JavaScript | C# AppHost | Run only | Integrates a Node.js backend with Aspire. |
 | [Integrating a Go App](./samples/container-build) | Go | C# AppHost | Docker Compose | Builds and runs a Go Gin app from a Dockerfile with Aspire. |
 | [Go API](./samples/golang-api) | Go | TypeScript AppHost | Docker Compose | Go + chi API with Aspire-managed run and publish flows. |
 | [Python FastAPI + PostgreSQL](./samples/python-fastapi-postgres) | Python | TypeScript AppHost | Docker Compose | FastAPI CRUD API wired to PostgreSQL and pgAdmin. |

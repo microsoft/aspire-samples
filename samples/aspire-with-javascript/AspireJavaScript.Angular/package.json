@@ -15,16 +15,16 @@
   },
   "private": true,
   "dependencies": {
-    "@angular/animations": "^22.0.0",
+    "@angular/animations": "^22.0.1",
     "@angular/cdk": "^22.0.0",
     "@angular/common": "^22.0.1",
     "@angular/compiler": "^22.0.1",
-    "@angular/core": "^22.0.0",
-    "@angular/forms": "^22.0.0",
+    "@angular/core": "^22.0.1",
+    "@angular/forms": "^22.0.1",
     "@angular/material": "^22.0.0",
-    "@angular/platform-browser": "^22.0.0",
-    "@angular/platform-browser-dynamic": "^22.0.0",
-    "@angular/router": "^22.0.0",
+    "@angular/platform-browser": "^22.0.1",
+    "@angular/platform-browser-dynamic": "^22.0.1",
+    "@angular/router": "^22.0.1",
     "@fontsource/roboto": "5.2.10",
     "material-symbols": "0.44.12",
     "rxjs": "~7.8.2",
@@ -34,7 +34,7 @@
   "devDependencies": {
     "@angular-devkit/build-angular": "^22.0.0",
     "@angular/cli": "^22.0.0",
-    "@angular/compiler-cli": "^22.0.0",
+    "@angular/compiler-cli": "^22.0.1",
     "@types/jasmine": "~6.0.0",
     "jasmine-core": "~6.3.0",
     "karma": "~6.4.4",
@@ -42,8 +42,8 @@
     "karma-coverage": "~2.2.1",
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.2.0",
-    "typescript": "~6.0.3",
-    "run-script-os": "^1.1.6"
+    "run-script-os": "^1.1.6",
+    "typescript": "~6.0.3"
   },
   "overrides": {
     "postcss": "8.5.10",

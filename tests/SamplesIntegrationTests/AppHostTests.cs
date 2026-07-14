@@ -187,10 +187,6 @@ public class AppHostTests(ITestOutputHelper testOutput)
                 { "react", ["/"] },
                 { "vue", ["/"] }
             }),
-            new TestEndpoints("AspireWithNode.AppHost", new() {
-                { "weatherapi", ["/alive", "/health", "/weatherforecast"] },
-                { "frontend", ["/alive", "/health", "/"] }
-            }),
             // Can't reference this AppHost directly as it's a file-based app now
             //new TestEndpoints("AspireWithPython.AppHost", new() {
             //    { "instrumented-python-app", ["/"] }
