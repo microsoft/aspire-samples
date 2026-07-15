@@ -46,10 +46,16 @@
     "run-script-os": "^1.1.6"
   },
   "overrides": {
+    "@babel/core": "7.29.6",
+    "esbuild": "0.28.1",
+    "http-proxy-middleware": "3.0.7",
     "postcss": "8.5.10",
+    "piscina": "5.2.0",
     "sockjs": {
       "uuid": "14.0.0"
     },
-    "webpack-dev-server": "5.2.4"
+    "vite": "7.3.5",
+    "webpack-dev-server": "5.2.5",
+    "ws": "8.21.0"
   }
 }
