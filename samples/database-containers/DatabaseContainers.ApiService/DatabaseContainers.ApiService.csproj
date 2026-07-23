@@ -17,6 +17,7 @@
     <PackageReference Include="Aspire.MySqlConnector" Version="13.4.6" />
     <PackageReference Include="Dapper" Version="2.1.79" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.10" />
+    <PackageReference Include="Microsoft.OpenApi" Version="2.11.0" />
     <PackageReference Include="Scalar.AspNetCore" Version="2.16.16" />
   </ItemGroup>
 
