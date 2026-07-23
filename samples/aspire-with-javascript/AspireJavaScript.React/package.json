@@ -14,8 +14,8 @@
   "dependencies": {
     "@fontsource-variable/space-grotesk": "5.2.10",
     "@phosphor-icons/react": "2.1.10",
-    "react": "^19.2.8",
-    "react-dom": "^19.2.8"
+    "react": "19.2.7",
+    "react-dom": "19.2.7"
   },
   "devDependencies": {
     "@babel/core": "^8.0.1",
@@ -31,6 +31,7 @@
     "webpack-dev-server": "^6.0.0"
   },
   "overrides": {
+    "fast-uri": "3.1.3",
     "sockjs": {
       "uuid": "14.0.0"
     }
