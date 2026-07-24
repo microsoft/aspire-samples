@@ -2,8 +2,4 @@
   <PropertyGroup>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
-  <ItemGroup Condition="'$(ManagePackageVersionsCentrally)' != 'true'">
-    <PackageReference Include="MessagePack" Version="3.1.8" />
-    <PackageReference Include="Microsoft.OpenApi" Version="2.10.0" />
-  </ItemGroup>
 </Project>
