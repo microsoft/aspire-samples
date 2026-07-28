@@ -21,7 +21,8 @@
     <PackageReference Include="Aspire.Azure.Storage.Blobs" Version="13.4.0" />
     <PackageReference Include="Aspire.Azure.Storage.Queues" Version="13.4.0" />
     <PackageReference Include="Scalar.AspNetCore" Version="2.14.11" />
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.8" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.10" />
+    <PackageReference Include="Microsoft.OpenApi" Version="2.11.0" />
     <PackageReference Include="SkiaSharp" Version="3.119.1" />
     <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="3.119.1" />
   </ItemGroup>

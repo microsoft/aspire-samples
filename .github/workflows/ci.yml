@@ -33,11 +33,11 @@ jobs:
       SuppressNETCoreSdkPreviewMessage: true
       DCP_DIAGNOSTICS_LOG_LEVEL: 'debug'
     steps:
-    - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
   
     - name: Install Docker (latest version)
       if: matrix.os == 'ubuntu-latest'
-      uses: docker/setup-docker-action@6d7cfa65f60a9dda7b46e5513fa982536f3c9877 #v5.3.0
+      uses: docker/setup-docker-action@77e84dbf09b47d1e29270283c22f16145aa85ca1 #v5.4.0
 
     - name: Install Azure Functions Core Tools
       if: matrix.os == 'ubuntu-latest'
@@ -48,14 +48,14 @@ jobs:
         sudo apt-get install azure-functions-core-tools-4
 
     - name: Install .NET SDK (global.json)
-      uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         global-json-file: ${{ matrix.os == 'ubuntu-latest' && './build/global.json' || '.\build\global.json' }}
     
     - name: Print .NET info
       run: dotnet --info
 
-    - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+    - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
       with:
         node-version: '24.x'
 
