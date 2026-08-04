@@ -104,7 +104,11 @@ jobs:
       id: install-dev-certs
       # Trusting certs on Windows throws a prompt so will halt the build
       if: runner.os == 'Linux'
-      run: dotnet dev-certs https --trust
+      shell: bash
+      run: |
+        trust_dir="$HOME/.aspnet/dev-certs/trust"
+        echo "SSL_CERT_DIR=$trust_dir:/usr/lib/ssl/certs" >> "$GITHUB_ENV"
+        SSL_CERT_DIR="$trust_dir:/usr/lib/ssl/certs" dotnet dev-certs https --trust
 
     - name: Validate JavaScript packages
       if: runner.os == 'Linux'
