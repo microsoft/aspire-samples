@@ -3,7 +3,7 @@ name: GitOps.PullRequestIssueManagement
 description: Auto-merge pull requests labeled 'auto-merge' once CI is green
 owner:
 resource: repository
-disabled: false
+disabled: true
 where:
 configuration:
   resourceManagementConfiguration:
