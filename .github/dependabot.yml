@@ -52,6 +52,11 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 1
+    ignore:
+      # Angular 22 requires TypeScript >=6.0 <6.1. Revisit for the next Angular major.
+      - dependency-name: "typescript"
+        update-types:
+          - "version-update:semver-major"
     groups:
       angular-core:
         patterns:
