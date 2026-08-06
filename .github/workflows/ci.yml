@@ -7,27 +7,42 @@ on:
       - "**/*.md"
       - "**/*.gitignore"
       - "**/*.gitattributes"
-  
-  pull_request:
-    paths-ignore:
-      - "**/*.md"
-      - "**/*.gitignore"
-      - "**/*.gitattributes"
 
+  pull_request:
   workflow_dispatch:
+
+  schedule:
+    - cron: "17 9 * * *"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  ASPIRE_CLI_VERSION: '13.4.6'
+  NODE_VERSION: '24.18.0'
 
 jobs:
   build:
+    timeout-minutes: 45
     strategy:
+      fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        include:
+          - os: ubuntu-24.04
+            dotnet_install_dir: ''
+          - os: windows-2025
+            dotnet_install_dir: 'dotnet'
     runs-on: ${{ matrix.os }}
     name: Build & Test Samples
     env:
       DOTNET_CLI_TELEMETRY_OPTOUT: true
       DOTNET_NOLOGO: true
       DOTNET_MULTILEVEL_LOOKUP: false
-      DOTNET_INSTALL_DIR: ${{ matrix.os == 'ubuntu-latest' && '' || 'dotnet' }}
+      DOTNET_INSTALL_DIR: ${{ matrix.dotnet_install_dir }}
       ASPIRE_ALLOW_UNSECURED_TRANSPORT: true
       ASPIRE_CLI_TELEMETRY_OPTOUT: true
       SuppressNETCoreSdkPreviewMessage: true
@@ -36,41 +51,41 @@ jobs:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
   
     - name: Install Docker (latest version)
-      if: matrix.os == 'ubuntu-latest'
+      if: runner.os == 'Linux'
       uses: docker/setup-docker-action@77e84dbf09b47d1e29270283c22f16145aa85ca1 #v5.4.0
 
     - name: Install Azure Functions Core Tools
-      if: matrix.os == 'ubuntu-latest'
+      if: runner.os == 'Linux'
       run: |
         wget -q https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb
         sudo dpkg -i packages-microsoft-prod.deb
         sudo apt-get update
-        sudo apt-get install azure-functions-core-tools-4
+        sudo apt-get install -y azure-functions-core-tools-4
 
     - name: Install .NET SDK (global.json)
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
-        global-json-file: ${{ matrix.os == 'ubuntu-latest' && './build/global.json' || '.\build\global.json' }}
+        global-json-file: ./build/global.json
     
     - name: Print .NET info
       run: dotnet --info
 
     - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
       with:
-        node-version: '24.x'
+        node-version: ${{ env.NODE_VERSION }}
 
     - name: Install Aspire CLI (Ubuntu)
-      if: matrix.os == 'ubuntu-latest'
+      if: runner.os == 'Linux'
       shell: bash
       run: |
         install_path="$RUNNER_TEMP/aspire-cli"
-        curl -sSL https://aspire.dev/install.sh | bash -s -- --install-path "$install_path" --skip-path
+        curl -sSL https://aspire.dev/install.sh | bash -s -- --install-path "$install_path" --version "$ASPIRE_CLI_VERSION" --skip-path
         echo "$install_path" >> "$GITHUB_PATH"
         echo "ASPIRE_CLI=$install_path/aspire" >> "$GITHUB_ENV"
         "$install_path/aspire" --version
 
     - name: Install Aspire CLI (Windows)
-      if: matrix.os == 'windows-latest'
+      if: runner.os == 'Windows'
       shell: pwsh
       run: |
         $installScript = Join-Path $env:RUNNER_TEMP 'aspire-install.ps1'
@@ -78,7 +93,7 @@ jobs:
         $aspirePath = Join-Path $installPath 'aspire.exe'
 
         Invoke-RestMethod 'https://aspire.dev/install.ps1' -OutFile $installScript
-        & $installScript -InstallPath $installPath -SkipPath
+        & $installScript -InstallPath $installPath -Version $env:ASPIRE_CLI_VERSION -SkipPath
 
         $installPath | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
         "ASPIRE_CLI=$aspirePath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
@@ -88,45 +103,40 @@ jobs:
     - name: Install & trust dev-certs
       id: install-dev-certs
       # Trusting certs on Windows throws a prompt so will halt the build
-      if: matrix.os == 'ubuntu-latest'
-      run: dotnet dev-certs https --trust
-
-    - name: Restore TypeScript AppHosts
-      if: matrix.os == 'ubuntu-latest'
+      if: runner.os == 'Linux'
       shell: bash
       run: |
-        set -euo pipefail
+        trust_dir="$HOME/.aspnet/dev-certs/trust"
+        echo "SSL_CERT_DIR=$trust_dir:/usr/lib/ssl/certs" >> "$GITHUB_ENV"
+        SSL_CERT_DIR="$trust_dir:/usr/lib/ssl/certs" dotnet dev-certs https --trust
 
-        while IFS= read -r apphost; do
-          sample_dir="$(dirname "$apphost")"
-          sample_name="${apphost#./samples/}"
-          echo "::group::Restore $sample_name"
-          (
-            cd "$sample_dir"
-            "$ASPIRE_CLI" restore --apphost . --non-interactive --nologo
-            npm ci --no-audit --no-fund
-          )
-          echo "::endgroup::"
-        done < <(find ./samples -name apphost.mts | sort)
+    - name: Validate JavaScript packages
+      if: runner.os == 'Linux'
+      shell: bash
+      run: bash ./build/validate-javascript.sh
 
     - name: Build (Ubuntu)
-      if: matrix.os == 'ubuntu-latest'
+      if: runner.os == 'Linux'
       run: ./build/build.sh -p:SkipTypeScriptRestore=true
 
     - name: Build (Windows)
-      if: matrix.os == 'windows-latest'
+      if: runner.os == 'Windows'
       run: .\build\build.cmd
 
     - name: Copy binlog files
       if: always()
       shell: pwsh
       run: |
+        $repositoryRoot = (Get-Location).Path
         $binlogFiles = Get-ChildItem -Path . -Filter *.binlog -Recurse
         if ($binlogFiles.Count -gt 0) {
-          New-Item -ItemType Directory -Force -Path ./BuildLogs
+          $buildLogs = Join-Path $repositoryRoot 'BuildLogs'
           foreach ($file in $binlogFiles) {
-            Copy-Item -Path $file.FullName -Destination ./BuildLogs
-            Write-Host "Copied: $($file.FullName)"
+            $relativePath = [System.IO.Path]::GetRelativePath($repositoryRoot, $file.FullName)
+            $destination = Join-Path $buildLogs $relativePath
+            New-Item -ItemType Directory -Force -Path (Split-Path $destination) | Out-Null
+            Copy-Item -Path $file.FullName -Destination $destination
+            Write-Host "Copied: $relativePath"
           }
         } else {
           Write-Host "No .binlog files found"
@@ -143,25 +153,50 @@ jobs:
     - name: Test
       id: test
       # We only test on Ubuntu because Windows agents don't support Docker with WSL
-      if: matrix.os == 'ubuntu-latest'
+      if: runner.os == 'Linux'
+      timeout-minutes: 20
       # Note that the space after the last double dash (--) is intentional
       run: >
         dotnet test ./tests/SamplesTests.slnx
-        --logger console --logger trx --logger html --logger GitHubActions
+        --logger console --logger trx --logger GitHubActions
         --results-directory ./TestResults --blame
         -- 
         RunConfiguration.CollectSourceInformation=true
 
     - name: Copy DCP logs
-      if: (success() || steps.test.conclusion == 'failure') && matrix.os == 'ubuntu-latest'
+      if: always() && runner.os == 'Linux'
       run: |
         mkdir -p ./TestResults/DCPLogs
         TEMP_DIR="${TMPDIR:-/tmp}"
-        cp -r "$TEMP_DIR/dcp/logs/"* ./TestResults/DCPLogs
+        if [ -d "$TEMP_DIR/dcp/logs" ]; then
+          cp -a "$TEMP_DIR/dcp/logs/." ./TestResults/DCPLogs/
+        else
+          echo "No DCP logs found"
+        fi
     
     - name: Publish Test Results
-      if: (success() || steps.test.conclusion == 'failure') && matrix.os == 'ubuntu-latest'
+      if: always() && runner.os == 'Linux'
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: TestResults_${{ matrix.os }}
         path: ./TestResults
+        if-no-files-found: ignore
+
+  ci-gate:
+    name: CI Gate
+    if: always()
+    needs:
+      # Every required validation job must be listed here.
+      - build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+    - name: Verify required jobs succeeded
+      shell: bash
+      env:
+        BUILD_RESULT: ${{ needs.build.result }}
+      run: |
+        if [ "$BUILD_RESULT" != "success" ]; then
+          echo "::error::Build & Test Samples completed with '$BUILD_RESULT'"
+          exit 1
+        fi

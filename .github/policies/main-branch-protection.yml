@@ -1,0 +1,21 @@
+name: aspire-samples-main-branch-protection
+description: Branch protection policy for the aspire-samples main branch
+resource: repository
+configuration:
+  branchProtectionRules:
+    - branchNamePattern: main
+      allowsDeletions: false
+      allowsForcePushes: false
+      dismissStaleReviews: false
+      isAdminEnforced: true
+      requiresPullRequestBeforeMerging: true
+      requiredApprovingReviewsCount: 0
+      requireCodeOwnersReview: false
+      requiresCommitSignatures: false
+      requiresConversationResolution: false
+      requiresLinearHistory: false
+      requiredStatusChecks:
+        - CI Gate
+      requiresStrictStatusChecks: true
+      restrictsPushes: false
+      restrictsReviewDismissals: false
