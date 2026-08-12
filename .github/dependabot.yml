@@ -156,3 +156,5 @@ updates:
     open-pull-requests-limit: 15
     labels:
       - area-engineering-systems
+    cooldown:
+      default-days: 7
