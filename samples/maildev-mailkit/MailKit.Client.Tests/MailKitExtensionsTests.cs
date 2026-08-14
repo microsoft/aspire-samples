@@ -2,6 +2,7 @@ using MailKit.Client;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace MailKit.Client.Tests;
@@ -37,6 +38,25 @@ public sealed class MailKitExtensionsTests
         Assert.NotNull(
             scope.ServiceProvider.GetRequiredKeyedService<MailKitClientFactory>("transactional"));
         Assert.Null(scope.ServiceProvider.GetService<MailKitClientFactory>());
+    }
+
+    [Fact]
+    public void AddMailKitClientUsesConnectionNameForHealthCheck()
+    {
+        var builder = Host.CreateApplicationBuilder();
+        builder.Configuration["ConnectionStrings:primary"] = "smtp://localhost:1025";
+        builder.Configuration["ConnectionStrings:secondary"] = "smtp://localhost:1026";
+
+        builder.AddMailKitClient("primary");
+        builder.AddMailKitClient("secondary");
+
+        using var provider = builder.Services.BuildServiceProvider();
+        var options = provider.GetRequiredService<IOptions<HealthCheckServiceOptions>>().Value;
+
+        Assert.Collection(
+            options.Registrations,
+            registration => Assert.Equal("MailKit_primary", registration.Name),
+            registration => Assert.Equal("MailKit_secondary", registration.Name));
     }
 
     [Fact]

@@ -71,7 +71,7 @@ public static class MailKitExtensions
         if (!settings.DisableHealthChecks)
         {
             builder.Services.AddHealthChecks().Add(new HealthCheckRegistration(
-                serviceKey is null ? "MailKit" : $"MailKit_{connectionName}",
+                $"MailKit_{connectionName}",
                 serviceProvider => new MailKitHealthCheck(
                     serviceKey is null
                         ? serviceProvider.GetRequiredService<MailKitClientFactory>()
