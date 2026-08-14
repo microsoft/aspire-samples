@@ -1,0 +1,59 @@
+using MailKit.Client;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Hosting;
+using Xunit;
+
+namespace MailKit.Client.Tests;
+
+public sealed class MailKitExtensionsTests
+{
+    [Fact]
+    public void AddMailKitClientRegistersOneFactoryPerScope()
+    {
+        var builder = Host.CreateApplicationBuilder();
+        builder.Configuration["ConnectionStrings:maildev"] = "smtp://localhost:1025";
+        builder.AddMailKitClient("maildev");
+        using var provider = builder.Services.BuildServiceProvider();
+
+        using var firstScope = provider.CreateScope();
+        using var secondScope = provider.CreateScope();
+
+        var first = firstScope.ServiceProvider.GetRequiredService<MailKitClientFactory>();
+        Assert.Same(first, firstScope.ServiceProvider.GetRequiredService<MailKitClientFactory>());
+        Assert.NotSame(first, secondScope.ServiceProvider.GetRequiredService<MailKitClientFactory>());
+        Assert.NotNull(provider.GetRequiredService<HealthCheckService>());
+    }
+
+    [Fact]
+    public void AddKeyedMailKitClientRegistersNamedFactory()
+    {
+        var builder = Host.CreateApplicationBuilder();
+        builder.Configuration["ConnectionStrings:transactional"] = "smtp://localhost:1025";
+        builder.AddKeyedMailKitClient("transactional");
+        using var provider = builder.Services.BuildServiceProvider();
+        using var scope = provider.CreateScope();
+
+        Assert.NotNull(
+            scope.ServiceProvider.GetRequiredKeyedService<MailKitClientFactory>("transactional"));
+        Assert.Null(scope.ServiceProvider.GetService<MailKitClientFactory>());
+    }
+
+    [Fact]
+    public void FactoryValidationIsDeferredUntilResolution()
+    {
+        var builder = Host.CreateApplicationBuilder();
+
+        builder.AddMailKitClient("maildev", settings =>
+        {
+            settings.DisableHealthChecks = true;
+            settings.DisableTracing = true;
+            settings.DisableMetrics = true;
+        });
+
+        using var provider = builder.Services.BuildServiceProvider();
+        using var scope = provider.CreateScope();
+        Assert.Throws<InvalidOperationException>(
+            scope.ServiceProvider.GetRequiredService<MailKitClientFactory>);
+    }
+}
