@@ -8,6 +8,8 @@ public sealed class MailKitClientFactory(MailKitClientSettings settings) : IDisp
     private readonly SemaphoreSlim _semaphore = new(1, 1);
     private SmtpClient? _client;
 
+    internal Uri? Endpoint => settings.Endpoint;
+
     /// <summary>Gets a connected and, when configured, authenticated SMTP client.</summary>
     public async Task<ISmtpClient> GetSmtpClientAsync(
         CancellationToken cancellationToken = default)

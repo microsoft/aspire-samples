@@ -4,6 +4,8 @@ namespace MailKit.Client;
 
 internal sealed class MailKitHealthCheck(MailKitClientFactory factory) : IHealthCheck
 {
+    internal MailKitClientFactory Factory => factory;
+
     public async Task<HealthCheckResult> CheckHealthAsync(
         HealthCheckContext context,
         CancellationToken cancellationToken = default)

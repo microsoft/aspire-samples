@@ -19,8 +19,13 @@ app.MapPost("/subscribe", async (
     MailKitClientFactory mailKit,
     CancellationToken cancellationToken) =>
 {
+    if (!TryCreateRecipient(request.Email, out var recipient))
+    {
+        return Results.BadRequest(new { request.Email, Error = "A valid email address is required." });
+    }
+
     var message = CreateMessage(
-        request.Email,
+        recipient,
         "Welcome to the Aspire newsletter",
         "You are now subscribed to the Aspire newsletter.");
     var client = await mailKit.GetSmtpClientAsync(cancellationToken);
@@ -35,8 +40,13 @@ app.MapPost("/unsubscribe", async (
     MailKitClientFactory mailKit,
     CancellationToken cancellationToken) =>
 {
+    if (!TryCreateRecipient(request.Email, out var recipient))
+    {
+        return Results.BadRequest(new { request.Email, Error = "A valid email address is required." });
+    }
+
     var message = CreateMessage(
-        request.Email,
+        recipient,
         "Aspire newsletter subscription ended",
         "You have been unsubscribed from the Aspire newsletter.");
     var client = await mailKit.GetSmtpClientAsync(cancellationToken);
@@ -48,11 +58,22 @@ app.MapPost("/unsubscribe", async (
 
 app.Run();
 
-static MimeMessage CreateMessage(string email, string subject, string body)
+static bool TryCreateRecipient(string? email, [System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out MailboxAddress? recipient)
+{
+    if (string.IsNullOrWhiteSpace(email))
+    {
+        recipient = null;
+        return false;
+    }
+
+    return MailboxAddress.TryParse(email, out recipient);
+}
+
+static MimeMessage CreateMessage(MailboxAddress recipient, string subject, string body)
 {
     var message = new MimeMessage();
     message.From.Add(new MailboxAddress("Aspire Newsletter", "newsletter@example.com"));
-    message.To.Add(MailboxAddress.Parse(email));
+    message.To.Add(recipient);
     message.Subject = subject;
     message.Body = new TextPart("plain") { Text = body };
     return message;

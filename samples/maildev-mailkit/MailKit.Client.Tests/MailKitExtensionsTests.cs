@@ -60,6 +60,49 @@ public sealed class MailKitExtensionsTests
     }
 
     [Fact]
+    public void AddMailKitClientBindsEachHealthCheckToItsOwnConnection()
+    {
+        var builder = Host.CreateApplicationBuilder();
+        builder.Configuration["ConnectionStrings:primary"] = "smtp://localhost:1025";
+        builder.Configuration["ConnectionStrings:secondary"] = "smtp://localhost:1026";
+
+        builder.AddMailKitClient("primary");
+        builder.AddMailKitClient("secondary");
+
+        using var provider = builder.Services.BuildServiceProvider();
+        var registrations = provider
+            .GetRequiredService<IOptions<HealthCheckServiceOptions>>().Value.Registrations;
+
+        var primary = Assert.Single(registrations, registration => registration.Name == "MailKit_primary");
+        var secondary = Assert.Single(registrations, registration => registration.Name == "MailKit_secondary");
+
+        var primaryCheck = Assert.IsType<MailKitHealthCheck>(primary.Factory(provider));
+        var secondaryCheck = Assert.IsType<MailKitHealthCheck>(secondary.Factory(provider));
+
+        Assert.Equal(new Uri("smtp://localhost:1025"), primaryCheck.Factory.Endpoint);
+        Assert.Equal(new Uri("smtp://localhost:1026"), secondaryCheck.Factory.Endpoint);
+    }
+
+    [Fact]
+    public async Task HealthCheckReportsUnhealthyWhenEndpointMissing()
+    {
+        var builder = Host.CreateApplicationBuilder();
+
+        builder.AddMailKitClient("maildev");
+
+        using var provider = builder.Services.BuildServiceProvider();
+        var registration = Assert.Single(
+            provider.GetRequiredService<IOptions<HealthCheckServiceOptions>>().Value.Registrations);
+
+        var check = registration.Factory(provider);
+        var result = await check.CheckHealthAsync(
+            new HealthCheckContext { Registration = registration },
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal(HealthStatus.Unhealthy, result.Status);
+    }
+
+    [Fact]
     public void FactoryValidationIsDeferredUntilResolution()
     {
         var builder = Host.CreateApplicationBuilder();

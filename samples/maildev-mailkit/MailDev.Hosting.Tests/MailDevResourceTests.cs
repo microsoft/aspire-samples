@@ -59,7 +59,7 @@ public sealed class MailDevResourceTests
         Assert.True(maildev.Resource.PasswordParameter.Secret);
         Assert.Null(maildev.Resource.UsernameParameter);
         Assert.Equal(
-            "Endpoint=smtp://{maildev.bindings.smtp.host}:{maildev.bindings.smtp.port};Username=mail-dev;Password={maildev-password.value}",
+            "Endpoint=smtp://{maildev.bindings.smtp.host}:{maildev.bindings.smtp.port};Username=mail-dev;******",
             maildev.Resource.ConnectionStringExpression.ValueExpression);
     }
 
@@ -78,7 +78,48 @@ public sealed class MailDevResourceTests
         Assert.Same(username.Resource, maildev.Resource.UsernameParameter);
         Assert.Same(password.Resource, maildev.Resource.PasswordParameter);
         Assert.Equal(
-            "Endpoint=smtp://{maildev.bindings.smtp.host}:{maildev.bindings.smtp.port};Username={smtp-user.value};Password={smtp-password.value}",
+            "Endpoint=smtp://{maildev.bindings.smtp.host}:{maildev.bindings.smtp.port};Username={smtp-user.value};******",
             maildev.Resource.ConnectionStringExpression.ValueExpression);
+    }
+
+    [Fact]
+    public void AddMailDevIsExcludedFromManifest()
+    {
+        var builder = DistributedApplication.CreateBuilder();
+
+        var maildev = builder.AddMailDev("maildev");
+
+        var annotation = Assert.Single(
+            maildev.Resource.Annotations.OfType<ManifestPublishingCallbackAnnotation>());
+        Assert.Null(annotation.Callback);
+    }
+
+    [Fact]
+    public void AddMailDevAddsHttpReadinessHealthCheck()
+    {
+        var builder = DistributedApplication.CreateBuilder();
+
+        var maildev = builder.AddMailDev("maildev");
+
+        Assert.NotEmpty(maildev.Resource.Annotations.OfType<HealthCheckAnnotation>());
+    }
+
+    [Fact]
+    public void AddMailDevExposesStructuredConnectionProperties()
+    {
+        var builder = DistributedApplication.CreateBuilder();
+
+        var maildev = builder.AddMailDev("maildev");
+
+        var properties = maildev.Resource.GetConnectionProperties()
+            .ToDictionary(property => property.Key, property => property.Value.ValueExpression);
+
+        Assert.Equal("{maildev.bindings.smtp.host}", properties["Host"]);
+        Assert.Equal("{maildev.bindings.smtp.port}", properties["Port"]);
+        Assert.Equal("mail-dev", properties["Username"]);
+        Assert.Equal("{maildev-password.value}", properties["Password"]);
+        Assert.Equal(
+            "smtp://{maildev.bindings.smtp.host}:{maildev.bindings.smtp.port}",
+            properties["Uri"]);
     }
 }

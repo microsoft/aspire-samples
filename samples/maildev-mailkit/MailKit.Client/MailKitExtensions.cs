@@ -70,12 +70,15 @@ public static class MailKitExtensions
 
         if (!settings.DisableHealthChecks)
         {
+            // Bind the check to this connection's own settings. Resolving the
+            // factory from DI would return the last non-keyed registration, so
+            // every non-keyed check would probe the same endpoint. Constructing
+            // the factory here also never throws, letting MailKitHealthCheck
+            // report Unhealthy for a missing endpoint instead of a 500.
+            var healthCheckFactory = new MailKitClientFactory(settings);
             builder.Services.AddHealthChecks().Add(new HealthCheckRegistration(
                 $"MailKit_{connectionName}",
-                serviceProvider => new MailKitHealthCheck(
-                    serviceKey is null
-                        ? serviceProvider.GetRequiredService<MailKitClientFactory>()
-                        : serviceProvider.GetRequiredKeyedService<MailKitClientFactory>(serviceKey)),
+                _ => new MailKitHealthCheck(healthCheckFactory),
                 failureStatus: null,
                 tags: []));
         }

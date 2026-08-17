@@ -51,6 +51,8 @@ public static class MailDevResourceBuilderExtensions
             {
                 context.EnvironmentVariables[UsernameEnvironmentVariable] = resource.UsernameReference;
                 context.EnvironmentVariables[PasswordEnvironmentVariable] = resource.PasswordParameter;
-            });
+            })
+            .WithHttpHealthCheck("/healthz", endpointName: MailDevResource.HttpEndpointName)
+            .ExcludeFromManifest();
     }
 }
