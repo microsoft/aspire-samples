@@ -1,6 +1,6 @@
 id: auto.merge
 name: GitOps.PullRequestIssueManagement
-description: Auto-merge pull requests labeled 'auto-merge' once CI is green
+description: Auto-merge pull requests labeled 'auto-merge' after the required CI Gate passes
 owner:
 resource: repository
 disabled: false
@@ -13,7 +13,8 @@ configuration:
           Approve and auto-squash-merge PRs to main labeled 'auto-merge'.
           The label is only applied automatically to Dependabot PRs (see label-prs.yml),
           so this effectively gates auto-merge to bot-authored or maintainer-opted-in PRs.
-          GitHub will only complete the merge once all required status checks pass.
+          Branch protection requires CI Gate to pass against the latest main,
+          so GitHub will only complete the merge after current validation succeeds.
         triggerOnOwnActions: true
         if:
           - payloadType: Pull_Request
@@ -25,7 +26,7 @@ configuration:
           - enableAutoMerge:
               mergeMethod: Squash
           - approvePullRequest:
-              comment: "Approved; this PR will merge when all required status checks pass."
+              comment: "Approved; this PR will merge after the required CI Gate passes."
 
       - description: Disable auto-merge when the 'auto-merge' label is removed
         if:
