@@ -4,9 +4,8 @@
     "language": "typescript/nodejs"
   },
   "sdk": {
-    "version": "13.5.0"
+    "version": "13.4.0"
   },
-  "channel": "staging",
   "packages": {
     "MailDev.Hosting": "MailDev.Hosting/MailDev.Hosting.csproj"
   }

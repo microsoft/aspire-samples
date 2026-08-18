@@ -6,10 +6,12 @@
     <Nullable>enable</Nullable>
     <EnableAspireIntegrationAnalyzers>true</EnableAspireIntegrationAnalyzers>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <!-- The Aspire Type System export attribute is an evaluation feature in 13.4.x; opt in explicitly. -->
+    <NoWarn>$(NoWarn);ASPIREATS001</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Aspire.Hosting" Version="13.5.0" />
+    <PackageReference Include="Aspire.Hosting" Version="13.4.0" />
   </ItemGroup>
 
 </Project>
