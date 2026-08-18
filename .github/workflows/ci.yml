@@ -22,7 +22,7 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
-  ASPIRE_CLI_VERSION: '13.4.6'
+  ASPIRE_CLI_VERSION: '13.5.0'
   NODE_VERSION: '24.18.0'
 
 jobs:
