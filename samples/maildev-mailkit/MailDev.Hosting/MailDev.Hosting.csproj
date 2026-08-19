@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <EnableAspireIntegrationAnalyzers>true</EnableAspireIntegrationAnalyzers>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <!-- The Aspire Type System export attribute is an evaluation feature in 13.4.x; opt in explicitly. -->
+    <NoWarn>$(NoWarn);ASPIREATS001</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Aspire.Hosting" Version="13.5.0" />
+  </ItemGroup>
+
+</Project>

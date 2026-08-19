@@ -1,0 +1,12 @@
+{
+  "appHost": {
+    "path": "apphost.mts",
+    "language": "typescript/nodejs"
+  },
+  "sdk": {
+    "version": "13.5.0"
+  },
+  "packages": {
+    "MailDev.Hosting": "MailDev.Hosting/MailDev.Hosting.csproj"
+  }
+}

@@ -1,0 +1,9 @@
+<Solution>
+  <Project Path="CSharpAppHost/CSharpAppHost.csproj" />
+  <Project Path="MailDev.Hosting/MailDev.Hosting.csproj" />
+  <Project Path="MailDev.Hosting.Tests/MailDev.Hosting.Tests.csproj" />
+  <Project Path="MailKit.Client/MailKit.Client.csproj" />
+  <Project Path="MailKit.Client.Tests/MailKit.Client.Tests.csproj" />
+  <Project Path="NewsletterService/NewsletterService.csproj" />
+  <Project Path="ServiceDefaults/ServiceDefaults.csproj" />
+</Solution>

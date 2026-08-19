@@ -38,6 +38,7 @@ Samples for [Aspire](https://aspire.dev).
 | Sample | Workload languages | AppHost | Deploy | Description |
 | --- | --- | --- | --- | --- |
 | [Integrating a Go App](./samples/container-build) | Go | C# AppHost | Docker Compose | Builds and runs a Go Gin app from a Dockerfile with Aspire. |
+| [Custom MailDev and MailKit integrations](./samples/maildev-mailkit) | C#, TypeScript | TypeScript AppHost | Run only | Authors custom hosting and client integrations with ATS-generated TypeScript APIs. |
 | [Go API](./samples/golang-api) | Go | TypeScript AppHost | Docker Compose | Go + chi API with Aspire-managed run and publish flows. |
 | [Python FastAPI + PostgreSQL](./samples/python-fastapi-postgres) | Python | TypeScript AppHost | Docker Compose | FastAPI CRUD API wired to PostgreSQL and pgAdmin. |
 | [Python OpenAI Agent](./samples/python-openai-agent) | Python | TypeScript AppHost | Docker Compose | FastAPI AI agent sample with OpenAI integration. |

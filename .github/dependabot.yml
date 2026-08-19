@@ -46,12 +46,19 @@ updates:
           - "Microsoft.Orleans*"
     labels:
       - area-engineering-systems
+    cooldown:
+      default-days: 7
 
   - package-ecosystem: npm
     directory: "samples/aspire-with-javascript/AspireJavaScript.Angular"
     schedule:
       interval: weekly
     open-pull-requests-limit: 1
+    ignore:
+      # Angular 22 requires TypeScript >=6.0 <6.1. Revisit for the next Angular major.
+      - dependency-name: "typescript"
+        update-types:
+          - "version-update:semver-major"
     groups:
       angular-core:
         patterns:
@@ -71,6 +78,8 @@ updates:
           - "*"
     labels:
       - area-engineering-systems
+    cooldown:
+      default-days: 7
 
   - package-ecosystem: npm
     directory: "samples/aspire-with-javascript/AspireJavaScript.React"
@@ -96,6 +105,8 @@ updates:
           - "*"
     labels:
       - area-engineering-systems
+    cooldown:
+      default-days: 7
 
   - package-ecosystem: npm
     directory: "samples/aspire-with-javascript/AspireJavaScript.Vue"
@@ -125,6 +136,8 @@ updates:
           - "*"
     labels:
       - area-engineering-systems
+    cooldown:
+      default-days: 7
 
   - package-ecosystem: npm
     directory: "samples/aspire-with-javascript/AspireJavaScript.Vite"
@@ -148,12 +161,18 @@ updates:
           - "*"
     labels:
       - area-engineering-systems
+    cooldown:
+      default-days: 7
 
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: daily
     open-pull-requests-limit: 15
+    groups:
+      github-actions:
+        patterns:
+          - "*"
     labels:
       - area-engineering-systems
     cooldown:
