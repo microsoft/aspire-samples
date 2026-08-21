@@ -46,6 +46,8 @@ updates:
           - "Microsoft.Orleans*"
     labels:
       - area-engineering-systems
+    cooldown:
+      default-days: 7
 
   - package-ecosystem: npm
     directory: "samples/aspire-with-javascript/AspireJavaScript.Angular"
@@ -76,6 +78,8 @@ updates:
           - "*"
     labels:
       - area-engineering-systems
+    cooldown:
+      default-days: 7
 
   - package-ecosystem: npm
     directory: "samples/aspire-with-javascript/AspireJavaScript.React"
@@ -101,6 +105,8 @@ updates:
           - "*"
     labels:
       - area-engineering-systems
+    cooldown:
+      default-days: 7
 
   - package-ecosystem: npm
     directory: "samples/aspire-with-javascript/AspireJavaScript.Vue"
@@ -130,6 +136,8 @@ updates:
           - "*"
     labels:
       - area-engineering-systems
+    cooldown:
+      default-days: 7
 
   - package-ecosystem: npm
     directory: "samples/aspire-with-javascript/AspireJavaScript.Vite"
@@ -153,11 +161,19 @@ updates:
           - "*"
     labels:
       - area-engineering-systems
+    cooldown:
+      default-days: 7
 
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: daily
     open-pull-requests-limit: 15
+    groups:
+      github-actions:
+        patterns:
+          - "*"
     labels:
       - area-engineering-systems
+    cooldown:
+      default-days: 7

@@ -52,7 +52,7 @@ jobs:
   
     - name: Install Docker (latest version)
       if: runner.os == 'Linux'
-      uses: docker/setup-docker-action@77e84dbf09b47d1e29270283c22f16145aa85ca1 #v5.4.0
+      uses: docker/setup-docker-action@77e84dbf09b47d1e29270283c22f16145aa85ca1 # v5.4.0
 
     - name: Install Azure Functions Core Tools
       if: runner.os == 'Linux'
