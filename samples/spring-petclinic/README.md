@@ -1,5 +1,7 @@
 # Spring Petclinic with Angular, Spring Boot, and PostgreSQL
 
+![Screenshot of the Spring Petclinic Angular frontend](./images/spring-petclinic.png)
+
 A compact Petclinic-style application demonstrating the official Aspire Java hosting
 integration from a TypeScript AppHost.
 
