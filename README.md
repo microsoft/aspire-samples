@@ -30,6 +30,7 @@ Samples for [Aspire](https://aspire.dev).
 | [Integrating Python Apps](./samples/aspire-with-python) | Python, JavaScript | C# AppHost | Run only | FastAPI backend + React frontend integrated with Aspire. |
 | [Vite + C# + PostgreSQL](./samples/vite-csharp-postgres) | C#, JavaScript, TypeScript | TypeScript AppHost | Docker Compose | React frontend + C# API + PostgreSQL in a single Aspire app. |
 | [Vite + React + FastAPI](./samples/vite-react-fastapi) | Python, JavaScript, TypeScript | TypeScript AppHost | Docker Compose | React frontend + FastAPI backend behind YARP. |
+| [Spring Petclinic](./samples/spring-petclinic) | Java, TypeScript | TypeScript AppHost | Run only | Angular frontend + Spring Boot API + PostgreSQL using the official Java hosting integration. |
 | [Polyglot Task Queue](./samples/polyglot-task-queue) | JavaScript, Python, C# | TypeScript AppHost | Docker Compose | React + Node API + Python/C# workers coordinated through RabbitMQ. |
 | [RAG Document Q&A](./samples/rag-document-qa-svelte) | Python, JavaScript | TypeScript AppHost | Run only | Svelte frontend + FastAPI + Qdrant + OpenAI. |
 

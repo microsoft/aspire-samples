@@ -22,7 +22,7 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
-  ASPIRE_CLI_VERSION: '13.5.0'
+  ASPIRE_CLI_VERSION: '13.6.0-preview.1.26473.12'
   NODE_VERSION: '24.18.0'
 
 jobs:
@@ -75,6 +75,11 @@ jobs:
       with:
         node-version: ${{ env.NODE_VERSION }}
 
+    - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
+      with:
+        distribution: temurin
+        java-version: '21'
+
     - name: Install Aspire CLI (Ubuntu)
       if: runner.os == 'Linux'
       shell: bash
@@ -116,6 +121,13 @@ jobs:
       if: runner.os == 'Linux'
       shell: bash
       run: bash ./build/validate-javascript.sh
+
+    - name: Test Spring Petclinic API
+      shell: pwsh
+      working-directory: ./samples/spring-petclinic/api
+      run: |
+        $mavenWrapper = if ($IsWindows) { '.\mvnw.cmd' } else { './mvnw' }
+        & $mavenWrapper test
 
     - name: Build (Ubuntu)
       if: runner.os == 'Linux'
