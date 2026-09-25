@@ -6,6 +6,24 @@ Samples for [Aspire](https://aspire.dev).
 
 [Aspire](https://aspire.dev) is a developer-first toolset that streamlines integrating front-ends, APIs, containers, and databases with your apps. [Learn more about Aspire here](https://aspire.dev/get-started/what-is-aspire/).
 
+## Aspire version
+
+These samples use Aspire **13.6.0-preview.1.26474.10**. The repository's
+[`nuget.config`](./nuget.config) restores Aspire packages from the public Azure
+Artifacts `dotnet9` feed; other packages continue to come from NuGet.org.
+No feed authentication is required.
+
+Install the matching Aspire CLI before building or running the samples:
+
+```bash
+curl -sSL https://aspire.dev/install.sh | bash -s -- --version 13.6.0-preview.1.26474.10
+```
+
+On Windows, download `https://aspire.dev/install.ps1` and run it with
+`-Version 13.6.0-preview.1.26474.10`. Dev Containers and CI install this version
+automatically. If copying a sample outside this repository, also copy the
+repository's `nuget.config` so its prerelease packages can be restored.
+
 ## Browse by scenario
 
 - [Full-stack JavaScript / TypeScript](#full-stack-javascript--typescript)

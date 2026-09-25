@@ -1,4 +1,4 @@
-<Project Sdk="Aspire.AppHost.Sdk/13.5.0">
+<Project Sdk="Aspire.AppHost.Sdk/13.6.0-preview.1.26474.10">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -9,12 +9,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Aspire.Hosting.Redis" Version="13.5.3" />
-    <PackageReference Include="Aspire.Hosting.Orleans" Version="13.5.3" />
+    <PackageReference Include="Aspire.Hosting.Redis" Version="13.6.0-preview.1.26474.10" />
+    <PackageReference Include="Aspire.Hosting.Orleans" Version="13.6.0-preview.1.26474.10" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Aspire.Hosting.AppHost" Version="13.5.3" />
+    <PackageReference Include="Aspire.Hosting.AppHost" Version="13.6.0-preview.1.26474.10" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.12" />
     <ProjectReference Include="..\OrleansVoting.Service\OrleansVoting.Service.csproj" />
   </ItemGroup>
