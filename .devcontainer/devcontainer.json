@@ -38,5 +38,5 @@
 			}
 		}
 	},
-	"postStartCommand": "curl -sSL https://aspire.dev/install.sh | bash"
+	"postStartCommand": "curl -sSL https://aspire.dev/install.sh | bash -s -- --version 13.6.0-preview.1.26474.10"
 }

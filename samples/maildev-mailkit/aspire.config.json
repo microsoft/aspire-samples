@@ -4,7 +4,7 @@
     "language": "typescript/nodejs"
   },
   "sdk": {
-    "version": "13.5.0"
+    "version": "13.6.0-preview.1.26474.10"
   },
   "packages": {
     "MailDev.Hosting": "MailDev.Hosting/MailDev.Hosting.csproj"
