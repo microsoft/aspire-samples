@@ -121,6 +121,10 @@ build via `ASPIRE_CLI`. Internal npm restores use `eng/internal/.npmrc` through
 This selects Aspire's `dotnet-public-npm` Azure DevOps feed. The build identity
 needs Feed and Upstream Reader (Collaborator) access to save packages that have
 not yet been mirrored; contributor and public CI npm settings are unchanged.
+The internal pipeline also replaces the legacy `ms-feed-25` npm registry prefix
+in its checkout's sample lockfiles with the configured registry. Package versions
+and integrity hashes are preserved. npm redirects `registry.npmjs.org` lockfile
+URLs to the configured registry by default; contributor lockfiles are not changed.
 
 ## Code of conduct
 

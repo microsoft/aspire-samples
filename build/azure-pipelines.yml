@@ -83,6 +83,22 @@ extends:
             displayName: Authenticate Azure DevOps npm feed
             inputs:
               workingFile: $(Build.SourcesDirectory)\eng\internal\.npmrc
+          - powershell: |
+              $registry = npm config get registry
+              if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+              $registry = $registry.TrimEnd('/') + '/'
+              $legacyRegistry = 'https://ms-feed-25.pkgs.visualstudio.com/1es-public/_packaging/npm-public/npm/registry/'
+
+              # npm redirects npmjs.org URLs by default, but retains other registry URLs.
+              Get-ChildItem -LiteralPath "$(Build.SourcesDirectory)\samples" -Filter package-lock.json -Recurse -File | ForEach-Object {
+                  $content = [System.IO.File]::ReadAllText($_.FullName)
+                  $updated = $content.Replace($legacyRegistry, $registry)
+                  if ($updated -cne $content) {
+                      [System.IO.File]::WriteAllText($_.FullName, $updated)
+                      Write-Host "Updated npm registry in $($_.FullName)"
+                  }
+              }
+            displayName: Normalize legacy npm registry URLs
         - powershell: |
               $toolPath = "$(Agent.TempDirectory)\aspire-cli"
               dotnet tool install Aspire.Cli --version "$(AspireCliVersion)" --tool-path "$toolPath" --configfile "$(Build.SourcesDirectory)\nuget.config"
