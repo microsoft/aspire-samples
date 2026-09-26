@@ -96,6 +96,23 @@ See the following links for more information on best practices and security cons
 
 We welcome contributions to this repository of samples related to official Aspire features and integrations (i.e. those pieces whose code lives in the [Aspire repo](https://github.com/dotnet/aspire) and that ship from the [**Aspire** NuGet account](https://www.nuget.org/profiles/aspire)). It's generally a good idea to [log an issue](https://github.com/dotnet/aspire-samples/issues/new/choose) first to discuss any idea for a sample with the team before sending a pull request.
 
+### NuGet feeds
+
+Local restores and public CI use nuget.org through the root `nuget.config`.
+The internal Azure DevOps pipeline replaces that file in its checkout with
+[`eng/internal/NuGet.config`](./eng/internal/NuGet.config) before building.
+This makes the build SDK and nested sample restores use the `dotnet-public`
+Azure DevOps mirror, also used by [Aspire](https://github.com/microsoft/aspire/blob/main/NuGet.config),
+without changing the default configuration for contributors. Only vulnerability
+auditing contacts `data.nuget.org`, which does not serve packages.
+Package source mapping keeps packages on the Azure DevOps mirror even if the
+Aspire CLI adds channel sources. Missing packages must be made available on an
+approved Azure DevOps feed; restores do not fall back to nuget.org.
+
+The override applies to the entire build rather than a separate `dotnet restore`
+step: `build/Build.proj` launches additional restores for individual samples,
+including Aspire CLI restores, even when `build.cmd` receives `--no-restore`.
+
 ## Code of conduct
 
 This project has adopted the code of conduct defined by the [Contributor Covenant](https://contributor-covenant.org) to clarify expected behavior in our community. For more information, see the [.NET Foundation Code of Conduct](https://www.dotnetfoundation.org/code-of-conduct).

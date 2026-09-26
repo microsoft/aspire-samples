@@ -55,6 +55,10 @@ extends:
         steps:
         - checkout: self
           clean: true
+        - ${{ if ne(variables['System.TeamProject'], 'public') }}:
+          - powershell: |
+              Copy-Item -LiteralPath "$(Build.SourcesDirectory)\eng\internal\NuGet.config" -Destination "$(Build.SourcesDirectory)\nuget.config" -Force -ErrorAction Stop
+            displayName: Use Azure DevOps NuGet feeds
         - task: UseDotNet@2
           displayName: Install global.json SDK
           inputs:
