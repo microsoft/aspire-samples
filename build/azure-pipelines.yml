@@ -1,4 +1,9 @@
 variables:
+  # Keep these aligned with .github/workflows/ci.yml.
+  - name: AspireCliVersion
+    value: '13.5.0'
+  - name: NodeVersion
+    value: '24.18.0'
   - ${{ if eq(variables['System.TeamProject'], 'public') }}:
     - name: PoolProvider
       value: NetCore-Public
@@ -51,6 +56,11 @@ extends:
       jobs:
       - job: Windows
         timeoutInMinutes: 60
+        variables:
+          DOTNET_CLI_TELEMETRY_OPTOUT: 'true'
+          ASPIRE_CLI_TELEMETRY_OPTOUT: 'true'
+          ${{ if ne(variables['System.TeamProject'], 'public') }}:
+            NPM_CONFIG_USERCONFIG: $(Build.SourcesDirectory)\eng\internal\.npmrc
         
         steps:
         - checkout: self
@@ -64,6 +74,26 @@ extends:
           inputs:
             useGlobalJson: true
             workingDirectory: $(Build.SourcesDirectory)/build
+        - task: NodeTool@0
+          displayName: Install Node.js
+          inputs:
+            versionSpec: $(NodeVersion)
+        - ${{ if ne(variables['System.TeamProject'], 'public') }}:
+          - task: npmAuthenticate@0
+            displayName: Authenticate Azure DevOps npm feed
+            inputs:
+              workingFile: $(Build.SourcesDirectory)\eng\internal\.npmrc
+        - powershell: |
+              $toolPath = "$(Agent.TempDirectory)\aspire-cli"
+              dotnet tool install Aspire.Cli --version "$(AspireCliVersion)" --tool-path "$toolPath" --configfile "$(Build.SourcesDirectory)\nuget.config"
+              if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+              $aspirePath = Join-Path $toolPath 'aspire.cmd'
+              & $aspirePath --version
+              if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+              Write-Host "##vso[task.setvariable variable=ASPIRE_CLI]$aspirePath"
+          displayName: Install Aspire CLI
         - powershell: |
               $(Build.SourcesDirectory)/build/build.cmd
           displayName: build.cmd

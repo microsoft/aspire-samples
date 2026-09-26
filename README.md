@@ -113,6 +113,15 @@ The override applies to the entire build rather than a separate `dotnet restore`
 step: `build/Build.proj` launches additional restores for individual samples,
 including Aspire CLI restores, even when `build.cmd` receives `--no-restore`.
 
+The Azure DevOps pipeline installs Node.js and the Aspire CLI before invoking
+`build.cmd`, using the same pinned versions as public CI. The CLI is installed
+as a .NET tool through the checkout's NuGet configuration and passed to the
+build via `ASPIRE_CLI`. Internal npm restores use `eng/internal/.npmrc` through
+`NPM_CONFIG_USERCONFIG`, authenticated with the build identity by `npmAuthenticate`.
+This selects Aspire's `dotnet-public-npm` Azure DevOps feed. The build identity
+needs Feed and Upstream Reader (Collaborator) access to save packages that have
+not yet been mirrored; contributor and public CI npm settings are unchanged.
+
 ## Code of conduct
 
 This project has adopted the code of conduct defined by the [Contributor Covenant](https://contributor-covenant.org) to clarify expected behavior in our community. For more information, see the [.NET Foundation Code of Conduct](https://www.dotnetfoundation.org/code-of-conduct).
