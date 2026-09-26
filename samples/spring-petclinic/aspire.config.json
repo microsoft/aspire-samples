@@ -1,0 +1,15 @@
+{
+  "appHost": {
+    "path": "apphost.mts",
+    "language": "typescript/nodejs"
+  },
+  "sdk": {
+    "version": "14.0.0-preview.1.26474.12"
+  },
+  "channel": "staging",
+  "packages": {
+    "Aspire.Hosting.Java": "14.0.0-preview.1.26474.12",
+    "Aspire.Hosting.JavaScript": "14.0.0-preview.1.26474.12",
+    "Aspire.Hosting.PostgreSQL": "14.0.0-preview.1.26474.12"
+  }
+}

@@ -22,7 +22,7 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
-  ASPIRE_CLI_VERSION: '13.5.0'
+  ASPIRE_CLI_VERSION: '14.0.0-preview.1.26474.12'
   NODE_VERSION: '24.18.0'
 
 jobs:
@@ -75,6 +75,11 @@ jobs:
       with:
         node-version: ${{ env.NODE_VERSION }}
 
+    - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
+      with:
+        distribution: temurin
+        java-version: '21'
+
     - name: Install Aspire CLI (Ubuntu)
       if: runner.os == 'Linux'
       shell: bash
@@ -84,6 +89,8 @@ jobs:
         echo "$install_path" >> "$GITHUB_PATH"
         echo "ASPIRE_CLI=$install_path/aspire" >> "$GITHUB_ENV"
         "$install_path/aspire" --version
+        "$install_path/aspire" config set -g overrideStagingFeed \
+          'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet9/nuget/v3/index.json'
 
     - name: Install Aspire CLI (Windows)
       if: runner.os == 'Windows'
@@ -100,6 +107,7 @@ jobs:
         "ASPIRE_CLI=$aspirePath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
         & $aspirePath --version
+        & $aspirePath config set -g overrideStagingFeed 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet9/nuget/v3/index.json'
 
     - name: Install & trust dev-certs
       id: install-dev-certs
@@ -116,6 +124,13 @@ jobs:
       if: runner.os == 'Linux'
       shell: bash
       run: bash ./build/validate-javascript.sh
+
+    - name: Test Spring Petclinic API
+      shell: pwsh
+      working-directory: ./samples/spring-petclinic/api
+      run: |
+        $mavenWrapper = if ($IsWindows) { '.\mvnw.cmd' } else { './mvnw' }
+        & $mavenWrapper test
 
     - name: Build (Ubuntu)
       if: runner.os == 'Linux'
