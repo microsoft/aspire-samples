@@ -28,12 +28,21 @@ The API persists data in an Aspire-managed PostgreSQL database.
 
 ## Prerequisites
 
-- Aspire CLI 13.6 or later
+- Aspire CLI **13.6.0** from the [repository's pinned staging installer](../../build/install-aspire.sh), matching this sample's SDK/packages
 - Java Development Kit 21 or later
 - Node.js 20.19, 22.13, or 24 or later
 - Docker Desktop or another Docker-compatible container runtime
 
+Follow the [root installation instructions](../../README.md#aspire-version) to install
+the matching staging CLI. The CLI/SDK and other integrations use `13.6.0`, while the
+Java integration uses `13.6.0-preview.1.26475.12` from the same build. These are staging
+artifacts, not a GA release, and the public version installer does not select this
+build. If copying this sample outside the repository, also copy the root `nuget.config`
+so its staging packages can be restored.
+
 ## Run
+
+From this sample's directory:
 
 ```bash
 aspire start
@@ -49,8 +58,8 @@ waits for it to become ready, starts the Spring Boot API, and then starts Angula
 - `frontend` - Angular single-page application
 
 On Windows, `api/tools/run-mvnw.cmd` preserves the wrapper's directory-qualified path.
-This works around a 13.6 preview defect where the Java integration launches `mvnw.cmd`
-without `.\`, which Windows does not resolve from the working directory.
+This works around a defect in the pinned staging build where the Java integration
+launches `mvnw.cmd` without `.\`, which Windows does not resolve from the working directory.
 
 ## Security notes
 

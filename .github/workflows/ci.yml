@@ -22,7 +22,6 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
-  ASPIRE_CLI_VERSION: '14.0.0-preview.1.26474.12'
   NODE_VERSION: '24.18.0'
 
 jobs:
@@ -80,34 +79,17 @@ jobs:
         distribution: temurin
         java-version: '21'
 
-    - name: Install Aspire CLI (Ubuntu)
-      if: runner.os == 'Linux'
+    - name: Install pinned Aspire staging CLI
       shell: bash
       run: |
         install_path="$RUNNER_TEMP/aspire-cli"
-        curl -sSL https://aspire.dev/install.sh | bash -s -- --install-path "$install_path" --version "$ASPIRE_CLI_VERSION" --skip-path
+        bash ./build/install-aspire.sh "$install_path"
+        executable=aspire
+        if [ "$RUNNER_OS" = "Windows" ]; then
+          executable=aspire.exe
+        fi
         echo "$install_path" >> "$GITHUB_PATH"
-        echo "ASPIRE_CLI=$install_path/aspire" >> "$GITHUB_ENV"
-        "$install_path/aspire" --version
-        "$install_path/aspire" config set -g overrideStagingFeed \
-          'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet9/nuget/v3/index.json'
-
-    - name: Install Aspire CLI (Windows)
-      if: runner.os == 'Windows'
-      shell: pwsh
-      run: |
-        $installScript = Join-Path $env:RUNNER_TEMP 'aspire-install.ps1'
-        $installPath = Join-Path $env:RUNNER_TEMP 'aspire-cli'
-        $aspirePath = Join-Path $installPath 'aspire.exe'
-
-        Invoke-RestMethod 'https://aspire.dev/install.ps1' -OutFile $installScript
-        & $installScript -InstallPath $installPath -Version $env:ASPIRE_CLI_VERSION -SkipPath
-
-        $installPath | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-        "ASPIRE_CLI=$aspirePath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-
-        & $aspirePath --version
-        & $aspirePath config set -g overrideStagingFeed 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet9/nuget/v3/index.json'
+        echo "ASPIRE_CLI=$install_path/$executable" >> "$GITHUB_ENV"
 
     - name: Install & trust dev-certs
       id: install-dev-certs

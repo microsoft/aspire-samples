@@ -1,0 +1,13 @@
+{
+  "appHost": {
+    "path": "apphost.cs"
+  },
+  "sdk": {
+    "version": "13.6.0"
+  },
+  "channel": "staging",
+  "overrideStagingFeed": "https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-microsoft-aspire-34db30a7/nuget/v3/index.json",
+  "features": {
+    "terminalCommandsEnabled": "true"
+  }
+}

@@ -6,11 +6,37 @@ Samples for [Aspire](https://aspire.dev).
 
 [Aspire](https://aspire.dev) is a developer-first toolset that streamlines integrating front-ends, APIs, containers, and databases with your apps. [Learn more about Aspire here](https://aspire.dev/get-started/what-is-aspire/).
 
+## Aspire version
+
+These samples use Aspire **13.6.0 staging**, from build
+`13.6.0-preview.1.26475.12` (commit `34db30a7d3733229da64a403dfc4e4e4d7a1a43b`).
+Despite the stable-shaped package version, this is not a GA release.
+The repository's [`nuget.config`](./nuget.config) restores Aspire packages from
+the public, build-specific Azure Artifacts `darc-pub-microsoft-aspire-34db30a7`
+feed; other packages continue to come from NuGet.org. No feed authentication is required.
+TypeScript AppHost configurations also pin the staging channel to this exact feed.
+
+Install the matching Aspire CLI before building or running the samples:
+
+```bash
+bash ./build/install-aspire.sh "$HOME/.aspire/bin"
+export PATH="$HOME/.aspire/bin:$PATH"
+```
+
+Run these commands from the repository root (use Git Bash on Windows).
+The installer downloads immutable staging archives, verifies their SHA512
+checksums and CLI commit identity, and leaves PATH unchanged. The regular
+`aspire.dev/install.sh --version 13.6.0` targets GA releases, not this staging build.
+Dev Containers and CI use the same pinned installer automatically.
+If copying a sample outside this repository, also copy the repository's
+`nuget.config` so its staging packages can be restored.
+
 ## Browse by scenario
 
 - [Full-stack JavaScript / TypeScript](#full-stack-javascript--typescript)
 - [Polyglot full-stack](#polyglot-full-stack)
 - [Backend integrations by language](#backend-integrations-by-language)
+- [Interactive terminals](#interactive-terminals)
 - [Cloud / AI / event-driven](#cloud--ai--event-driven)
 - [.NET + frontend and platform](#net--frontend-and-platform)
 
@@ -44,6 +70,15 @@ Samples for [Aspire](https://aspire.dev).
 | [Python FastAPI + PostgreSQL](./samples/python-fastapi-postgres) | Python | TypeScript AppHost | Docker Compose | FastAPI CRUD API wired to PostgreSQL and pgAdmin. |
 | [Python OpenAI Agent](./samples/python-openai-agent) | Python | TypeScript AppHost | Docker Compose | FastAPI AI agent sample with OpenAI integration. |
 | [Python Script](./samples/python-script) | Python | TypeScript AppHost | Run only | Minimal Python script sample using a file-based AppHost. |
+
+### Interactive terminals
+
+| Sample | Workload languages | AppHost | Deploy | Description |
+| --- | --- | --- | --- | --- |
+| [Terminal basics: C#](./samples/terminals/basics-csharp) | C# | C# AppHost | Run only | Slumber REST TUI + notes API + Redis REPL using the repository's staged Aspire 13.6 build. |
+| [Terminal basics: TypeScript](./samples/terminals/basics-typescript) | TypeScript | TypeScript AppHost | Run only | Slumber REST TUI + notes API + Redis REPL using the repository's staged Aspire 13.6 build. |
+| [Terminal automation](./samples/terminals/automation-csharp) | C# | C# AppHost | Run only | Automate Slumber CRUD with terminal input, screen assertions, and API verification using staged Aspire 13.6. |
+| [Custom docked SQL REPL](./samples/terminals/docked-repl-csharp) | C# | C# AppHost | Run only | Custom rqlite resource with an on-demand docked SQL shell using staged Aspire 13.6. |
 
 ### Cloud / AI / event-driven
 
