@@ -25,6 +25,8 @@ The API persists data in an Aspire-managed PostgreSQL database.
 - Angular-to-API endpoint wiring without hardcoded service URLs
 - Resource references, startup ordering, health checks, and external endpoints
 - A TypeScript AppHost orchestrating Java, TypeScript, and a container resource
+- Generated OpenAPI documentation and an interactive Scalar API reference
+- Java agent instrumentation exporting traces, metrics, and logs to Aspire
 
 ## Prerequisites
 
@@ -49,7 +51,27 @@ aspire start
 ```
 
 Open the `frontend` endpoint from the Aspire dashboard. The AppHost starts PostgreSQL,
-waits for it to become ready, starts the Spring Boot API, and then starts Angular.
+builds the API and downloads its pinned OpenTelemetry agent, waits for the database
+to become ready, starts the Spring Boot API, and then starts Angular.
+
+## Explore the API and telemetry
+
+Open **API Reference** on the `api` resource in the Aspire dashboard to use Scalar at
+`/scalar`. Its OpenAPI document is generated from the existing controllers and validation
+rules at `/v3/api-docs`. Scalar and its JavaScript bundle are served by the Spring Boot API;
+there is no additional frontend service or documentation build.
+
+Use Scalar's **Test Request** to list owners or veterinarians, or create an owner in the
+Angular frontend. Then select the `api` resource in the Aspire dashboard:
+
+- **Traces** shows HTTP requests and their PostgreSQL/JDBC spans.
+- **Metrics** shows JVM and HTTP measurements.
+- **Structured logs** includes the `Created owner` event, correlated with its request trace.
+
+Maven copies the pinned Java agent to `api/target/agent/opentelemetry-javaagent.jar`.
+`withOtelAgentDefaultPath()` makes Aspire build the agent dependency before launching
+the API. The Java integration supplies the OTLP endpoint and authentication settings;
+no collector, hardcoded telemetry endpoint, or application-level telemetry SDK is needed.
 
 ## Project layout
 

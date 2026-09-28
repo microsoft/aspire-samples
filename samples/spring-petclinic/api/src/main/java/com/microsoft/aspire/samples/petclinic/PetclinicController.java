@@ -6,6 +6,8 @@ import java.util.List;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,6 +19,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api")
 public class PetclinicController {
+    private static final Logger logger = LoggerFactory.getLogger(PetclinicController.class);
+
     private final OwnerRepository owners;
     private final PetRepository pets;
     private final VetRepository vets;
@@ -57,6 +61,8 @@ public class PetclinicController {
             request.address(),
             request.city(),
             request.telephone()));
+
+        logger.info("Created owner {}", owner.getId());
 
         return new OwnerResponse(
             owner.getId(),

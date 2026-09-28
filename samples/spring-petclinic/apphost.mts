@@ -9,6 +9,7 @@ const database = await postgres.addDatabase("petclinic");
 const api = await builder.addJavaApp("api", "./api")
   .withWrapperPath(mavenWrapper)
   .withMavenGoal("spring-boot:run", [])
+  .withOtelAgentDefaultPath()
   .withJvmArgs(["-Xms128m", "-Xmx512m"])
   .withHttpEndpoint({ targetPort: 8080, env: "SERVER_PORT" })
   .withEnvironment("SPRING_DATASOURCE_URL", await database.jdbcConnectionString())
@@ -17,7 +18,12 @@ const api = await builder.addJavaApp("api", "./api")
   .withReference(database)
   .waitFor(database)
   .withHttpHealthCheck({ path: "/actuator/health" })
-  .withExternalHttpEndpoints();
+  .withExternalHttpEndpoints()
+  .withUrls(async (context) => {
+    const endpoint = context.getEndpoint("http");
+    const urls = await context.urls();
+    await urls.addForEndpoint(endpoint, `${await endpoint.url()}/scalar`, { displayText: "API Reference" });
+  });
 
 await builder.addJavaScriptApp("frontend", "./frontend", { runScriptName: "start" })
   .withHttpEndpoint({ targetPort: 4200 })
