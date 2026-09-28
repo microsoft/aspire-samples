@@ -76,6 +76,8 @@ If copying a sample outside this repository, also copy the repository's
 | --- | --- | --- | --- | --- |
 | [Terminal basics: C#](./samples/terminals/basics-csharp) | C# | C# AppHost | Run only | Slumber REST TUI + notes API + Redis REPL; currently requires a pinned Aspire daily build. |
 | [Terminal basics: TypeScript](./samples/terminals/basics-typescript) | TypeScript | TypeScript AppHost | Run only | Slumber REST TUI + notes API + Redis REPL; currently requires a pinned Aspire daily build. |
+| [Terminal automation](./samples/terminals/automation-csharp) | C# | C# AppHost | Run only | Automate Slumber CRUD with terminal input, screen assertions, and API verification; requires the pinned Aspire daily build. |
+| [Custom docked SQL REPL](./samples/terminals/docked-repl-csharp) | C# | C# AppHost | Run only | Custom rqlite resource with an on-demand docked SQL shell; requires the pinned Aspire daily build. |
 
 ### Cloud / AI / event-driven
 
