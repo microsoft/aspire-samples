@@ -74,6 +74,11 @@ jobs:
       with:
         node-version: ${{ env.NODE_VERSION }}
 
+    - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
+      with:
+        distribution: temurin
+        java-version: '21'
+
     - name: Install pinned Aspire staging CLI
       shell: bash
       run: |
@@ -101,6 +106,13 @@ jobs:
       if: runner.os == 'Linux'
       shell: bash
       run: bash ./build/validate-javascript.sh
+
+    - name: Test Spring Petclinic API
+      shell: pwsh
+      working-directory: ./samples/spring-petclinic/api
+      run: |
+        $mavenWrapper = if ($IsWindows) { '.\mvnw.cmd' } else { './mvnw' }
+        & $mavenWrapper test
 
     - name: Build (Ubuntu)
       if: runner.os == 'Linux'
