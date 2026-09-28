@@ -1,0 +1,27 @@
+{
+  "appHost": {
+    "path": "apphost.mts",
+    "language": "typescript/nodejs"
+  },
+  "sdk": {
+    "version": "13.6.0"
+  },
+  "channel": "staging",
+  "overrideStagingFeed": "https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-microsoft-aspire-34db30a7/nuget/v3/index.json",
+  "profiles": {
+    "https": {
+      "applicationUrl": "https://localhost:17132;http://localhost:15142",
+      "environmentVariables": {
+        "ASPIRE_DASHBOARD_OTLP_ENDPOINT_URL": "https://localhost:21298",
+        "ASPIRE_RESOURCE_SERVICE_ENDPOINT_URL": "https://localhost:22241"
+      }
+    }
+  },
+  "packages": {
+    "Aspire.Hosting.Redis": "13.6.0",
+    "Aspire.Hosting.JavaScript": "13.6.0"
+  },
+  "features": {
+    "terminalCommandsEnabled": "true"
+  }
+}

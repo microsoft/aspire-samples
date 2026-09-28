@@ -36,6 +36,7 @@ If copying a sample outside this repository, also copy the repository's
 - [Full-stack JavaScript / TypeScript](#full-stack-javascript--typescript)
 - [Polyglot full-stack](#polyglot-full-stack)
 - [Backend integrations by language](#backend-integrations-by-language)
+- [Interactive terminals](#interactive-terminals)
 - [Cloud / AI / event-driven](#cloud--ai--event-driven)
 - [.NET + frontend and platform](#net--frontend-and-platform)
 
@@ -68,6 +69,15 @@ If copying a sample outside this repository, also copy the repository's
 | [Python FastAPI + PostgreSQL](./samples/python-fastapi-postgres) | Python | TypeScript AppHost | Docker Compose | FastAPI CRUD API wired to PostgreSQL and pgAdmin. |
 | [Python OpenAI Agent](./samples/python-openai-agent) | Python | TypeScript AppHost | Docker Compose | FastAPI AI agent sample with OpenAI integration. |
 | [Python Script](./samples/python-script) | Python | TypeScript AppHost | Run only | Minimal Python script sample using a file-based AppHost. |
+
+### Interactive terminals
+
+| Sample | Workload languages | AppHost | Deploy | Description |
+| --- | --- | --- | --- | --- |
+| [Terminal basics: C#](./samples/terminals/basics-csharp) | C# | C# AppHost | Run only | Slumber REST TUI + notes API + Redis REPL using the repository's staged Aspire 13.6 build. |
+| [Terminal basics: TypeScript](./samples/terminals/basics-typescript) | TypeScript | TypeScript AppHost | Run only | Slumber REST TUI + notes API + Redis REPL using the repository's staged Aspire 13.6 build. |
+| [Terminal automation](./samples/terminals/automation-csharp) | C# | C# AppHost | Run only | Automate Slumber CRUD with terminal input, screen assertions, and API verification using staged Aspire 13.6. |
+| [Custom docked SQL REPL](./samples/terminals/docked-repl-csharp) | C# | C# AppHost | Run only | Custom rqlite resource with an on-demand docked SQL shell using staged Aspire 13.6. |
 
 ### Cloud / AI / event-driven
 
