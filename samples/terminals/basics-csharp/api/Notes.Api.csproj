@@ -5,7 +5,7 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Aspire.StackExchange.Redis" Version="14.0.0-preview.1.26475.14" />
+    <PackageReference Include="Aspire.StackExchange.Redis" Version="13.6.0" />
     <ProjectReference Include="../ServiceDefaults/ServiceDefaults.csproj" />
   </ItemGroup>
 </Project>

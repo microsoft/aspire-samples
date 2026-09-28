@@ -23,10 +23,12 @@ The REST client is [Slumber](https://github.com/LucasPickering/slumber), an MIT-
 
 ## Development version
 
-> These samples require Aspire CLI, SDK, and packages **14.0.0-preview.1.26475.14** from the daily channel. They are an exception to the repository's 13.6 prerelease pin.
+> These samples use staged **13.6.0** packages and CLI from build **13.6.0-preview.1.26475.12**, commit `34db30a7d3733229da64a403dfc4e4e4d7a1a43b`, matching the repository.
 
-The published **13.6.0-preview.1.26474.10** build does not contain Redis `WithRepl()` / `withRepl()`. Using that version makes the C# and TypeScript basics fail to compile, although the custom rqlite docked REPL works. Keep the working pins until a 13.6 build containing the Redis REPL APIs is published; do not remove that feature merely to downgrade.
+Install the CLI with the [repository's pinned installer](../../build/install-aspire.sh) using the [root installation instructions](../../README.md#aspire-version), not the public stable installer or an older 13.6 preview. The package version is `13.6.0`, but these are build-specific staging artifacts rather than a NuGet.org release.
 
-**Before merging**, align all four samples and the CI CLI with a compatible 13.6 release and repeat the build and interactive walkthroughs. Retargeting onto the repository's 13.6 upgrade branch does not by itself resolve this mismatch. The samples retain their daily channel and public Azure Artifacts `dotnet9` feed; no feed authentication is required.
+The exact public DARC feed is `https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-microsoft-aspire-34db30a7/nuget/v3/index.json`. Each sample pins it in `nuget.config` and in `aspire.config.json` via `channel: staging` and `overrideStagingFeed`. The latter also routes the TypeScript AppHost's bundled package restore. Keep both files when copying a sample; no feed authentication is required.
+
+The older `13.6.0-preview.1.26474.10` packages on the shared `dotnet9` feed do not include Redis `WithRepl()` / `withRepl()`. When updating, align the CLI artifact, package versions, and build-specific feed across the repository and repeat the interactive walkthroughs; changing the version alone is insufficient.
 
 These are local-development examples, not deployment samples. Only give trusted users dashboard access: the Redis and SQL REPLs grant database access. Data is disposable, and the HTTP APIs deliberately have no application authentication.

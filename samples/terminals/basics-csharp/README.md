@@ -6,11 +6,11 @@ Run [Slumber](https://github.com/LucasPickering/slumber), an interactive REST cl
 
 ## Prerequisites and startup
 
-- [Aspire CLI](https://aspire.dev/get-started/install-cli/) **14.0.0-preview.1.26475.14**, matching this sample's daily SDK/packages. Use the installer's version option to select this build, not an older installed CLI.
+- Aspire CLI **13.6.0** from the [repository's pinned staging installer](../../../build/install-aspire.sh), matching this sample's SDK/packages.
 - The .NET 10 SDK selected by [`samples/global.json`](../../global.json).
 - Docker or another supported container runtime, running with Linux containers.
 
-See the collection's [13.6 compatibility blocker](../README.md#development-version) before using the repository's default CLI version.
+See the collection's [staging build and feed requirements](../README.md#development-version).
 
 From this directory:
 

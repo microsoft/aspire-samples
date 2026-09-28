@@ -6,11 +6,11 @@ Add an integration for [rqlite](https://github.com/rqlite/rqlite), then launch i
 
 ## Prerequisites and startup
 
-- Aspire CLI **14.0.0-preview.1.26475.14**, matching this sample's daily SDK.
+- Aspire CLI **13.6.0** from the [repository's pinned staging installer](../../../build/install-aspire.sh), matching this sample's SDK.
 - The .NET 10 SDK selected by [`samples/global.json`](../../global.json).
 - A running Linux container runtime. The official `rqlite/rqlite:10.3.6` image supports Linux ARM64 and AMD64.
 
-See the collection's [13.6 compatibility blocker](../README.md#development-version). This sample keeps the collection's common version pin even though the custom SQL REPL also works with the repository's 13.6 prerelease.
+See the collection's [staging build and feed requirements](../README.md#development-version).
 
 From this directory:
 

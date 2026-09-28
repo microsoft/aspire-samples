@@ -31,10 +31,6 @@ Dev Containers and CI use the same pinned installer automatically.
 If copying a sample outside this repository, also copy the repository's
 `nuget.config` so its staging packages can be restored.
 
-The [terminal samples](./samples/terminals/#development-version) temporarily require
-Aspire **14.0.0-preview.1.26475.14** because this 13.6 prerelease does not include the
-Redis REPL APIs they demonstrate. Their CLI/package alignment remains a merge blocker.
-
 ## Browse by scenario
 
 - [Full-stack JavaScript / TypeScript](#full-stack-javascript--typescript)
@@ -78,10 +74,10 @@ Redis REPL APIs they demonstrate. Their CLI/package alignment remains a merge bl
 
 | Sample | Workload languages | AppHost | Deploy | Description |
 | --- | --- | --- | --- | --- |
-| [Terminal basics: C#](./samples/terminals/basics-csharp) | C# | C# AppHost | Run only | Slumber REST TUI + notes API + Redis REPL; currently requires a pinned Aspire daily build. |
-| [Terminal basics: TypeScript](./samples/terminals/basics-typescript) | TypeScript | TypeScript AppHost | Run only | Slumber REST TUI + notes API + Redis REPL; currently requires a pinned Aspire daily build. |
-| [Terminal automation](./samples/terminals/automation-csharp) | C# | C# AppHost | Run only | Automate Slumber CRUD with terminal input, screen assertions, and API verification; requires the pinned Aspire daily build. |
-| [Custom docked SQL REPL](./samples/terminals/docked-repl-csharp) | C# | C# AppHost | Run only | Custom rqlite resource with an on-demand docked SQL shell; requires the pinned Aspire daily build. |
+| [Terminal basics: C#](./samples/terminals/basics-csharp) | C# | C# AppHost | Run only | Slumber REST TUI + notes API + Redis REPL using the repository's staged Aspire 13.6 build. |
+| [Terminal basics: TypeScript](./samples/terminals/basics-typescript) | TypeScript | TypeScript AppHost | Run only | Slumber REST TUI + notes API + Redis REPL using the repository's staged Aspire 13.6 build. |
+| [Terminal automation](./samples/terminals/automation-csharp) | C# | C# AppHost | Run only | Automate Slumber CRUD with terminal input, screen assertions, and API verification using staged Aspire 13.6. |
+| [Custom docked SQL REPL](./samples/terminals/docked-repl-csharp) | C# | C# AppHost | Run only | Custom rqlite resource with an on-demand docked SQL shell using staged Aspire 13.6. |
 
 ### Cloud / AI / event-driven
 

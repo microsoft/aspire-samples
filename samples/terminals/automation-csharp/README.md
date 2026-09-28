@@ -6,11 +6,11 @@ Drive a real REST TUI from AppHost code. **Run terminal walkthrough** presses ke
 
 ## Prerequisites and startup
 
-- Aspire CLI **14.0.0-preview.1.26475.14**, matching the daily SDK/packages in this sample.
+- Aspire CLI **13.6.0** from the [repository's pinned staging installer](../../../build/install-aspire.sh), matching this sample's SDK/packages.
 - The .NET 10 SDK selected by [`samples/global.json`](../../global.json).
 - A running Linux container runtime.
 
-See the collection's [13.6 compatibility blocker](../README.md#development-version). Keep the sibling [`basics-csharp`](../basics-csharp/) directory: this sample reuses its API, ServiceDefaults, and Slumber Dockerfile rather than duplicating them. It launches its **own** API, Redis, and Slumber resources; the basic AppHost does not need to be running.
+See the collection's [staging build and feed requirements](../README.md#development-version). Keep the sibling [`basics-csharp`](../basics-csharp/) directory: this sample reuses its API, ServiceDefaults, and Slumber Dockerfile rather than duplicating them. It launches its **own** API, Redis, and Slumber resources; the basic AppHost does not need to be running.
 
 From this directory:
 

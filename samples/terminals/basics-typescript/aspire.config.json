@@ -4,9 +4,10 @@
     "language": "typescript/nodejs"
   },
   "sdk": {
-    "version": "14.0.0-preview.1.26475.14"
+    "version": "13.6.0"
   },
-  "channel": "daily",
+  "channel": "staging",
+  "overrideStagingFeed": "https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-microsoft-aspire-34db30a7/nuget/v3/index.json",
   "profiles": {
     "https": {
       "applicationUrl": "https://localhost:17132;http://localhost:15142",
@@ -17,8 +18,8 @@
     }
   },
   "packages": {
-    "Aspire.Hosting.Redis": "14.0.0-preview.1.26475.14",
-    "Aspire.Hosting.JavaScript": "14.0.0-preview.1.26475.14"
+    "Aspire.Hosting.Redis": "13.6.0",
+    "Aspire.Hosting.JavaScript": "13.6.0"
   },
   "features": {
     "terminalCommandsEnabled": "true"
