@@ -8,21 +8,28 @@ Samples for [Aspire](https://aspire.dev).
 
 ## Aspire version
 
-These samples use Aspire **13.6.0-preview.1.26474.10**. The repository's
-[`nuget.config`](./nuget.config) restores Aspire packages from the public Azure
-Artifacts `dotnet9` feed; other packages continue to come from NuGet.org.
-No feed authentication is required.
+These samples use Aspire **13.6.0 staging**, from build
+`13.6.0-preview.1.26475.12` (commit `34db30a7d3733229da64a403dfc4e4e4d7a1a43b`).
+Despite the stable-shaped package version, this is not a GA release.
+The repository's [`nuget.config`](./nuget.config) restores Aspire packages from
+the public, build-specific Azure Artifacts `darc-pub-microsoft-aspire-34db30a7`
+feed; other packages continue to come from NuGet.org. No feed authentication is required.
+TypeScript AppHost configurations also pin the staging channel to this exact feed.
 
 Install the matching Aspire CLI before building or running the samples:
 
 ```bash
-curl -sSL https://aspire.dev/install.sh | bash -s -- --version 13.6.0-preview.1.26474.10
+bash ./build/install-aspire.sh "$HOME/.aspire/bin"
+export PATH="$HOME/.aspire/bin:$PATH"
 ```
 
-On Windows, download `https://aspire.dev/install.ps1` and run it with
-`-Version 13.6.0-preview.1.26474.10`. Dev Containers and CI install this version
-automatically. If copying a sample outside this repository, also copy the
-repository's `nuget.config` so its prerelease packages can be restored.
+Run these commands from the repository root (use Git Bash on Windows).
+The installer downloads immutable staging archives, verifies their SHA512
+checksums and CLI commit identity, and leaves PATH unchanged. The regular
+`aspire.dev/install.sh --version 13.6.0` targets GA releases, not this staging build.
+Dev Containers and CI use the same pinned installer automatically.
+If copying a sample outside this repository, also copy the repository's
+`nuget.config` so its staging packages can be restored.
 
 ## Browse by scenario
 
