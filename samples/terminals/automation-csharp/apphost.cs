@@ -34,10 +34,34 @@ if (builder.ExecutionContext.IsRunMode)
 
         var logger = context.Services.GetRequiredService<ResourceLoggerService>().GetLogger(slumber.Resource);
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(context.CancellationToken);
-        timeout.CancelAfter(TimeSpan.FromMinutes(2));
         var ct = timeout.Token;
         try
         {
+            var interactions = context.Services.GetRequiredService<IInteractionService>();
+            if (interactions.IsAvailable)
+            {
+                var confirmation = await interactions.PromptConfirmationAsync(
+                    "Restart Slumber and run automation?",
+                    "Slumber will restart to put its terminal in a known state, clearing its current selection and request history. " +
+                    "The walkthrough will also reset the reserved 'automation' note, then create, read, update, and delete it. " +
+                    "Other notes are left unchanged. Do not type into or resize Slumber until the walkthrough finishes.",
+                    new MessageBoxInteractionOptions
+                    {
+                        PrimaryButtonText = "Restart and run",
+                        SecondaryButtonText = "Cancel"
+                    },
+                    ct);
+                if (confirmation.Canceled || !confirmation.Data)
+                {
+                    return CommandResults.Canceled();
+                }
+            }
+            else
+            {
+                logger.LogInformation("Non-interactive walkthrough: restarting Slumber and resetting the reserved automation note without a confirmation dialog.");
+            }
+
+            timeout.CancelAfter(TimeSpan.FromMinutes(2));
             var notifications = context.Services.GetRequiredService<ResourceNotificationService>();
             await notifications.WaitForResourceHealthyAsync(api.Resource.Name, ct);
             using var client = new HttpClient { BaseAddress = new Uri(api.GetEndpoint("http").Url) };
@@ -94,7 +118,23 @@ if (builder.ExecutionContext.IsRunMode)
                 }
                 logger.LogInformation("Walkthrough passed: create, read, update and delete through Slumber.");
             }
+
+            timeout.CancelAfter(Timeout.InfiniteTimeSpan);
+            if (interactions.IsAvailable)
+            {
+                await interactions.PromptMessageBoxAsync(
+                    "Terminal walkthrough complete",
+                    "Create, read, update, and delete all passed in Slumber, and the API checks confirmed each result. " +
+                    "The automation note has been deleted. Slumber is ready for manual use or another walkthrough.",
+                    new MessageBoxInteractionOptions { PrimaryButtonText = "Done" },
+                    context.CancellationToken);
+            }
             return CommandResults.Success();
+        }
+        catch (OperationCanceledException) when (context.CancellationToken.IsCancellationRequested)
+        {
+            logger.LogInformation("Terminal walkthrough canceled.");
+            return CommandResults.Canceled();
         }
         catch (Exception ex) when (ex is TimeoutException or OperationCanceledException or HttpRequestException or InvalidOperationException)
         {
@@ -108,6 +148,8 @@ if (builder.ExecutionContext.IsRunMode)
     }, new CommandOptions
     {
         Description = "Restarts Slumber and drives CRUD through its terminal. Do not type into Slumber during the run.",
+        IconName = "Play",
+        IsHighlighted = true,
         UpdateState = context => context.ResourceSnapshot.State?.Text == KnownResourceStates.Running
             ? ResourceCommandState.Enabled : ResourceCommandState.Disabled
     });
