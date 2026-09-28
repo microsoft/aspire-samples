@@ -34,9 +34,11 @@ archive="aspire-cli-$os-$arch-$version.$extension"
 temporary_dir="$(mktemp -d)"
 trap 'rm -f "$temporary_dir/$archive" "$temporary_dir/checksum"; rmdir "$temporary_dir"' EXIT
 
-curl --fail --silent --show-error --location --retry 3 \
+curl --fail --silent --show-error --location --retry 3 --retry-all-errors --retry-delay 2 \
+    --connect-timeout 30 --max-time 600 \
     "https://ci.dot.net/public/aspire/$build/$archive" -o "$temporary_dir/$archive"
-curl --fail --silent --show-error --location --retry 3 \
+curl --fail --silent --show-error --location --retry 3 --retry-all-errors --retry-delay 2 \
+    --connect-timeout 30 --max-time 120 \
     "https://ci.dot.net/public-checksums/aspire/$build/$archive.sha512" -o "$temporary_dir/checksum"
 expected="$(tr -d '\r\n' < "$temporary_dir/checksum" | tr '[:upper:]' '[:lower:]')"
 if command -v sha512sum >/dev/null 2>&1; then
