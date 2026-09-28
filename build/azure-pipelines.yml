@@ -61,6 +61,7 @@ extends:
           ASPIRE_CLI_TELEMETRY_OPTOUT: 'true'
           ${{ if ne(variables['System.TeamProject'], 'public') }}:
             NPM_CONFIG_USERCONFIG: $(Build.SourcesDirectory)\eng\internal\.npmrc
+            ASPIRE_CLI_NUGET_SERVICE_INDEX: https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json
         
         steps:
         - checkout: self

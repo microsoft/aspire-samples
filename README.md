@@ -144,9 +144,11 @@ also used by [Aspire](https://github.com/microsoft/aspire/blob/main/NuGet.config
 without changing the default configuration for contributors. Only vulnerability
 auditing contacts `data.nuget.org`, which does not serve packages.
 Package source mapping sends `Aspire.*` to the staging feed and all other
-packages to the Azure DevOps mirror, even if the Aspire CLI adds channel sources.
-Missing packages must be made available on an
-approved Azure DevOps feed; restores do not fall back to nuget.org.
+packages to the Azure DevOps mirror. Internal builds also set
+`ASPIRE_CLI_NUGET_SERVICE_INDEX` to that mirror so the Aspire CLI's temporary
+channel restore configurations do not reintroduce nuget.org.
+Missing packages must be made available on an approved Azure DevOps feed;
+restores do not fall back to nuget.org.
 
 The override applies to the entire build rather than a separate `dotnet restore`
 step: `build/Build.proj` launches additional restores for individual samples,
