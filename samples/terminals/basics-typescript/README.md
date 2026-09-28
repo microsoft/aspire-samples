@@ -7,10 +7,10 @@ Run [Slumber](https://github.com/LucasPickering/slumber), an interactive REST cl
 ## Prerequisites and startup
 
 - [Aspire CLI](https://aspire.dev/get-started/install-cli/) **14.0.0-preview.1.26475.14**, matching this sample's daily SDK/packages. Use the installer's version option to select this build, not an older installed CLI.
-- Node.js 24 or later and npm.
+- Node.js **24.18.0** (the repository CI version) and npm.
 - Docker or another supported container runtime, running with Linux containers.
 
-The daily pin is temporary; see the collection's [13.6.0 stable merge requirement](../README.md#development-version).
+See the collection's [13.6 compatibility blocker](../README.md#development-version) before using the repository's default CLI version.
 
 From this directory:
 

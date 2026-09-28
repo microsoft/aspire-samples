@@ -23,8 +23,10 @@ The REST client is [Slumber](https://github.com/LucasPickering/slumber), an MIT-
 
 ## Development version
 
-> These samples currently require Aspire CLI and packages **14.0.0-preview.1.26475.14** from the daily channel. Older CLIs can run the app but lack the Redis REPL command.
+> These samples require Aspire CLI, SDK, and packages **14.0.0-preview.1.26475.14** from the daily channel. They are an exception to the repository's 13.6 prerelease pin.
 
-The daily version is temporary. **Before merging**, move all four samples to **13.6.0 stable**, remove their daily-only feed/channel settings, update the CLI pins in `.github/workflows/ci.yml` and `build/azure-pipelines.yml`, and repeat the build and interactive walkthroughs. The existing shared CI CLI is not sufficient for these daily samples; they are not yet merge-ready.
+The published **13.6.0-preview.1.26474.10** build does not contain Redis `WithRepl()` / `withRepl()`. Using that version makes the C# and TypeScript basics fail to compile, although the custom rqlite docked REPL works. Keep the working pins until a 13.6 build containing the Redis REPL APIs is published; do not remove that feature merely to downgrade.
+
+**Before merging**, align all four samples and the CI CLI with a compatible 13.6 release and repeat the build and interactive walkthroughs. Retargeting onto the repository's 13.6 upgrade branch does not by itself resolve this mismatch. The samples retain their daily channel and public Azure Artifacts `dotnet9` feed; no feed authentication is required.
 
 These are local-development examples, not deployment samples. Only give trusted users dashboard access: the Redis and SQL REPLs grant database access. Data is disposable, and the HTTP APIs deliberately have no application authentication.

@@ -10,7 +10,7 @@ Drive a real REST TUI from AppHost code. **Run terminal walkthrough** presses ke
 - The .NET 10 SDK selected by [`samples/global.json`](../../global.json).
 - A running Linux container runtime.
 
-See the collection's [stable-version merge requirement](../README.md#development-version). Keep the sibling [`basics-csharp`](../basics-csharp/) directory: this sample reuses its API, ServiceDefaults, and Slumber Dockerfile rather than duplicating them. It launches its **own** API, Redis, and Slumber resources; the basic AppHost does not need to be running.
+See the collection's [13.6 compatibility blocker](../README.md#development-version). Keep the sibling [`basics-csharp`](../basics-csharp/) directory: this sample reuses its API, ServiceDefaults, and Slumber Dockerfile rather than duplicating them. It launches its **own** API, Redis, and Slumber resources; the basic AppHost does not need to be running.
 
 From this directory:
 
@@ -22,7 +22,7 @@ aspire wait --apphost apphost.cs
 
 Open Slumber's **Console logs** in the dashboard. Click the highlighted **Play** button beside **Resource actions** to run the walkthrough. An interaction-service confirmation explains that Slumber must restart to put its terminal in a known state and that the reserved `automation` note will be reset. Choose **Restart and run** to continue, or **Cancel** to leave the terminal and data unchanged. Do not type into Slumber or resize its terminal during the walkthrough.
 
-Use the highlighted button for repeat runs. In the pinned daily dashboard, the console page's overflow menu can retain a stale disabled command after completion; the highlighted toolbar button evaluates its enabled state when rendered. Reloading the page also refreshes the overflow menu. This is a dashboard limitation, not a still-running walkthrough.
+Use the highlighted button for repeat runs. In the prerelease dashboard, the console page's overflow menu can retain a stale disabled command after completion; the highlighted toolbar button evaluates its enabled state when rendered. Reloading the page also refreshes the overflow menu. This is a dashboard limitation, not a still-running walkthrough.
 
 Alternatively, run the same command without a browser:
 

@@ -10,7 +10,7 @@ Run [Slumber](https://github.com/LucasPickering/slumber), an interactive REST cl
 - The .NET 10 SDK selected by [`samples/global.json`](../../global.json).
 - Docker or another supported container runtime, running with Linux containers.
 
-The daily pin is temporary; see the collection's [13.6.0 stable merge requirement](../README.md#development-version).
+See the collection's [13.6 compatibility blocker](../README.md#development-version) before using the repository's default CLI version.
 
 From this directory:
 

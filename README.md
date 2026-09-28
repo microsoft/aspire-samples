@@ -31,6 +31,10 @@ Dev Containers and CI use the same pinned installer automatically.
 If copying a sample outside this repository, also copy the repository's
 `nuget.config` so its staging packages can be restored.
 
+The [terminal samples](./samples/terminals/#development-version) temporarily require
+Aspire **14.0.0-preview.1.26475.14** because this 13.6 prerelease does not include the
+Redis REPL APIs they demonstrate. Their CLI/package alignment remains a merge blocker.
+
 ## Browse by scenario
 
 - [Full-stack JavaScript / TypeScript](#full-stack-javascript--typescript)
