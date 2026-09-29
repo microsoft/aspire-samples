@@ -4,7 +4,8 @@ View telemetry from any app in the Aspire dashboard. The dashboard supports runn
 
 This sample is a .NET console app that downloads data from [NuGet](https://nuget.org/). The app sends telemetry to the Aspire dashboard which is viewed in the dashboard telemetry UI.
 
-![Screenshot of the standalone Aspire dashboard](./images/aspire-dashboard-screenshot.png)
+![Screenshot of the standalone Aspire dashboard (light theme)](./images/aspire-dashboard-screenshot-light.png#gh-light-mode-only)
+![Screenshot of the standalone Aspire dashboard (dark theme)](./images/aspire-dashboard-screenshot-dark.png#gh-dark-mode-only)
 
 ## Demonstrates
 
