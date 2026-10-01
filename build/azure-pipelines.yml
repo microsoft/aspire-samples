@@ -1,7 +1,7 @@
 variables:
-  # Keep these aligned with .github/workflows/ci.yml.
+  # Keep these aligned with build/install-aspire.sh and .github/workflows/ci.yml.
   - name: AspireCliVersion
-    value: '13.5.0'
+    value: '13.6.0'
   - name: NodeVersion
     value: '24.18.0'
   - ${{ if eq(variables['System.TeamProject'], 'public') }}:
@@ -61,6 +61,7 @@ extends:
           ASPIRE_CLI_TELEMETRY_OPTOUT: 'true'
           ${{ if ne(variables['System.TeamProject'], 'public') }}:
             NPM_CONFIG_USERCONFIG: $(Build.SourcesDirectory)\eng\internal\.npmrc
+            ASPIRE_CLI_NUGET_SERVICE_INDEX: https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json
         
         steps:
         - checkout: self
