@@ -21,14 +21,14 @@ The automation sample reuses the C# basic sample's API and Slumber image source,
 
 The REST client is [Slumber](https://github.com/LucasPickering/slumber), an MIT-licensed Rust application with YAML request collections and environment substitution. The basic samples package checksum-verified Slumber 5.3.0 binaries for Linux ARM64/AMD64 in a non-root container, with Vim as the default editor. No host Slumber or Vim installation is required.
 
-## Development version
+## Aspire version
 
-> These samples use staged **13.6.0** packages and CLI from build **13.6.0-preview.1.26475.12**, commit `34db30a7d3733229da64a403dfc4e4e4d7a1a43b`, matching the repository.
+These samples use the released Aspire **13.6.0** CLI and packages, matching the repository.
 
-Install the CLI with the [repository's pinned installer](../../build/install-aspire.sh) using the [root installation instructions](../../README.md#aspire-version), not the public stable installer or an older 13.6 preview. The package version is `13.6.0`, but these are build-specific staging artifacts rather than a NuGet.org release.
+Install the matching CLI using the [root installation instructions](../../README.md#aspire-version).
+Packages restore from NuGet.org without staging feeds or sample-specific NuGet configuration.
 
-The exact public DARC feed is `https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-microsoft-aspire-34db30a7/nuget/v3/index.json`. Each sample pins it in `nuget.config` and in `aspire.config.json` via `channel: staging` and `overrideStagingFeed`. The latter also routes the TypeScript AppHost's bundled package restore. Keep both files when copying a sample; no feed authentication is required.
-
-The older `13.6.0-preview.1.26474.10` packages on the shared `dotnet9` feed do not include Redis `WithRepl()` / `withRepl()`. When updating, align the CLI artifact, package versions, and build-specific feed across the repository and repeat the interactive walkthroughs; changing the version alone is insufficient.
+The terminal APIs remain experimental in Aspire 13.6.0, but terminal CLI commands no longer require a feature flag.
+When updating, align the CLI and package versions across the repository and repeat the interactive walkthroughs.
 
 These are local-development examples, not deployment samples. Only give trusted users dashboard access: the Redis and SQL REPLs grant database access. Data is disposable, and the HTTP APIs deliberately have no application authentication.

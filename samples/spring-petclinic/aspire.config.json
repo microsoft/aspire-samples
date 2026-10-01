@@ -6,10 +6,8 @@
   "sdk": {
     "version": "13.6.0"
   },
-  "channel": "staging",
-  "overrideStagingFeed": "https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-microsoft-aspire-34db30a7/nuget/v3/index.json",
   "packages": {
-    "Aspire.Hosting.Java": "13.6.0-preview.1.26475.12",
+    "Aspire.Hosting.Java": "13.6.0-preview.1.26479.8",
     "Aspire.Hosting.JavaScript": "13.6.0",
     "Aspire.Hosting.PostgreSQL": "13.6.0"
   }

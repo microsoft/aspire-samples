@@ -1,5 +1,5 @@
 variables:
-  # Keep these aligned with build/install-aspire.sh and .github/workflows/ci.yml.
+  # Keep these aligned with .devcontainer/devcontainer.json and .github/workflows/ci.yml.
   - name: AspireCliVersion
     value: '13.6.0'
   - name: NodeVersion

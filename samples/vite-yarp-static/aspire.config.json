@@ -1,6 +1,4 @@
 {
-  "channel": "staging",
-  "overrideStagingFeed": "https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-microsoft-aspire-34db30a7/nuget/v3/index.json",
   "appHost": {
     "path": "apphost.mts",
     "language": "typescript/nodejs"

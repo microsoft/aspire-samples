@@ -30,17 +30,15 @@ The API persists data in an Aspire-managed PostgreSQL database.
 
 ## Prerequisites
 
-- Aspire CLI **13.6.0** from the [repository's pinned staging installer](../../build/install-aspire.sh), matching this sample's SDK/packages
+- Aspire CLI **13.6.0**, installed using the [root installation instructions](../../README.md#aspire-version)
 - Java Development Kit 21 or later
 - Node.js 20.19, 22.13, or 24 or later
 - Docker Desktop or another Docker-compatible container runtime
 
 Follow the [root installation instructions](../../README.md#aspire-version) to install
-the matching staging CLI. The CLI/SDK and other integrations use `13.6.0`, while the
-Java integration uses `13.6.0-preview.1.26475.12` from the same build. These are staging
-artifacts, not a GA release, and the public version installer does not select this
-build. If copying this sample outside the repository, also copy the root `nuget.config`
-so its staging packages can be restored.
+the matching released CLI. The CLI/SDK and other integrations use `13.6.0`, while the
+Java integration uses the accompanying `13.6.0-preview.1.26479.8` package.
+All packages are available on NuGet.org; no staging feed is required.
 
 ## Run
 
@@ -80,8 +78,7 @@ no collector, hardcoded telemetry endpoint, or application-level telemetry SDK i
 - `frontend` - Angular single-page application
 
 On Windows, `api/tools/run-mvnw.cmd` preserves the wrapper's directory-qualified path.
-This works around a defect in the pinned staging build where the Java integration
-launches `mvnw.cmd` without `.\`, which Windows does not resolve from the working directory.
+The helper invokes `.\mvnw.cmd` explicitly so Windows resolves it from the working directory.
 
 ## Security notes
 

@@ -8,28 +8,25 @@ Samples for [Aspire](https://aspire.dev).
 
 ## Aspire version
 
-These samples use Aspire **13.6.0 staging**, from build
-`13.6.0-preview.1.26475.12` (commit `34db30a7d3733229da64a403dfc4e4e4d7a1a43b`).
-Despite the stable-shaped package version, this is not a GA release.
-The repository's [`nuget.config`](./nuget.config) restores Aspire packages from
-the public, build-specific Azure Artifacts `darc-pub-microsoft-aspire-34db30a7`
-feed; other packages continue to come from NuGet.org. No feed authentication is required.
-TypeScript AppHost configurations also pin the staging channel to this exact feed.
+These samples use the released Aspire **13.6.0** CLI and SDK.
+The repository's [`nuget.config`](./nuget.config) restores packages from NuGet.org.
+The Java hosting integration is published as a preview package alongside this release.
 
 Install the matching Aspire CLI before building or running the samples:
 
 ```bash
-bash ./build/install-aspire.sh "$HOME/.aspire/bin"
-export PATH="$HOME/.aspire/bin:$PATH"
+curl -fsSL https://aspire.dev/install.sh | bash -s -- --version 13.6.0
 ```
 
-Run these commands from the repository root (use Git Bash on Windows).
-The installer downloads immutable staging archives, verifies their SHA512
-checksums and CLI commit identity, and leaves PATH unchanged. The regular
-`aspire.dev/install.sh --version 13.6.0` targets GA releases, not this staging build.
-Dev Containers and CI use the same pinned installer automatically.
-If copying a sample outside this repository, also copy the repository's
-`nuget.config` so its staging packages can be restored.
+On Windows, use PowerShell:
+
+```powershell
+& ([scriptblock]::Create((Invoke-RestMethod https://aspire.dev/install.ps1))) -Version 13.6.0
+```
+
+Dev Containers and CI install the same CLI version automatically.
+If you previously used the staging build, set `NUGET_PACKAGES` to a fresh directory
+when restoring to avoid reusing cached staging packages with the same `13.6.0` version.
 
 ## Browse by scenario
 
@@ -75,10 +72,10 @@ If copying a sample outside this repository, also copy the repository's
 
 | Sample | Workload languages | AppHost | Deploy | Description |
 | --- | --- | --- | --- | --- |
-| [Terminal basics: C#](./samples/terminals/basics-csharp) | C# | C# AppHost | Run only | Slumber REST TUI + notes API + Redis REPL using the repository's staged Aspire 13.6 build. |
-| [Terminal basics: TypeScript](./samples/terminals/basics-typescript) | TypeScript | TypeScript AppHost | Run only | Slumber REST TUI + notes API + Redis REPL using the repository's staged Aspire 13.6 build. |
-| [Terminal automation](./samples/terminals/automation-csharp) | C# | C# AppHost | Run only | Automate Slumber CRUD with terminal input, screen assertions, and API verification using staged Aspire 13.6. |
-| [Custom docked SQL REPL](./samples/terminals/docked-repl-csharp) | C# | C# AppHost | Run only | Custom rqlite resource with an on-demand docked SQL shell using staged Aspire 13.6. |
+| [Terminal basics: C#](./samples/terminals/basics-csharp) | C# | C# AppHost | Run only | Slumber REST TUI + notes API + Redis REPL using Aspire 13.6. |
+| [Terminal basics: TypeScript](./samples/terminals/basics-typescript) | TypeScript | TypeScript AppHost | Run only | Slumber REST TUI + notes API + Redis REPL using Aspire 13.6. |
+| [Terminal automation](./samples/terminals/automation-csharp) | C# | C# AppHost | Run only | Automate Slumber CRUD with terminal input, screen assertions, and API verification using Aspire 13.6. |
+| [Custom docked SQL REPL](./samples/terminals/docked-repl-csharp) | C# | C# AppHost | Run only | Custom rqlite resource with an on-demand docked SQL shell using Aspire 13.6. |
 
 ### Cloud / AI / event-driven
 
@@ -134,17 +131,15 @@ We welcome contributions to this repository of samples related to official Aspir
 
 ### NuGet feeds
 
-Local restores and public CI use the root `nuget.config`: Aspire packages come
-from the pinned staging feed, and other packages come from nuget.org.
+Local restores and public CI use the root `nuget.config`: all packages come
+from nuget.org.
 The internal Azure DevOps pipeline replaces that file in its checkout with
 [`eng/internal/NuGet.config`](./eng/internal/NuGet.config) before building.
-This makes the build SDK and nested sample restores use the pinned Aspire staging
-feed and the `dotnet-public` Azure DevOps mirror,
+This makes the build SDK and nested sample restores use the `dotnet-public` Azure DevOps mirror,
 also used by [Aspire](https://github.com/microsoft/aspire/blob/main/NuGet.config),
 without changing the default configuration for contributors. Only vulnerability
 auditing contacts `data.nuget.org`, which does not serve packages.
-Package source mapping sends `Aspire.*` to the staging feed and all other
-packages to the Azure DevOps mirror. Internal builds also set
+Package source mapping sends all packages to the Azure DevOps mirror. Internal builds also set
 `ASPIRE_CLI_NUGET_SERVICE_INDEX` to that mirror so the Aspire CLI's temporary
 channel restore configurations do not reintroduce nuget.org.
 Missing packages must be made available on an approved Azure DevOps feed;
