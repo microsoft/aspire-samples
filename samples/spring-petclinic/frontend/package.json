@@ -21,7 +21,7 @@
     "tslib": "^2.3.0"
   },
   "devDependencies": {
-    "@angular/build": "^21.2.24",
+    "@angular/build": "^22.2.1",
     "@angular/cli": "^21.2.24",
     "@angular/compiler-cli": "^21.2.0",
     "prettier": "^3.8.1",
