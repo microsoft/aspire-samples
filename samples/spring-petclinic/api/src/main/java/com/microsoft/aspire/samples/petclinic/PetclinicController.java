@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+// Trusted local demo: these unauthenticated routes expose all owner records and allow owner creation.
+// Use synthetic data only, and do not expose or forward this API to untrusted networks.
 @RestController
 @RequestMapping("/api")
 public class PetclinicController {

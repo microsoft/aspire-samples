@@ -95,4 +95,4 @@ The focused tests cover the API contract with an in-memory Redis substitute; the
 
 If **REPL** is missing, check `aspire --version` and restart with the matching CLI. If Slumber is waiting, inspect `api` and `redis` health first. If requests cannot connect, verify that `BASE_URL` is populated by the AppHost; do not replace it with `localhost` (which means the Slumber container itself). Changes to the Dockerfile or saved collection require rebuilding/restarting the sample.
 
-Keep the dashboard private to trusted users: REPL users have authenticated datastore access. This unauthenticated notes API and its HTTP endpoint are for local demonstration, not production.
+Keep the dashboard private to trusted users: its Redis REPL grants authenticated datastore access. The unauthenticated HTTP notes API allows anyone who can reach it to read, replace, and delete every demo note. Use only disposable, non-sensitive data; this is a local demonstration, not production.

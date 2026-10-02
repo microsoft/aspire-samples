@@ -72,7 +72,9 @@ Unlike `WithTerminal()`, this does not make the server's own console interactive
 
 Every invocation opens a separate shell. Hiding the dock does not stop it. Quitting the client ends that shell without stopping the server; closing a local runtime-exec terminal is not a reliable substitute for quitting its remote process. Restarting the database invalidates old shells, so close them and open new ones. `TerminalService` cleans up AppHost-owned terminals when the AppHost shuts down.
 
-The sample does not attach a persistent named volume and should be treated as disposable. It intentionally omits authentication, TLS, backups, and clustering: use only for trusted local development, not production or untrusted network exposure. SQL access can alter or delete the whole database.
+The sample does not attach a persistent named volume and should be treated as disposable. It intentionally omits authentication, TLS, backups, and clustering: use only for trusted local development, not production or untrusted network exposure.
+
+Anyone who can reach the database's HTTP API can execute database operations; dashboard authentication does not protect that API. The SQL REPL can alter or delete the whole database. Keep both interfaces private to trusted users and use disposable, non-sensitive data only.
 
 Stop this exact sample with:
 

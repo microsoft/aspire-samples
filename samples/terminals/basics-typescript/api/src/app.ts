@@ -38,6 +38,8 @@ export function createApp(redis: NotesDatabase) {
         }
         next();
     });
+    // Demo-only, unauthenticated CRUD routes: every caller can read, replace, and delete notes.
+    // Use non-sensitive, disposable data and keep this HTTP API private.
     app.get('/notes', async (_request, response) => {
         const notes = await query(redis.hGetAll('notes'));
         response.json(Object.keys(notes).sort().map(id => ({ id, text: notes[id] })));

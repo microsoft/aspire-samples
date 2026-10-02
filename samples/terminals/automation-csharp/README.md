@@ -63,4 +63,4 @@ dotnet test ../basics-csharp/tests/Notes.Tests.csproj
 aspire stop --apphost apphost.cs
 ```
 
-Redis data is disposable. The sample is for trusted local development; it has no application authentication. Stopping this AppHost does not stop a separately running basic sample.
+This sample uses an unauthenticated HTTP API and disposable Redis data. Keep its endpoints and dashboard private to trusted users; the Redis REPL grants authenticated database access. Use only non-sensitive demo notes. Stopping this AppHost does not stop a separately running basic sample.

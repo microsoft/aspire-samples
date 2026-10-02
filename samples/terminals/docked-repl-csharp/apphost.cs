@@ -22,6 +22,8 @@ static class RqliteBuilderExtensions
 {
     public static IResourceBuilder<RqliteResource> AddRqlite(this IDistributedApplicationBuilder builder, string name)
     {
+        // Demo-only database: no authentication, TLS, or persistent volume. Keep its HTTP API private;
+        // dashboard authentication does not protect database operations on that endpoint.
         return builder.AddResource(new RqliteResource(name))
             .WithImage("rqlite/rqlite", "10.3.6")
             .WithHttpEndpoint(targetPort: 4001, name: "http")
@@ -48,6 +50,7 @@ static class RqliteBuilderExtensions
             var runtime = await context.Services.GetRequiredService<IContainerRuntimeResolver>()
                 .ResolveAsync(context.CancellationToken);
             var terminals = context.Services.GetRequiredService<TerminalService>();
+            // This shell can modify or delete the entire demo database; allow only trusted dashboard users.
             var terminal = terminals.CreateTerminal(new TerminalLaunchOptions
             {
                 Title = $"SQL ({builder.Resource.Name})",

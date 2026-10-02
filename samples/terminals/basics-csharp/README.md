@@ -46,6 +46,8 @@ builder.AddDockerfile("slumber", "./slumber")
 
 The API uses `Aspire.StackExchange.Redis` and sample-local ServiceDefaults for health checks and telemetry. Slumber receives only the API endpoint, not Redis credentials. Its [saved requests](./slumber/slumber.yml) read that endpoint with `{{ env('BASE_URL') }}`. HTTP is intentional for this local container-to-API connection; no certificate validation is disabled.
 
+The optional `http` profile in [`apphost.run.json`](./apphost.run.json) also uses unencrypted local dashboard, telemetry, and resource-service connections. This is separate from the API's HTTP traffic and does not disable dashboard authentication. Keep these loopback endpoints private; do not expose or forward this profile to untrusted networks.
+
 ## Try the round trip
 
 1. Open **Console logs** for `slumber`. Focus the terminal and press **r** to focus the request list. Use **Up/Down** to select **01 - Create a note**, then **Enter** to send. Expect **201 Created** (or **200 OK** if `welcome` already exists).
@@ -89,4 +91,4 @@ The focused tests cover the API contract with an in-memory store; the walkthroug
 
 If **REPL** is missing, check `aspire --version` and restart with the matching CLI. If Slumber is waiting, inspect `api` and `redis` health first. If requests cannot connect, verify that `BASE_URL` is populated by the AppHost; do not replace it with `localhost` (which means the Slumber container itself). Changes to the Dockerfile or saved collection require rebuilding/restarting the sample.
 
-Keep the dashboard private to trusted users: REPL users have authenticated datastore access. This unauthenticated notes API and its HTTP endpoint are for local demonstration, not production.
+Keep the dashboard private to trusted users: its Redis REPL grants authenticated datastore access. The unauthenticated HTTP notes API allows anyone who can reach it to read, replace, and delete every demo note. Use only disposable, non-sensitive data; this is a local demonstration, not production.

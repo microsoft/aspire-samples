@@ -7,7 +7,6 @@ if (!apiUrl) {
 module.exports = {
   "/api": {
     target: apiUrl,
-    secure: false,
     changeOrigin: true,
   },
 };

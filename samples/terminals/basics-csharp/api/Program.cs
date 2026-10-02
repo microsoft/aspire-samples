@@ -25,6 +25,8 @@ app.UseExceptionHandler(errorApp => errorApp.Run(async context =>
 }));
 app.MapDefaultEndpoints();
 
+// Demo-only, unauthenticated CRUD routes: every caller can read, replace, and delete notes.
+// Use non-sensitive, disposable data and keep this HTTP API private.
 var notes = app.MapGroup("/notes");
 notes.AddEndpointFilter(async (context, next) =>
 {

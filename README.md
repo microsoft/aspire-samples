@@ -25,8 +25,6 @@ On Windows, use PowerShell:
 ```
 
 Dev Containers and CI install the same CLI version automatically.
-If you previously used the staging build, set `NUGET_PACKAGES` to a fresh directory
-when restoring to avoid reusing cached staging packages with the same `13.6.0` version.
 
 ## Browse by scenario
 
@@ -128,39 +126,6 @@ See the following links for more information on best practices and security cons
 ## Contributing
 
 We welcome contributions to this repository of samples related to official Aspire features and integrations (i.e. those pieces whose code lives in the [Aspire repo](https://github.com/dotnet/aspire) and that ship from the [**Aspire** NuGet account](https://www.nuget.org/profiles/aspire)). It's generally a good idea to [log an issue](https://github.com/dotnet/aspire-samples/issues/new/choose) first to discuss any idea for a sample with the team before sending a pull request.
-
-### NuGet feeds
-
-Local restores and public CI use the root `nuget.config`: all packages come
-from nuget.org.
-The internal Azure DevOps pipeline replaces that file in its checkout with
-[`eng/internal/NuGet.config`](./eng/internal/NuGet.config) before building.
-This makes the build SDK and nested sample restores use the `dotnet-public` Azure DevOps mirror,
-also used by [Aspire](https://github.com/microsoft/aspire/blob/main/NuGet.config),
-without changing the default configuration for contributors. Only vulnerability
-auditing contacts `data.nuget.org`, which does not serve packages.
-Package source mapping sends all packages to the Azure DevOps mirror. Internal builds also set
-`ASPIRE_CLI_NUGET_SERVICE_INDEX` to that mirror so the Aspire CLI's temporary
-channel restore configurations do not reintroduce nuget.org.
-Missing packages must be made available on an approved Azure DevOps feed;
-restores do not fall back to nuget.org.
-
-The override applies to the entire build rather than a separate `dotnet restore`
-step: `build/Build.proj` launches additional restores for individual samples,
-including Aspire CLI restores, even when `build.cmd` receives `--no-restore`.
-
-The Azure DevOps pipeline installs Node.js and the Aspire CLI before invoking
-`build.cmd`, using the same pinned versions as public CI. The CLI is installed
-as a .NET tool through the checkout's NuGet configuration and passed to the
-build via `ASPIRE_CLI`. Internal npm restores use `eng/internal/.npmrc` through
-`NPM_CONFIG_USERCONFIG`, authenticated with the build identity by `npmAuthenticate`.
-This selects Aspire's `dotnet-public-npm` Azure DevOps feed. The build identity
-needs Feed and Upstream Reader (Collaborator) access to save packages that have
-not yet been mirrored; contributor and public CI npm settings are unchanged.
-The internal pipeline also replaces the legacy `ms-feed-25` npm registry prefix
-in its checkout's sample lockfiles with the configured registry. Package versions
-and integrity hashes are preserved. npm redirects `registry.npmjs.org` lockfile
-URLs to the configured registry by default; contributor lockfiles are not changed.
 
 ## Code of conduct
 

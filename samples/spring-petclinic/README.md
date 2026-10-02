@@ -82,7 +82,13 @@ The helper invokes `.\mvnw.cmd` explicitly so Windows resolves it from the worki
 
 ## Security notes
 
-This sample is intentionally small and demo-focused. Its CRUD endpoints are public and
-unauthenticated, and PostgreSQL uses Aspire-generated development credentials. Do not
-expose the sample directly in production without adding authentication, authorization,
-request-rate controls, and production secret management.
+This is a trusted local demo, not a production template. Its HTTP endpoints have no
+application authentication or transport encryption. Anyone who can reach the API can
+read all owner records and create owners. Do not publicly expose or forward these
+endpoints; the Angular development server listens on all interfaces (`0.0.0.0`).
+
+Use synthetic data only. PostgreSQL uses Aspire-generated development credentials,
+has no persistent volume configured, and should be treated as disposable. Hibernate
+automatically updates the database schema (`spring.jpa.hibernate.ddl-auto=update`).
+Before adapting this sample for production, add authentication, authorization,
+transport encryption, request-rate controls, and production secret management.
