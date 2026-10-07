@@ -11,7 +11,7 @@
     "test": "node --import tsx --test tests/*.test.ts"
   },
   "dependencies": {
-    "@opentelemetry/auto-instrumentations-node": "^0.78.0",
+    "@opentelemetry/auto-instrumentations-node": "^0.81.0",
     "@opentelemetry/exporter-trace-otlp-grpc": "^0.220.0",
     "@opentelemetry/sdk-node": "^0.220.0",
     "express": "^5.1.0",
