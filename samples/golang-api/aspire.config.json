@@ -1,7 +1,7 @@
 {
   "appHost": {
-    "path": "apphost.mts",
-    "language": "typescript/nodejs"
+    "path": "apphost.go",
+    "language": "go"
   },
   "sdk": {
     "version": "17.0.0"
@@ -16,6 +16,7 @@
     }
   },
   "packages": {
-    "Aspire.Hosting.Docker": "17.0.0"
+    "Aspire.Hosting.Docker": "17.0.0",
+    "Aspire.Hosting.Go": "17.0.0"
   }
 }
