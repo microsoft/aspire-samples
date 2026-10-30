@@ -46,6 +46,7 @@
     "run-script-os": "^1.1.6"
   },
   "overrides": {
+    "piscina": "5.3.2",
     "fast-uri": "3.1.6",
     "hono": "4.13.5",
     "postcss": "8.5.23",
