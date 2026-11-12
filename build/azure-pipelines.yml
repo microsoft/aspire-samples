@@ -1,7 +1,7 @@
 variables:
   # Keep these aligned with .devcontainer/devcontainer.json and .github/workflows/ci.yml.
   - name: AspireCliVersion
-    value: '13.6.0'
+    value: '17.0.0'
   - name: NodeVersion
     value: '24.18.0'
   - ${{ if eq(variables['System.TeamProject'], 'public') }}:

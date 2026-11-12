@@ -1,4 +1,4 @@
-#:sdk Aspire.AppHost.Sdk@13.6.0
+#:sdk Aspire.AppHost.Sdk@17.0.0
 #:property AspireUseCliBundle=true
 
 using Aspire.Hosting.ApplicationModel;

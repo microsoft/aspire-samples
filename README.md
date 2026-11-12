@@ -8,20 +8,28 @@ Samples for [Aspire](https://aspire.dev).
 
 ## Aspire version
 
-These samples use the released Aspire **13.6.0** CLI and SDK.
+These samples target the Aspire **17.0.0** CLI and SDK.
 The repository's [`nuget.config`](./nuget.config) restores packages from NuGet.org.
-The Java hosting integration is published as a preview package alongside this release.
+The Java hosting integration uses a preview package alongside this release.
+
+> [!IMPORTANT]
+> This upgrade is staged ahead of the Aspire 17.0 release. CLI installation, package
+> restores, and dashboard image pulls can fail until the release artifacts are published.
+> Use [`microsoft/aspire`'s `release/17.0` branch](https://github.com/microsoft/aspire/tree/release/17.0)
+> as the compatibility reference; a Git branch is not a NuGet package source.
+> The Java integration temporarily uses `17.0.0-preview.1.*`; replace it with the
+> exact published version before merging the upgrade.
 
 Install the matching Aspire CLI before building or running the samples:
 
 ```bash
-curl -fsSL https://aspire.dev/install.sh | bash -s -- --version 13.6.0
+curl -fsSL https://aspire.dev/install.sh | bash -s -- --version 17.0.0
 ```
 
 On Windows, use PowerShell:
 
 ```powershell
-& ([scriptblock]::Create((Invoke-RestMethod https://aspire.dev/install.ps1))) -Version 13.6.0
+& ([scriptblock]::Create((Invoke-RestMethod https://aspire.dev/install.ps1))) -Version 17.0.0
 ```
 
 Dev Containers and CI install the same CLI version automatically.
@@ -70,10 +78,10 @@ Dev Containers and CI install the same CLI version automatically.
 
 | Sample | Workload languages | AppHost | Deploy | Description |
 | --- | --- | --- | --- | --- |
-| [Terminal basics: C#](./samples/terminals/basics-csharp) | C# | C# AppHost | Run only | Slumber REST TUI + notes API + Redis REPL using Aspire 13.6. |
-| [Terminal basics: TypeScript](./samples/terminals/basics-typescript) | TypeScript | TypeScript AppHost | Run only | Slumber REST TUI + notes API + Redis REPL using Aspire 13.6. |
-| [Terminal automation](./samples/terminals/automation-csharp) | C# | C# AppHost | Run only | Automate Slumber CRUD with terminal input, screen assertions, and API verification using Aspire 13.6. |
-| [Custom docked SQL REPL](./samples/terminals/docked-repl-csharp) | C# | C# AppHost | Run only | Custom rqlite resource with an on-demand docked SQL shell using Aspire 13.6. |
+| [Terminal basics: C#](./samples/terminals/basics-csharp) | C# | C# AppHost | Run only | Slumber REST TUI + notes API + Redis REPL using Aspire 17.0. |
+| [Terminal basics: TypeScript](./samples/terminals/basics-typescript) | TypeScript | TypeScript AppHost | Run only | Slumber REST TUI + notes API + Redis REPL using Aspire 17.0. |
+| [Terminal automation](./samples/terminals/automation-csharp) | C# | C# AppHost | Run only | Automate Slumber CRUD with terminal input, screen assertions, and API verification using Aspire 17.0. |
+| [Custom docked SQL REPL](./samples/terminals/docked-repl-csharp) | C# | C# AppHost | Run only | Custom rqlite resource with an on-demand docked SQL shell using Aspire 17.0. |
 
 ### Cloud / AI / event-driven
 
