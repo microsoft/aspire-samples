@@ -9,13 +9,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Aspire.Hosting.Azure" Version="13.6.0" />
-    <PackageReference Include="Aspire.Hosting.Azure.Storage" Version="13.6.0" />
-    <PackageReference Include="Aspire.Hosting.SqlServer" Version="13.6.0" />
+    <PackageReference Include="Aspire.Hosting.Azure" Version="13.6.4" />
+    <PackageReference Include="Aspire.Hosting.Azure.Storage" Version="13.6.4" />
+    <PackageReference Include="Aspire.Hosting.SqlServer" Version="13.6.4" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Aspire.Hosting.AppHost" Version="13.6.0" />
+    <PackageReference Include="Aspire.Hosting.AppHost" Version="13.6.4" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.14" />
     <ProjectReference Include="..\VolumeMount.BlazorWeb\VolumeMount.BlazorWeb.csproj" />
     <ProjectReference Include="..\VolumeMount.MigrationService\VolumeMount.MigrationService.csproj" />
