@@ -52,7 +52,7 @@ jobs:
   
     - name: Install Docker (latest version)
       if: runner.os == 'Linux'
-      uses: docker/setup-docker-action@7ec28a010822b4626af4874f9448a4b05ac6f3e5 # v5.6.0
+      uses: docker/setup-docker-action@3f1ab1ab0e29231562e4db4ca600c1a49653bac6 # v5.7.0
 
     - name: Install Azure Functions Core Tools
       if: runner.os == 'Linux'
@@ -75,7 +75,7 @@ jobs:
       with:
         node-version: ${{ env.NODE_VERSION }}
 
-    - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+    - uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78 # v6.2.0
       with:
         distribution: temurin
         java-version: '21'
