@@ -16,7 +16,7 @@
 
   <ItemGroup>
     <PackageReference Include="Aspire.Hosting.AppHost" Version="17.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.14" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.15" />
     <ProjectReference Include="..\VolumeMount.BlazorWeb\VolumeMount.BlazorWeb.csproj" />
     <ProjectReference Include="..\VolumeMount.MigrationService\VolumeMount.MigrationService.csproj" />
   </ItemGroup>

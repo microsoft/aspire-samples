@@ -10,15 +10,15 @@ Samples for [Aspire](https://aspire.dev).
 
 These samples target the Aspire **17.0.0** CLI and SDK.
 The repository's [`nuget.config`](./nuget.config) restores packages from NuGet.org.
-The Java hosting integration uses a preview package alongside this release.
+The Java hosting and PostgreSQL Entity Framework Core integrations use preview packages alongside this release.
 
 > [!IMPORTANT]
 > This upgrade is staged ahead of the Aspire 17.0 release. CLI installation, package
 > restores, and dashboard image pulls can fail until the release artifacts are published.
 > Use [`microsoft/aspire`'s `release/17.0` branch](https://github.com/microsoft/aspire/tree/release/17.0)
 > as the compatibility reference; a Git branch is not a NuGet package source.
-> The Java integration temporarily uses `17.0.0-preview.1.*`; replace it with the
-> exact published version before merging the upgrade.
+> The Java and PostgreSQL Entity Framework Core integrations temporarily use
+> `17.0.0-preview.1.*`; replace these with the exact published versions before merging.
 
 Install the matching Aspire CLI before building or running the samples:
 
