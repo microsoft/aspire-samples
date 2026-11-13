@@ -23,12 +23,12 @@ The REST client is [Slumber](https://github.com/LucasPickering/slumber), an MIT-
 
 ## Aspire version
 
-These samples use the released Aspire **13.6.0** CLI and packages, matching the repository.
+These samples target the Aspire **17.0.0** CLI and packages, matching the repository.
 
 Install the matching CLI using the [root installation instructions](../../README.md#aspire-version).
-Packages restore from NuGet.org without staging feeds or sample-specific NuGet configuration.
+Packages restore from NuGet.org once published, without staging feeds or sample-specific NuGet configuration.
 
-The terminal APIs remain experimental in Aspire 13.6.0, but terminal CLI commands no longer require a feature flag.
+The terminal APIs remain experimental in Aspire 17.0.0, but terminal CLI commands no longer require a feature flag.
 When updating, align the CLI and package versions across the repository and repeat the interactive walkthroughs.
 
 These are local-development examples, not deployment samples. Only give trusted users dashboard access: the Redis and SQL REPLs grant database access. Data is disposable, and the HTTP APIs deliberately have no application authentication.

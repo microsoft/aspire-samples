@@ -48,7 +48,8 @@ var initScriptPath = Path.Join(Path.GetDirectoryName(typeof(Program).Assembly.Lo
 var addressBookDb = sqlserver.AddDatabase("AddressBook")
     .WithCreationScript(File.ReadAllText(initScriptPath));
 
-builder.AddProject<Projects.DatabaseContainers_ApiService>("apiservice")
+#pragma warning disable ASPIREDOTNETPROJECT001
+builder.AddDotnetProject("apiservice", "../DatabaseContainers.ApiService/DatabaseContainers.ApiService.csproj")
     .WithReference(todosDb)
     .WaitFor(todosDb)
     .WithReference(catalogDb)
@@ -57,5 +58,6 @@ builder.AddProject<Projects.DatabaseContainers_ApiService>("apiservice")
     .WaitFor(addressBookDb)
     .WithHttpHealthCheck("/alive")
     .WithHttpHealthCheck("/health");
+#pragma warning restore ASPIREDOTNETPROJECT001
 
 builder.Build().Run();
