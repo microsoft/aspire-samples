@@ -20,6 +20,7 @@ flowchart LR
 - **WithModTidy**: Runs `go mod tidy` before the API starts so `go.mod` and `go.sum` stay current
 - **Publish with a Dockerfile**: Builds the production container image from `api/Dockerfile`
 - **AddDockerComposeEnvironment**: Publishes and deploys the API to Docker Compose
+- **ConfigureDashboard**: Pins the dashboard published next to the API to host port 9003
 - **WithHttpEndpoint**: HTTP endpoint with PORT environment variable
 - **WithHttpHealthCheck**: Health check endpoint at `/health`
 - **In-Memory Storage**: Thread-safe CRUD operations with sync.RWMutex
@@ -50,7 +51,10 @@ aspire do docker-compose-down-env  # Teardown deployment
 
 **Go Application** - Run with `go` locally, publish with a Dockerfile:
 ```go
-env := builder.AddDockerComposeEnvironment("env")
+env := builder.AddDockerComposeEnvironment("env").
+    ConfigureDashboard(func(dashboard aspire.DockerComposeAspireDashboardResource) {
+        dashboard.WithHostPort(&aspire.WithHostPortOptions{Port: aspire.IntPtr(9003)})
+    })
 
 api := builder.AddGoApp("api", "./api").
     WithModTidy().
@@ -59,7 +63,7 @@ api := builder.AddGoApp("api", "./api").
     WithExternalHttpEndpoints()
 ```
 
-`AddGoApp` runs `go run .` in `./api` when you run the AppHost. When you publish, it builds the image from `api/Dockerfile` because that file exists, and generates a Dockerfile only when there is none.
+`AddGoApp` runs `go run .` in `./api` when you run the AppHost. When you publish, it builds the image from `api/Dockerfile` because that file exists, and generates a Dockerfile only when there is none. `ConfigureDashboard` publishes the Aspire dashboard on host port `9003`, so its URL stays the same across deployments.
 
 **Environment Variables** - Aspire injects `PORT` for HTTP endpoint configuration
 

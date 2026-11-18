@@ -12,7 +12,13 @@ func main() {
 		log.Fatal(aspire.FormatError(err))
 	}
 
-	env := builder.AddDockerComposeEnvironment("env")
+	// Publish the dashboard on a fixed host port so its URL doesn't change between deployments.
+	env := builder.AddDockerComposeEnvironment("env").
+		ConfigureDashboard(func(dashboard aspire.DockerComposeAspireDashboardResource) {
+			if err := dashboard.WithHostPort(&aspire.WithHostPortOptions{Port: aspire.IntPtr(9003)}).Err(); err != nil {
+				log.Fatal(aspire.FormatError(err))
+			}
+		})
 
 	// AddGoApp runs `go run .` from ./api during `aspire run`. When publishing, it builds the
 	// image from the Dockerfile that is checked in next to the API instead of generating one.
