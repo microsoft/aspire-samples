@@ -1,7 +1,6 @@
+#:package Aspire.Hosting.AppHost@17.0.0
 #:package Aspire.Hosting.Redis@17.0.0
 #:package Aspire.Hosting.Dotnet@17.0.0
-#:sdk Aspire.AppHost.Sdk@17.0.0
-#:property AspireUseCliBundle=true
 
 var builder = DistributedApplication.CreateBuilder(args);
 

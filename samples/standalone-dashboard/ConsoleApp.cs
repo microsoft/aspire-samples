@@ -1,8 +1,8 @@
 ﻿#:package Microsoft.Extensions.Hosting@10.0.1
-#:package OpenTelemetry.Exporter.OpenTelemetryProtocol@1.14.0
-#:package OpenTelemetry.Extensions.Hosting@1.14.0
-#:package OpenTelemetry.Instrumentation.Http@1.14.0
-#:package OpenTelemetry.Instrumentation.Runtime@1.14.0
+#:package OpenTelemetry.Exporter.OpenTelemetryProtocol@1.18.0
+#:package OpenTelemetry.Extensions.Hosting@1.18.0
+#:package OpenTelemetry.Instrumentation.Http@1.18.0
+#:package OpenTelemetry.Instrumentation.Runtime@1.18.0
 #:property PublishAot=false
 
 using System.Diagnostics;

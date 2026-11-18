@@ -1,4 +1,4 @@
-<Project Sdk="Aspire.AppHost.Sdk/17.0.0">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -7,11 +7,6 @@
     <Nullable>enable</Nullable>
     <UserSecretsId>4c1c2d4e-51aa-45a6-9939-c9f0d1c4baca</UserSecretsId>
   </PropertyGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\HealthChecksUI.ApiService\HealthChecksUI.ApiService.csproj" />
-    <ProjectReference Include="..\HealthChecksUI.Web\HealthChecksUI.Web.csproj" />
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Aspire.Hosting.AppHost" Version="17.0.0" />

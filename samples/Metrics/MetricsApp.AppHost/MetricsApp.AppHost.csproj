@@ -1,4 +1,4 @@
-<Project Sdk="Aspire.AppHost.Sdk/17.0.0">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -12,7 +12,6 @@
     <PackageReference Include="Aspire.Hosting.AppHost" Version="17.0.0" />
     <PackageReference Include="Aspire.Hosting.Dotnet" Version="17.0.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.15" />
-    <ProjectReference Include="..\MetricsApp\MetricsApp.csproj" />
   </ItemGroup>
 
 </Project>

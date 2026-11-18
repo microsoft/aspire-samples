@@ -1,5 +1,4 @@
-#:sdk Aspire.AppHost.Sdk@17.0.0
-#:property AspireUseCliBundle=true
+#:package Aspire.Hosting.AppHost@17.0.0
 
 using Aspire.Hosting.ApplicationModel;
 using Aspire.Hosting.Publishing;

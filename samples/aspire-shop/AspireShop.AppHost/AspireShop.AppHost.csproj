@@ -1,4 +1,4 @@
-<Project Sdk="Aspire.AppHost.Sdk/17.0.0">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -14,10 +14,6 @@
     <PackageReference Include="Aspire.Hosting.PostgreSQL" Version="17.0.0" />
     <PackageReference Include="Aspire.Hosting.Redis" Version="17.0.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.15" />
-    <ProjectReference Include="..\AspireShop.BasketService\AspireShop.BasketService.csproj" />
-    <ProjectReference Include="..\AspireShop.CatalogDbManager\AspireShop.CatalogDbManager.csproj" />
-    <ProjectReference Include="..\AspireShop.CatalogService\AspireShop.CatalogService.csproj" />
-    <ProjectReference Include="..\AspireShop.Frontend\AspireShop.Frontend.csproj" />
   </ItemGroup>
 
 </Project>

@@ -51,12 +51,12 @@ aspire do docker-compose-down-env  # Teardown deployment
 
 **Go Application** - Run with `go` locally, publish with a Dockerfile:
 ```go
-env := builder.AddDockerComposeEnvironment("env").
+builder.AddDockerComposeEnvironment("env").
     ConfigureDashboard(func(dashboard aspire.DockerComposeAspireDashboardResource) {
         dashboard.WithHostPort(&aspire.WithHostPortOptions{Port: aspire.IntPtr(9003)})
     })
 
-api := builder.AddGoApp("api", "./api").
+builder.AddGoApp("api", "./api").
     WithModTidy().
     WithHttpEndpoint(&aspire.WithHttpEndpointOptions{Env: aspire.StringPtr("PORT")}).
     WithHttpHealthCheck(&aspire.WithHttpHealthCheckOptions{Path: aspire.StringPtr("/health")}).

@@ -9,7 +9,7 @@ cd "$repo_root"
 
 mapfile -t apphosts < <(git ls-files ':(glob)samples/**/apphost.go' | sort)
 
-# Moving or renaming the AppHost must not turn this job into a silent pass.
+# Moving or renaming the AppHost must not turn this validation into a silent pass.
 if (( ${#apphosts[@]} == 0 )); then
     echo "::error::No Go AppHosts found under samples/"
     exit 1

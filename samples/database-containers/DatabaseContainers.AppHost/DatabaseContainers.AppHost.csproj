@@ -1,4 +1,4 @@
-<Project Sdk="Aspire.AppHost.Sdk/17.0.0">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -10,10 +10,6 @@
 
   <ItemGroup>
     <None Include="..\DatabaseContainers.ApiService\data\sqlserver\init.sql" Link="init.sql" CopyToOutputDirectory="PreserveNewest" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\DatabaseContainers.ApiService\DatabaseContainers.ApiService.csproj" />
   </ItemGroup>
 
   <ItemGroup>

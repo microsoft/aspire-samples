@@ -1,6 +1,6 @@
 #pragma warning disable ASPIREAZURE002
 
-#:sdk Aspire.AppHost.Sdk@17.0.0
+#:package Aspire.Hosting.AppHost@17.0.0
 #:package Aspire.Hosting.Azure.Storage@17.0.0
 #:package Aspire.Hosting.Azure.Sql@17.0.0
 #:package Aspire.Hosting.JavaScript@17.0.0
