@@ -4,7 +4,7 @@ var builder = DistributedApplication.CreateBuilder(args);
 
 var maildev = builder.AddMailDev("maildev");
 
-builder.AddProject("newsletterservice", "../NewsletterService/NewsletterService.csproj")
+builder.AddDotnetProject("newsletterservice", "../NewsletterService/NewsletterService.csproj")
     .WithHttpHealthCheck("/health")
     .WithExternalHttpEndpoints()
     .WithReference(maildev)

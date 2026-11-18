@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <PackageReference Include="Aspire.Hosting" Version="17.0.0" />
+    <PackageReference Include="Aspire.Hosting.Dotnet" Version="17.0.0" />
   </ItemGroup>
 
   <ItemGroup>

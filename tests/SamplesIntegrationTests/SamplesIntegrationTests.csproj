@@ -12,6 +12,7 @@
   <ItemGroup>
     <PackageReference Include="Aspire.Hosting.AppHost" Version="17.0.0" />
     <PackageReference Include="Aspire.Hosting.Azure" Version="17.0.0" />
+    <PackageReference Include="Aspire.Hosting.Dotnet" Version="17.0.0" />
     <PackageReference Include="Aspire.Hosting.Testing" Version="17.0.0" />
     <PackageReference Include="Aspire.Hosting.JavaScript" Version="17.0.0" />
     <PackageReference Include="Aspire.Hosting.Python" Version="17.0.0" />
@@ -33,6 +34,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Using Include="Aspire.Hosting.Dotnet" />
     <Using Include="Aspire.Hosting.Testing" />
     <Using Include="Xunit" />
   </ItemGroup>

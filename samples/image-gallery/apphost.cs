@@ -1,4 +1,3 @@
-#pragma warning disable ASPIRECSHARPAPPS001
 #pragma warning disable ASPIREAZURE002
 
 #:sdk Aspire.AppHost.Sdk@17.0.0
@@ -6,6 +5,7 @@
 #:package Aspire.Hosting.Azure.Sql@17.0.0
 #:package Aspire.Hosting.JavaScript@17.0.0
 #:package Aspire.Hosting.Azure.AppContainers@17.0.0
+#:package Aspire.Hosting.Dotnet@17.0.0
 
 using Aspire.Hosting.Azure;
 using Azure.Provisioning.AppContainers;
@@ -28,7 +28,7 @@ var sql = builder.AddAzureSqlServer("sql")
     .AddDatabase("imagedb");
 
 // API: Upload images, queue thumbnail jobs, serve metadata
-var api = builder.AddCSharpApp("api", "./api")
+var api = builder.AddDotnetProject("api", "./api/api.csproj")
     .WithHttpHealthCheck("/health")
     .WithExternalHttpEndpoints()
     .WaitFor(sql)
@@ -57,7 +57,7 @@ var api = builder.AddCSharpApp("api", "./api")
 
 // Worker: Container Apps Job for queue-triggered thumbnail generation
 // Event-driven: starts when messages arrive, exits within ~5 seconds when queue is empty
-var worker = builder.AddCSharpApp("worker", "./worker")
+var worker = builder.AddDotnetProject("worker", "./worker/worker.csproj")
     .WithReference(blobs)
     .WithReference(queues)
     .WithReference(sql)

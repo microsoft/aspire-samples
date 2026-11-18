@@ -54,7 +54,7 @@ graph TB
 - **addRabbitMQ**: Message queue with management plugin
 - **addNodeApp**: Express API with dual RabbitMQ channels (publisher + consumer)
 - **addPythonApp**: Python worker with pandas/numpy for data analysis
-- **addCSharpApp**: C# worker with strong typing for reports
+- **addDotnetProject**: C# worker with strong typing for reports
 - **addViteApp**: React + TypeScript frontend
 - **OpenTelemetry**: End-to-end distributed tracing across all services
 - **Trace Context Propagation**: OpenTelemetry context through RabbitMQ headers

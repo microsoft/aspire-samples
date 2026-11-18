@@ -6,11 +6,11 @@ var sqlserver = builder.AddSqlServer("sqlserver")
 
 var db1 = sqlserver.AddDatabase("db1");
 
-var migrationService = builder.AddProject<Projects.DatabaseMigrations_MigrationService>("migration")
+var migrationService = builder.AddDotnetProject("migration", "../DatabaseMigrations.MigrationService/DatabaseMigrations.MigrationService.csproj")
     .WithReference(db1)
     .WaitFor(db1);
 
-builder.AddProject<Projects.DatabaseMigrations_ApiService>("api")
+builder.AddDotnetProject("api", "../DatabaseMigrations.ApiService/DatabaseMigrations.ApiService.csproj")
     .WithReference(db1)
     .WaitForCompletion(migrationService);
 

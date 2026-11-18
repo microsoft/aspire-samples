@@ -31,7 +31,7 @@ The non-root container packages checksum-verified Slumber **5.3.0** binaries for
 ```csharp
 var redis = builder.AddRedis("redis").WithRepl();
 
-var api = builder.AddProject("api", "./api/Notes.Api.csproj")
+var api = builder.AddDotnetProject("api", "./api/Notes.Api.csproj")
     .WithReference(redis)
     .WithHttpHealthCheck("/health")
     .WaitFor(redis);

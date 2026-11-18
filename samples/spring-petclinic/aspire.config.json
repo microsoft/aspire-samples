@@ -7,7 +7,7 @@
     "version": "17.0.0"
   },
   "packages": {
-    "Aspire.Hosting.Java": "17.0.0-preview.1.*",
+    "Aspire.Hosting.Java": "17.0.0-preview.1.26567.5",
     "Aspire.Hosting.JavaScript": "17.0.0",
     "Aspire.Hosting.PostgreSQL": "17.0.0"
   }

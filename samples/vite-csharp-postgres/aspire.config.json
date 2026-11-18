@@ -18,6 +18,7 @@
   "packages": {
     "Aspire.Hosting.PostgreSQL": "17.0.0",
     "Aspire.Hosting.JavaScript": "17.0.0",
-    "Aspire.Hosting.Docker": "17.0.0"
+    "Aspire.Hosting.Docker": "17.0.0",
+    "Aspire.Hosting.Dotnet": "17.0.0"
   }
 }

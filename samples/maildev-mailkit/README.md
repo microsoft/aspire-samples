@@ -27,7 +27,7 @@ The TypeScript AppHost uses the generated API:
 ```typescript
 const maildev = await builder.addMailDev("maildev");
 
-await builder.addCSharpApp("newsletterservice", "./NewsletterService")
+await builder.addDotnetProject("newsletterservice", "./NewsletterService/NewsletterService.csproj")
     .withHttpHealthCheck({ path: "/health" })
     .withExternalHttpEndpoints()
     .withReference(maildev)
@@ -39,7 +39,7 @@ The equivalent C# AppHost code is:
 ```csharp
 var maildev = builder.AddMailDev("maildev");
 
-builder.AddProject("newsletterservice", "../NewsletterService/NewsletterService.csproj")
+builder.AddDotnetProject("newsletterservice", "../NewsletterService/NewsletterService.csproj")
     .WithHttpHealthCheck("/health")
     .WithExternalHttpEndpoints()
     .WithReference(maildev)

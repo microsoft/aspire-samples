@@ -6,9 +6,9 @@ namespace SamplesIntegrationTests.Infrastructure;
 internal static class ResourceExtensions
 {
     /// <summary>
-    /// Gets the name of the <see cref="ProjectResource"/> based on the project file path.
+    /// Gets the name of the <see cref="DotnetProjectResource"/> based on the project file path.
     /// </summary>
-    public static string GetName(this ProjectResource project)
+    public static string GetName(this DotnetProjectResource project)
     {
         var metadata = project.GetProjectMetadata();
         return Path.GetFileNameWithoutExtension(metadata.ProjectPath);

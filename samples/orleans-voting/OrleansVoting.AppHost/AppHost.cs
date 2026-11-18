@@ -6,7 +6,7 @@ var orleans = builder.AddOrleans("voting-cluster")
     .WithClustering(redis)
     .WithGrainStorage("votes", redis);
 
-builder.AddProject<Projects.OrleansVoting_Service>("voting-fe")
+builder.AddDotnetProject("voting-fe", "../OrleansVoting.Service/OrleansVoting.Service.csproj")
     .WithReference(orleans)
     .WaitFor(redis)
     .WithReplicas(3)

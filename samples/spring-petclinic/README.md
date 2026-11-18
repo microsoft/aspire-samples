@@ -37,10 +37,8 @@ The API persists data in an Aspire-managed PostgreSQL database.
 
 Follow the [root installation instructions](../../README.md#aspire-version) to install
 the matching CLI. The CLI/SDK and other integrations target `17.0.0`, while the
-Java integration temporarily uses `17.0.0-preview.1.*` because it remains a preview
-on the `release/17.0` branch. Replace this floating pin with the exact published
-preview version before merging the upgrade.
-Packages restore from NuGet.org once published; no staging feed is configured.
+Java integration uses `17.0.0-preview.1.26567.5` because it has no stable 17.0.0
+package yet. Packages restore from NuGet.org; no staging feed is configured.
 
 ## Run
 
