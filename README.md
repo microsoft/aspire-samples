@@ -8,20 +8,20 @@ Samples for [Aspire](https://aspire.dev).
 
 ## Aspire version
 
-These samples use the released Aspire **13.6.0** CLI and SDK.
+These samples use the released Aspire **13.6.5** CLI and SDK.
 The repository's [`nuget.config`](./nuget.config) restores packages from NuGet.org.
 The Java hosting integration is published as a preview package alongside this release.
 
 Install the matching Aspire CLI before building or running the samples:
 
 ```bash
-curl -fsSL https://aspire.dev/install.sh | bash -s -- --version 13.6.0
+curl -fsSL https://aspire.dev/install.sh | bash -s -- --version 13.6.5
 ```
 
 On Windows, use PowerShell:
 
 ```powershell
-& ([scriptblock]::Create((Invoke-RestMethod https://aspire.dev/install.ps1))) -Version 13.6.0
+& ([scriptblock]::Create((Invoke-RestMethod https://aspire.dev/install.ps1))) -Version 13.6.5
 ```
 
 Dev Containers and CI install the same CLI version automatically.

@@ -1,5 +1,5 @@
-#:package Aspire.Hosting.Redis@13.6.0
-#:sdk Aspire.AppHost.Sdk@13.6.0
+#:package Aspire.Hosting.Redis@13.6.5
+#:sdk Aspire.AppHost.Sdk@13.6.5
 #:property AspireUseCliBundle=true
 
 using System.Net;

@@ -30,14 +30,14 @@ The API persists data in an Aspire-managed PostgreSQL database.
 
 ## Prerequisites
 
-- Aspire CLI **13.6.0**, installed using the [root installation instructions](../../README.md#aspire-version)
+- Aspire CLI **13.6.5**, installed using the [root installation instructions](../../README.md#aspire-version)
 - Java Development Kit 21 or later
 - Node.js 20.19, 22.13, or 24 or later
 - Docker Desktop or another Docker-compatible container runtime
 
 Follow the [root installation instructions](../../README.md#aspire-version) to install
-the matching released CLI. The CLI/SDK and other integrations use `13.6.0`, while the
-Java integration uses the accompanying `13.6.0-preview.1.26479.8` package.
+the matching released CLI. The CLI/SDK and other integrations use `13.6.5`, while the
+Java integration uses the accompanying `13.6.5-preview.1.26559.7` package.
 All packages are available on NuGet.org; no staging feed is required.
 
 ## Run
