@@ -1,4 +1,5 @@
 #:package Aspire.Hosting.AppHost@17.0.0
+#:property PublishAot=false
 
 using Aspire.Hosting.ApplicationModel;
 using Aspire.Hosting.Publishing;

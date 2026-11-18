@@ -1,4 +1,5 @@
 #:package Aspire.Hosting.AppHost@17.0.0
+#:property PublishAot=false
 
 using Microsoft.Extensions.Hosting;
 

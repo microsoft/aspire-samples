@@ -1,6 +1,7 @@
 #:package Aspire.Hosting.AppHost@17.0.0
 #:package Aspire.Hosting.Redis@17.0.0
 #:package Aspire.Hosting.Dotnet@17.0.0
+#:property PublishAot=false
 
 using System.Net;
 using System.Net.Http.Json;

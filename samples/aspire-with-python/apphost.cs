@@ -2,6 +2,7 @@
 #:package Aspire.Hosting.JavaScript@17.0.0
 #:package Aspire.Hosting.Python@17.0.0
 #:package Aspire.Hosting.Redis@17.0.0
+#:property PublishAot=false
 
 var builder = DistributedApplication.CreateBuilder(args);
 

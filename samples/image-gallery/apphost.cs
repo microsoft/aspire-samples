@@ -6,6 +6,7 @@
 #:package Aspire.Hosting.JavaScript@17.0.0
 #:package Aspire.Hosting.Azure.AppContainers@17.0.0
 #:package Aspire.Hosting.Dotnet@17.0.0
+#:property PublishAot=false
 
 using Aspire.Hosting.Azure;
 using Azure.Provisioning.AppContainers;
