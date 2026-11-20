@@ -4,12 +4,12 @@ builder.AddDockerComposeEnvironment("compose");
 
 var cache = builder.AddRedis("cache");
 
-var apiService = builder.AddProject<Projects.HealthChecksUI_ApiService>("apiservice")
+var apiService = builder.AddDotnetProject("apiservice", "../HealthChecksUI.ApiService/HealthChecksUI.ApiService.csproj")
     .WithHttpHealthCheck("/health")
     .WithHttpProbe(ProbeType.Liveness, "/alive")
     .WithFriendlyUrls(displayText: "API");
 
-var webFrontend = builder.AddProject<Projects.HealthChecksUI_Web>("webfrontend")
+var webFrontend = builder.AddDotnetProject("webfrontend", "../HealthChecksUI.Web/HealthChecksUI.Web.csproj")
     .WithReference(cache)
     .WaitFor(cache)
     .WithReference(apiService)

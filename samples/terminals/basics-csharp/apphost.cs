@@ -1,6 +1,7 @@
-#:package Aspire.Hosting.Redis@13.6.0
-#:sdk Aspire.AppHost.Sdk@13.6.0
-#:property AspireUseCliBundle=true
+#:package Aspire.Hosting.AppHost@17.0.0
+#:package Aspire.Hosting.Redis@17.0.0
+#:package Aspire.Hosting.Dotnet@17.0.0
+#:property PublishAot=false
 
 var builder = DistributedApplication.CreateBuilder(args);
 
@@ -12,7 +13,7 @@ var builder = DistributedApplication.CreateBuilder(args);
 var redis = builder.AddRedis("redis").WithRepl();
 
 // Local demo: anyone who can reach this unauthenticated HTTP API can read, replace, or delete demo notes.
-var api = builder.AddProject("api", "./api/Notes.Api.csproj")
+var api = builder.AddDotnetProject("api", "./api/Notes.Api.csproj")
     .WithReference(redis)
     .WithHttpHealthCheck("/health")
     .WaitFor(redis);

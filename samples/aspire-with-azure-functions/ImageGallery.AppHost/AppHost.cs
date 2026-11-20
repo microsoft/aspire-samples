@@ -36,7 +36,7 @@ var functions = builder.AddAzureFunctionsProject<Projects.ImageGallery_Functions
                        .WithHostStorage(storage)
                        .WithUrlForEndpoint("http", u => u.DisplayText = "Functions App");
 
-builder.AddProject<Projects.ImageGallery_FrontEnd>("frontend")
+builder.AddDotnetProject("frontend", "../ImageGallery.FrontEnd/ImageGallery.FrontEnd.csproj")
        .WithReference(queues)
        .WithReference(blobs)
        .WaitFor(functions)

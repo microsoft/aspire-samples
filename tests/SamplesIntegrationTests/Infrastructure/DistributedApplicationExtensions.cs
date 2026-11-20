@@ -334,7 +334,7 @@ public static partial class DistributedApplicationExtensions
     /// <summary>
     /// Attempts to apply EF migrations for the specified project by sending a request to the migrations endpoint <c>/ApplyDatabaseMigrations</c>.
     /// </summary>
-    public static async Task<bool> TryApplyEfMigrationsAsync(this DistributedApplication app, ProjectResource project)
+    public static async Task<bool> TryApplyEfMigrationsAsync(this DistributedApplication app, DotnetProjectResource project)
     {
         var logger = app.Services.GetRequiredService<ILoggerFactory>().CreateLogger(nameof(TryApplyEfMigrationsAsync));
         var projectName = project.GetName();

@@ -6,7 +6,7 @@ Run [Slumber](https://github.com/LucasPickering/slumber), an interactive REST cl
 
 ## Prerequisites and startup
 
-- Aspire CLI **13.6.0**, installed using the [root installation instructions](../../../README.md#aspire-version).
+- Aspire CLI **17.0.0**, installed using the [root installation instructions](../../../README.md#aspire-version).
 - The .NET 10 SDK selected by [`samples/global.json`](../../global.json).
 - Docker or another supported container runtime, running with Linux containers.
 
@@ -31,7 +31,7 @@ The non-root container packages checksum-verified Slumber **5.3.0** binaries for
 ```csharp
 var redis = builder.AddRedis("redis").WithRepl();
 
-var api = builder.AddProject("api", "./api/Notes.Api.csproj")
+var api = builder.AddDotnetProject("api", "./api/Notes.Api.csproj")
     .WithReference(redis)
     .WithHttpHealthCheck("/health")
     .WaitFor(redis);

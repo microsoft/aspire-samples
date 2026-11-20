@@ -1,4 +1,4 @@
-<Project Sdk="Aspire.AppHost.Sdk/13.6.0">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -17,9 +17,9 @@
   <ItemGroup>
     <PackageReference Include="Aspire.Hosting.AppHost" />
     <PackageReference Include="Aspire.Hosting.Azure" />
+    <PackageReference Include="Aspire.Hosting.Dotnet" />
     <PackageReference Include="Microsoft.Extensions.Hosting" />
-    <ProjectReference Include="..\ImageGallery.FrontEnd\ImageGallery.FrontEnd.csproj" />
-    <ProjectReference Include="..\ImageGallery.Functions\ImageGallery.Functions.csproj" />
+    <ProjectReference Include="..\ImageGallery.Functions\ImageGallery.Functions.csproj" IsAspireProjectResource="true" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
 </Project>

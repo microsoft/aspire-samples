@@ -56,7 +56,7 @@ public class AppHostTests(ITestOutputHelper testOutput)
 
         var appHostPath = $"{appHostName}.dll";
         var appHost = await DistributedApplicationTestFactory.CreateAsync(appHostPath, testOutput);
-        var projects = appHost.Resources.OfType<ProjectResource>();
+        var projects = appHost.Resources.OfType<DotnetProjectResource>();
         await using var app = await appHost.BuildAsync().WaitAsync(BuildStopTimeout);
         Exception? testException = null;
 

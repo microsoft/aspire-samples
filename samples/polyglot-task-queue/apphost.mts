@@ -31,7 +31,7 @@ await builder.addPythonApp("worker-python", "./worker-python", "main.py")
     .waitFor(rabbitmq)
     .withReference(rabbitmq);
 
-await builder.addCSharpApp("worker-csharp", "./worker-csharp")
+await builder.addDotnetProject("worker-csharp", "./worker-csharp/worker-csharp.csproj")
     .waitFor(rabbitmq)
     .withReference(rabbitmq);
 

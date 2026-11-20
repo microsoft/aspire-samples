@@ -8,20 +8,21 @@ Samples for [Aspire](https://aspire.dev).
 
 ## Aspire version
 
-These samples use the released Aspire **13.6.0** CLI and SDK.
+These samples target the Aspire **17.0.0** CLI and SDK.
 The repository's [`nuget.config`](./nuget.config) restores packages from NuGet.org.
-The Java hosting integration is published as a preview package alongside this release.
+The Java hosting and PostgreSQL Entity Framework Core integrations don't have a stable 17.0.0 package yet,
+so they pin the preview package `17.0.0-preview.1.26567.5` alongside this release.
 
 Install the matching Aspire CLI before building or running the samples:
 
 ```bash
-curl -fsSL https://aspire.dev/install.sh | bash -s -- --version 13.6.0
+curl -fsSL https://aspire.dev/install.sh | bash -s -- --version 17.0.0
 ```
 
 On Windows, use PowerShell:
 
 ```powershell
-& ([scriptblock]::Create((Invoke-RestMethod https://aspire.dev/install.ps1))) -Version 13.6.0
+& ([scriptblock]::Create((Invoke-RestMethod https://aspire.dev/install.ps1))) -Version 17.0.0
 ```
 
 Dev Containers and CI install the same CLI version automatically.
@@ -61,7 +62,7 @@ Dev Containers and CI install the same CLI version automatically.
 | --- | --- | --- | --- | --- |
 | [Integrating a Go App](./samples/container-build) | Go | C# AppHost | Docker Compose | Builds and runs a Go Gin app from a Dockerfile with Aspire. |
 | [Custom MailDev and MailKit integrations](./samples/maildev-mailkit) | C#, TypeScript | TypeScript AppHost | Run only | Authors custom hosting and client integrations with ATS-generated TypeScript APIs. |
-| [Go API](./samples/golang-api) | Go | TypeScript AppHost | Docker Compose | Go + chi API with Aspire-managed run and publish flows. |
+| [Go API](./samples/golang-api) | Go | Go AppHost | Docker Compose | Go + chi API with Aspire-managed run and publish flows. |
 | [Python FastAPI + PostgreSQL](./samples/python-fastapi-postgres) | Python | TypeScript AppHost | Docker Compose | FastAPI CRUD API wired to PostgreSQL and pgAdmin. |
 | [Python OpenAI Agent](./samples/python-openai-agent) | Python | TypeScript AppHost | Docker Compose | FastAPI AI agent sample with OpenAI integration. |
 | [Python Script](./samples/python-script) | Python | TypeScript AppHost | Run only | Minimal Python script sample using a file-based AppHost. |
@@ -70,10 +71,10 @@ Dev Containers and CI install the same CLI version automatically.
 
 | Sample | Workload languages | AppHost | Deploy | Description |
 | --- | --- | --- | --- | --- |
-| [Terminal basics: C#](./samples/terminals/basics-csharp) | C# | C# AppHost | Run only | Slumber REST TUI + notes API + Redis REPL using Aspire 13.6. |
-| [Terminal basics: TypeScript](./samples/terminals/basics-typescript) | TypeScript | TypeScript AppHost | Run only | Slumber REST TUI + notes API + Redis REPL using Aspire 13.6. |
-| [Terminal automation](./samples/terminals/automation-csharp) | C# | C# AppHost | Run only | Automate Slumber CRUD with terminal input, screen assertions, and API verification using Aspire 13.6. |
-| [Custom docked SQL REPL](./samples/terminals/docked-repl-csharp) | C# | C# AppHost | Run only | Custom rqlite resource with an on-demand docked SQL shell using Aspire 13.6. |
+| [Terminal basics: C#](./samples/terminals/basics-csharp) | C# | C# AppHost | Run only | Slumber REST TUI + notes API + Redis REPL using Aspire 17.0. |
+| [Terminal basics: TypeScript](./samples/terminals/basics-typescript) | TypeScript | TypeScript AppHost | Run only | Slumber REST TUI + notes API + Redis REPL using Aspire 17.0. |
+| [Terminal automation](./samples/terminals/automation-csharp) | C# | C# AppHost | Run only | Automate Slumber CRUD with terminal input, screen assertions, and API verification using Aspire 17.0. |
+| [Custom docked SQL REPL](./samples/terminals/docked-repl-csharp) | C# | C# AppHost | Run only | Custom rqlite resource with an on-demand docked SQL shell using Aspire 17.0. |
 
 ### Cloud / AI / event-driven
 

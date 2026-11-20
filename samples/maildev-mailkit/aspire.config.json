@@ -4,9 +4,10 @@
     "language": "typescript/nodejs"
   },
   "sdk": {
-    "version": "13.6.0"
+    "version": "17.0.0"
   },
   "packages": {
+    "Aspire.Hosting.Dotnet": "17.0.0",
     "MailDev.Hosting": "MailDev.Hosting/MailDev.Hosting.csproj"
   }
 }

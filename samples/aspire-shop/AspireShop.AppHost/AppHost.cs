@@ -16,22 +16,22 @@ var basketCache = builder.AddRedis("basketcache")
     .WithDataVolume()
     .WithRedisCommander();
 
-var catalogDbManager = builder.AddProject<Projects.AspireShop_CatalogDbManager>("catalogdbmanager")
+var catalogDbManager = builder.AddDotnetProject("catalogdbmanager", "../AspireShop.CatalogDbManager/AspireShop.CatalogDbManager.csproj")
     .WithReference(catalogDb)
     .WaitFor(catalogDb)
     .WithHttpHealthCheck("/health")
     .WithHttpCommand("/reset-db", "Reset Database", commandOptions: new() { IconName = "DatabaseLightning" });
 
-var catalogService = builder.AddProject<Projects.AspireShop_CatalogService>("catalogservice")
+var catalogService = builder.AddDotnetProject("catalogservice", "../AspireShop.CatalogService/AspireShop.CatalogService.csproj")
     .WithReference(catalogDb)
     .WaitFor(catalogDbManager)
     .WithHttpHealthCheck("/health");
 
-var basketService = builder.AddProject<Projects.AspireShop_BasketService>("basketservice")
+var basketService = builder.AddDotnetProject("basketservice", "../AspireShop.BasketService/AspireShop.BasketService.csproj")
     .WithReference(basketCache)
     .WaitFor(basketCache);
 
-builder.AddProject<Projects.AspireShop_Frontend>("frontend")
+builder.AddDotnetProject("frontend", "../AspireShop.Frontend/AspireShop.Frontend.csproj")
     .WithExternalHttpEndpoints()
     .WithUrlForEndpoint("https", url => url.DisplayText = "Online Store (HTTPS)")
     .WithUrlForEndpoint("http", url => url.DisplayText = "Online Store (HTTP)")

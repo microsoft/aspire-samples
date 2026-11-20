@@ -48,7 +48,7 @@ var initScriptPath = Path.Join(Path.GetDirectoryName(typeof(Program).Assembly.Lo
 var addressBookDb = sqlserver.AddDatabase("AddressBook")
     .WithCreationScript(File.ReadAllText(initScriptPath));
 
-builder.AddProject<Projects.DatabaseContainers_ApiService>("apiservice")
+builder.AddDotnetProject("apiservice", "../DatabaseContainers.ApiService/DatabaseContainers.ApiService.csproj")
     .WithReference(todosDb)
     .WaitFor(todosDb)
     .WithReference(catalogDb)

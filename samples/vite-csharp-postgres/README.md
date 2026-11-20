@@ -24,7 +24,7 @@ flowchart LR
 
 ## What This Demonstrates
 
-- **addCSharpApp**: ASP.NET Core Minimal API with EF Core
+- **addDotnetProject**: ASP.NET Core Minimal API with EF Core
 - **addViteApp**: React + TypeScript frontend with Vite
 - **addPostgres**: PostgreSQL database with pgAdmin
 - **publishWithContainerFiles**: Frontend embedded in API's wwwroot for publish mode
@@ -70,7 +70,7 @@ const postgres = await builder.addPostgres("postgres")
 
 const db = await postgres.addDatabase("db");
 
-const api = await builder.addCSharpApp("api", "./api")
+const api = await builder.addDotnetProject("api", "./api/Api.csproj")
     .withHttpHealthCheck({ path: "/health" })
     .withExternalHttpEndpoints()
     .waitFor(db)

@@ -1,6 +1,7 @@
-#:package Aspire.Hosting.Redis@13.6.0
-#:sdk Aspire.AppHost.Sdk@13.6.0
-#:property AspireUseCliBundle=true
+#:package Aspire.Hosting.AppHost@17.0.0
+#:package Aspire.Hosting.Redis@17.0.0
+#:package Aspire.Hosting.Dotnet@17.0.0
+#:property PublishAot=false
 
 using System.Net;
 using System.Net.Http.Json;
@@ -14,7 +15,7 @@ var builder = DistributedApplication.CreateBuilder(args);
 // Trusted local demo: Redis data is disposable and its authenticated REPL requires a private dashboard.
 var redis = builder.AddRedis("redis").WithRepl();
 // The reused HTTP API has no authentication; keep its endpoint private and use non-sensitive notes.
-var api = builder.AddProject("api", "../basics-csharp/api/Notes.Api.csproj")
+var api = builder.AddDotnetProject("api", "../basics-csharp/api/Notes.Api.csproj")
     .WithReference(redis)
     .WithHttpHealthCheck("/health")
     .WaitFor(redis);

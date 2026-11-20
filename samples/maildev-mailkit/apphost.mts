@@ -4,7 +4,7 @@ const builder = await createBuilder();
 
 const maildev = await builder.addMailDev("maildev");
 
-await builder.addCSharpApp("newsletterservice", "./NewsletterService")
+await builder.addDotnetProject("newsletterservice", "./NewsletterService/NewsletterService.csproj")
     .withHttpHealthCheck({ path: "/health" })
     .withExternalHttpEndpoints()
     .withReference(maildev)

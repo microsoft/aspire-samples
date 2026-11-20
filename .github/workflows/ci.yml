@@ -22,7 +22,8 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
-  ASPIRE_CLI_VERSION: '13.6.0'
+  ASPIRE_CLI_VERSION: '17.0.0'
+  GO_VERSION: '1.26'
   NODE_VERSION: '24.18.0'
 
 jobs:
@@ -121,6 +122,18 @@ jobs:
       if: runner.os == 'Linux'
       shell: bash
       run: bash ./build/validate-javascript.sh
+
+    - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+      if: runner.os == 'Linux'
+      with:
+        go-version: ${{ env.GO_VERSION }}
+        # The repository has no root go.sum for the module cache to key on.
+        cache: false
+
+    - name: Validate Go AppHosts
+      if: runner.os == 'Linux'
+      shell: bash
+      run: bash ./build/validate-go.sh
 
     - name: Test Spring Petclinic API
       shell: pwsh

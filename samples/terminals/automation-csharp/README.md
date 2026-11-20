@@ -6,7 +6,7 @@ Drive a real REST TUI from AppHost code. **Run terminal walkthrough** presses ke
 
 ## Prerequisites and startup
 
-- Aspire CLI **13.6.0**, installed using the [root installation instructions](../../../README.md#aspire-version).
+- Aspire CLI **17.0.0**, installed using the [root installation instructions](../../../README.md#aspire-version).
 - The .NET 10 SDK selected by [`samples/global.json`](../../global.json).
 - A running Linux container runtime.
 

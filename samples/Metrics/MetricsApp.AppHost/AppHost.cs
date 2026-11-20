@@ -18,7 +18,7 @@ var grafana = builder.AddContainer("grafana", "grafana/grafana")
 builder.AddOpenTelemetryCollector("otelcollector", "../otelcollector/config.yaml")
     .WithEnvironment("PROMETHEUS_ENDPOINT", $"{prometheus.GetEndpoint("http")}/api/v1/otlp");
 
-builder.AddProject<Projects.MetricsApp>("app")
+builder.AddDotnetProject("app", "../MetricsApp/MetricsApp.csproj")
     .WithEnvironment("GRAFANA_URL", grafana.GetEndpoint("http"))
     .WithUrlForEndpoint("https", u => u.DisplayText = "Instrumented App")
     .WithUrlForEndpoint("http", u => u.DisplayLocation = UrlDisplayLocation.DetailsOnly);

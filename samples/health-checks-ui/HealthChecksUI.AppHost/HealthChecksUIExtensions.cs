@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using Aspire.Hosting.Dotnet;
 using Aspire.Hosting.Lifecycle;
 using HealthChecksUI;
 
@@ -50,14 +51,14 @@ public static class HealthChecksUIExtensions
     /// <param name="builder">The builder.</param>
     /// <param name="project">The project.</param>
     /// <param name="endpointName">
-    /// The name of the HTTP endpoint the <see cref="ProjectResource"/> serves health check details from.
-    /// The endpoint will be added if it is not already defined on the <see cref="ProjectResource"/>.
+    /// The name of the HTTP endpoint the <see cref="DotnetProjectResource"/> serves health check details from.
+    /// The endpoint will be added if it is not already defined on the <see cref="DotnetProjectResource"/>.
     /// </param>
     /// <param name="probePath">The request path the project serves health check details from.</param>
     /// <returns>The resource builder.</returns>
     public static IResourceBuilder<HealthChecksUIResource> WithReference(
         this IResourceBuilder<HealthChecksUIResource> builder,
-        IResourceBuilder<ProjectResource> project,
+        IResourceBuilder<DotnetProjectResource> project,
         string endpointName = HealthChecksUIDefaults.EndpointName,
         string probePath = HealthChecksUIDefaults.ProbePath)
     {
