@@ -7,6 +7,9 @@ on:
   schedule: daily on weekdays
   workflow_dispatch:
   skip-bots: [dependabot, github-actions]
+  permissions:
+    issues: read
+    pull-requests: read
   # Emergency stop: skip while any open issue or pull request has the aspire-bot:stop label.
   steps:
     - name: Check the aspire-bot:stop emergency stop

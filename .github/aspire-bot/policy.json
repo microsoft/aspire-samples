@@ -28,12 +28,13 @@
   },
   "requiredCheck": "CI Gate",
   "limits": {
+    "$comment": "maxAutoMergesPerDay is a runaway brake, not a throttle. In the six months before Aspire Bot, Dependabot PRs merged up to 36 times in 24 hours, so keep it well above that.",
     "maxOpenBotPullRequests": 3,
     "maxFixAttemptsPerPullRequest": 3,
     "fixCommitMarker": "[aspire-bot fix]",
     "fixAttemptMarker": "aspire-bot-fix-attempt:",
     "maxLowRiskFiles": 200,
-    "maxAutoMergesPerDay": 10
+    "maxAutoMergesPerDay": 50
   },
   "verdict": {
     "pattern": "(?i)[*_`]*aspire-bot-verdict:\\s*(approve|request-changes)[*_`]*",

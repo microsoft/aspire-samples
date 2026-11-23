@@ -13,7 +13,7 @@ Humans stay in control through layered kill switches. Each one stops the bot on 
 | `aspire-bot:stop` label on any open issue or pull request | Anyone with triage access | **Everything.** Every agent skips before it starts, and the control plane merges nothing. It stays on until someone removes the label. |
 | `ASPIRE_BOT_MODE` repository variable | Anyone with write access | **Everything** when `stopped` or unset. `paused` lets agents analyze but only previews their writes, and nothing merges. |
 | `ASPIRE_BOT_MERGE` repository variable | Anyone with write access | **Merges.** Unless it's `enabled`, the control plane merges nothing, even in `active` mode. |
-| Circuit breaker | Automatic | **Everything.** The control plane adds `aspire-bot:stop` to the status issue when CI fails on `main` after an Aspire Bot merge, or when 10 automated pull requests merge in 24 hours. |
+| Circuit breaker | Automatic | **Everything.** The control plane adds `aspire-bot:stop` to the status issue when CI fails on `main` after an Aspire Bot merge, or when 50 automated pull requests merge in 24 hours (well above the busiest day so far). |
 | **Disable workflow** on the Actions tab | Anyone with write access | **One agent.** |
 | `aspire-bot:hold` label | Anyone with triage access | **One issue or pull request.** `needs-human-review` also blocks merging until a maintainer removes it. |
 | Suspend the App, or delete its private key from the `aspire-bot` environment | App owner or repository admin | **Everything that acts as Aspire Bot.** No workflow can get a token. |
@@ -102,7 +102,7 @@ An Aspire Bot or Dependabot pull request is merged only when all of these are tr
 
 1. No open issue or pull request has `aspire-bot:stop`.
 2. The mode is `active`, and `ASPIRE_BOT_MERGE` is `enabled`.
-3. The latest CI run on `main` didn't fail, and fewer than 10 automated pull requests merged in
+3. The latest CI run on `main` didn't fail, and fewer than 50 automated pull requests merged in
    the last 24 hours.
 4. The pull request isn't a draft, and it targets the default branch.
 5. It has no `aspire-bot:hold` or `needs-human-review` label.

@@ -8,6 +8,10 @@ on:
       pr:
         description: Aspire Bot pull request number to fix
         required: false
+  permissions:
+    contents: read
+    issues: read
+    pull-requests: read
   steps:
     # Emergency stop: skip while any open issue or pull request has the aspire-bot:stop label.
     - name: Check the aspire-bot:stop emergency stop
