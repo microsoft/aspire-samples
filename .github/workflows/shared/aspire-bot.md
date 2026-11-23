@@ -3,7 +3,7 @@
 # Imports merge tools/network/safe-outputs/body; `on`, `if`, `engine`, and `permissions` must be
 # declared in each workflow (gh-aw does not merge those from imports).
 github-app:
-  app-id: ${{ vars.ASPIRE_BOT_APP_ID }}
+  app-id: ${{ secrets.ASPIRE_BOT_APP_ID }}
   private-key: ${{ secrets.ASPIRE_BOT_PRIVATE_KEY }}
 network:
   allowed: [defaults, github]

@@ -144,7 +144,7 @@ Guardrails:
 1. The **Aspire Bot** GitHub App must be installed on the repository with these permissions:
    - **Read and write:** contents, pull requests, issues, workflows.
    - **Read:** actions, checks, security events, Dependabot alerts.
-2. Add the repository variable `ASPIRE_BOT_APP_ID`.
+2. Add the repository secret `ASPIRE_BOT_APP_ID`.
 3. Add the repository secret `ASPIRE_BOT_PRIVATE_KEY`.
 4. Make sure the repository can use GitHub Copilot for Actions. The workflows authenticate with
    `copilot-requests: write`, so no personal access token is needed.
