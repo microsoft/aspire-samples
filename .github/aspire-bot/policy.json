@@ -1,11 +1,13 @@
 {
   "$comment": "Aspire Bot policy. Read by the deterministic control plane (scripts/aspire_bot.py) and by every agent. Changes to this file are always high risk and require a human.",
   "modeVariable": "ASPIRE_BOT_MODE",
+  "mergeVariable": "ASPIRE_BOT_MERGE",
   "modes": {
-    "active": "Full loop: agents open, review, and fix PRs; the control plane merges eligible low-risk PRs at their validated head SHA.",
+    "active": "Full loop: agents open, review, and fix PRs; the control plane merges eligible low-risk PRs at their validated head SHA when ASPIRE_BOT_MERGE is 'enabled'.",
     "paused": "Read-only monitoring and reports. PR, push, review, and comment outputs are staged (previewed in the run summary only). Nothing is merged.",
-    "stopped": "Every agentic workflow skips. The control plane merges nothing and only removes auto-merge labels from bot and Dependabot PRs. Missing or unknown values mean stopped."
+    "stopped": "Every agentic workflow skips before activation. The control plane merges nothing and only disarms auto-merge on bot and Dependabot PRs. Missing or unknown values mean stopped."
   },
+  "ciWorkflow": "ci.yml",
   "trustedAuthors": {
     "dependabot": "dependabot[bot]"
   },
@@ -15,6 +17,7 @@
     "ready": {"name": "aspire-bot:ready", "color": "c5def5", "description": "Triage marked this issue actionable by Aspire Bot"},
     "approved": {"name": "aspire-bot:approved", "color": "0e8a16", "description": "A maintainer approved Aspire Bot acting on this item"},
     "hold": {"name": "aspire-bot:hold", "color": "b60205", "description": "Aspire Bot must not merge, push to, or act on this item"},
+    "stop": {"name": "aspire-bot:stop", "color": "000000", "description": "Emergency stop: while any open issue or PR has this label, Aspire Bot does nothing"},
     "tierLow": {"name": "aspire-bot:tier-low", "color": "c2e0c6", "description": "Risk tier: low (eligible for auto-merge)"},
     "tierHigh": {"name": "aspire-bot:tier-high", "color": "f9d0c4", "description": "Risk tier: high (requires human review)"},
     "needsHuman": {"name": "needs-human-review", "color": "d93f0b", "description": "Aspire Bot needs a human to review or decide"},
@@ -28,7 +31,9 @@
     "maxOpenBotPullRequests": 3,
     "maxFixAttemptsPerPullRequest": 3,
     "fixCommitMarker": "[aspire-bot fix]",
-    "maxLowRiskFiles": 200
+    "fixAttemptMarker": "aspire-bot-fix-attempt:",
+    "maxLowRiskFiles": 200,
+    "maxAutoMergesPerDay": 10
   },
   "verdict": {
     "pattern": "(?i)[*_`]*aspire-bot-verdict:\\s*(approve|request-changes)[*_`]*",
@@ -36,7 +41,7 @@
     "requestChanges": "request-changes"
   },
   "riskTiers": {
-    "$comment": "First matching rule wins. 'high' forces human review. 'any' means any change to the file is low risk. 'version-only' means the file was modified and every added line equals a removed line after masking the listed version patterns (Python regex; each must match the whole version value so source or protocol swaps stay visible). 'lockfile' means no added line matches a 'forbidden' pattern (untrusted sources). Missing patches and unmatched files are high risk.",
+    "$comment": "First matching rule wins. 'high' forces human review. 'any' means any change to the file is low risk. 'version-only' means the file was modified and every added line equals a removed line after masking the listed version patterns (Python regex; each must match the whole version value so source or protocol swaps stay visible). 'lockfile' means no added line matches a 'forbidden' pattern (untrusted sources). 'npm-lockfile' parses the lockfile as JSON at the merge base and at the head commit, and every package entry the change adds or modifies must resolve from one of 'registries' (no links or protocol versions). Missing patches, unreadable lockfiles, and unmatched files are high risk.",
     "rules": [
       {"glob": ".github/aspire-bot/**", "tier": "high", "reason": "Aspire Bot policy and control-plane code"},
       {"glob": ".github/workflows/aspire-bot-*", "tier": "high", "reason": "Aspire Bot workflows"},
@@ -57,8 +62,8 @@
       {"glob": "**/Directory.Build.props", "tier": "version-only", "reason": "Shared build property versions", "patterns": ["(?<=Version=\")(?:[0-9]+(?:\\.[0-9]+)*(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?|[\\[(][0-9A-Za-z.,+ -]*[\\])])(?=\")", "(?<=Version>)(?:[0-9]+(?:\\.[0-9]+)*(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?|[\\[(][0-9A-Za-z.,+ -]*[\\])])(?=<)"]},
       {"glob": "**/global.json", "tier": "version-only", "reason": "SDK versions", "patterns": ["(?<=\": \")[0-9]+(?:\\.[0-9]+)*(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?(?=\")"]},
       {"glob": "**/package.json", "tier": "version-only", "reason": "npm dependency versions", "patterns": ["(?<=\": \")[\\^~]?[0-9]+(?:\\.[0-9]+)*(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?(?=\")"]},
-      {"glob": "**/package-lock.json", "tier": "lockfile", "reason": "npm lockfile", "forbidden": ["(?i)[\"'@ ](?:git\\+|git://|github:|gitlab:|bitbucket:|file:|link:|portal:|exec:|patch:)", "\"resolved\":\\s*\"(?!https://registry\\.npmjs\\.org/)"]},
-      {"glob": "**/yarn.lock", "tier": "lockfile", "reason": "Yarn lockfile", "forbidden": ["(?i)[\"'@ ](?:git\\+|git://|github:|gitlab:|bitbucket:|file:|link:|portal:|exec:|patch:)", "^\\s*resolved:?\\s*\"?(?!https://registry\\.(?:yarnpkg\\.com|npmjs\\.org)/)"]},
+      {"glob": "**/package-lock.json", "tier": "npm-lockfile", "reason": "npm lockfile", "registries": ["https://registry.npmjs.org/"]},
+      {"glob": "**/yarn.lock", "tier": "lockfile", "reason": "Yarn lockfile", "forbidden": ["(?i)[\"'@ ](?:git\\+|git://|github:|gitlab:|bitbucket:|file:|link:|portal:|exec:|patch:)", "^\\s*resolved:?\\s*(?=\\S)(?!\"?https://registry\\.(?:yarnpkg\\.com|npmjs\\.org)/)"]},
       {"glob": "**/pnpm-lock.yaml", "tier": "lockfile", "reason": "pnpm lockfile", "forbidden": ["(?i)[\"'@ ](?:git\\+|git://|github:|gitlab:|bitbucket:|file:|link:|portal:|exec:|patch:)", "(?i)tarball:"]},
       {"glob": "**/go.mod", "tier": "version-only", "reason": "Go module versions", "patterns": ["(?<= )v[0-9]+(?:\\.[0-9]+)*(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?(?=\\s|$)", "(?<=^go )[0-9]+(?:\\.[0-9]+)*(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?$", "(?<=^toolchain go)[0-9]+(?:\\.[0-9]+)*(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?$"]},
       {"glob": "**/go.sum", "tier": "any", "reason": "Go checksums"},

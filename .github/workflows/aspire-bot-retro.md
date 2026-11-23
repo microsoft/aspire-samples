@@ -4,7 +4,23 @@ description: Weekly retrospective of the Aspire Bot loop, with a report and one 
 on:
   schedule: weekly
   workflow_dispatch:
-if: vars.ASPIRE_BOT_MODE == 'active' || vars.ASPIRE_BOT_MODE == 'paused'
+  # Emergency stop: skip while any open issue or pull request has the aspire-bot:stop label.
+  steps:
+    - name: Check the aspire-bot:stop emergency stop
+      id: kill_switch
+      continue-on-error: true
+      uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+      with:
+        script: |
+          const { data } = await github.rest.issues.listForRepo({ ...context.repo, state: "open", labels: "aspire-bot:stop", per_page: 1 });
+          if (data.length) core.setFailed(`Emergency stop: aspire-bot:stop is on #${data[0].number}.`);
+if: >-
+  needs.pre_activation.outputs.kill_switch_result == 'success' &&
+  (vars.ASPIRE_BOT_MODE == 'active' || vars.ASPIRE_BOT_MODE == 'paused')
+# The App credentials are secrets of this environment, which only the default branch can use.
+environment:
+  name: aspire-bot
+  deployment: false
 permissions:
   contents: read
   issues: read
@@ -17,8 +33,11 @@ timeout-minutes: 45
 imports:
   - shared/aspire-bot.md
 concurrency:
-  group: aspire-bot-retro
+  # Every workflow that can open a pull request shares one queue, so each run checks the open
+  # pull request limit while nothing else is publishing.
+  group: aspire-bot-publish
   cancel-in-progress: false
+  queue: max
   job-discriminator: ${{ github.run_id }}
 tools:
   github:
@@ -74,8 +93,8 @@ pull requests as high risk.
    - Edit the `.md` source.
    - Run the agentic-workflows `compile` tool so the matching `.lock.yml` is regenerated.
    - Open one pull request that explains the evidence and the expected effect.
-   - Never weaken safety controls. Don't remove `staged` mode gates, widen `allowed-files`,
-     add write permissions, change the top-level `if:`, or edit `policy.json`, the control plane,
-     or `.github/policies`.
+   - Never weaken safety controls. Don't remove `staged` mode gates, the emergency stop step, or the
+     `environment`; don't widen `allowed-files`, add write permissions, change the top-level `if:`,
+     or edit `policy.json`, the control plane, or `.github/policies`.
 
 If there was no activity this week, still post the report and call `noop` for the pull request.

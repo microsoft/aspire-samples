@@ -1,13 +1,16 @@
 name: Aspire Bot Control Plane
 
 # Deterministic (non-AI) authority for the Aspire Bot loop. See .github/aspire-bot/README.md.
-# - Resolves the ASPIRE_BOT_MODE kill switch (active | paused | stopped; anything else = stopped).
-# - Squash-merges eligible low-risk bot/Dependabot PRs, pinned to the exact head SHA that was
-#   classified, reviewed, and passed CI Gate (a later push makes GitHub refuse the merge).
-# - Removes the persistent `auto-merge` label from bot/Dependabot PRs.
+# - Honors every kill switch: the aspire-bot:stop label, ASPIRE_BOT_MODE (active | paused | stopped;
+#   anything else = stopped), and ASPIRE_BOT_MERGE (merges need `enabled`).
+# - Trips the circuit breaker (adds aspire-bot:stop to the status issue) when CI fails on main after an
+#   Aspire Bot merge, or when too many automated PRs merge in a day.
+# - Disarms GitHub auto-merge (the `auto-merge` label and the setting) on bot and Dependabot PRs.
 # - Maintains the "Aspire Bot status" issue.
-# Repository variable changes don't emit events; the next run sees the new mode. Nothing merges
-# unless this workflow observes `active` at merge time.
+# - Merges in a separate job. GitHub reads repository variables when each job starts, so the merge job
+#   sees mode and merge-switch changes made while reconcile ran. It re-validates every PR, then
+#   squash-merges it pinned to the exact head SHA that was classified, reviewed, and passed CI Gate
+#   (a later push makes GitHub refuse the merge).
 
 on:
   schedule:
@@ -43,11 +46,71 @@ jobs:
   reconcile:
     name: Reconcile
     # Dependabot-triggered and fork events don't receive the app secret; the schedule covers them.
+    # Only pull requests into the default branch can merge, and only it can use the environment.
     if: >-
       github.actor != 'dependabot[bot]' &&
-      (github.event.pull_request == null || github.event.pull_request.head.repo.full_name == github.repository)
+      (github.event.pull_request == null ||
+       (github.event.pull_request.head.repo.full_name == github.repository &&
+        github.event.pull_request.base.ref == github.event.repository.default_branch))
     runs-on: ubuntu-24.04
     timeout-minutes: 10
+    # The App credentials are secrets of this environment, which only the default branch can use.
+    environment:
+      name: aspire-bot
+      deployment: false
+    outputs:
+      candidates: ${{ steps.reconcile.outputs.candidates }}
+    steps:
+      - name: Check out control-plane code (default branch only)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+          sparse-checkout: .github/aspire-bot
+
+      - name: Mint Aspire Bot token
+        id: app-token
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        with:
+          client-id: ${{ secrets.ASPIRE_BOT_APP_ID }}
+          private-key: ${{ secrets.ASPIRE_BOT_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ github.event.repository.name }}
+          permission-actions: read
+          permission-checks: read
+          permission-contents: write
+          permission-issues: write
+          permission-pull-requests: write
+          permission-workflows: write
+
+      - name: Reconcile
+        id: reconcile
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          ASPIRE_BOT_MODE: ${{ vars.ASPIRE_BOT_MODE }}
+          ASPIRE_BOT_MERGE: ${{ vars.ASPIRE_BOT_MERGE }}
+          ASPIRE_BOT_LOGIN: ${{ steps.app-token.outputs.app-slug }}[bot]
+          PR_NUMBER: ${{ inputs.pr || github.event.pull_request.number }}
+          DRY_RUN: ${{ inputs.dry-run }}
+        run: |
+          args=(reconcile)
+          if [ -n "$PR_NUMBER" ]; then args+=(--pr "$PR_NUMBER"); fi
+          if [ "$DRY_RUN" = "true" ]; then args+=(--dry-run); fi
+          python3 .github/aspire-bot/scripts/aspire_bot.py "${args[@]}"
+
+  merge:
+    name: Merge
+    needs: reconcile
+    # `vars` is read when this job starts, so switching the mode or the merge switch off while
+    # reconcile ran still prevents the merge. The script re-checks both and the stop label.
+    if: >-
+      needs.reconcile.outputs.candidates != '' && needs.reconcile.outputs.candidates != '[]' &&
+      vars.ASPIRE_BOT_MODE == 'active' && vars.ASPIRE_BOT_MERGE == 'enabled'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    environment:
+      name: aspire-bot
+      deployment: false
     steps:
       - name: Check out control-plane code (default branch only)
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -70,15 +133,15 @@ jobs:
           permission-pull-requests: write
           permission-workflows: write
 
-      - name: Reconcile
+      - name: Merge
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
           ASPIRE_BOT_MODE: ${{ vars.ASPIRE_BOT_MODE }}
+          ASPIRE_BOT_MERGE: ${{ vars.ASPIRE_BOT_MERGE }}
           ASPIRE_BOT_LOGIN: ${{ steps.app-token.outputs.app-slug }}[bot]
-          PR_NUMBER: ${{ inputs.pr || github.event.pull_request.number }}
+          CANDIDATES: ${{ needs.reconcile.outputs.candidates }}
           DRY_RUN: ${{ inputs.dry-run }}
         run: |
-          args=(reconcile)
-          if [ -n "$PR_NUMBER" ]; then args+=(--pr "$PR_NUMBER"); fi
+          args=(merge --candidates "$CANDIDATES")
           if [ "$DRY_RUN" = "true" ]; then args+=(--dry-run); fi
           python3 .github/aspire-bot/scripts/aspire_bot.py "${args[@]}"

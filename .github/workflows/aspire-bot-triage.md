@@ -7,7 +7,23 @@ on:
   schedule: daily on weekdays
   workflow_dispatch:
   skip-bots: [dependabot, github-actions]
-if: vars.ASPIRE_BOT_MODE == 'active' || vars.ASPIRE_BOT_MODE == 'paused'
+  # Emergency stop: skip while any open issue or pull request has the aspire-bot:stop label.
+  steps:
+    - name: Check the aspire-bot:stop emergency stop
+      id: kill_switch
+      continue-on-error: true
+      uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+      with:
+        script: |
+          const { data } = await github.rest.issues.listForRepo({ ...context.repo, state: "open", labels: "aspire-bot:stop", per_page: 1 });
+          if (data.length) core.setFailed(`Emergency stop: aspire-bot:stop is on #${data[0].number}.`);
+if: >-
+  needs.pre_activation.outputs.kill_switch_result == 'success' &&
+  (vars.ASPIRE_BOT_MODE == 'active' || vars.ASPIRE_BOT_MODE == 'paused')
+# The App credentials are secrets of this environment, which only the default branch can use.
+environment:
+  name: aspire-bot
+  deployment: false
 permissions:
   contents: read
   issues: read
