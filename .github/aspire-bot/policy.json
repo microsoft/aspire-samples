@@ -1,0 +1,71 @@
+{
+  "$comment": "Aspire Bot policy. Read by the deterministic control plane (scripts/aspire_bot.py) and by every agent. Changes to this file are always high risk and require a human.",
+  "modeVariable": "ASPIRE_BOT_MODE",
+  "modes": {
+    "active": "Full loop: agents open, review, and fix PRs; the control plane merges eligible low-risk PRs at their validated head SHA.",
+    "paused": "Read-only monitoring and reports. PR, push, review, and comment outputs are staged (previewed in the run summary only). Nothing is merged.",
+    "stopped": "Every agentic workflow skips. The control plane merges nothing and only removes auto-merge labels from bot and Dependabot PRs. Missing or unknown values mean stopped."
+  },
+  "trustedAuthors": {
+    "dependabot": "dependabot[bot]"
+  },
+  "labels": {
+    "autoMerge": {"name": "auto-merge", "color": "0e8a16", "description": "Approve and squash-merge after CI Gate passes (maintainer PRs only; see .github/policies/auto-merge.yml)"},
+    "bot": {"name": "aspire-bot", "color": "5319e7", "description": "Authored or managed by Aspire Bot"},
+    "ready": {"name": "aspire-bot:ready", "color": "c5def5", "description": "Triage marked this issue actionable by Aspire Bot"},
+    "approved": {"name": "aspire-bot:approved", "color": "0e8a16", "description": "A maintainer approved Aspire Bot acting on this item"},
+    "hold": {"name": "aspire-bot:hold", "color": "b60205", "description": "Aspire Bot must not merge, push to, or act on this item"},
+    "tierLow": {"name": "aspire-bot:tier-low", "color": "c2e0c6", "description": "Risk tier: low (eligible for auto-merge)"},
+    "tierHigh": {"name": "aspire-bot:tier-high", "color": "f9d0c4", "description": "Risk tier: high (requires human review)"},
+    "needsHuman": {"name": "needs-human-review", "color": "d93f0b", "description": "Aspire Bot needs a human to review or decide"},
+    "status": {"name": "aspire-bot:status", "color": "5319e7", "description": "Aspire Bot status dashboard"},
+    "retro": {"name": "aspire-bot:retro", "color": "5319e7", "description": "Aspire Bot weekly retrospective"},
+    "ciFailure": {"name": "aspire-bot:ci-failure", "color": "e99695", "description": "CI failure diagnosed by Aspire Bot"},
+    "needsInfo": {"name": "needs-more-info", "color": "fbca04", "description": "More information is needed from the author"}
+  },
+  "requiredCheck": "CI Gate",
+  "limits": {
+    "maxOpenBotPullRequests": 3,
+    "maxFixAttemptsPerPullRequest": 3,
+    "fixCommitMarker": "[aspire-bot fix]",
+    "maxLowRiskFiles": 200
+  },
+  "verdict": {
+    "pattern": "(?i)[*_`]*aspire-bot-verdict:\\s*(approve|request-changes)[*_`]*",
+    "approve": "approve",
+    "requestChanges": "request-changes"
+  },
+  "riskTiers": {
+    "$comment": "First matching rule wins. 'high' forces human review. 'any' means any change to the file is low risk. 'version-only' means the file was modified and every added line equals a removed line after masking the listed version patterns (Python regex; each must match the whole version value so source or protocol swaps stay visible). 'lockfile' means no added line matches a 'forbidden' pattern (untrusted sources). Missing patches and unmatched files are high risk.",
+    "rules": [
+      {"glob": ".github/aspire-bot/**", "tier": "high", "reason": "Aspire Bot policy and control-plane code"},
+      {"glob": ".github/workflows/aspire-bot-*", "tier": "high", "reason": "Aspire Bot workflows"},
+      {"glob": ".github/workflows/shared/**", "tier": "high", "reason": "Shared agentic workflow imports"},
+      {"glob": ".github/workflows/*.lock.yml", "tier": "high", "reason": "Compiled agentic workflows"},
+      {"glob": ".github/policies/**", "tier": "high", "reason": "Repository policies (merge and branch protection)"},
+      {"glob": ".github/aw/**", "tier": "high", "reason": "Agentic workflow configuration"},
+      {"glob": ".github/agents/**", "tier": "high", "reason": "Agent definitions"},
+      {"glob": ".github/skills/**", "tier": "high", "reason": "Agent skills"},
+      {"glob": ".github/dependabot.yml", "tier": "high", "reason": "Dependabot configuration"},
+      {"glob": "**/CODEOWNERS", "tier": "high", "reason": "Code ownership"},
+      {"glob": "build/**", "tier": "high", "reason": "Build scripts"},
+      {"glob": ".github/workflows/ci.yml", "tier": "version-only", "reason": "CI version pins", "patterns": ["(?<=@)[0-9a-f]{40}(?= # v)", "(?<=# v)[0-9]+(?:\\.[0-9]+)*(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?$", "(?<=_VERSION: ')[0-9]+(?:\\.[0-9]+)*(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?(?=')", "(?<=-version: ')[0-9]+(?:\\.[0-9]+)*(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?(?=')"]},
+      {"glob": ".github/**", "tier": "high", "reason": "Repository automation"},
+      {"glob": "**/*.md", "tier": "any", "reason": "Documentation"},
+      {"glob": "**/*.csproj", "tier": "version-only", "reason": "Project package versions", "patterns": ["(?<=Version=\")(?:[0-9]+(?:\\.[0-9]+)*(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?|[\\[(][0-9A-Za-z.,+ -]*[\\])])(?=\")", "(?<=VersionOverride=\")(?:[0-9]+(?:\\.[0-9]+)*(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?|[\\[(][0-9A-Za-z.,+ -]*[\\])])(?=\")", "(?<=Version>)(?:[0-9]+(?:\\.[0-9]+)*(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?|[\\[(][0-9A-Za-z.,+ -]*[\\])])(?=<)", "(?<=Sdk=\"Aspire\\.AppHost\\.Sdk/)[0-9]+(?:\\.[0-9]+)*(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?(?=\")"]},
+      {"glob": "**/Directory.Packages.props", "tier": "version-only", "reason": "Central package versions", "patterns": ["(?<=Version=\")(?:[0-9]+(?:\\.[0-9]+)*(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?|[\\[(][0-9A-Za-z.,+ -]*[\\])])(?=\")", "(?<=Version>)(?:[0-9]+(?:\\.[0-9]+)*(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?|[\\[(][0-9A-Za-z.,+ -]*[\\])])(?=<)"]},
+      {"glob": "**/Directory.Build.props", "tier": "version-only", "reason": "Shared build property versions", "patterns": ["(?<=Version=\")(?:[0-9]+(?:\\.[0-9]+)*(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?|[\\[(][0-9A-Za-z.,+ -]*[\\])])(?=\")", "(?<=Version>)(?:[0-9]+(?:\\.[0-9]+)*(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?|[\\[(][0-9A-Za-z.,+ -]*[\\])])(?=<)"]},
+      {"glob": "**/global.json", "tier": "version-only", "reason": "SDK versions", "patterns": ["(?<=\": \")[0-9]+(?:\\.[0-9]+)*(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?(?=\")"]},
+      {"glob": "**/package.json", "tier": "version-only", "reason": "npm dependency versions", "patterns": ["(?<=\": \")[\\^~]?[0-9]+(?:\\.[0-9]+)*(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?(?=\")"]},
+      {"glob": "**/package-lock.json", "tier": "lockfile", "reason": "npm lockfile", "forbidden": ["(?i)[\"'@ ](?:git\\+|git://|github:|gitlab:|bitbucket:|file:|link:|portal:|exec:|patch:)", "\"resolved\":\\s*\"(?!https://registry\\.npmjs\\.org/)"]},
+      {"glob": "**/yarn.lock", "tier": "lockfile", "reason": "Yarn lockfile", "forbidden": ["(?i)[\"'@ ](?:git\\+|git://|github:|gitlab:|bitbucket:|file:|link:|portal:|exec:|patch:)", "^\\s*resolved:?\\s*\"?(?!https://registry\\.(?:yarnpkg\\.com|npmjs\\.org)/)"]},
+      {"glob": "**/pnpm-lock.yaml", "tier": "lockfile", "reason": "pnpm lockfile", "forbidden": ["(?i)[\"'@ ](?:git\\+|git://|github:|gitlab:|bitbucket:|file:|link:|portal:|exec:|patch:)", "(?i)tarball:"]},
+      {"glob": "**/go.mod", "tier": "version-only", "reason": "Go module versions", "patterns": ["(?<= )v[0-9]+(?:\\.[0-9]+)*(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?(?=\\s|$)", "(?<=^go )[0-9]+(?:\\.[0-9]+)*(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?$", "(?<=^toolchain go)[0-9]+(?:\\.[0-9]+)*(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?$"]},
+      {"glob": "**/go.sum", "tier": "any", "reason": "Go checksums"},
+      {"glob": "**/pom.xml", "tier": "version-only", "reason": "Maven versions", "patterns": ["(?<=version>)[0-9]+(?:\\.[0-9]+)*(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?(?=<)"]},
+      {"glob": "**/requirements*.txt", "tier": "version-only", "reason": "pip versions", "patterns": ["(?<=[=<>~!]=)[0-9]+(?:\\.[0-9]+)*(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?(?=[\\s,;]|$)"]},
+      {"glob": "**/pyproject.toml", "tier": "version-only", "reason": "Python dependency versions", "patterns": ["(?<=[=<>~!]=)[0-9]+(?:\\.[0-9]+)*(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?(?=[\\s\\\",;]|$)"]},
+      {"glob": "**/uv.lock", "tier": "lockfile", "reason": "uv lockfile", "forbidden": ["(?i)[\"'@ ](?:git\\+|git://|github:|gitlab:|bitbucket:|file:|link:|portal:|exec:|patch:)", "(?i)\\b(?:git|path|directory|editable)\\s*=", "(?i)\\b(?:registry|url)\\s*=\\s*\"(?!https://(?:files\\.pythonhosted\\.org|pypi\\.org)/)"]}
+    ]
+  }
+}

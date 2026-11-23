@@ -1,0 +1,84 @@
+name: Aspire Bot Control Plane
+
+# Deterministic (non-AI) authority for the Aspire Bot loop. See .github/aspire-bot/README.md.
+# - Resolves the ASPIRE_BOT_MODE kill switch (active | paused | stopped; anything else = stopped).
+# - Squash-merges eligible low-risk bot/Dependabot PRs, pinned to the exact head SHA that was
+#   classified, reviewed, and passed CI Gate (a later push makes GitHub refuse the merge).
+# - Removes the persistent `auto-merge` label from bot/Dependabot PRs.
+# - Maintains the "Aspire Bot status" issue.
+# Repository variable changes don't emit events; the next run sees the new mode. Nothing merges
+# unless this workflow observes `active` at merge time.
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+    inputs:
+      pr:
+        description: Only reconcile this pull request number
+        required: false
+      dry-run:
+        description: Print mutations instead of executing them
+        type: boolean
+        default: false
+  # pull_request_target runs this workflow from the default branch and never checks out PR code.
+  # Do not add pull_request or pull_request_review triggers: those run the PR head's copy of this
+  # workflow with the app secret, which would let a PR rewrite its own merge gate.
+  pull_request_target:
+    types: [opened, reopened, synchronize, labeled, unlabeled, ready_for_review, converted_to_draft]
+  # React promptly to new review verdicts and fix pushes (workflow_run also runs from the default branch).
+  workflow_run:
+    workflows: ["Aspire Bot PR Reviewer", "Aspire Bot PR Fixer", "Aspire Samples CI"]
+    types: [completed]
+
+permissions:
+  contents: read
+
+concurrency:
+  # One reconciler at a time so merges and label changes never interleave.
+  group: aspire-bot-control
+  cancel-in-progress: false
+
+jobs:
+  reconcile:
+    name: Reconcile
+    # Dependabot-triggered and fork events don't receive the app secret; the schedule covers them.
+    if: >-
+      github.actor != 'dependabot[bot]' &&
+      (github.event.pull_request == null || github.event.pull_request.head.repo.full_name == github.repository)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out control-plane code (default branch only)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+          sparse-checkout: .github/aspire-bot
+
+      - name: Mint Aspire Bot token
+        id: app-token
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        with:
+          client-id: ${{ vars.ASPIRE_BOT_APP_ID }}
+          private-key: ${{ secrets.ASPIRE_BOT_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ github.event.repository.name }}
+          permission-checks: read
+          permission-contents: write
+          permission-issues: write
+          permission-pull-requests: write
+          permission-workflows: write
+
+      - name: Reconcile
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          ASPIRE_BOT_MODE: ${{ vars.ASPIRE_BOT_MODE }}
+          ASPIRE_BOT_LOGIN: ${{ steps.app-token.outputs.app-slug }}[bot]
+          PR_NUMBER: ${{ inputs.pr || github.event.pull_request.number }}
+          DRY_RUN: ${{ inputs.dry-run }}
+        run: |
+          args=(reconcile)
+          if [ -n "$PR_NUMBER" ]; then args+=(--pr "$PR_NUMBER"); fi
+          if [ "$DRY_RUN" = "true" ]; then args+=(--dry-run); fi
+          python3 .github/aspire-bot/scripts/aspire_bot.py "${args[@]}"

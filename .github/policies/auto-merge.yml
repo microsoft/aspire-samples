@@ -11,8 +11,9 @@ configuration:
 
       - description: >-
           Approve and auto-squash-merge PRs to main labeled 'auto-merge'.
-          The label is only applied automatically to Dependabot PRs (see label-prs.yml),
-          so this effectively gates auto-merge to bot-authored or maintainer-opted-in PRs.
+          Maintainers may apply the label manually to their own PRs. Aspire Bot and Dependabot PRs
+          are merged by the Aspire Bot control plane (.github/workflows/aspire-bot-control.yml)
+          with a SHA-pinned merge instead, and the control plane removes this label from them.
           Branch protection requires CI Gate to pass on the PR branch without
           requiring it to be up to date with main before merging.
         triggerOnOwnActions: true

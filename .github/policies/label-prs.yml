@@ -10,7 +10,9 @@ configuration:
     eventResponderTasks:
 
       - description: >-
-          Label Dependabot pull requests with 'dependencies' and 'auto-merge'
+          Label Dependabot pull requests with 'dependencies'. The Aspire Bot control plane
+          (.github/workflows/aspire-bot-control.yml) decides whether to merge them, based on
+          ASPIRE_BOT_MODE and the PR's risk tier.
         if:
           - payloadType: Pull_Request
           - isAction:
@@ -23,8 +25,6 @@ configuration:
         then:
           - addLabel:
               label: dependencies
-          - addLabel:
-              label: auto-merge
 
       - description: >-
           Label Dependabot issues with 'dependencies'

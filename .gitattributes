@@ -73,3 +73,5 @@
 *.pfx binary
 *.pem binary
 
+
+.github/workflows/*.lock.yml linguist-generated=true

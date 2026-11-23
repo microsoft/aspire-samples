@@ -1,0 +1,31 @@
+name: Aspire Bot Self-Test
+
+# Unit tests for the deterministic control plane (risk tiers, verdict binding, merge decisions).
+
+on:
+  pull_request:
+    paths:
+      - ".github/aspire-bot/**"
+      - ".github/workflows/aspire-bot-*"
+  push:
+    branches: [main]
+    paths:
+      - ".github/aspire-bot/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Control plane tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Validate policy JSON
+        run: python3 -m json.tool .github/aspire-bot/policy.json > /dev/null
+      - name: Run unit tests
+        run: python3 -m unittest discover -v -s .github/aspire-bot/scripts
