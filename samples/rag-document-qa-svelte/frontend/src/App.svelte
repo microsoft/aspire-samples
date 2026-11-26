@@ -1,91 +1,123 @@
 <script>
   import { onMount } from 'svelte';
-  import BookOpenText from 'phosphor-svelte/lib/BookOpenText';
+  import Books from 'phosphor-svelte/lib/Books';
   import UploadSimple from 'phosphor-svelte/lib/UploadSimple';
   import FileText from 'phosphor-svelte/lib/FileText';
-  import ChatCircleText from 'phosphor-svelte/lib/ChatCircleText';
-  import MagnifyingGlass from 'phosphor-svelte/lib/MagnifyingGlass';
+  import Sparkle from 'phosphor-svelte/lib/Sparkle';
+  import PaperPlaneRight from 'phosphor-svelte/lib/PaperPlaneRight';
   import Quotes from 'phosphor-svelte/lib/Quotes';
-  import BookmarkSimple from 'phosphor-svelte/lib/BookmarkSimple';
   import CheckCircle from 'phosphor-svelte/lib/CheckCircle';
   import Warning from 'phosphor-svelte/lib/Warning';
+  import Database from 'phosphor-svelte/lib/Database';
+  import Lightning from 'phosphor-svelte/lib/Lightning';
   import Sun from 'phosphor-svelte/lib/Sun';
   import Moon from 'phosphor-svelte/lib/Moon';
+  import { traced } from './tracing.js';
+
+  const suggestions = [
+    'How much parental leave do I get?',
+    'How much is the home office stipend, and what can I buy with it?',
+    'How many PTO days can I carry over into next year?',
+    'What do I need to do in my first week?'
+  ];
 
   let documents = $state([]);
+  let totalChunks = $state(0);
   let question = $state('');
-  let answer = $state(null);
-  let sources = $state([]);
+  let result = $state(null);
+  let askedQuestion = $state('');
   let uploading = $state(false);
+  let indexing = $state(false);
   let asking = $state(false);
-  let uploadMessage = $state('');
+  let notice = $state('');
   let error = $state('');
   let dragOver = $state(false);
+  let activeCitation = $state(null);
 
   let theme = $state(
-    typeof document !== 'undefined' && document.documentElement.dataset.theme === 'light'
-      ? 'light'
-      : 'dark'
+    typeof document !== 'undefined' && document.documentElement.dataset.theme === 'light' ? 'light' : 'dark'
+  );
+
+  // Split the answer into text and `[n]` citation markers so markers render as chips.
+  let answerParts = $derived(
+    result
+      ? result.answer.split(/(\[\d+\])/g).filter(Boolean).map((part) => {
+          const m = part.match(/^\[(\d+)\]$/);
+          return m ? { cite: Number(m[1]) } : { text: part };
+        })
+      : []
   );
 
   function toggleTheme() {
     theme = theme === 'dark' ? 'light' : 'dark';
     document.documentElement.dataset.theme = theme;
     try {
-      localStorage.setItem('athenaeum-theme', theme);
+      localStorage.setItem('handbook-theme', theme);
     } catch {
       /* storage may be unavailable; theme still applies for this session */
     }
   }
 
+  async function problemMessage(res, fallback) {
+    const body = await res.json().catch(() => null);
+    return body?.detail || body?.title || fallback;
+  }
+
+  function flash(message) {
+    notice = message;
+    setTimeout(() => (notice = ''), 5000);
+  }
+
   async function loadDocuments() {
     try {
-      const res = await fetch('/documents');
+      const res = await fetch('/api/documents');
+      if (!res.ok) throw new Error(await problemMessage(res, 'Could not load documents'));
       const data = await res.json();
       documents = data.documents;
+      totalChunks = data.total_chunks;
     } catch (err) {
       console.error('Failed to load documents:', err);
     }
   }
 
+  async function indexSamples() {
+    indexing = true;
+    error = '';
+    try {
+      const data = await traced('index sample documents', {}, async () => {
+        const res = await fetch('/api/documents/samples', { method: 'POST' });
+        if (!res.ok) throw new Error(await problemMessage(res, 'Indexing failed'));
+        return res.json();
+      });
+      flash(data.message);
+      await loadDocuments();
+    } catch (err) {
+      error = err.message;
+    } finally {
+      indexing = false;
+    }
+  }
+
   async function handleFileUpload(file) {
     if (!file) return;
-
     uploading = true;
-    uploadMessage = '';
     error = '';
-
     try {
       const formData = new FormData();
       formData.append('file', file);
-
-      const res = await fetch('/upload', {
-        method: 'POST',
-        body: formData
+      const data = await traced('upload document', { 'file.size': file.size }, async () => {
+        const res = await fetch('/api/documents', { method: 'POST', body: formData });
+        if (!res.ok) throw new Error(await problemMessage(res, 'Upload failed'));
+        return res.json();
       });
-
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({ detail: 'Upload failed' }));
-        throw new Error(errorData.detail || 'Upload failed');
-      }
-
-      const data = await res.json();
-      uploadMessage = `${data.message} (${data.chunks} chunks)`;
+      flash(data.message);
       await loadDocuments();
-
-      // Clear the file input
-      const fileInput = document.getElementById('fileInput');
-      if (fileInput) fileInput.value = '';
-
-      // Auto-clear success message after 5 seconds
-      setTimeout(() => {
-        uploadMessage = '';
-      }, 5000);
     } catch (err) {
       error = `Upload failed: ${err.message}`;
-      console.error('Upload error:', err);
     } finally {
       uploading = false;
+      const input = document.getElementById('fileInput');
+      if (input) input.value = '';
     }
   }
 
@@ -93,475 +125,858 @@
     event.preventDefault();
     dragOver = false;
     const file = event.dataTransfer.files[0];
-    if (file && file.type === 'text/plain') {
+    if (file && file.name.toLowerCase().endsWith('.txt')) {
       handleFileUpload(file);
     } else {
       error = 'Please upload a .txt file';
-      setTimeout(() => {
-        error = '';
-      }, 3000);
     }
   }
 
-  function onFileSelect(event) {
-    const file = event.target.files[0];
-    if (file) {
-      handleFileUpload(file);
-    }
-  }
-
-  async function askQuestion() {
-    if (!question.trim()) return;
-
+  async function ask(text = question) {
+    const q = text.trim();
+    if (!q) return;
+    question = q;
     asking = true;
     error = '';
-    answer = null;
-    sources = [];
-
+    activeCitation = null;
     try {
-      const res = await fetch('/ask', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question: question.trim() })
+      result = await traced('ask question', { 'app.question.length': q.length }, async () => {
+        const res = await fetch('/api/ask', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ question: q })
+        });
+        if (!res.ok) throw new Error(await problemMessage(res, 'Failed to get an answer'));
+        return res.json();
       });
-
-      if (!res.ok) {
-        throw new Error('Failed to get answer');
-      }
-
-      const data = await res.json();
-      answer = data.answer;
-      sources = data.sources;
+      askedQuestion = q;
     } catch (err) {
-      error = `Failed to get answer: ${err.message}`;
+      error = err.message;
     } finally {
       asking = false;
     }
   }
 
-  onMount(() => {
-    loadDocuments();
-  });
+  function focusCitation(n) {
+    activeCitation = n;
+    document.getElementById(`source-${n}`)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  onMount(loadDocuments);
 </script>
 
 <a class="skip-link" href="#main">Skip to content</a>
 
-<div class="page">
-  <header class="masthead">
+<header class="topbar">
+  <div class="topbar-inner">
     <div class="brand">
-      <span class="brand-mark" aria-hidden="true">
-        <BookOpenText size={28} weight="duotone" />
-      </span>
+      <span class="brand-mark" aria-hidden="true"><Books size={22} weight="fill" /></span>
       <span class="brand-text">
-        <span class="brand-name">Athenaeum</span>
-        <span class="brand-tag">Aspire RAG document Q&amp;A</span>
+        <span class="brand-name">Contoso Handbook Q&amp;A</span>
+        <span class="brand-tag">Answers grounded in company policy</span>
       </span>
     </div>
-    <button
-      type="button"
-      class="theme-toggle"
-      onclick={toggleTheme}
-      aria-pressed={theme === 'dark'}
-    >
-      {#if theme === 'dark'}
-        <Sun size={20} weight="bold" aria-hidden="true" />
-      {:else}
-        <Moon size={20} weight="bold" aria-hidden="true" />
-      {/if}
-      <span class="sr-only">Switch to {theme === 'dark' ? 'light' : 'dark'} theme</span>
-    </button>
-  </header>
-
-  <main id="main">
-    <section class="intro">
-      <h1>Ask your documents</h1>
-      <p class="lede">
-        Upload plain-text documents. Athenaeum chunks and embeds each one into a
-        vector index, then retrieves the most relevant passages to ground every
-        answer with citations.
-      </p>
-      <ul class="pillrow" aria-label="Built with">
-        <li>Svelte</li>
-        <li>Python</li>
-        <li>OpenAI</li>
-        <li>Qdrant</li>
-        <li>RAG</li>
-      </ul>
-    </section>
-
-    <div class="reading-room">
-      {#if error}
-        <div class="status error room-alert" role="alert">
-          <Warning size={20} weight="fill" aria-hidden="true" />
-          <span>{error}</span>
-        </div>
-      {/if}
-
-      <!-- Acquisitions / Upload -->
-      <section class="card shelf" aria-labelledby="acq-heading">
-        <h2 id="acq-heading"><UploadSimple size={22} weight="duotone" aria-hidden="true" /> Upload documents</h2>
-
-        <div
-          class="dropzone"
-          class:dragover={dragOver}
-          ondrop={onFileDrop}
-          ondragover={(e) => e.preventDefault()}
-          ondragenter={() => (dragOver = true)}
-          ondragleave={() => (dragOver = false)}
-          role="button"
-          tabindex="0"
-          aria-label="Upload a .txt document. Drop a file here, or activate to browse."
-          onclick={(e) => {
-            e.preventDefault();
-            document.getElementById('fileInput')?.click();
-          }}
-          onkeydown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault();
-              document.getElementById('fileInput')?.click();
-            }
-          }}
-        >
-          <span class="drop-icon" aria-hidden="true"><FileText size={38} weight="thin" /></span>
-          <p class="drop-title">Drop a .txt file, or click to browse</p>
-          <p class="drop-hint">Each document is chunked and embedded for semantic retrieval</p>
-        </div>
-
-        <input
-          id="fileInput"
-          type="file"
-          accept=".txt"
-          aria-label="Choose a .txt document to upload"
-          onchange={onFileSelect}
-        />
-
-        <div class="status-region" aria-live="polite">
-          {#if uploading}
-            <p class="status loading"><span class="spinner" aria-hidden="true"></span> Uploading &amp; indexing…</p>
-          {/if}
-          {#if uploadMessage}
-            <p class="status success"><CheckCircle size={18} weight="fill" aria-hidden="true" /> {uploadMessage}</p>
-          {/if}
-        </div>
-
-        <h3 class="catalog-heading">
-          Uploaded documents
-          <span class="count">{documents.length}</span>
-        </h3>
-
-        <ul class="catalog">
-          {#if documents.length === 0}
-            <li class="catalog-empty">No documents yet. Upload one to begin.</li>
-          {:else}
-            {#each documents as doc}
-              <li class="catalog-item">
-                <FileText size={18} weight="duotone" aria-hidden="true" />
-                <span>{doc}</span>
-              </li>
-            {/each}
-          {/if}
-        </ul>
-      </section>
-
-      <!-- Inquiry / Ask -->
-      <section class="card desk" aria-labelledby="ask-heading">
-        <h2 id="ask-heading"><ChatCircleText size={22} weight="duotone" aria-hidden="true" /> Ask a question</h2>
-
-        <label class="sr-only" for="question">Your question</label>
-        <textarea
-          id="question"
-          bind:value={question}
-          placeholder="Ask a question about your documents…"
-          disabled={asking}
-        ></textarea>
-
-        <button class="ask-btn" onclick={askQuestion} disabled={asking || !question.trim()}>
-          {#if asking}
-            <span class="spinner" aria-hidden="true"></span> Searching documents…
-          {:else}
-            <MagnifyingGlass size={18} weight="bold" aria-hidden="true" /> Ask question
-          {/if}
-        </button>
-
-        <div class="answer-region" aria-live="polite">
-          {#if answer}
-            <article class="answer">
-              <span class="answer-quote" aria-hidden="true"><Quotes size={26} weight="fill" /></span>
-              <h3 class="answer-heading">Answer</h3>
-              <p class="answer-body">{answer}</p>
-            </article>
-
-            {#if sources.length > 0}
-              <div class="sources">
-                <h3 class="sources-heading">Cited passages</h3>
-                {#each sources as source}
-                  <article class="source">
-                    <header class="source-head">
-                      <span class="source-name">
-                        <BookmarkSimple size={16} weight="fill" aria-hidden="true" />
-                        {source.filename}
-                      </span>
-                      <span class="source-score">{(source.score * 100).toFixed(1)}% match</span>
-                    </header>
-                    <p class="source-text">{source.text}</p>
-                  </article>
-                {/each}
-              </div>
-            {/if}
-          {/if}
-        </div>
-      </section>
+    <div class="topbar-actions">
+      <span class="stack" aria-label="Built with">Svelte · FastAPI · Qdrant · OpenAI · Aspire</span>
+      <button type="button" class="icon-btn" onclick={toggleTheme} aria-pressed={theme === 'dark'}>
+        {#if theme === 'dark'}
+          <Sun size={18} weight="bold" aria-hidden="true" />
+        {:else}
+          <Moon size={18} weight="bold" aria-hidden="true" />
+        {/if}
+        <span class="sr-only">Switch to {theme === 'dark' ? 'light' : 'dark'} theme</span>
+      </button>
     </div>
-  </main>
+  </div>
+</header>
 
-  <footer class="colophon">
-    <p>Powered by <strong>Aspire</strong> — Svelte · Python · Qdrant · OpenAI</p>
-    <p>Retrieval Augmented Generation over your documents with vector search.</p>
-  </footer>
-</div>
+<main id="main" class="layout">
+  <section class="panel ask-panel" aria-labelledby="ask-heading">
+    <h1 id="ask-heading">Ask the handbook</h1>
+    <p class="lede">
+      Questions are answered from the indexed policy documents. Every claim cites the exact passage it came from.
+    </p>
+
+    <form
+      class="ask-form"
+      onsubmit={(e) => {
+        e.preventDefault();
+        ask();
+      }}
+    >
+      <label class="sr-only" for="question">Your question</label>
+      <textarea
+        id="question"
+        rows="2"
+        bind:value={question}
+        placeholder="e.g. How many sick days do I get?"
+        disabled={asking}
+        onkeydown={(e) => {
+          if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            ask();
+          }
+        }}
+      ></textarea>
+      <button class="primary-btn" type="submit" disabled={asking || !question.trim()}>
+        {#if asking}
+          <span class="spinner" aria-hidden="true"></span> Searching…
+        {:else}
+          <PaperPlaneRight size={18} weight="fill" aria-hidden="true" /> Ask
+        {/if}
+      </button>
+    </form>
+
+    <ul class="suggestions" aria-label="Suggested questions">
+      {#each suggestions as s}
+        <li><button type="button" class="chip" onclick={() => ask(s)} disabled={asking}>{s}</button></li>
+      {/each}
+    </ul>
+
+    {#if error}
+      <div class="alert error" role="alert"><Warning size={18} weight="fill" aria-hidden="true" /> {error}</div>
+    {/if}
+
+    <div aria-live="polite">
+      {#if result}
+        <article class="answer">
+          <header class="answer-head">
+            <span class="answer-label"><Sparkle size={16} weight="fill" aria-hidden="true" /> Answer</span>
+            <span class="asked">“{askedQuestion}”</span>
+          </header>
+          <p class="answer-body">
+            {#each answerParts as part}
+              {#if part.cite}
+                <button
+                  type="button"
+                  class="cite"
+                  class:active={activeCitation === part.cite}
+                  onclick={() => focusCitation(part.cite)}
+                  aria-label={`Show source ${part.cite}`}>{part.cite}</button
+                >
+              {:else}{part.text}{/if}
+            {/each}
+          </p>
+          <footer class="answer-meta">
+            <span><Lightning size={14} weight="fill" aria-hidden="true" /> {result.model}</span>
+            <span>{result.usage.input_tokens.toLocaleString()} in · {result.usage.output_tokens.toLocaleString()} out tokens</span>
+            <span><Database size={14} weight="fill" aria-hidden="true" /> retrieval {Math.round(result.retrieval_ms)} ms</span>
+          </footer>
+        </article>
+
+        <h2 class="sources-heading">
+          <Quotes size={16} weight="fill" aria-hidden="true" /> Sources
+          <span class="muted">top {result.citations.length} chunks by similarity</span>
+        </h2>
+        <ol class="sources">
+          {#each result.citations as c (c.chunk_id)}
+            <li
+              id={`source-${c.number}`}
+              class="source"
+              class:cited={c.cited}
+              class:active={activeCitation === c.number}
+            >
+              <div class="source-head">
+                <span class="source-num" aria-hidden="true">{c.number}</span>
+                <span class="source-title">
+                  <strong>{c.section || 'Overview'}</strong>
+                  <span class="source-doc" title={c.title}>{c.title}</span>
+                </span>
+                <span class="score" title="Cosine similarity">
+                  <span class="score-bar"><span style={`width:${Math.max(4, Math.round(c.score * 100))}%`}></span></span>
+                  {c.score.toFixed(2)}
+                </span>
+              </div>
+              <p class="source-text">{c.text}</p>
+              <div class="source-foot">
+                <code>{c.chunk_id}</code>
+                {#if c.cited}<span class="badge">Cited</span>{:else}<span class="badge muted-badge">Not cited</span>{/if}
+              </div>
+            </li>
+          {/each}
+        </ol>
+      {:else if !asking}
+        <div class="empty">
+          <Sparkle size={28} weight="duotone" aria-hidden="true" />
+          <p>
+            {documents.length
+              ? 'Pick a suggested question or ask your own.'
+              : 'Index the sample documents to get started.'}
+          </p>
+        </div>
+      {/if}
+    </div>
+  </section>
+
+  <aside class="panel library" aria-labelledby="lib-heading">
+    <div class="library-head">
+      <h2 id="lib-heading">Knowledge base</h2>
+      <span class="stat">{documents.length} docs · {totalChunks} chunks</span>
+    </div>
+
+    <ul class="doc-list">
+      {#each documents as doc (doc.name)}
+        <li class="doc">
+          <FileText size={20} weight="duotone" aria-hidden="true" />
+          <span class="doc-text">
+            <span class="doc-title">{doc.title}</span>
+            <span class="doc-name">{doc.name}</span>
+          </span>
+          <span class="doc-chunks" title="Chunks">{doc.chunks}</span>
+        </li>
+      {:else}
+        <li class="doc-empty">No documents indexed yet.</li>
+      {/each}
+    </ul>
+
+    <button type="button" class="secondary-btn" onclick={indexSamples} disabled={indexing}>
+      {#if indexing}
+        <span class="spinner" aria-hidden="true"></span> Indexing…
+      {:else}
+        <Database size={18} weight="duotone" aria-hidden="true" />
+        {documents.length ? 'Re-index sample documents' : 'Index sample documents'}
+      {/if}
+    </button>
+
+    <div
+      class="dropzone"
+      class:dragover={dragOver}
+      ondrop={onFileDrop}
+      ondragover={(e) => e.preventDefault()}
+      ondragenter={() => (dragOver = true)}
+      ondragleave={() => (dragOver = false)}
+      role="button"
+      tabindex="0"
+      aria-label="Upload a .txt document. Drop a file here, or activate to browse."
+      onclick={() => document.getElementById('fileInput')?.click()}
+      onkeydown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          document.getElementById('fileInput')?.click();
+        }
+      }}
+    >
+      {#if uploading}
+        <span class="spinner" aria-hidden="true"></span>
+        <span>Embedding &amp; indexing…</span>
+      {:else}
+        <UploadSimple size={22} weight="duotone" aria-hidden="true" />
+        <span><strong>Upload a .txt policy</strong><br /><small>Use <code>##</code> headings for section-level citations</small></span>
+      {/if}
+    </div>
+    <input
+      id="fileInput"
+      type="file"
+      accept=".txt"
+      aria-label="Choose a .txt document to upload"
+      onchange={(e) => handleFileUpload(e.target.files[0])}
+    />
+
+    {#if notice}
+      <p class="alert success" role="status"><CheckCircle size={18} weight="fill" aria-hidden="true" /> {notice}</p>
+    {/if}
+  </aside>
+</main>
 
 <style>
-  .page {
-    max-width: var(--maxw);
-    margin: 0 auto;
-    padding: 0 clamp(1rem, 4vw, 2.5rem) 3.5rem;
-  }
-
-  /* ---------- Masthead ---------- */
-  .masthead {
+  /* ---------- Top bar ---------- */
+  .topbar {
     position: sticky;
     top: 0;
-    z-index: 20;
+    z-index: 10;
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .topbar-inner {
+    max-width: var(--maxw);
+    margin: 0 auto;
+    padding: 0.8rem clamp(1rem, 3vw, 2rem);
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
-    padding: 1rem 0 1.1rem;
-    margin-bottom: 1.75rem;
-    border-bottom: 2px solid var(--border-strong);
-    background: var(--bg);
   }
 
   .brand {
     display: flex;
     align-items: center;
-    gap: 0.85rem;
+    gap: 0.75rem;
+    min-width: 0;
   }
 
   .brand-mark {
     display: grid;
     place-items: center;
-    width: 46px;
-    height: 46px;
-    border-radius: 12px;
-    background: var(--brass-soft);
-    color: var(--brass);
-    border: 1px solid var(--border-strong);
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    color: #fff;
+    flex-shrink: 0;
   }
 
   .brand-text {
     display: flex;
     flex-direction: column;
-    line-height: 1.15;
+    line-height: 1.2;
+    min-width: 0;
   }
 
   .brand-name {
-    font-family: var(--font-serif);
-    font-size: 1.55rem;
     font-weight: 700;
-    letter-spacing: 0.01em;
-    color: var(--ink);
+    font-size: 1.05rem;
   }
 
   .brand-tag {
-    font-size: 0.74rem;
-    font-weight: 600;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
+    font-size: 0.8rem;
     color: var(--ink-soft);
   }
 
-  .theme-toggle {
+  .topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+  }
+
+  .stack {
+    font-size: 0.8rem;
+    color: var(--ink-soft);
+  }
+
+  .icon-btn {
     display: grid;
     place-items: center;
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
     background: var(--panel);
-    border: 1px solid var(--border-strong);
     color: var(--ink);
     cursor: pointer;
-    box-shadow: var(--shadow-sm);
-    transition: background 0.18s ease, transform 0.18s ease, border-color 0.18s ease;
   }
 
-  .theme-toggle:hover {
-    background: var(--panel-2);
-    border-color: var(--brass);
-    color: var(--brass-strong);
+  .icon-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
   }
 
-  .theme-toggle:active {
-    transform: scale(0.95);
-  }
-
-  /* ---------- Intro ---------- */
-  .intro {
-    margin-bottom: 2rem;
-  }
-
-  .intro h1 {
-    font-family: var(--font-serif);
-    font-size: clamp(2rem, 4.5vw, 2.9rem);
-    font-weight: 700;
-    letter-spacing: -0.01em;
-    color: var(--ink);
-  }
-
-  .lede {
-    margin-top: 0.6rem;
-    max-width: 68ch;
-    font-size: 1.06rem;
-    color: var(--ink-muted);
-  }
-
-  .pillrow {
-    list-style: none;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    margin-top: 1.1rem;
-  }
-
-  .pillrow li {
-    padding: 0.3rem 0.8rem;
-    border-radius: 999px;
-    background: var(--brass-soft);
-    border: 1px solid var(--border-strong);
-    color: var(--brass-strong);
-    font-size: 0.8rem;
-    font-weight: 600;
-    letter-spacing: 0.02em;
-  }
-
-  /* ---------- Reading room layout ---------- */
-  .reading-room {
+  /* ---------- Layout ---------- */
+  .layout {
+    max-width: var(--maxw);
+    margin: 0 auto;
+    padding: 1.5rem clamp(1rem, 3vw, 2rem) 3rem;
     display: grid;
-    grid-template-columns: 1.02fr 0.98fr;
+    grid-template-columns: minmax(0, 1fr) 340px;
     gap: 1.5rem;
     align-items: start;
   }
 
-  .room-alert {
-    grid-column: 1 / -1;
-  }
-
-  .card {
+  .panel {
     background: var(--panel);
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
-    padding: 1.75rem;
     box-shadow: var(--shadow-md);
+    padding: 1.5rem;
   }
 
-  .card h2 {
+  h1 {
+    font-size: clamp(1.5rem, 2.6vw, 1.9rem);
+    font-weight: 750;
+    letter-spacing: -0.02em;
+  }
+
+  .lede {
+    margin-top: 0.35rem;
+    color: var(--ink-muted);
+  }
+
+  /* ---------- Ask ---------- */
+  .ask-form {
+    display: flex;
+    gap: 0.6rem;
+    margin-top: 1.1rem;
+    align-items: stretch;
+  }
+
+  textarea {
+    flex: 1;
+    min-width: 0;
+    padding: 0.75rem 0.95rem;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-md);
+    background: var(--panel-2);
+    color: var(--ink);
+    resize: vertical;
+    line-height: 1.5;
+    min-height: 3.2rem;
+  }
+
+  textarea::placeholder {
+    color: var(--ink-soft);
+  }
+
+  textarea:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+
+  .primary-btn,
+  .secondary-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    border-radius: var(--radius-md);
+    font-weight: 650;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease;
+  }
+
+  .primary-btn {
+    padding: 0 1.3rem;
+    border: none;
+    background: var(--accent);
+    color: var(--accent-contrast);
+  }
+
+  .primary-btn:hover:not(:disabled) {
+    background: var(--accent-strong);
+  }
+
+  .primary-btn:disabled,
+  .secondary-btn:disabled,
+  .chip:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+
+  .suggestions {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    margin-top: 0.8rem;
+  }
+
+  .chip {
+    padding: 0.35rem 0.75rem;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--panel-2);
+    color: var(--ink-muted);
+    font-size: 0.83rem;
+    cursor: pointer;
+    text-align: left;
+  }
+
+  .chip:hover:not(:disabled) {
+    border-color: var(--accent);
+    color: var(--ink);
+  }
+
+  /* ---------- Answer ---------- */
+  .answer {
+    margin-top: 1.4rem;
+    padding: 1.2rem 1.3rem;
+    border-radius: var(--radius-md);
+    background: var(--accent-soft);
+    border: 1px solid var(--accent-border);
+  }
+
+  .answer-head {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.55rem;
+  }
+
+  .answer-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+  }
+
+  .asked {
+    color: var(--ink-soft);
+    font-size: 0.88rem;
+    font-style: italic;
+  }
+
+  .answer-body {
+    font-size: 1.04rem;
+    line-height: 1.7;
+  }
+
+  .cite {
+    display: inline-grid;
+    place-items: center;
+    min-width: 1.35rem;
+    height: 1.35rem;
+    padding: 0 0.3rem;
+    margin: 0 0.1rem;
+    border-radius: 6px;
+    border: none;
+    background: var(--accent);
+    color: var(--accent-contrast);
+    font-size: 0.75rem;
+    font-weight: 700;
+    vertical-align: 0.15em;
+    cursor: pointer;
+  }
+
+  .cite.active,
+  .cite:hover {
+    background: var(--accent-strong);
+  }
+
+  .answer-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1.1rem;
+    margin-top: 0.9rem;
+    font-size: 0.8rem;
+    color: var(--ink-soft);
+  }
+
+  .answer-meta span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+
+  .sources-heading {
     display: flex;
     align-items: center;
-    gap: 0.55rem;
-    font-family: var(--font-serif);
-    font-size: 1.3rem;
+    gap: 0.45rem;
+    margin: 1.4rem 0 0.7rem;
+    font-size: 0.95rem;
     font-weight: 700;
-    color: var(--ink);
-    margin-bottom: 1.25rem;
   }
 
-  .card h2 :global(svg) {
-    color: var(--brass);
+  .muted {
+    font-weight: 400;
+    color: var(--ink-soft);
+    font-size: 0.82rem;
   }
 
-  /* ---------- Dropzone ---------- */
-  .dropzone {
+  .sources {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 0.7rem;
+  }
+
+  .source {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    padding: 0.8rem 0.95rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+    background: var(--panel-2);
+    opacity: 0.72;
+    transition: border-color 0.15s ease, opacity 0.15s ease;
+  }
+
+  .source.cited {
+    opacity: 1;
+  }
+
+  .source.active {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-ring);
+  }
+
+  .source-head {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+  }
+
+  .source-num {
+    display: grid;
+    place-items: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 6px;
+    background: var(--panel-3);
+    color: var(--ink-muted);
+    font-size: 0.78rem;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .source.cited .source-num {
+    background: var(--accent);
+    color: var(--accent-contrast);
+  }
+
+  .source-title {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    flex: 1;
+    font-size: 0.86rem;
+    line-height: 1.3;
+  }
+
+  .source-title strong {
+    color: var(--accent);
+  }
+
+  .source-doc {
+    color: var(--ink-soft);
+    font-size: 0.8rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .score {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.78rem;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink-muted);
+    flex-shrink: 0;
+  }
+
+  .score-bar {
+    width: 42px;
+    height: 6px;
+    border-radius: 3px;
+    background: var(--panel-3);
+    overflow: hidden;
+  }
+
+  .score-bar span {
+    display: block;
+    height: 100%;
+    background: var(--accent);
+  }
+
+  .source-text {
+    font-size: 0.85rem;
+    color: var(--ink-muted);
+    line-height: 1.55;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .source-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-top: auto;
+  }
+
+  code {
+    font-family: var(--font-mono);
+    font-size: 0.76rem;
+    color: var(--ink-soft);
+  }
+
+  .badge {
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 0.12rem 0.5rem;
+    border-radius: 999px;
+    background: var(--success-soft);
+    color: var(--success);
+  }
+
+  .muted-badge {
+    background: var(--panel-3);
+    color: var(--ink-soft);
+  }
+
+  .empty {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.55rem;
-    padding: 2rem 1.25rem;
-    border: 2px dashed var(--border-strong);
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+    padding: 2.5rem 1rem;
+    border: 1px dashed var(--border-strong);
     border-radius: var(--radius-md);
+    color: var(--ink-soft);
+  }
+
+  /* ---------- Library ---------- */
+  .library {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    position: sticky;
+    top: 5.2rem;
+  }
+
+  .library-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  .library-head h2 {
+    font-size: 1.05rem;
+    font-weight: 700;
+  }
+
+  .stat {
+    font-size: 0.8rem;
+    color: var(--ink-soft);
+  }
+
+  .doc-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+  }
+
+  .doc {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.6rem 0.7rem;
+    border-radius: var(--radius-sm);
     background: var(--panel-2);
+    border: 1px solid var(--border);
+  }
+
+  .doc :global(svg) {
+    color: var(--accent);
+    flex-shrink: 0;
+  }
+
+  .doc-text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    flex: 1;
+  }
+
+  .doc-title {
+    font-size: 0.86rem;
+    font-weight: 600;
+    line-height: 1.3;
+  }
+
+  .doc-name {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--ink-soft);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .doc-chunks {
+    font-size: 0.74rem;
+    font-weight: 700;
+    padding: 0.1rem 0.45rem;
+    border-radius: 999px;
+    background: var(--panel-3);
+    color: var(--ink-muted);
+  }
+
+  .doc-empty {
+    padding: 1rem;
     text-align: center;
+    color: var(--ink-soft);
+    font-size: 0.9rem;
+  }
+
+  .secondary-btn {
+    padding: 0.65rem 1rem;
+    border: 1px solid var(--accent-border);
+    background: var(--accent-soft);
+    color: var(--accent);
+  }
+
+  .secondary-btn:hover:not(:disabled) {
+    border-color: var(--accent);
+  }
+
+  .dropzone {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.85rem 1rem;
+    border: 1.5px dashed var(--border-strong);
+    border-radius: var(--radius-md);
+    color: var(--ink-muted);
+    font-size: 0.86rem;
+    line-height: 1.35;
     cursor: pointer;
-    color: var(--ink);
-    transition: border-color 0.2s ease, background 0.2s ease;
+  }
+
+  .dropzone :global(svg) {
+    color: var(--accent);
+    flex-shrink: 0;
+  }
+
+  .dropzone small {
+    color: var(--ink-soft);
   }
 
   .dropzone:hover,
-  .dropzone:focus-visible {
-    border-color: var(--brass);
-    background: var(--brass-soft);
-  }
-
+  .dropzone:focus-visible,
   .dropzone.dragover {
-    border-color: var(--brass);
-    background: var(--brass-soft);
-  }
-
-  .drop-icon {
-    color: var(--brass);
-  }
-
-  .drop-title {
-    font-weight: 600;
-  }
-
-  .drop-hint {
-    font-size: 0.86rem;
-    color: var(--ink-soft);
+    border-color: var(--accent);
+    background: var(--accent-soft);
   }
 
   input[type='file'] {
     display: none;
   }
 
-  /* ---------- Status messages ---------- */
-  .status-region {
-    margin-top: 0.85rem;
-  }
-
-  .status {
+  /* ---------- Alerts ---------- */
+  .alert {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.7rem 0.95rem;
+    padding: 0.65rem 0.9rem;
     border-radius: var(--radius-sm);
+    font-size: 0.88rem;
     font-weight: 600;
-    font-size: 0.92rem;
-    margin-bottom: 0.5rem;
   }
 
-  .status.loading {
-    color: var(--ink-muted);
+  .ask-panel .alert {
+    margin-top: 1rem;
   }
 
-  .status.success {
+  .alert.success {
     background: var(--success-soft);
     color: var(--success);
-    border: 1px solid color-mix(in srgb, var(--success) 35%, transparent);
   }
 
-  .status.error {
+  .alert.error {
     background: var(--danger-soft);
-    color: var(--danger-strong);
-    border: 1px solid color-mix(in srgb, var(--danger) 40%, transparent);
+    color: var(--danger);
   }
 
   .spinner {
-    width: 18px;
-    height: 18px;
-    border: 2px solid var(--border-strong);
-    border-top-color: var(--brass);
+    width: 16px;
+    height: 16px;
+    border: 2px solid currentColor;
+    border-right-color: transparent;
     border-radius: 50%;
-    animation: spin 0.9s linear infinite;
+    animation: spin 0.8s linear infinite;
     flex-shrink: 0;
   }
 
@@ -571,244 +986,35 @@
     }
   }
 
-  /* ---------- Catalogue ---------- */
-  .catalog-heading {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-family: var(--font-serif);
-    font-size: 1.02rem;
-    font-weight: 700;
-    color: var(--ink-muted);
-    margin: 1.5rem 0 0.85rem;
-  }
-
-  .count {
-    display: inline-grid;
-    place-items: center;
-    min-width: 1.6rem;
-    height: 1.6rem;
-    padding: 0 0.45rem;
-    border-radius: 999px;
-    background: var(--brass-soft);
-    color: var(--brass-strong);
-    border: 1px solid var(--border-strong);
-    font-family: var(--font-sans);
-    font-size: 0.82rem;
-    font-weight: 700;
-  }
-
-  .catalog {
-    list-style: none;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    max-height: 230px;
-    overflow-y: auto;
-  }
-
-  .catalog-item {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    padding: 0.7rem 0.85rem;
-    border-radius: var(--radius-sm);
-    background: var(--panel-2);
-    border: 1px solid var(--border);
-    color: var(--ink);
-    font-size: 0.92rem;
-  }
-
-  .catalog-item :global(svg) {
-    color: var(--brass);
-    flex-shrink: 0;
-  }
-
-  .catalog-item span {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .catalog-empty {
-    padding: 1rem;
-    text-align: center;
-    color: var(--ink-soft);
-    font-style: italic;
-  }
-
-  /* ---------- Inquiry desk ---------- */
-  textarea {
-    width: 100%;
-    min-height: 120px;
-    padding: 0.85rem 1rem;
-    border: 1px solid var(--border-strong);
-    border-radius: var(--radius-md);
-    background: var(--panel-2);
-    color: var(--ink);
-    resize: vertical;
-    line-height: 1.5;
-  }
-
-  textarea::placeholder {
-    color: var(--ink-soft);
-  }
-
-  textarea:focus-visible {
-    outline: 3px solid var(--brass);
-    outline-offset: 1px;
-    border-color: var(--brass);
-  }
-
-  .ask-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    width: 100%;
-    margin-top: 1rem;
-    padding: 0.85rem 1.25rem;
-    border: 1px solid var(--brass-strong);
-    border-radius: var(--radius-md);
-    background: var(--brass);
-    color: var(--brass-contrast);
-    font-weight: 700;
-    cursor: pointer;
-    transition: background 0.18s ease, transform 0.18s ease;
-  }
-
-  .ask-btn:hover:not(:disabled) {
-    background: var(--brass-strong);
-  }
-
-  .ask-btn:active:not(:disabled) {
-    transform: translateY(1px);
-  }
-
-  .ask-btn:disabled {
-    opacity: 0.55;
-    cursor: not-allowed;
-  }
-
-  /* ---------- Answer & sources ---------- */
-  .answer-region:empty {
-    display: none;
-  }
-
-  .answer {
-    position: relative;
-    margin-top: 1.5rem;
-    padding: 1.4rem 1.5rem 1.5rem;
-    border-radius: var(--radius-md);
-    background: var(--panel-2);
-    border: 1px solid var(--border);
-    border-left: 4px solid var(--brass);
-  }
-
-  .answer-quote {
-    position: absolute;
-    top: 0.9rem;
-    right: 1rem;
-    color: var(--brass);
-    opacity: 0.45;
-  }
-
-  .answer-heading {
-    font-family: var(--font-serif);
-    font-size: 0.85rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    color: var(--brass-strong);
-    margin-bottom: 0.6rem;
-  }
-
-  .answer-body {
-    font-family: var(--font-serif);
-    font-size: 1.1rem;
-    line-height: 1.7;
-    color: var(--ink);
-  }
-
-  .sources {
-    margin-top: 1.5rem;
-  }
-
-  .sources-heading {
-    font-family: var(--font-serif);
-    font-size: 0.82rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    color: var(--ink-muted);
-    margin-bottom: 0.75rem;
-  }
-
-  .source {
-    padding: 0.95rem 1.1rem;
-    border-radius: var(--radius-sm);
-    background: var(--panel-3);
-    border: 1px solid var(--border);
-    margin-bottom: 0.7rem;
-  }
-
-  .source-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.75rem;
-    margin-bottom: 0.5rem;
-  }
-
-  .source-name {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    font-weight: 700;
-    color: var(--ink);
-    font-size: 0.92rem;
-  }
-
-  .source-name :global(svg) {
-    color: var(--brass);
-    flex-shrink: 0;
-  }
-
-  .source-score {
-    flex-shrink: 0;
-    font-size: 0.82rem;
-    font-weight: 700;
-    color: var(--brass-strong);
-  }
-
-  .source-text {
-    font-family: var(--font-serif);
-    font-style: italic;
-    color: var(--ink-muted);
-    line-height: 1.6;
-  }
-
-  /* ---------- Colophon ---------- */
-  .colophon {
-    margin-top: 2.75rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid var(--border);
-    text-align: center;
-    color: var(--ink-soft);
-    font-size: 0.9rem;
-  }
-
-  .colophon strong {
-    color: var(--ink-muted);
-  }
-
-  .colophon p + p {
-    margin-top: 0.35rem;
-  }
-
-  @media (max-width: 900px) {
-    .reading-room {
+  @media (max-width: 960px) {
+    .layout {
       grid-template-columns: 1fr;
+    }
+
+    .library {
+      position: static;
+    }
+
+    .stack {
+      display: none;
+    }
+  }
+
+  @media (max-width: 520px) {
+    .panel {
+      padding: 1.1rem;
+    }
+
+    .ask-form {
+      flex-direction: column;
+    }
+
+    .primary-btn {
+      padding: 0.7rem 1rem;
+    }
+
+    .brand-tag {
+      display: none;
     }
   }
 </style>

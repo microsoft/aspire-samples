@@ -11,7 +11,17 @@
       "applicationUrl": "https://localhost:39967;http://localhost:61068",
       "environmentVariables": {
         "ASPIRE_DASHBOARD_OTLP_ENDPOINT_URL": "https://localhost:20421",
+        "ASPIRE_DASHBOARD_OTLP_HTTP_ENDPOINT_URL": "https://localhost:20422",
         "ASPIRE_RESOURCE_SERVICE_ENDPOINT_URL": "https://localhost:60930"
+      }
+    },
+    "http": {
+      "applicationUrl": "http://localhost:61068",
+      "environmentVariables": {
+        "ASPIRE_DASHBOARD_OTLP_ENDPOINT_URL": "http://localhost:20423",
+        "ASPIRE_DASHBOARD_OTLP_HTTP_ENDPOINT_URL": "http://localhost:20424",
+        "ASPIRE_RESOURCE_SERVICE_ENDPOINT_URL": "http://localhost:60931",
+        "ASPIRE_ALLOW_UNSECURED_TRANSPORT": "true"
       }
     }
   },

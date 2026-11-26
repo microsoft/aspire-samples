@@ -1,13 +1,24 @@
 [project]
 name = "rag-api"
-version = "0.1.0"
-description = "RAG Document Q&A API with Qdrant and OpenAI"
+version = "2.0.0"
+description = "Contoso handbook Q&A: retrieval-augmented generation with FastAPI, Qdrant, OpenAI, and OpenTelemetry"
 requires-python = ">=3.12"
 dependencies = [
-    "fastapi>=0.136.1",
+    "fastapi>=0.165.0",
     "uvicorn>=0.47.0",
-    "openai>=2.36.0",
+    "openai>=3.57.0",
     "qdrant-client>=1.18.0",
     "python-multipart>=0.0.31",
-    "tiktoken>=0.12.0"
+    "pydantic>=2.11",
+    "scalar-fastapi>=1.10.1",
+    "opentelemetry-sdk>=1.45.2",
+    "opentelemetry-exporter-otlp-proto-grpc>=1.45.2",
+    "opentelemetry-instrumentation-fastapi>=0.66b2",
+    "opentelemetry-instrumentation-httpx>=0.66b2",
+    "opentelemetry-instrumentation-logging>=0.66b2",
+    "opentelemetry-instrumentation-openai-v2>=2.4b0",
+    # openai-v2 2.4b0 imports `opentelemetry.util.genai.instruments` (removed in 1.2b0)
+    # and `httpx` (openai 3.x itself moved to httpx2).
+    "opentelemetry-util-genai>=1.1b0,<1.2",
+    "httpx>=0.28",
 ]

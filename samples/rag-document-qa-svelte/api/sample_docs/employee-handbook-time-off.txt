@@ -1,0 +1,19 @@
+# Contoso Employee Handbook: Time Off and Leave
+
+## Paid time off accrual
+Full-time employees accrue paid time off (PTO) at 1.67 days per month, for 20 days per calendar year. Part-time employees accrue PTO in proportion to their scheduled hours. After five years of continuous service, the accrual rate increases to 25 days per year.
+
+## Carry-over and payout
+Employees may carry over up to 5 unused PTO days into the next calendar year. Carried-over days must be used by March 31 or they expire. Unused accrued PTO is paid out at the employee's base rate when employment ends, where required by local law.
+
+## Requesting time off
+PTO requests are submitted in Workday and approved by your manager. Requests of three days or longer should be submitted at least two weeks in advance. During the December code freeze, requests are approved by the department head.
+
+## Sick leave
+Employees receive 10 paid sick days per year, separate from PTO. Sick days can be used for your own illness, medical appointments, or to care for a family member. A doctor's note is only required for absences longer than three consecutive working days.
+
+## Parental leave
+Birthing parents receive 20 weeks of fully paid parental leave, and non-birthing parents receive 12 weeks. Parental leave can be taken in up to two blocks within 12 months of the birth or adoption. Employees should notify People Operations at least 30 days before leave begins, when possible.
+
+## Company holidays
+Contoso observes 11 paid company holidays each year, plus two floating holidays employees can use for cultural or religious observances. The holiday calendar is published on the People Hub every November.

@@ -1,0 +1,16 @@
+# Contoso IT Acceptable Use and Security Standards
+
+## Passwords and sign-in
+Contoso accounts use single sign-on with phishing-resistant multi-factor authentication. Passwords must be at least 14 characters long and must not be reused on other websites. Use the company password manager, 1Password, to store work credentials.
+
+## Devices
+Only Contoso-managed laptops and phones enrolled in Intune may access company data. Devices must have disk encryption enabled and must install security updates within 7 days of release. Lost or stolen devices must be reported to the IT Service Desk within one hour.
+
+## Data classification
+Contoso data is classified as Public, Internal, Confidential, or Restricted. Confidential and Restricted data must never be stored on personal devices or in personal cloud storage. Customer data is always classified as Confidential or higher.
+
+## Generative AI tools
+Employees may use approved generative AI tools, such as Contoso Copilot, for work tasks. Confidential or Restricted data must not be pasted into consumer AI tools that are not approved by IT. AI-generated code and content must be reviewed by a person before it is shipped or published.
+
+## Reporting incidents
+Suspected phishing emails are reported with the Report Phish button in Outlook. Any suspected security incident, including a misdirected email that contains customer data, must be reported to security@contoso.com immediately.

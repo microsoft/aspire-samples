@@ -1,86 +1,78 @@
-/* Athenaeum — a scholarly reading-room palette. Dark is the primary
-   identity (a library at night: warm ink, brass, parchment text on solid
-   opaque panels so contrast stays well above WCAG AA). Light is a calm
-   daytime reading room on warm cream. */
+/* Contoso Handbook Q&A. Dark is a deep navy with an indigo accent; light is a crisp
+   white-on-slate palette. Both keep body text well above WCAG AA contrast. */
 :root {
   color-scheme: dark;
 
-  --font-serif: "Iowan Old Style", "Palatino Linotype", "Book Antiqua",
-    Georgia, "Times New Roman", serif;
-  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
-    Helvetica, Arial, sans-serif;
+  --font-sans: "Segoe UI", Inter, ui-sans-serif, system-ui, -apple-system, Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: Consolas, "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 
-  --bg: #16120d;
-  --bg-accent: rgba(212, 168, 67, 0.05);
-  --panel: #221c14;
-  --panel-2: #2b2418;
-  --panel-3: #342c1d;
-  --border: #3d3322;
-  --border-strong: #54442d;
+  --bg: #0b1020;
+  --panel: #111831;
+  --panel-2: #172040;
+  --panel-3: #222c50;
+  --border: #252f52;
+  --border-strong: #34406a;
 
-  --ink: #f3ead8;
-  --ink-muted: #d2c3a4;
-  --ink-soft: #c7b896;
+  --ink: #e8ecf7;
+  --ink-muted: #b9c2db;
+  --ink-soft: #8f9abb;
 
-  --brass: #d8ac46;
-  --brass-strong: #ebc468;
-  --brass-contrast: #1c1709;
-  --brass-soft: #2f2615;
-  --brass-ring: rgba(216, 172, 70, 0.45);
+  --accent: #8e9bff;
+  --accent-2: #4fd1c5;
+  --accent-strong: #aab4ff;
+  --accent-contrast: #0b1020;
+  --accent-soft: #1a2150;
+  --accent-border: #34408a;
+  --accent-ring: rgba(142, 155, 255, 0.3);
 
-  --success: #9bcf7e;
-  --success-soft: #1f2b16;
-  --danger: #ef9f8e;
-  --danger-strong: #f3b6a8;
-  --danger-soft: #2e1812;
+  --success: #6ee7a8;
+  --success-soft: #0f2d22;
+  --danger: #fda4a4;
+  --danger-soft: #3a1418;
 
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 14px 32px -16px rgba(0, 0, 0, 0.7);
-  --shadow-lg: 0 30px 70px -30px rgba(0, 0, 0, 0.8);
+  --shadow-md: 0 18px 40px -24px rgba(0, 0, 0, 0.8);
 
   --radius-sm: 8px;
-  --radius-md: 14px;
-  --radius-lg: 20px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
 
-  --maxw: 1120px;
+  --maxw: 1320px;
 }
 
 :root[data-theme="light"] {
   color-scheme: light;
 
-  --bg: #ece2cd;
-  --bg-accent: rgba(138, 106, 24, 0.05);
-  --panel: #fcf8ee;
-  --panel-2: #f4ecda;
-  --panel-3: #ece0c9;
-  --border: #dccdac;
-  --border-strong: #c6b489;
+  --bg: #f3f5fa;
+  --panel: #ffffff;
+  --panel-2: #f7f8fc;
+  --panel-3: #e8ebf4;
+  --border: #e1e5ef;
+  --border-strong: #c9cfde;
 
-  --ink: #2a2014;
-  --ink-muted: #51422d;
-  --ink-soft: #52422b;
+  --ink: #111827;
+  --ink-muted: #374151;
+  --ink-soft: #5b6477;
 
-  --brass: #674e11;
-  --brass-strong: #503c08;
-  --brass-contrast: #fffaf0;
-  --brass-soft: #eaddbf;
-  --brass-ring: rgba(138, 106, 24, 0.4);
+  --accent: #4338ca;
+  --accent-2: #0d9488;
+  --accent-strong: #3730a3;
+  --accent-contrast: #ffffff;
+  --accent-soft: #eef0ff;
+  --accent-border: #c7cbf7;
+  --accent-ring: rgba(67, 56, 202, 0.2);
 
-  --success: #2f6b2a;
-  --success-soft: #e2eed5;
-  --danger: #a23617;
-  --danger-strong: #87290f;
-  --danger-soft: #f3dccf;
+  --success: #15803d;
+  --success-soft: #dcfce7;
+  --danger: #b91c1c;
+  --danger-soft: #fee2e2;
 
-  --shadow-sm: 0 1px 2px rgba(74, 56, 24, 0.12);
-  --shadow-md: 0 14px 32px -18px rgba(74, 56, 24, 0.32);
-  --shadow-lg: 0 30px 70px -30px rgba(74, 56, 24, 0.4);
+  --shadow-md: 0 12px 32px -20px rgba(17, 24, 39, 0.25);
 }
 
 * {
+  box-sizing: border-box;
   margin: 0;
   padding: 0;
-  box-sizing: border-box;
 }
 
 html {
@@ -88,34 +80,26 @@ html {
 }
 
 body {
-  font-family: var(--font-sans);
-  color: var(--ink);
-  background-color: var(--bg);
-  background-image:
-    radial-gradient(1100px 600px at 12% -8%, var(--bg-accent), transparent 60%),
-    radial-gradient(900px 520px at 110% 0%, var(--bg-accent), transparent 55%);
-  background-attachment: fixed;
   min-height: 100vh;
-  line-height: 1.6;
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  line-height: 1.55;
+  color: var(--ink);
+  background:
+    radial-gradient(1200px 500px at 85% -10%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 70%),
+    var(--bg);
   -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
 }
 
 button,
 input,
 textarea {
   font: inherit;
-  color: inherit;
-}
-
-a {
-  color: var(--brass-strong);
 }
 
 :focus-visible {
-  outline: 3px solid var(--brass);
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
-  border-radius: 4px;
 }
 
 .sr-only {
@@ -131,31 +115,26 @@ a {
 }
 
 .skip-link {
-  position: fixed;
-  top: 0.75rem;
-  left: 0.75rem;
-  transform: translateY(-160%);
+  position: absolute;
+  left: 1rem;
+  top: -3rem;
   z-index: 100;
-  padding: 0.65rem 1.1rem;
-  background: var(--brass);
-  color: var(--brass-contrast);
-  border-radius: var(--radius-sm);
+  padding: 0.5rem 0.9rem;
+  border-radius: 8px;
+  background: var(--accent);
+  color: var(--accent-contrast);
   font-weight: 700;
-  box-shadow: var(--shadow-md);
-  transition: transform 0.18s ease;
+  text-decoration: none;
 }
 
 .skip-link:focus {
-  transform: translateY(0);
+  top: 1rem;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.001ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.001ms !important;
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
 }

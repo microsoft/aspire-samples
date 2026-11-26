@@ -1,0 +1,19 @@
+# Contoso Hybrid and Remote Work Policy
+
+## Eligibility
+Most roles at Contoso are hybrid: employees work from a Contoso office at least two days per week, on the anchor days chosen by their team. Fully remote arrangements require approval from both your manager and People Operations, and are reviewed every 12 months.
+
+## Home office stipend
+New hybrid and remote employees receive a one-time home office stipend of $600 to buy a desk, chair, monitor, or other ergonomic equipment. The stipend is claimed through Concur within 90 days of your start date, with itemized receipts. Laptops and docking stations are issued by IT and are not purchased with the stipend.
+
+## Internet and phone allowance
+Employees who work remotely at least three days per week receive a monthly connectivity allowance of $50 for home internet and mobile phone costs. The allowance is paid automatically through payroll and does not require receipts.
+
+## Working from another location
+You may work from a location other than your registered home address for up to 20 working days per calendar year. Working from another country requires prior approval from People Operations and Legal, because it can create tax and immigration obligations.
+
+## Core collaboration hours
+All teams observe core collaboration hours from 10:00 to 15:00 in the team's primary time zone. Meetings should be scheduled inside core hours whenever possible, and Fridays after 13:00 are kept free of internal meetings.
+
+## Security at home
+Remote work must follow the IT Acceptable Use and Security Standards. Do not work on confidential information in public spaces where your screen can be seen, and always connect through the company VPN on untrusted networks.

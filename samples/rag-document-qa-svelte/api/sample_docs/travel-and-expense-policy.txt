@@ -1,0 +1,19 @@
+# Contoso Travel and Expense Policy
+
+## Booking travel
+All business travel is booked through Navan, the Contoso travel portal, so that trips are covered by our duty-of-care program. Flights must be booked at least 14 days in advance when possible. Economy class is required for flights under six hours; premium economy is allowed for flights of six hours or longer.
+
+## Hotels
+Hotel stays should not exceed the nightly city cap shown in Navan, which is $250 for most US cities and $325 for New York, San Francisco, London, and Tokyo. Stays above the cap require pre-approval from your manager.
+
+## Meals and per diem
+While traveling, meals are reimbursed up to a daily limit of $75, including tips. Alcohol is not reimbursable unless it is part of an approved client entertainment event. Meals with colleagues who are not traveling are not reimbursed.
+
+## Submitting expenses
+Expenses are submitted in Concur within 30 days of the purchase. An itemized receipt is required for every expense of $25 or more. Approved expense reports are reimbursed with the next payroll run, typically within 10 business days.
+
+## Corporate card
+Employees who travel more than four times per year can request a Contoso corporate card. The corporate card may only be used for business expenses, and personal charges must be repaid within 15 days.
+
+## Mileage
+Use of a personal vehicle for business trips is reimbursed at the current IRS standard mileage rate. Commuting between your home and your regular office is not reimbursable.

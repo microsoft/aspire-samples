@@ -1,0 +1,16 @@
+# Contoso New Hire Onboarding Guide
+
+## Before your first day
+Your laptop ships to your home address one week before your start date. You will receive an email from IT with instructions for activating your Contoso account and enrolling your laptop in Intune.
+
+## First week
+Your first week includes a welcome session with People Operations, a benefits enrollment walkthrough, and a meeting with your onboarding buddy. Security awareness training must be completed within your first five working days.
+
+## Benefits enrollment
+New employees have 30 days from their start date to enroll in medical, dental, and vision coverage. Coverage starts on the first day of employment. If you miss the enrollment window, you can only change your elections during open enrollment in November or after a qualifying life event.
+
+## Your first 90 days
+You and your manager agree on a 30-60-90 day plan during your first week. A formal check-in happens at the end of 90 days, and is the right time to raise questions about your role, team, or tools.
+
+## Where to get help
+For questions about pay, benefits, or leave, contact People Operations through the People Hub. For laptop, account, or access issues, open a ticket with the IT Service Desk.
