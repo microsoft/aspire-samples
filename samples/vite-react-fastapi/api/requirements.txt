@@ -1,3 +1,8 @@
-fastapi
-uvicorn[standard]
-pydantic>=2.0,<3.0
+fastapi>=0.165.0
+uvicorn[standard]>=0.54.0
+pydantic>=2.14,<3.0
+scalar-fastapi>=1.11.0
+opentelemetry-sdk>=1.45.2
+opentelemetry-exporter-otlp-proto-grpc>=1.45.2
+opentelemetry-instrumentation-fastapi>=0.66b2
+opentelemetry-instrumentation-logging>=0.66b2
