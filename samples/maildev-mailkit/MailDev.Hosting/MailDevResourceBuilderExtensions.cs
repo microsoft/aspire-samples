@@ -51,7 +51,13 @@ public static class MailDevResourceBuilderExtensions
             {
                 context.EnvironmentVariables[UsernameEnvironmentVariable] = resource.UsernameReference;
                 context.EnvironmentVariables[PasswordEnvironmentVariable] = resource.PasswordParameter;
+                // MailDev binds to "::" by default, which fails on Docker hosts with IPv6 disabled.
+                context.EnvironmentVariables["MAILDEV_IP"] = "0.0.0.0";
+                context.EnvironmentVariables["MAILDEV_WEB_IP"] = "0.0.0.0";
             })
+            .WithUrlForEndpoint(MailDevResource.HttpEndpointName, url => url.DisplayText = "MailDev inbox")
+            // SMTP isn't browsable, so keep its URL on the resource details page only.
+            .WithUrlForEndpoint(MailDevResource.SmtpEndpointName, url => url.DisplayLocation = UrlDisplayLocation.DetailsOnly)
             .WithHttpHealthCheck("/healthz", endpointName: MailDevResource.HttpEndpointName)
             .ExcludeFromManifest();
     }

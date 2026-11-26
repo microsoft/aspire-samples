@@ -59,7 +59,7 @@ public sealed class MailDevResourceTests
         Assert.True(maildev.Resource.PasswordParameter.Secret);
         Assert.Null(maildev.Resource.UsernameParameter);
         Assert.Equal(
-            "Endpoint=smtp://{maildev.bindings.smtp.host}:{maildev.bindings.smtp.port};Username=mail-dev;******",
+            "Endpoint=smtp://{maildev.bindings.smtp.host}:{maildev.bindings.smtp.port};Username=mail-dev;Password={maildev-password.value}",
             maildev.Resource.ConnectionStringExpression.ValueExpression);
     }
 
@@ -78,7 +78,7 @@ public sealed class MailDevResourceTests
         Assert.Same(username.Resource, maildev.Resource.UsernameParameter);
         Assert.Same(password.Resource, maildev.Resource.PasswordParameter);
         Assert.Equal(
-            "Endpoint=smtp://{maildev.bindings.smtp.host}:{maildev.bindings.smtp.port};Username={smtp-user.value};******",
+            "Endpoint=smtp://{maildev.bindings.smtp.host}:{maildev.bindings.smtp.port};Username={smtp-user.value};Password={smtp-password.value}",
             maildev.Resource.ConnectionStringExpression.ValueExpression);
     }
 

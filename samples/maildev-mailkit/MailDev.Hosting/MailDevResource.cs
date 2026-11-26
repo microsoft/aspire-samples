@@ -35,7 +35,7 @@ public sealed class MailDevResource(
     /// <inheritdoc />
     public ReferenceExpression ConnectionStringExpression =>
         ReferenceExpression.Create(
-            $"Endpoint=smtp://{SmtpEndpoint.Property(EndpointProperty.HostAndPort)};Username={UsernameReference};******");
+            $"Endpoint=smtp://{SmtpEndpoint.Property(EndpointProperty.HostAndPort)};Username={UsernameReference};Password={PasswordParameter}");
 
     /// <inheritdoc />
     public IEnumerable<KeyValuePair<string, ReferenceExpression>> GetConnectionProperties() =>

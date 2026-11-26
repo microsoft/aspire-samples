@@ -1,0 +1,53 @@
+@NotificationService_HostAddress = http://localhost:5274
+
+### Order confirmation
+POST {{NotificationService_HostAddress}}/api/emails/order-confirmations
+Content-Type: application/json
+
+{
+  "email": "maya.chen@example.com",
+  "customerName": "Maya Chen",
+  "orderNumber": "CO-104582",
+  "items": [
+    { "sku": "TNT-RDG-2P", "name": "Ridgeline 2P Backpacking Tent", "quantity": 1, "unitPrice": 349.00 },
+    { "sku": "SCK-MRN-3PK", "name": "Trailhead Merino Hiking Socks (3-pack)", "quantity": 2, "unitPrice": 36.00 }
+  ],
+  "shippingCost": 0,
+  "tax": 0,
+  "shipTo": { "line1": "2217 SE Hawthorne Blvd", "city": "Portland", "region": "OR", "postalCode": "97214" }
+}
+
+### Password reset
+POST {{NotificationService_HostAddress}}/api/emails/password-resets
+Content-Type: application/json
+
+{ "email": "daniel.okafor@example.net", "customerName": "Daniel Okafor", "expiresInMinutes": 30 }
+
+### Shipping notification
+POST {{NotificationService_HostAddress}}/api/emails/shipping-notifications
+Content-Type: application/json
+
+{
+  "email": "maya.chen@example.com",
+  "customerName": "Maya Chen",
+  "orderNumber": "CO-104582",
+  "carrier": "ups",
+  "trackingNumber": "1Z999AA10123456784",
+  "estimatedDelivery": "2026-11-27",
+  "itemCount": 4
+}
+
+### 400 validation problem details
+POST {{NotificationService_HostAddress}}/api/emails/password-resets
+Content-Type: application/json
+
+{ "email": "not-an-email", "customerName": "", "expiresInMinutes": 600 }
+
+### Preview a template (HTML)
+GET {{NotificationService_HostAddress}}/api/emails/templates/shipping-notification/preview
+
+### 404 problem details
+GET {{NotificationService_HostAddress}}/api/emails/templates/newsletter/preview
+
+### Send the sample batch (Development only)
+POST {{NotificationService_HostAddress}}/dev/sample-emails

@@ -28,9 +28,11 @@ public static class Extensions
             .WithMetrics(metrics => metrics
                 .AddAspNetCoreInstrumentation()
                 .AddHttpClientInstrumentation()
-                .AddRuntimeInstrumentation())
+                .AddRuntimeInstrumentation()
+                .AddMeter("Contoso.*"))
             .WithTracing(tracing => tracing
                 .AddSource(builder.Environment.ApplicationName)
+                .AddSource("Contoso.*")
                 .AddAspNetCoreInstrumentation(options =>
                     options.Filter = context =>
                         !context.Request.Path.StartsWithSegments(HealthEndpointPath) &&
