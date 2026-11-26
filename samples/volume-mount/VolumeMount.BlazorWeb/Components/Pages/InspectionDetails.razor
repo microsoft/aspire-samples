@@ -1,0 +1,74 @@
+@page "/inspections/{Id:int}"
+@inject InspectionService Inspections
+@inject TimeProvider Time
+
+@if (inspection is null)
+{
+    <PageTitle>Inspection not found · FieldCheck</PageTitle>
+    <div class="page-head"><div><h1>Inspection not found</h1><p class="lead">@InspectionReference.Format(Id) doesn't exist.</p></div></div>
+    <a class="btn" href="">Back to inspections</a>
+    return;
+}
+
+<PageTitle>@inspection.Reference · @inspection.AssetTag · FieldCheck</PageTitle>
+
+<a class="back" href="">← All inspections</a>
+
+<div class="page-head">
+    <div>
+        <p class="eyebrow">@inspection.Reference · @inspection.AssetTag</p>
+        <h1>@inspection.AssetName</h1>
+        <p class="lead">@inspection.Site</p>
+    </div>
+    <span class="badge badge-lg badge-@Format.OutcomeClass(inspection.Outcome)">@Format.OutcomeLabel(inspection.Outcome)</span>
+</div>
+
+<div class="detail">
+    <section class="panel">
+        <h2>Inspection</h2>
+        <dl class="facts">
+            <div><dt>Inspector</dt><dd>@inspection.Inspector</dd></div>
+            <div><dt>Inspected</dt><dd>@Format.Utc(inspection.InspectedAt) <span class="muted">(@Format.Ago(inspection.InspectedAt, Time.GetUtcNow()))</span></dd></div>
+            <div><dt>Recorded</dt><dd>@Format.Utc(inspection.CreatedAt)</dd></div>
+            <div><dt>Stored in</dt><dd>SQL Server · <code>sqldb.dbo.Inspections</code></dd></div>
+        </dl>
+        @if (inspection.Notes is not null)
+        {
+            <h3>Findings</h3>
+            <p class="notes">@inspection.Notes</p>
+        }
+    </section>
+
+    <section class="panel">
+        <h2>Attachments <span class="muted">@Format.Plural(inspection.Attachments.Count, "file") in Blob Storage</span></h2>
+        @if (inspection.Attachments.Count == 0)
+        {
+            <p class="muted">No photos or documents were attached.</p>
+        }
+        <div class="attachments">
+            @foreach (var file in inspection.Attachments)
+            {
+                <article class="attachment @(AttachmentRules.IsImage(file.ContentType) ? "is-image" : null)">
+                    @if (AttachmentRules.IsImage(file.ContentType))
+                    {
+                        <a href="@file.ContentUrl.TrimStart('/')" target="_blank" rel="noopener"><img src="@file.ContentUrl.TrimStart('/')" alt="@file.FileName" /></a>
+                    }
+                    <div class="attachment-info">
+                        <a class="attachment-name" href="@file.ContentUrl.TrimStart('/')" target="_blank" rel="noopener">@file.FileName</a>
+                        <span class="muted">@file.ContentType · @Format.Bytes(file.SizeBytes)</span>
+                        <code class="blob-name" title="Blob name">@file.BlobName</code>
+                    </div>
+                </article>
+            }
+        </div>
+    </section>
+</div>
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private InspectionDetail? inspection;
+
+    protected override async Task OnParametersSetAsync() => inspection = await Inspections.GetAsync(Id);
+}

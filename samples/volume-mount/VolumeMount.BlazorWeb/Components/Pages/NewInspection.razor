@@ -1,0 +1,122 @@
+@page "/inspections/new"
+@inject InspectionService Inspections
+@inject NavigationManager Navigation
+@inject ILogger<NewInspection> Logger
+
+<PageTitle>New inspection · FieldCheck</PageTitle>
+
+<a class="back" href="">← All inspections</a>
+
+<div class="page-head">
+    <div>
+        <p class="eyebrow">Record a visit</p>
+        <h1>New inspection</h1>
+        <p class="lead">The details are saved to SQL Server and any photos or documents are uploaded to Blob Storage in the same traced operation.</p>
+    </div>
+</div>
+
+<EditForm class="panel form" Model="Form" FormName="new-inspection" OnValidSubmit="SaveAsync" enctype="multipart/form-data">
+    <DataAnnotationsValidator />
+
+    @if (error is not null)
+    {
+        <p class="alert" role="alert">@error</p>
+    }
+
+    <div class="form-grid">
+        <label>
+            <span>Asset tag</span>
+            <InputText @bind-Value="Model.AssetTag" placeholder="AHU-201" autocomplete="off" />
+            <ValidationMessage For="() => Model.AssetTag" />
+        </label>
+        <label>
+            <span>Equipment</span>
+            <InputText @bind-Value="Model.AssetName" placeholder="Rooftop air handling unit" />
+            <ValidationMessage For="() => Model.AssetName" />
+        </label>
+        <label>
+            <span>Site</span>
+            <InputText @bind-Value="Model.Site" list="sites" placeholder="Seattle Data Center 1" />
+            <datalist id="sites">
+                <option value="Seattle Data Center 1"></option>
+                <option value="Portland Assembly Plant"></option>
+                <option value="Spokane Distribution Center"></option>
+                <option value="Boise Cold Storage"></option>
+            </datalist>
+            <ValidationMessage For="() => Model.Site" />
+        </label>
+        <label>
+            <span>Inspector</span>
+            <InputText @bind-Value="Model.Inspector" placeholder="Maya Chen" autocomplete="name" />
+            <ValidationMessage For="() => Model.Inspector" />
+        </label>
+    </div>
+
+    <fieldset class="outcomes">
+        <legend>Outcome</legend>
+        <InputRadioGroup @bind-Value="Model.Outcome">
+            @foreach (var outcome in Enum.GetValues<InspectionOutcome>())
+            {
+                <label class="outcome outcome-@Format.OutcomeClass(outcome)">
+                    <InputRadio Value="outcome" />
+                    <span>@Format.OutcomeLabel(outcome)</span>
+                </label>
+            }
+        </InputRadioGroup>
+    </fieldset>
+
+    <label>
+        <span>Findings</span>
+        <InputTextArea @bind-Value="Model.Notes" rows="4" placeholder="Readings, defects, and follow-up actions" />
+        <ValidationMessage For="() => Model.Notes" />
+    </label>
+
+    <label class="dropzone">
+        <span>Photos and documents</span>
+        <input type="file" name="attachments" multiple accept="@AttachmentRules.Accept" />
+        <small>Up to @AttachmentRules.MaxFiles files, @(AttachmentRules.MaxFileBytes / (1024 * 1024)) MB each · JPEG, PNG, WebP, SVG, PDF, TXT, CSV</small>
+    </label>
+
+    <div class="form-actions">
+        <a class="btn" href="">Cancel</a>
+        <button class="btn btn-primary" type="submit">Save inspection</button>
+    </div>
+</EditForm>
+
+@code {
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    [SupplyParameterFromForm(FormName = "new-inspection", Name = "Model")]
+    private InspectionForm? Form { get; set; }
+
+    private string? error;
+
+    private InspectionForm Model => Form!;
+
+    protected override void OnInitialized() => Form ??= new();
+
+    private async Task SaveAsync()
+    {
+        var files = AttachmentRules.FromFormFiles(HttpContext.Request.Form.Files.GetFiles("attachments"));
+        if (AttachmentRules.Validate(files) is { } invalid)
+        {
+            Logger.InspectionRejected(Model.AssetTag, invalid);
+            error = invalid;
+            return;
+        }
+
+        InspectionDetail created;
+        try
+        {
+            created = await Inspections.CreateAsync(Model, files, source: "ui");
+        }
+        catch (AttachmentStorageException ex)
+        {
+            error = $"{ex.Message} The inspection wasn't saved; try again.";
+            return;
+        }
+
+        Navigation.NavigateTo($"inspections/{created.Id}");
+    }
+}

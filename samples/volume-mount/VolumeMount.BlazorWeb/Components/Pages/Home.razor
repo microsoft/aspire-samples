@@ -1,46 +1,137 @@
 @page "/"
+@inject InspectionService Inspections
+@inject SampleData SampleData
+@inject TimeProvider Time
+@inject IHostEnvironment Environment
+@inject NavigationManager Navigation
 
-<PageTitle>Vault · Secure account portal</PageTitle>
+<PageTitle>Equipment inspections · FieldCheck</PageTitle>
 
-<section class="hero">
-    <span class="lead-eyebrow">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" /><path d="m9 12 2 2 4-4" /></svg>
-        Secure account portal
-    </span>
-    <h1>Sign in once. Your account is always there.</h1>
-    <p>
-        Vault keeps every account in a SQL Server container backed by a persistent
-        volume — so the people you onboard survive each restart, rebuild, and
-        redeploy. No reseeding, no lost data, no surprises.
-    </p>
-    <div class="hero-actions">
-        <a class="btn btn-primary btn-lg" href="Account/Register">Create your account</a>
-        <a class="btn btn-link btn-lg" href="weather">Explore the demo</a>
+<div class="page-head">
+    <div>
+        <p class="eyebrow">Facilities maintenance</p>
+        <h1>Equipment inspections</h1>
+        <p class="lead">Inspection records are saved in SQL Server and photos and readings in Azure Blob Storage. Both run on Docker volumes, so nothing is lost when a container restarts.</p>
     </div>
-</section>
+    <a class="btn btn-primary" href="inspections/new">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+        New inspection
+    </a>
+</div>
 
-<section class="card-grid" aria-label="What you get">
-    <article class="feature-card">
-        <span class="icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3" /><path d="M3 5v14a9 3 0 0 0 18 0V5" /><path d="M3 12a9 3 0 0 0 18 0" /></svg>
-        </span>
-        <h3>Persistent volume storage</h3>
-        <p>Accounts are written to a named volume mounted into SQL Server, so nothing is lost when the container recycles.</p>
-    </article>
+@if (status is not null)
+{
+    <section class="volumes" aria-label="Persisted storage">
+        <article class="volume-card">
+            <span class="volume-icon sql" aria-hidden="true"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="8" ry="3" /><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5" /><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3" /></svg></span>
+            <div class="volume-body">
+                <h2>SQL Server <span class="tag">data volume</span></h2>
+                <p class="volume-stat"><strong>@status.InspectionCount</strong> inspections · <strong>@status.AttachmentCount</strong> attachment records</p>
+                <dl class="volume-meta">
+                    <div><dt>Data file</dt><dd><code>@status.DatabaseFile</code></dd></div>
+                    <div><dt>Server started</dt><dd>@Format.Utc(status.SqlServerStartedAt) (@Format.Ago(status.SqlServerStartedAt, now))</dd></div>
+                </dl>
+            </div>
+        </article>
+        <article class="volume-card">
+            <span class="volume-icon blob" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7a2 2 0 0 1 2-2h4l2 2h6a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z" /><path d="M9 14h6" /></svg></span>
+            <div class="volume-body">
+                <h2>Azure Blob Storage <span class="tag">data volume</span></h2>
+                <p class="volume-stat"><strong>@status.BlobCount</strong> blobs · <strong>@Format.Bytes(status.BlobBytes)</strong> stored</p>
+                <dl class="volume-meta">
+                    <div><dt>Container</dt><dd><code>@status.BlobContainer</code></dd></div>
+                    <div><dt>Emulator</dt><dd>Azurite, data at <code>/data</code></dd></div>
+                </dl>
+            </div>
+        </article>
+        <p class="volume-tip">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7L21 8" /><path d="M21 3v5h-5" /></svg>
+            <span>Restart <strong>sqlserver</strong> from the Aspire dashboard: the start time changes, the inspections stay.</span>
+        </p>
+    </section>
+}
 
-    <article class="feature-card">
-        <span class="icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" /><path d="m9 12 2 2 4-4" /></svg>
-        </span>
-        <h3>Secure sign-in</h3>
-        <p>Email-confirmed registration, passkey support, and antiforgery-protected forms keep every session locked down.</p>
-    </article>
+<nav class="filters" aria-label="Filter by outcome">
+    <a class="chip @(Outcome is null ? "active" : null)" href="">All <span>@counts.Values.Sum()</span></a>
+    @foreach (var outcome in Enum.GetValues<InspectionOutcome>())
+    {
+        <a class="chip chip-@Format.OutcomeClass(outcome) @(Outcome == outcome ? "active" : null)" href="@($"?outcome={outcome}")">
+            @Format.OutcomeLabel(outcome) <span>@counts.GetValueOrDefault(outcome)</span>
+        </a>
+    }
+</nav>
 
-    <article class="feature-card">
-        <span class="icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2" /><polyline points="2 17 12 22 22 17" /><polyline points="2 12 12 17 22 12" /></svg>
-        </span>
-        <h3>Built on Aspire</h3>
-        <p>The portal, database, and persistent volume are wired together and orchestrated by Aspire for a single-command local run.</p>
-    </article>
-</section>
+@if (inspections.Count == 0)
+{
+    <section class="empty">
+        <h2>No inspections yet</h2>
+        <p>Record one yourself, or load a week of sample inspections from ten facility assets.</p>
+        @if (Environment.IsDevelopment() && Outcome is null)
+        {
+            <form method="post" @formname="seed" @onsubmit="SeedAsync">
+                <AntiforgeryToken />
+                <button class="btn btn-primary" type="submit">Seed sample data</button>
+            </form>
+        }
+    </section>
+}
+else
+{
+    <section class="grid" aria-label="Inspections">
+        @foreach (var item in inspections)
+        {
+            <a class="card" href="@($"inspections/{item.Id}")">
+                <div class="card-media">
+                    @if (item.CoverAttachmentId is { } cover)
+                    {
+                        <img src="@($"api/attachments/{cover}/content")" alt="Nameplate capture for @item.AssetTag" loading="lazy" />
+                    }
+                    else
+                    {
+                        <span class="card-media-empty">@item.AssetTag</span>
+                    }
+                    <span class="badge badge-@Format.OutcomeClass(item.Outcome)">@Format.OutcomeLabel(item.Outcome)</span>
+                </div>
+                <div class="card-body">
+                    <p class="card-ref">@item.Reference · <span>@item.AssetTag</span></p>
+                    <h3>@item.AssetName</h3>
+                    <p class="card-site">@item.Site</p>
+                    <p class="card-meta">
+                        <span>@item.Inspector</span>
+                        <span title="@Format.Utc(item.InspectedAt)">@Format.Ago(item.InspectedAt, now)</span>
+                    </p>
+                    <p class="card-files">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m21 11-8.5 8.5a5 5 0 0 1-7-7L14 4a3.5 3.5 0 0 1 5 5l-8.5 8.5a2 2 0 0 1-3-3L15 7" /></svg>
+                        @Format.Plural(item.AttachmentCount, "file") · @Format.Bytes(item.AttachmentBytes)
+                    </p>
+                </div>
+            </a>
+        }
+    </section>
+}
+
+@code {
+    [SupplyParameterFromQuery(Name = "outcome")]
+    private string? OutcomeFilter { get; set; }
+
+    private InspectionOutcome? Outcome => Enum.TryParse<InspectionOutcome>(OutcomeFilter, ignoreCase: true, out var outcome) ? outcome : null;
+
+    private IReadOnlyList<InspectionSummary> inspections = [];
+    private Dictionary<InspectionOutcome, int> counts = [];
+    private StorageStatus? status;
+    private DateTimeOffset now;
+
+    protected override async Task OnInitializedAsync()
+    {
+        now = Time.GetUtcNow();
+        inspections = await Inspections.ListAsync(Outcome, site: null, take: 60);
+        counts = await Inspections.CountByOutcomeAsync();
+        status = await Inspections.GetStorageStatusAsync();
+    }
+
+    private async Task SeedAsync()
+    {
+        await SampleData.SeedAsync();
+        Navigation.NavigateTo("/");
+    }
+}

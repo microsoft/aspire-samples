@@ -1,20 +1,32 @@
 @inherits LayoutComponentBase
+@inject IHostEnvironment Environment
 
 <a class="skip-link" href="#main-content">Skip to content</a>
 
-<div class="app">
-    <header class="topbar">
-        <div class="topbar-inner">
-            <NavMenu />
-        </div>
-    </header>
+<header class="topbar">
+    <div class="topbar-inner">
+        <a class="brand" href="">
+            <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" /><path d="M10 9h9l3 3v11H10z" /><path d="m13.5 17 2 2 4-4.5" /></svg>
+            <span>FieldCheck <small>Equipment inspections</small></span>
+        </a>
+        <nav class="topnav" aria-label="Primary">
+            <NavLink href="" Match="NavLinkMatch.All">Inspections</NavLink>
+            <NavLink href="inspections/new">New inspection</NavLink>
+            @if (Environment.IsDevelopment())
+            {
+                <a href="scalar" target="_blank" rel="noopener">API reference</a>
+            }
+        </nav>
+    </div>
+</header>
 
-    <main id="main-content" class="app-main" tabindex="-1">
-        <div class="container-page">
-            @Body
-        </div>
-    </main>
-</div>
+<main id="main-content" class="page" tabindex="-1">
+    @Body
+</main>
+
+<footer class="footer">
+    Records in SQL Server · attachments in Azure Blob Storage · both on Docker volumes, orchestrated by Aspire
+</footer>
 
 <div id="blazor-error-ui" data-nosnippet>
     Something went wrong.

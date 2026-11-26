@@ -1,16 +1,22 @@
 # Persistent Volume
 
-This sample demonstrates how to configure a SQL Server container to use a persistent volume in Aspire, so that the data is persisted across app launches. This method can be used to persist data across instances of other container types configured in Aspire apps too, e.g. PostgreSQL, Redis, etc.
+This sample shows how to keep container data across restarts in Aspire by giving each container a Docker **data volume**. The app is **FieldCheck**, a small equipment-inspection tracker for facilities teams:
 
-The app consists of a single service, **VolumeMount.BlazorWeb**, that is configured with a SQL Server container instance via the AppHost project. PostgreSQL and Azure Storage data services are also configured in the AppHost and Blazor projects for demonstration and experimentation purposes. This Blazor Web app has been setup to use ASP.NET Core Identity for local user account registration and authentication, including [Blazor identity UI](https://devblogs.microsoft.com/dotnet/whats-new-with-identity-in-dotnet-8/#the-blazor-identity-ui). Using a persistent volume means that user accounts created when running locally are persisted across launches of the app.
+- Inspection records (asset, site, inspector, outcome, findings) are stored in **SQL Server**. `WithDataVolume()` mounts a named volume at `/var/opt/mssql`, so the database files live outside the container.
+- Photos and documents attached to an inspection are stored in **Azure Blob Storage**. Locally that's the Azurite emulator, and its data volume (mounted at `/data`) keeps the uploaded blobs.
 
-![Screenshot of the account login page on the web front end](./images/volume-mount-frontend-login-light.png#gh-light-mode-only)
-![Screenshot of the account login page on the web front end](./images/volume-mount-frontend-login-dark.png#gh-dark-mode-only)
+Stop the app, restart the `sqlserver` container, or delete and re-create it, and your inspections and their attachments are still there. The same `WithDataVolume()` pattern works for other containers too, such as PostgreSQL and Redis.
 
-> [!NOTE]
-> The web front end wears a bespoke "Vault" identity — a split-screen authentication experience, a custom design-token system, distinct iconography, and full light/dark theming — tuned to meet WCAG 2.2 AA (with AAA contrast on body text).
+![FieldCheck home page showing SQL Server and Blob Storage volume cards and a grid of inspections with nameplate photos (light theme)](./images/volume-mount-app-light.png#gh-light-mode-only)
+![FieldCheck home page showing SQL Server and Blob Storage volume cards and a grid of inspections with nameplate photos (dark theme)](./images/volume-mount-app-dark.png#gh-dark-mode-only)
 
-The app also includes a class library project, **VolumeMount.Data**, that contains the Entity Framework Core data model and migrations, a worker service project, **VolumeMount.MigrationService**, that applies any pending database migrations on startup before the web front end starts, and a standard class library project, **VolumeMount.ServiceDefaults**, that contains the service defaults used by the service projects.
+The solution contains:
+
+- **VolumeMount.AppHost**: the Aspire AppHost. It defines SQL Server and Azure Storage with data volumes, plus the dashboard commands and URLs.
+- **VolumeMount.BlazorWeb**: a Blazor (static SSR) app and minimal API for recording and browsing inspections. It has OpenAPI and a Scalar API reference in Development.
+- **VolumeMount.Data**: the Entity Framework Core model (`Inspection`, `InspectionAttachment`) and migrations.
+- **VolumeMount.MigrationService**: a worker that applies pending migrations before the web app starts.
+- **VolumeMount.ServiceDefaults**: shared OpenTelemetry, health check, and resilience defaults.
 
 ## Pre-requisites
 
@@ -27,32 +33,94 @@ The app also includes a class library project, **VolumeMount.Data**, that contai
 
    If using the .NET CLI, run `dotnet run` from the `VolumeMount.AppHost` directory.
 
-1. Navigate to the URL for the `VolumeMount.BlazorWeb` from the dashboard.
+1. In the Aspire dashboard, open the **blazorweb** resource's actions menu and run **Seed sample data**. It creates a week of inspections across several sites, each with a nameplate photo and a CSV of readings. You can also click **Seed sample data** on the app's empty home page.
 
-1. From the home page, click the "Create your account" button (or "Create account" in the top navigation bar) and enter an email and password to create a local user:
+1. Open **Inspections app (https)** from the dashboard. Pick **New inspection** to record your own visit and attach photos or documents. The record goes to SQL Server and the files go to Blob Storage, all in one traced operation.
 
-    ![Screenshot of the account registration page on the web front end](./images/volume-mount-frontend-register-light.png#gh-light-mode-only)
-    ![Screenshot of the account registration page on the web front end](./images/volume-mount-frontend-register-dark.png#gh-dark-mode-only)
+   ![Inspection detail page with the inspector, findings, SQL table, and attachments stored in Blob Storage (light theme)](./images/volume-mount-app-detail-light.png#gh-light-mode-only)
+   ![Inspection detail page with the inspector, findings, SQL table, and attachments stored in Blob Storage (dark theme)](./images/volume-mount-app-detail-dark.png#gh-dark-mode-only)
 
-1. A page will be shown confirming the registration of the account and a message detailing that a real email sender is not registered. Find and click the link at the end of the message to confirm the created account:
+### Prove the data persists
 
-    ![Screenshot of the account registration confirmation page](./images/volume-mount-frontend-account-registered-light.png#gh-light-mode-only)
-    ![Screenshot of the account registration confirmation page](./images/volume-mount-frontend-account-registered-dark.png#gh-dark-mode-only)
+1. Note the inspection count and the **Server started** time on the SQL Server card on the home page. You can also run **Check persisted data** from the **blazorweb** actions menu, which returns the counts and `sqlServerStartedAt` as JSON.
+1. In the dashboard, restart the **sqlserver** resource with **Restart** in its actions menu. Aspire re-creates the container and mounts the same volume.
+1. Refresh the app or run **Check persisted data** again. **Server started** has changed, but every inspection and attachment is still there.
+1. Stop the whole app and run it again. The data is still there, including the blobs in Azurite.
 
-1. Verify that the email confirmation page is displayed, indicating that the account is now registered and can be used to login to the site, and then click the "Sign in" link in the top navigation bar:
+The named volumes are visible from the Docker CLI:
 
-    ![Screenshot of the email confirmation page](./images/volume-mount-frontend-email-confirmed-light.png#gh-light-mode-only)
-    ![Screenshot of the email confirmation page](./images/volume-mount-frontend-email-confirmed-dark.png#gh-dark-mode-only)
+```shell
+> docker volume ls -f name=volumemount
+DRIVER    VOLUME NAME
+local     volumemount.apphost-a06e86665e-sqlserver-data
+local     volumemount.apphost-a06e86665e-storage-data
+```
 
-1. Enter the email and password you used in the account registration page to login:
+To start from scratch, stop the app, remove the `sqlserver-*` container (it uses a persistent lifetime), and then run `docker volume rm` on both volumes.
 
-    ![Screenshot of the login page](./images/volume-mount-frontend-login-light.png#gh-light-mode-only)
-    ![Screenshot of the login page](./images/volume-mount-frontend-login-dark.png#gh-dark-mode-only)
+## What to explore in the Aspire dashboard
 
-1. Once logged in, click the "Sign out" button in the top navigation bar to log out of the site, and then stop the app, followed by starting it again, and verifying that the account you just created can still be used to login to the site once restarted, indicating that the database was using the persistent volume to store the data. You can verify the named volume existance using the Docker CLI too (`docker volume ls`):
+### Resources and commands
 
-    ```shell
-    > docker volume ls -f name=sqlserver
-    DRIVER    VOLUME NAME
-    local     volumemount.apphost-305a028ab1-sqlserver-data
-    ```
+- **sqlserver** (SQL Server, persistent lifetime) with the **sqldb** database, and **storage** (the Azurite emulator) with the **storage-blobs** service and the **attachments** blob container (`inspection-attachments`).
+- The **blazorweb** actions menu has two commands:
+  - **Seed sample data** (`POST /api/dev/seed`, highlighted).
+  - **Check persisted data** (`GET /api/storage/status`).
+
+  Both show their JSON result in the dashboard.
+- The **blazorweb** URLs include **API reference (Scalar)**. The resource details also list **OpenAPI JSON**.
+
+![Aspire dashboard resources with the blazorweb actions menu open on Seed sample data and Check persisted data (light theme)](./images/volume-mount-dashboard-resources-light.png#gh-light-mode-only)
+![Aspire dashboard resources with the blazorweb actions menu open on Seed sample data and Check persisted data (dark theme)](./images/volume-mount-dashboard-resources-dark.png#gh-dark-mode-only)
+
+Select **sqlserver** to open its details. The **Volumes** card shows the `volumemount.apphost-…-sqlserver-data` volume mounted at `/var/opt/mssql`. **Container lifetime** is **Persistent**. **storage** shows its own volume mounted at `/data` in the same place.
+
+![sqlserver resource details with the Volumes card showing the data volume mounted at /var/opt/mssql (light theme)](./images/volume-mount-dashboard-volume-light.png#gh-light-mode-only)
+![sqlserver resource details with the Volumes card showing the data volume mounted at /var/opt/mssql (dark theme)](./images/volume-mount-dashboard-volume-dark.png#gh-dark-mode-only)
+
+### Traces
+
+Recording an inspection creates an `inspection.create` span from the `VolumeMount.Inspections` activity source. Under it are a `BlobClient.Upload` span (and its HTTP `PUT` to **storage**) for each attachment, followed by the `INSERT` statements against **sqldb**. The span carries the `inspection.asset_tag`, `inspection.site`, `inspection.outcome`, `inspection.source` (`ui`, `api`, or `seed`), `inspection.attachment.count`, and `inspection.id` attributes, plus `attachment.uploaded` and `inspection.saved` events. If the database save fails, the uploaded blobs are deleted so nothing is left orphaned.
+
+![Trace for a new inspection: inspection.create spanning two Blob Storage uploads and the SQL Server inserts, with the span attributes (light theme)](./images/volume-mount-trace-light.png#gh-light-mode-only)
+![Trace for a new inspection: inspection.create spanning two Blob Storage uploads and the SQL Server inserts, with the span attributes (dark theme)](./images/volume-mount-trace-dark.png#gh-dark-mode-only)
+
+The migration service emits a `Migrating database` span with the number of migrations applied and the number of inspections already on the volume.
+
+### Metrics
+
+On the **blazorweb** resource, the `VolumeMount.Inspections` meter has these instruments:
+
+| Instrument | Type | Tags |
+| --- | --- | --- |
+| `inspections.records.created` | Counter | `inspection.outcome`, `inspection.source` |
+| `inspections.attachment.size` | Histogram (bytes) | `attachment.kind` (`image`, `document`) |
+| `inspections.attachment.uploads.failed` | Counter | `attachment.kind`, `error.type` |
+| `inspections.attachment.uploads.active` | UpDownCounter | |
+
+![inspections.attachment.size histogram for blazorweb with P50, P90, and P99 lines and exemplars (light theme)](./images/volume-mount-metrics-light.png#gh-light-mode-only)
+![inspections.attachment.size histogram for blazorweb with P50, P90, and P99 lines and exemplars (dark theme)](./images/volume-mount-metrics-dark.png#gh-dark-mode-only)
+
+### Structured logs
+
+The logs come from `[LoggerMessage]` source-generated methods, so each value is a structured field you can filter on:
+
+- `Inspection {InspectionReference} saved for {AssetTag} at {Site}: {Outcome} with {AttachmentCount} attachments`
+- `Uploaded {FileName} to blob {BlobName} ({SizeBytes} bytes)` (Debug) and `Failed to upload {FileName} to blob {BlobName}`
+- `Storage status: {InspectionCount} inspections in SQL Server (started {SqlServerStartedAt}), {BlobCount} blobs in {BlobContainer}`
+- From **migration**: `Applied {MigrationCount} pending migrations; {InspectionCount} inspections already persisted on the data volume`
+
+### API reference
+
+Open **API reference (Scalar)** from the **blazorweb** URLs. The API includes:
+
+- `GET /api/inspections` and `GET /api/inspections/{id}`
+- `POST /api/inspections` (multipart form with attachments)
+- `GET /api/attachments/{id}/content`
+- `GET /api/storage/status`
+- `POST /api/dev/seed` (Development only)
+
+Every endpoint has a summary, description, and typed responses.
+
+![Scalar API reference showing the Record an inspection multipart operation with its schema and a curl example (light theme)](./images/volume-mount-scalar-light.png#gh-light-mode-only)
+![Scalar API reference showing the Record an inspection multipart operation with its schema and a curl example (dark theme)](./images/volume-mount-scalar-dark.png#gh-dark-mode-only)

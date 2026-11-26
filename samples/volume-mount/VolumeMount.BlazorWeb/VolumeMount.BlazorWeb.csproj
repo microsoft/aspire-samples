@@ -4,14 +4,15 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <UserSecretsId>aspnet-VolumeMount_BlazorWeb-25992a93-c312-43dc-9f14-2bdb8daf90c3</UserSecretsId>
     <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Aspire.Azure.Storage.Blobs" Version="17.0.0" />
     <PackageReference Include="Aspire.Microsoft.EntityFrameworkCore.SqlServer" Version="17.0.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.15" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.15" />
+    <PackageReference Include="Microsoft.OpenApi" Version="2.13.0" />
+    <PackageReference Include="Scalar.AspNetCore" Version="2.17.13" />
   </ItemGroup>
 
   <ItemGroup>
