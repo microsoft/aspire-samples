@@ -1,302 +1,273 @@
-using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Antiforgery;
-using Azure.Storage.Blobs;
-using Azure.Storage.Queues;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using Api.Data;
 using Api.Models;
-using SkiaSharp;
-using System.Text.Json;
+using Api.Services;
+using Azure.Storage.Blobs;
+using Microsoft.AspNetCore.Antiforgery;
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace Api.Extensions;
 
 public static class ImageEndpoints
 {
-    private const long MaxFileSizeBytes = 10 * 1024 * 1024; // 10 MB
-    // Cap decoded pixel count to guard against decompression bombs:
-    // a heavily compressed image well under MaxFileSizeBytes can declare
-    // dimensions that decode to multi-gigabyte SKBitmap allocations.
-    // 100 MP allows ~10000x10000 images while bounding peak memory at ~400 MB (RGBA).
-    private const long MaxPixelCount = 100_000_000;
     private const string ThumbnailContentType = "image/jpeg";
-    private static readonly string[] AllowedImageFormats = [".jpg", ".jpeg", ".png", ".gif", ".webp"];
-    private static readonly IReadOnlyDictionary<string, SKEncodedImageFormat> AllowedFormatsByExtension =
-        new Dictionary<string, SKEncodedImageFormat>(StringComparer.OrdinalIgnoreCase)
-        {
-            [".jpg"] = SKEncodedImageFormat.Jpeg,
-            [".jpeg"] = SKEncodedImageFormat.Jpeg,
-            [".png"] = SKEncodedImageFormat.Png,
-            [".gif"] = SKEncodedImageFormat.Gif,
-            [".webp"] = SKEncodedImageFormat.Webp
-        };
-    private static readonly IReadOnlyDictionary<SKEncodedImageFormat, string> ContentTypesByFormat =
-        new Dictionary<SKEncodedImageFormat, string>
-        {
-            [SKEncodedImageFormat.Jpeg] = "image/jpeg",
-            [SKEncodedImageFormat.Png] = "image/png",
-            [SKEncodedImageFormat.Gif] = "image/gif",
-            [SKEncodedImageFormat.Webp] = "image/webp"
-        };
+
+    // Multipart framing adds a little overhead on top of the 10 MB photo limit.
+    private const long MaxRequestBytes = PhotoIngestService.MaxFileSizeBytes + 64 * 1024;
 
     public static WebApplication MapImages(this WebApplication app)
     {
-        var group = app.MapGroup("/api");
+        var api = app.MapGroup("/api");
 
-        // Get antiforgery token for client-side requests
-        group.MapGet("/antiforgery", (IAntiforgery antiforgery, HttpContext context) =>
-        {
-            var tokens = antiforgery.GetAndStoreTokens(context);
-            return Results.Ok(new { token = tokens.RequestToken });
-        });
+        api.MapGet("/antiforgery", (IAntiforgery antiforgery, HttpContext context) =>
+                TypedResults.Ok(new AntiforgeryTokenResponse(antiforgery.GetAndStoreTokens(context).RequestToken)))
+            .WithName("GetAntiforgeryToken")
+            .WithTags("Security")
+            .WithSummary("Get an antiforgery token")
+            .WithDescription("Issues an antiforgery cookie and returns the matching request token. Browsers send the token in the `RequestVerificationToken` header when uploading or deleting photos.");
 
-        // Get all images (with pagination)
-        group.MapGet("/images", async (ImageDbContext db, int? skip = null, int? take = null) =>
-        {
-            var query = db.Images.OrderByDescending(i => i.UploadedAt);
+        var photos = api.MapGroup("/images").WithTags("Photos");
 
-            // Apply pagination with reasonable defaults and limits
-            var skipCount = Math.Max(0, skip ?? 0);
-            var takeCount = Math.Clamp(take ?? 100, 1, 100); // Max 100 items per page
-
-            var images = await query
-                .Skip(skipCount)
-                .Take(takeCount)
-                .ToListAsync();
-
-            return images.Select(ImageDto.FromImage).ToList();
-        });
-
-        // Get image by id
-        group.MapGet("/images/{id}", async (int id, ImageDbContext db) =>
-        {
-            var image = await db.Images.FindAsync(id);
-            return image is not null ? Results.Ok(ImageDto.FromImage(image)) : Results.NotFound();
-        });
-
-        // Serve image blob
-        group.MapGet("/images/{id}/blob", async (
-            int id,
-            ImageDbContext db,
-            BlobContainerClient containerClient) =>
-        {
-            var image = await db.Images.FindAsync(id);
-            if (image is null)
+        photos.MapGet("", async (
+                ImageDbContext db,
+                [Description("Number of photos to skip.")][Range(0, int.MaxValue)] int skip = 0,
+                [Description("Number of photos to return (1-100).")][Range(1, 100)] int take = 100) =>
             {
-                return Results.NotFound();
-            }
+                var images = await db.Images
+                    .AsNoTracking()
+                    .OrderByDescending(i => i.UploadedAt)
+                    .Skip(Math.Max(0, skip))
+                    .Take(Math.Clamp(take, 1, 100))
+                    .ToListAsync();
 
-            var blobName = image.BlobUrl.Split('/').Last();
-            var blobClient = containerClient.GetBlobClient(blobName);
-            
-            var download = await blobClient.DownloadStreamingAsync();
-            return Results.Stream(download.Value.Content, image.ContentType);
-        });
+                return TypedResults.Ok(images.Select(ImageDto.FromImage).ToList());
+            })
+            .WithName("ListPhotos")
+            .WithSummary("List catalog photos")
+            .WithDescription("Returns product photos, newest first, with each photo's thumbnail status. The gallery polls this while thumbnails are processing.");
 
-        // Serve thumbnail blob
-        group.MapGet("/images/{id}/thumbnail", async (
-            int id,
-            ImageDbContext db,
-            BlobContainerClient containerClient) =>
-        {
-            var image = await db.Images.FindAsync(id);
-            if (image is null || image.ThumbnailUrl is null)
+        photos.MapGet("/{id:int}", async Task<Results<Ok<ImageDto>, ProblemHttpResult>> (
+                [Description("The photo ID.")] int id,
+                ImageDbContext db) =>
             {
-                return Results.NotFound();
-            }
+                var image = await db.Images.FindAsync(id);
+                return image is null ? PhotoNotFound(id) : TypedResults.Ok(ImageDto.FromImage(image));
+            })
+            .WithName("GetPhoto")
+            .WithSummary("Get a photo")
+            .WithDescription("Returns the metadata and thumbnail status for a single product photo.")
+            .ProducesProblem(StatusCodes.Status404NotFound);
 
-            var thumbnailName = image.ThumbnailUrl.Split('/').Last();
-            var blobClient = containerClient.GetBlobClient(thumbnailName);
-            
-            var download = await blobClient.DownloadStreamingAsync();
-            return Results.Stream(
-                download.Value.Content,
-                string.IsNullOrWhiteSpace(download.Value.Details.ContentType)
-                    ? ThumbnailContentType
-                    : download.Value.Details.ContentType);
-        });
-
-        // Upload image
-        group.MapPost("/images", async (
-            IFormFile file,
-            IAntiforgery antiforgery,
-            HttpContext context,
-            ImageDbContext db,
-            BlobContainerClient containerClient,
-            QueueServiceClient queueService,
-            ILogger<Program> logger) =>
-        {
-            var antiforgeryValidationResult = await ValidateAntiforgeryAsync(antiforgery, context);
-            if (antiforgeryValidationResult is not null)
+        photos.MapGet("/{id:int}/blob", async Task<Results<FileStreamHttpResult, ProblemHttpResult>> (
+                [Description("The photo ID.")] int id,
+                ImageDbContext db,
+                BlobContainerClient containerClient) =>
             {
-                return antiforgeryValidationResult;
-            }
-
-            if (file == null || file.Length == 0)
-            {
-                return Results.BadRequest(new { error = "No file uploaded" });
-            }
-
-            // Validate file size
-            if (file.Length > MaxFileSizeBytes)
-            {
-                return Results.BadRequest(new { error = $"File size exceeds maximum allowed size of {MaxFileSizeBytes / (1024 * 1024)} MB" });
-            }
-
-            // Validate content type
-            if (!file.ContentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
-            {
-                return Results.BadRequest(new { error = "File must be an image" });
-            }
-
-            // Validate file extension
-            var fileExtension = Path.GetExtension(file.FileName).ToLowerInvariant();
-            if (string.IsNullOrEmpty(fileExtension) || !AllowedFormatsByExtension.ContainsKey(fileExtension))
-            {
-                return Results.BadRequest(new { error = $"File type not allowed. Allowed types: {string.Join(", ", AllowedImageFormats)}" });
-            }
-
-            var validatedContentType = GetValidatedImageContentType(file, fileExtension, context.RequestAborted);
-            if (validatedContentType is null)
-            {
-                return Results.BadRequest(new { error = "File contents must be a valid supported image" });
-            }
-
-            try
-            {
-                // Get container and queue clients
-                var queueClient = queueService.GetQueueClient("thumbnails");
-                await queueClient.CreateIfNotExistsAsync();
-
-                // Generate safe blob name with sanitized filename
-                var sanitizedFileName = SanitizeFileName(file.FileName);
-                var blobName = $"{Guid.NewGuid()}{Path.GetExtension(sanitizedFileName)}";
-                var blobClient = containerClient.GetBlobClient(blobName);
-
-                // Upload to blob storage
-                using var stream = file.OpenReadStream();
-                await blobClient.UploadAsync(stream, overwrite: true);
-
-                // Save metadata to database
-                var image = new Image
+                var image = await db.Images.FindAsync(id);
+                if (image is null)
                 {
-                    FileName = sanitizedFileName,
-                    ContentType = validatedContentType,
-                    Size = file.Length,
-                    BlobUrl = blobClient.Uri.ToString(),
-                    ThumbnailProcessed = false
-                };
-
-                db.Images.Add(image);
-                await db.SaveChangesAsync();
-
-                // Queue thumbnail generation
-                var message = JsonSerializer.Serialize(new
-                {
-                    imageId = image.Id,
-                    blobName = blobName
-                });
-                await queueClient.SendMessageAsync(message);
-
-                logger.LogInformation("Image {ImageId} uploaded: {FileName}, queued for thumbnail generation",
-                    image.Id, file.FileName);
-
-                return Results.Created($"/api/images/{image.Id}", ImageDto.FromImage(image));
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Failed to upload image");
-                return Results.Problem("Failed to upload image");
-            }
-        });
-
-        // Delete image
-        group.MapDelete("/images/{id}", async (
-            int id,
-            IAntiforgery antiforgery,
-            HttpContext context,
-            ImageDbContext db,
-            BlobContainerClient containerClient,
-            ILogger<Program> logger) =>
-        {
-            var antiforgeryValidationResult = await ValidateAntiforgeryAsync(antiforgery, context);
-            if (antiforgeryValidationResult is not null)
-            {
-                return antiforgeryValidationResult;
-            }
-
-            var image = await db.Images.FindAsync(id);
-            if (image is null)
-            {
-                return Results.NotFound();
-            }
-
-            try
-            {
-                // Delete from blob storage
-                var blobName = image.BlobUrl.Split('/').Last();
-                await containerClient.DeleteBlobIfExistsAsync(blobName);
-
-                // Delete thumbnail if exists
-                if (image.ThumbnailUrl is not null)
-                {
-                    var thumbnailName = image.ThumbnailUrl.Split('/').Last();
-                    await containerClient.DeleteBlobIfExistsAsync(thumbnailName);
+                    return PhotoNotFound(id);
                 }
 
-                // Delete from database
-                db.Images.Remove(image);
-                await db.SaveChangesAsync();
+                var download = await containerClient.GetBlobClient(image.BlobUrl.Split('/').Last()).DownloadStreamingAsync();
+                return TypedResults.Stream(download.Value.Content, image.ContentType);
+            })
+            .WithName("GetPhotoOriginal")
+            .WithSummary("Download the original photo")
+            .WithDescription("Streams the original upload from Blob Storage with its detected content type.")
+            .Produces(StatusCodes.Status200OK, contentType: "image/jpeg", additionalContentTypes: ["image/png", "image/gif", "image/webp"])
+            .ProducesProblem(StatusCodes.Status404NotFound);
 
-                logger.LogInformation("Image {ImageId} deleted: {FileName}", id, image.FileName);
-
-                return Results.Ok(new { message = $"Image {id} deleted" });
-            }
-            catch (Exception ex)
+        photos.MapGet("/{id:int}/thumbnail", async Task<Results<FileStreamHttpResult, ProblemHttpResult>> (
+                [Description("The photo ID.")] int id,
+                ImageDbContext db,
+                BlobContainerClient containerClient) =>
             {
-                logger.LogError(ex, "Failed to delete image {ImageId}", id);
-                return Results.Problem("Failed to delete image");
-            }
-        });
+                var image = await db.Images.FindAsync(id);
+                if (image is null)
+                {
+                    return PhotoNotFound(id);
+                }
+
+                if (image.ThumbnailUrl is null)
+                {
+                    return TypedResults.Problem(
+                        title: "Thumbnail not ready",
+                        detail: $"The thumbnail for photo {id} is still being generated.",
+                        statusCode: StatusCodes.Status404NotFound);
+                }
+
+                var download = await containerClient.GetBlobClient(image.ThumbnailUrl.Split('/').Last()).DownloadStreamingAsync();
+                return TypedResults.Stream(
+                    download.Value.Content,
+                    string.IsNullOrWhiteSpace(download.Value.Details.ContentType) ? ThumbnailContentType : download.Value.Details.ContentType);
+            })
+            .WithName("GetPhotoThumbnail")
+            .WithSummary("Download the catalog thumbnail")
+            .WithDescription("Streams the 300×300 JPEG thumbnail generated by the worker. Returns 404 problem details until the thumbnail is ready.")
+            .Produces(StatusCodes.Status200OK, contentType: ThumbnailContentType)
+            .ProducesProblem(StatusCodes.Status404NotFound);
+
+        photos.MapPost("", async Task<Results<Created<ImageDto>, ProblemHttpResult>> (
+                [Description("The product photo (JPEG, PNG, GIF or WebP, up to 10 MB).")] IFormFile file,
+                IAntiforgery antiforgery,
+                HttpContext context,
+                PhotoIngestService ingest,
+                ILogger<PhotoIngestService> logger) =>
+            {
+                if (await ValidateAntiforgeryAsync(antiforgery, context) is { } invalidToken)
+                {
+                    return invalidToken;
+                }
+
+                if (ingest.Validate(file.FileName, file.ContentType, file.Length, file.OpenReadStream, out var photo) is { } problem)
+                {
+                    return problem;
+                }
+
+                try
+                {
+                    var image = await ingest.StoreAsync(file.FileName, file.Length, photo, file.OpenReadStream, "upload", context.RequestAborted);
+                    return TypedResults.Created($"/api/images/{image.Id}", ImageDto.FromImage(image));
+                }
+                catch (Exception ex) when (ex is not OperationCanceledException)
+                {
+                    logger.UploadFailed(ex, file.FileName);
+                    return TypedResults.Problem(
+                        title: "Upload failed",
+                        detail: "The photo couldn't be stored. Try again in a moment.",
+                        statusCode: StatusCodes.Status500InternalServerError);
+                }
+            })
+            .WithName("UploadPhoto")
+            .WithSummary("Upload a product photo")
+            .WithDescription("""
+                Accepts a `multipart/form-data` upload with a single `file` field (max 10 MB; JPEG, PNG, GIF or WebP).
+                The image bytes are validated, the original is stored in Blob Storage, metadata is written to SQL,
+                and a thumbnail request is published to the `thumbnails` queue with the caller's W3C trace context.
+                Requires the `RequestVerificationToken` header from `GET /api/antiforgery`.
+                """)
+            .WithMetadata(new RequestSizeLimitAttribute(MaxRequestBytes))
+            .WithFormOptions(multipartBodyLengthLimit: MaxRequestBytes)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status413PayloadTooLarge)
+            .ProducesProblem(StatusCodes.Status500InternalServerError);
+
+        photos.MapDelete("/{id:int}", async Task<Results<NoContent, ProblemHttpResult>> (
+                [Description("The photo ID.")] int id,
+                IAntiforgery antiforgery,
+                HttpContext context,
+                ImageDbContext db,
+                BlobContainerClient containerClient,
+                ILogger<PhotoIngestService> logger) =>
+            {
+                if (await ValidateAntiforgeryAsync(antiforgery, context) is { } invalidToken)
+                {
+                    return invalidToken;
+                }
+
+                var image = await db.Images.FindAsync(id);
+                if (image is null)
+                {
+                    return PhotoNotFound(id);
+                }
+
+                try
+                {
+                    await containerClient.DeleteBlobIfExistsAsync(image.BlobUrl.Split('/').Last());
+                    if (image.ThumbnailUrl is not null)
+                    {
+                        await containerClient.DeleteBlobIfExistsAsync(image.ThumbnailUrl.Split('/').Last());
+                    }
+
+                    db.Images.Remove(image);
+                    await db.SaveChangesAsync();
+
+                    logger.PhotoDeleted(id, image.FileName);
+                    return TypedResults.NoContent();
+                }
+                catch (Exception ex)
+                {
+                    logger.DeleteFailed(ex, id);
+                    return TypedResults.Problem(title: "Delete failed", detail: $"Photo {id} couldn't be deleted.", statusCode: StatusCodes.Status500InternalServerError);
+                }
+            })
+            .WithName("DeletePhoto")
+            .WithSummary("Delete a photo")
+            .WithDescription("Deletes the original, its thumbnail and the catalog record. Requires the `RequestVerificationToken` header.")
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status500InternalServerError);
 
         return app;
     }
 
-    private static string? GetValidatedImageContentType(
-        IFormFile file,
-        string fileExtension,
-        CancellationToken cancellationToken)
+    // Development-only operations behind the AppHost's dashboard commands.
+    public static WebApplication MapOperations(this WebApplication app)
     {
-        if (!AllowedFormatsByExtension.TryGetValue(fileExtension, out var expectedFormat))
-        {
-            return null;
-        }
+        var operations = app.MapGroup("/api/operations").WithTags("Operations");
 
-        cancellationToken.ThrowIfCancellationRequested();
+        operations.MapPost("/sample-photos", async (
+                PhotoIngestService ingest,
+                IHostEnvironment environment,
+                ILogger<PhotoIngestService> logger,
+                CancellationToken cancellationToken) =>
+            {
+                var files = Directory.GetFiles(Path.Combine(environment.ContentRootPath, "SamplePhotos")).Order().ToList();
+                var uploaded = new List<ImageDto>();
 
-        using var detectionStream = file.OpenReadStream();
-        using var codec = SKCodec.Create(detectionStream);
+                foreach (var path in files)
+                {
+                    var fileName = Path.GetFileName(path);
+                    var size = new FileInfo(path).Length;
+                    Stream Open() => File.OpenRead(path);
 
-        if (codec is null ||
-            codec.EncodedFormat != expectedFormat ||
-            codec.Info.Width <= 0 ||
-            codec.Info.Height <= 0 ||
-            (long)codec.Info.Width * codec.Info.Height > MaxPixelCount ||
-            !ContentTypesByFormat.TryGetValue(codec.EncodedFormat, out var contentType))
-        {
-            return null;
-        }
+                    if (ingest.Validate(fileName, null, size, Open, out var photo) is null)
+                    {
+                        uploaded.Add(ImageDto.FromImage(await ingest.StoreAsync(fileName, size, photo, Open, "sample", cancellationToken)));
+                    }
+                }
 
-        cancellationToken.ThrowIfCancellationRequested();
+                logger.SamplePhotosUploaded(uploaded.Count);
+                return TypedResults.Ok(new SamplePhotosResult(uploaded.Count, uploaded));
+            })
+            .WithName("UploadSamplePhotos")
+            .WithSummary("Upload sample product photos")
+            .WithDescription("Development only. Runs the bundled studio product photos through the same upload pipeline as `POST /api/images`.");
 
-        using var decodeStream = file.OpenReadStream();
-        using var bitmap = SKBitmap.Decode(decodeStream);
+        operations.MapPost("/reprocess-thumbnails", async (
+                ImageDbContext db,
+                PhotoIngestService ingest,
+                ILogger<PhotoIngestService> logger,
+                CancellationToken cancellationToken) =>
+            {
+                await db.Images.ExecuteUpdateAsync(s => s.SetProperty(i => i.ThumbnailProcessed, false), cancellationToken);
+                var images = await db.Images.AsNoTracking().OrderBy(i => i.Id).ToListAsync(cancellationToken);
 
-        return bitmap is not null && !bitmap.IsNull && bitmap.ReadyToDraw
-            ? contentType
-            : null;
+                foreach (var image in images)
+                {
+                    await ingest.RequestThumbnailAsync(image, "reprocess", cancellationToken);
+                }
+
+                logger.ThumbnailsReprocessed(images.Count);
+                return TypedResults.Ok(new ReprocessResult(images.Count));
+            })
+            .WithName("ReprocessThumbnails")
+            .WithSummary("Reprocess all thumbnails")
+            .WithDescription("Development only. Marks every photo as processing and re-publishes a thumbnail request for each, for example after changing the thumbnail size.");
+
+        return app;
     }
 
-    private static async Task<IResult?> ValidateAntiforgeryAsync(IAntiforgery antiforgery, HttpContext context)
+    private static ProblemHttpResult PhotoNotFound(int id) => TypedResults.Problem(
+        title: "Photo not found",
+        detail: $"No photo exists with ID {id}.",
+        statusCode: StatusCodes.Status404NotFound);
+
+    private static async Task<ProblemHttpResult?> ValidateAntiforgeryAsync(IAntiforgery antiforgery, HttpContext context)
     {
         try
         {
@@ -305,24 +276,10 @@ public static class ImageEndpoints
         }
         catch (AntiforgeryValidationException)
         {
-            return Results.BadRequest(new { error = "Invalid or missing antiforgery token" });
+            return TypedResults.Problem(
+                title: "Invalid antiforgery token",
+                detail: "Send the token from GET /api/antiforgery in the RequestVerificationToken header.",
+                statusCode: StatusCodes.Status400BadRequest);
         }
-    }
-
-    private static string SanitizeFileName(string fileName)
-    {
-        // Remove path separators and invalid characters
-        var invalidChars = Path.GetInvalidFileNameChars();
-        var sanitized = string.Concat(fileName.Split(invalidChars));
-
-        // Limit length
-        if (sanitized.Length > 255)
-        {
-            var extension = Path.GetExtension(sanitized);
-            var nameWithoutExt = Path.GetFileNameWithoutExtension(sanitized);
-            sanitized = nameWithoutExt[..(255 - extension.Length)] + extension;
-        }
-
-        return sanitized;
     }
 }

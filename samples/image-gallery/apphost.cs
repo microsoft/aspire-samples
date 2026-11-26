@@ -28,7 +28,7 @@ var sql = builder.AddAzureSqlServer("sql")
     .RunAsContainer(c => c.WithLifetime(ContainerLifetime.Persistent))
     .AddDatabase("imagedb");
 
-// API: Upload images, queue thumbnail jobs, serve metadata
+// API: Upload product photos, queue thumbnail jobs, serve metadata
 var api = builder.AddDotnetProject("api", "./api/api.csproj")
     .WithHttpHealthCheck("/health")
     .WithExternalHttpEndpoints()
@@ -43,12 +43,24 @@ var api = builder.AddDotnetProject("api", "./api/api.csproj")
             u.DisplayLocation = UrlDisplayLocation.DetailsOnly;
         }
 
-        context.Urls.Add(new()
-        {
-            Url = "/scalar",
-            DisplayText = "API Reference",
-            Endpoint = context.GetEndpoint("https")
-        });
+        // Scalar and the OpenAPI document are mapped in Development only
+        var endpoint = context.GetEndpoint("https");
+        context.Urls.Add(new() { Url = "/scalar", DisplayText = "API reference (Scalar)", Endpoint = endpoint });
+        context.Urls.Add(new() { Url = "/openapi/v1.json", DisplayText = "OpenAPI JSON", Endpoint = endpoint });
+    })
+    .WithHttpCommand("/api/operations/sample-photos", "Upload sample photos", commandName: "upload-sample-photos", commandOptions: new()
+    {
+        Description = "Uploads eight studio product photos through the full pipeline: Blob Storage, SQL, the thumbnails queue and the worker.",
+        IconName = "ImageAdd",
+        IsHighlighted = true,
+        ResultMode = HttpCommandResultMode.Json
+    })
+    .WithHttpCommand("/api/operations/reprocess-thumbnails", "Reprocess all thumbnails", commandName: "reprocess-thumbnails", commandOptions: new()
+    {
+        Description = "Marks every photo as processing and re-queues a thumbnail request for each one.",
+        ConfirmationMessage = "Regenerate thumbnails for every photo in the catalog?",
+        IconName = "ArrowSync",
+        ResultMode = HttpCommandResultMode.Json
     })
     .PublishAsAzureContainerApp((infra, app) =>
     {
@@ -103,7 +115,7 @@ else
 var frontend = builder.AddViteApp("frontend", "./frontend")
     .WithEndpoint("http", e => e.Port = 9080)
     .WithReference(api)
-    .WithUrl("", "Image Gallery");
+    .WithUrl("", "Catalog photo studio");
 
 // Publish: Embed frontend build output in API container
 api.PublishWithContainerFiles(frontend, "wwwroot");

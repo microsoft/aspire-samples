@@ -1,10 +1,14 @@
+using System.Diagnostics;
+using System.Text.Json;
+using Azure;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Azure.Storage.Queues;
 using Azure.Storage.Queues.Models;
 using SkiaSharp;
-using System.Text.Json;
 using Worker.Data;
+using Worker.Models;
+using Worker.Telemetry;
 
 namespace Worker.Services;
 
@@ -12,18 +16,13 @@ public class ThumbnailWorker(
     IServiceProvider serviceProvider,
     BlobContainerClient containerClient,
     QueueServiceClient queueService,
+    ThumbnailTelemetry telemetry,
     IHostApplicationLifetime hostApplicationLifetime,
     IConfiguration configuration,
     ILogger<ThumbnailWorker> logger) : BackgroundService
 {
+    private const string QueueName = "thumbnails";
     private const string ThumbnailContentType = "image/jpeg";
-
-    private readonly IServiceProvider _serviceProvider = serviceProvider;
-    private readonly BlobContainerClient _containerClient = containerClient;
-    private readonly QueueServiceClient _queueService = queueService;
-    private readonly IHostApplicationLifetime _hostApplicationLifetime = hostApplicationLifetime;
-    private readonly IConfiguration _configuration = configuration;
-    private readonly ILogger<ThumbnailWorker> _logger = logger;
     private const int ThumbnailWidth = 300;
     private const int ThumbnailHeight = 300;
     private const long MaxImageSizeBytes = 20 * 1024 * 1024; // 20 MB - slightly larger than upload limit
@@ -37,101 +36,65 @@ public class ThumbnailWorker(
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        if (_configuration.GetValue<bool>("WORKER_RUN_CONTINUOUSLY"))
+        if (configuration.GetValue<bool>("WORKER_RUN_CONTINUOUSLY"))
         {
-            await ExecuteContinuousAsync(stoppingToken);
+            // Local dev: poll every 5 seconds, run forever
+            await RunAsync(continuous: true, stoppingToken);
         }
         else
         {
             try
             {
-                await ExecuteScheduledAsync(stoppingToken);
+                // Event-triggered mode: process messages until the queue is empty, then shut down
+                await RunAsync(continuous: false, stoppingToken);
             }
             finally
             {
-                _logger.LogInformation("Shutting down worker application");
-                _hostApplicationLifetime.StopApplication();
+                // New job instances start automatically when the queue has messages
+                hostApplicationLifetime.StopApplication();
             }
         }
     }
 
-    private async Task ExecuteContinuousAsync(CancellationToken stoppingToken)
+    private async Task RunAsync(bool continuous, CancellationToken stoppingToken)
     {
-        _logger.LogInformation("Thumbnail worker started in CONTINUOUS mode (local dev)");
+        logger.WorkerStarted(continuous ? "continuous (local dev)" : "event-triggered");
 
-        var queueClient = _queueService.GetQueueClient("thumbnails");
-        await queueClient.CreateIfNotExistsAsync(cancellationToken: stoppingToken);
-
-        var processedCount = 0;
-        var startTime = DateTime.UtcNow;
-
-        while (!stoppingToken.IsCancellationRequested)
-        {
-            var response = await queueClient.ReceiveMessagesAsync(
-                maxMessages: 10,
-                visibilityTimeout: TimeSpan.FromMinutes(5),
-                cancellationToken: stoppingToken);
-
-            var messages = response.Value;
-
-            if (messages.Length == 0)
-            {
-                await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
-                continue;
-            }
-
-            _logger.LogInformation("Found {Count} messages to process", messages.Length);
-
-            foreach (var message in messages)
-            {
-                await ProcessMessageWithRetryAsync(message, queueClient, stoppingToken);
-                processedCount++;
-            }
-        }
-
-        _logger.LogInformation("Thumbnail worker stopped. Total processed: {Count}, Duration: {Elapsed}",
-            processedCount, DateTime.UtcNow - startTime);
-    }
-
-    private async Task ExecuteScheduledAsync(CancellationToken stoppingToken)
-    {
-        _logger.LogInformation("Thumbnail worker started in EVENT-TRIGGERED mode");
-
-        var queueClient = _queueService.GetQueueClient("thumbnails");
+        var queueClient = queueService.GetQueueClient(QueueName);
         await queueClient.CreateIfNotExistsAsync(cancellationToken: stoppingToken);
 
         var processedCount = 0;
         var emptyPollCount = 0;
-        var startTime = DateTime.UtcNow;
+        var startTime = Stopwatch.GetTimestamp();
 
         while (!stoppingToken.IsCancellationRequested)
         {
-            var response = await queueClient.ReceiveMessagesAsync(
+            var queueDepth = (await queueClient.GetPropertiesAsync(stoppingToken)).Value.ApproximateMessagesCount;
+            telemetry.QueueDepthObserved(queueDepth);
+
+            var messages = (await queueClient.ReceiveMessagesAsync(
                 maxMessages: 10,
                 visibilityTimeout: TimeSpan.FromMinutes(5),
-                cancellationToken: stoppingToken);
-
-            var messages = response.Value;
+                cancellationToken: stoppingToken)).Value;
 
             if (messages.Length == 0)
             {
-                emptyPollCount++;
-
-                if (emptyPollCount >= MaxEmptyPolls)
+                if (!continuous && ++emptyPollCount >= MaxEmptyPolls)
                 {
-                    _logger.LogInformation("Queue empty after {PollCount} attempts, exiting. Processed {Count} messages in {Elapsed}",
-                        emptyPollCount, processedCount, DateTime.UtcNow - startTime);
                     break;
                 }
 
-                _logger.LogInformation("Queue empty, waiting {WaitSeconds}s before retry ({PollCount}/{MaxPolls})",
-                    EmptyPollWaitSeconds, emptyPollCount, MaxEmptyPolls);
+                if (!continuous)
+                {
+                    logger.QueueEmpty(EmptyPollWaitSeconds, emptyPollCount, MaxEmptyPolls);
+                }
+
                 await Task.Delay(TimeSpan.FromSeconds(EmptyPollWaitSeconds), stoppingToken);
                 continue;
             }
 
             emptyPollCount = 0;
-            _logger.LogInformation("Found {Count} messages to process", messages.Length);
+            logger.BatchReceived(messages.Length, queueDepth);
 
             foreach (var message in messages)
             {
@@ -140,66 +103,134 @@ public class ThumbnailWorker(
             }
         }
 
-        _logger.LogInformation("Thumbnail worker stopped. Total processed: {Count}, Duration: {Elapsed}",
-            processedCount, DateTime.UtcNow - startTime);
+        logger.WorkerStopped(processedCount, Stopwatch.GetElapsedTime(startTime));
     }
 
-    private async Task ProcessMessageWithRetryAsync(
-        QueueMessage message,
-        QueueClient queueClient,
-        CancellationToken cancellationToken)
+    private async Task ProcessMessageWithRetryAsync(QueueMessage message, QueueClient queueClient, CancellationToken cancellationToken)
     {
+        ThumbnailRequest? request = null;
         try
         {
-            await ProcessMessageAsync(message, queueClient, cancellationToken);
+            request = JsonSerializer.Deserialize<ThumbnailRequest>(message.MessageText, JsonSerializerOptions.Web)
+                ?? throw new JsonException("Empty thumbnail request");
         }
-        catch (Exception ex)
+        catch (JsonException ex)
         {
-            _logger.LogError(ex, "Failed to process message: {MessageId}", message.MessageId);
+            telemetry.Failed("invalid_message");
+            logger.ThumbnailFailed(ex, message.MessageId, message.DequeueCount);
+            await queueClient.DeleteMessageAsync(message.MessageId, message.PopReceipt, cancellationToken);
+            return;
+        }
+
+        // Continue the uploader's trace: the API wrote its W3C trace context into the message.
+        ActivityContext.TryParse(request.TraceParent, request.TraceState, isRemote: true, out var parentContext);
+
+        using var activity = ThumbnailTelemetry.ActivitySource.StartActivity($"process {QueueName}", ActivityKind.Consumer, parentContext);
+        activity?.SetTag("messaging.system", "azure_storage_queues");
+        activity?.SetTag("messaging.operation.type", "process");
+        activity?.SetTag("messaging.destination.name", QueueName);
+        activity?.SetTag("messaging.message.id", message.MessageId);
+        activity?.SetTag("lumina.message.dequeue_count", message.DequeueCount);
+        activity?.SetTag("lumina.image.id", request.ImageId);
+
+        try
+        {
+            await ProcessMessageAsync(request, message, queueClient, cancellationToken);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
+        {
+            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            activity?.AddException(ex);
+            telemetry.Failed(ex switch
+            {
+                RequestFailedException => "storage_error",
+                InvalidOperationException => "invalid_image",
+                _ => ex.GetType().Name
+            });
+            logger.ThumbnailFailed(ex, message.MessageId, message.DequeueCount);
 
             if (message.DequeueCount >= MaxRetryCount)
             {
-                _logger.LogWarning("Message {MessageId} exceeded max retry count ({MaxRetryCount}), deleting",
-                    message.MessageId, MaxRetryCount);
+                logger.MessageDiscarded(message.MessageId, MaxRetryCount);
                 await queueClient.DeleteMessageAsync(message.MessageId, message.PopReceipt, cancellationToken);
             }
         }
     }
 
-    private async Task ProcessMessageAsync(
-        QueueMessage message,
-        QueueClient queueClient,
-        CancellationToken cancellationToken)
+    private async Task ProcessMessageAsync(ThumbnailRequest request, QueueMessage message, QueueClient queueClient, CancellationToken cancellationToken)
     {
-        var startTime = DateTime.UtcNow;
-
-        // Parse message
-        var data = JsonSerializer.Deserialize<JsonElement>(message.MessageText);
-        var imageId = data.GetProperty("imageId").GetInt32();
-        var blobName = data.GetProperty("blobName").GetString()!;
-
-        _logger.LogInformation("Processing thumbnail for image {ImageId}, blob: {BlobName}", imageId, blobName);
-
-        var sourceBlobClient = _containerClient.GetBlobClient(blobName);
+        var startTime = Stopwatch.GetTimestamp();
+        var imageId = request.ImageId;
+        var sourceBlobClient = containerClient.GetBlobClient(request.BlobName);
 
         // Check blob size before downloading
-        var properties = await sourceBlobClient.GetPropertiesAsync(cancellationToken: cancellationToken);
+        Response<BlobProperties> properties;
+        try
+        {
+            properties = await sourceBlobClient.GetPropertiesAsync(cancellationToken: cancellationToken);
+        }
+        catch (RequestFailedException ex) when (ex.ErrorCode == BlobErrorCode.BlobNotFound)
+        {
+            // The photo was deleted after its thumbnail was requested; retrying won't help.
+            Activity.Current?.AddEvent(new ActivityEvent("photo.missing"));
+            logger.PhotoMissing(imageId);
+            await queueClient.DeleteMessageAsync(message.MessageId, message.PopReceipt, cancellationToken);
+            return;
+        }
+
         if (properties.Value.ContentLength > MaxImageSizeBytes)
         {
-            _logger.LogWarning("Image {ImageId} exceeds max size ({Size} bytes), skipping thumbnail generation",
-                imageId, properties.Value.ContentLength);
             throw new InvalidOperationException($"Image size {properties.Value.ContentLength} exceeds maximum allowed {MaxImageSizeBytes}");
         }
 
-        // Download original image
         using var originalStream = new MemoryStream();
         await sourceBlobClient.DownloadToAsync(originalStream, cancellationToken);
         originalStream.Position = 0;
 
-        // Generate thumbnail
+        var (thumbnail, sourceSize, thumbnailSize) = RenderThumbnail(imageId, originalStream, cancellationToken);
+        using (thumbnail)
+        {
+            var thumbnailBlobClient = containerClient.GetBlobClient($"thumb-{request.BlobName}");
+            await thumbnailBlobClient.UploadAsync(thumbnail, new BlobUploadOptions
+            {
+                HttpHeaders = new BlobHttpHeaders { ContentType = ThumbnailContentType }
+            }, cancellationToken);
+
+            using var scope = serviceProvider.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<ImageDbContext>();
+            var imageRecord = await db.Images.FindAsync([imageId], cancellationToken);
+
+            if (imageRecord is null)
+            {
+                logger.PhotoMissing(imageId);
+            }
+            else
+            {
+                imageRecord.ThumbnailUrl = thumbnailBlobClient.Uri.ToString();
+                imageRecord.ThumbnailProcessed = true;
+                await db.SaveChangesAsync(cancellationToken);
+            }
+        }
+
+        await queueClient.DeleteMessageAsync(message.MessageId, message.PopReceipt, cancellationToken);
+
+        var elapsed = Stopwatch.GetElapsedTime(startTime);
+        var format = Path.GetExtension(request.BlobName).TrimStart('.').ToLowerInvariant() switch
+        {
+            "jpg" or "jpeg" => "jpeg",
+            var ext => ext
+        };
+        telemetry.Generated(format, elapsed);
+        Activity.Current?.AddEvent(new ActivityEvent("thumbnail.saved"));
+        logger.ThumbnailGenerated(imageId, thumbnailSize.Width, thumbnailSize.Height, sourceSize.Width, sourceSize.Height, elapsed.TotalMilliseconds);
+    }
+
+    private static (MemoryStream Thumbnail, SKSizeI Source, SKSizeI Target) RenderThumbnail(int imageId, Stream original, CancellationToken cancellationToken)
+    {
+        using var activity = ThumbnailTelemetry.ActivitySource.StartActivity("render thumbnail");
         cancellationToken.ThrowIfCancellationRequested();
 
-        using var codec = SKCodec.Create(originalStream)
+        using var codec = SKCodec.Create(original)
             ?? throw new InvalidOperationException($"Unable to decode image {imageId}");
 
         if (codec.Info.Width <= 0 || codec.Info.Height <= 0)
@@ -209,15 +240,17 @@ public class ThumbnailWorker(
 
         if ((long)codec.Info.Width * codec.Info.Height > MaxPixelCount)
         {
-            _logger.LogWarning(
-                "Image {ImageId} exceeds max pixel count ({Width}x{Height}), skipping thumbnail generation",
-                imageId, codec.Info.Width, codec.Info.Height);
             throw new InvalidOperationException(
                 $"Image {imageId} pixel count {(long)codec.Info.Width * codec.Info.Height} exceeds maximum allowed {MaxPixelCount}");
         }
 
+        activity?.SetTag("lumina.photo.width", codec.Info.Width);
+        activity?.SetTag("lumina.photo.height", codec.Info.Height);
+        activity?.SetTag("lumina.photo.format", codec.EncodedFormat.ToString().ToLowerInvariant());
+
         using var image = SKBitmap.Decode(codec)
             ?? throw new InvalidOperationException($"Unable to decode image {imageId}");
+        activity?.AddEvent(new ActivityEvent("image.decoded"));
 
         var scale = Math.Min((double)ThumbnailWidth / image.Width, (double)ThumbnailHeight / image.Height);
         var targetSize = new SKImageInfo(
@@ -227,39 +260,18 @@ public class ThumbnailWorker(
         using var resizedImage = image.Resize(targetSize, new SKSamplingOptions(SKFilterMode.Linear, SKMipmapMode.Linear))
             ?? throw new InvalidOperationException($"Unable to resize image {imageId}");
 
-        // Upload thumbnail
-        var thumbnailName = $"thumb-{blobName}";
-        var thumbnailBlobClient = _containerClient.GetBlobClient(thumbnailName);
-
-        using var thumbnailStream = new MemoryStream();
-        using var encodedThumbnail = resizedImage.Encode(SKEncodedImageFormat.Jpeg, quality: 85)
+        using var encoded = resizedImage.Encode(SKEncodedImageFormat.Jpeg, quality: 85)
             ?? throw new InvalidOperationException($"Unable to encode thumbnail for image {imageId}");
-        encodedThumbnail.SaveTo(thumbnailStream);
-        thumbnailStream.Position = 0;
-        await thumbnailBlobClient.UploadAsync(thumbnailStream, overwrite: true, cancellationToken: cancellationToken);
-        await thumbnailBlobClient.SetHttpHeadersAsync(
-            new BlobHttpHeaders { ContentType = ThumbnailContentType },
-            cancellationToken: cancellationToken);
 
-        // Update database
-        using var scope = _serviceProvider.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<ImageDbContext>();
-        var imageRecord = await db.Images.FindAsync([imageId], cancellationToken: cancellationToken);
+        var thumbnail = new MemoryStream();
+        encoded.SaveTo(thumbnail);
+        thumbnail.Position = 0;
 
-        if (imageRecord != null)
-        {
-            imageRecord.ThumbnailUrl = thumbnailBlobClient.Uri.ToString();
-            imageRecord.ThumbnailProcessed = true;
-            await db.SaveChangesAsync(cancellationToken);
-        }
+        activity?.SetTag("lumina.thumbnail.width", targetSize.Width);
+        activity?.SetTag("lumina.thumbnail.height", targetSize.Height);
+        activity?.SetTag("lumina.thumbnail.size", thumbnail.Length);
+        activity?.AddEvent(new ActivityEvent("thumbnail.encoded"));
 
-        // Delete message from queue
-        await queueClient.DeleteMessageAsync(message.MessageId, message.PopReceipt, cancellationToken);
-
-        var processingTime = DateTime.UtcNow - startTime;
-        _logger.LogInformation(
-            "Thumbnail generated for image {ImageId} in {ProcessingTime}ms",
-            imageId,
-            processingTime.TotalMilliseconds);
+        return (thumbnail, new SKSizeI(codec.Info.Width, codec.Info.Height), new SKSizeI(targetSize.Width, targetSize.Height));
     }
 }

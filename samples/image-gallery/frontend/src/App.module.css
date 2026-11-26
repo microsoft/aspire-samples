@@ -14,7 +14,7 @@
   justify-content: space-between;
   gap: 1rem;
   padding: 1rem 0;
-  margin-bottom: 1.75rem;
+  margin-bottom: 2rem;
   background: var(--bg);
   border-bottom: 1px solid var(--border);
 }
@@ -115,23 +115,111 @@
   height: 20px;
 }
 
+.spinning {
+  animation: spin 1.1s linear infinite;
+}
+
 /* ---------- Hero / intro ---------- */
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+  gap: 1.5rem;
+  align-items: stretch;
+  margin-bottom: 2.5rem;
+}
+
 .intro {
-  margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.9rem;
 }
 
 .introTitle {
   font-size: clamp(1.7rem, 3.5vw, 2.35rem);
   font-weight: 800;
   letter-spacing: -0.03em;
+  line-height: 1.15;
   color: var(--text);
 }
 
 .introLead {
-  margin-top: 0.4rem;
-  max-width: 60ch;
+  max-width: 66ch;
   color: var(--text-muted);
   font-size: 1.02rem;
+  text-wrap: pretty;
+}
+
+.stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+/* Number first visually; the dl keeps label/value order for screen readers. */
+.stat {
+  display: inline-flex;
+  flex-direction: row-reverse;
+  align-items: baseline;
+  gap: 0.35rem;
+  padding: 0.3rem 0.8rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 0.82rem;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.stat dt {
+  font-weight: 600;
+  color: var(--text-soft);
+}
+
+.stat dd {
+  font-weight: 800;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.statActive {
+  background: var(--accent-soft);
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
+.statActive dt,
+.statActive dd {
+  color: var(--accent-strong);
+}
+
+.pipeline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  list-style: none;
+}
+
+.pipeline li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.65rem;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.pipeline li:not(:last-child)::after {
+  content: "→";
+  margin-left: 0.35rem;
+  color: var(--text-soft);
+  font-weight: 600;
+}
+
+.pipeline svg {
+  width: 15px;
+  height: 15px;
 }
 
 /* ---------- Upload zone ---------- */
@@ -140,9 +228,9 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 0.85rem;
-  padding: 2.5rem 1.5rem;
-  margin-bottom: 1.5rem;
+  padding: 2.4rem 1.5rem;
   background: var(--surface);
   border: 2px dashed var(--border-strong);
   border-radius: var(--radius-lg);
@@ -202,10 +290,11 @@
 }
 
 .progressFill {
+  width: 100%;
   height: 100%;
-  border-radius: 999px;
   background: linear-gradient(90deg, var(--accent) 0%, #22b8cf 100%);
-  transition: width 0.3s ease;
+  transform-origin: left center;
+  transition: transform 0.3s ease;
 }
 
 .progressLabel {
@@ -241,9 +330,9 @@
 /* ---------- Library section ---------- */
 .libraryHeader {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
-  gap: 1rem;
+  gap: 0.75rem 1rem;
   margin-bottom: 1.1rem;
   flex-wrap: wrap;
 }
@@ -255,19 +344,14 @@
   color: var(--text);
 }
 
-.libraryMeta {
-  font-size: 0.9rem;
-  color: var(--text-soft);
-  font-weight: 600;
-}
-
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(248px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
   gap: 1.4rem;
 }
 
 .card {
+  position: relative;
   display: flex;
   flex-direction: column;
   background: var(--surface);
@@ -358,41 +442,55 @@
 
 .cardBody {
   display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-  padding: 0.85rem 0.95rem 1rem;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.8rem 0.85rem 0.85rem 0.95rem;
 }
 
-.fileName {
+.cardText {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.productName {
   font-weight: 700;
+  line-height: 1.3;
   color: var(--text);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.fileMeta {
+  font-size: 0.8rem;
+  color: var(--text-soft);
+  font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.fileMeta {
-  font-size: 0.82rem;
-  color: var(--text-soft);
-  font-weight: 600;
-}
-
 .cardActions {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.6rem;
   display: flex;
-  gap: 0.5rem;
-  margin-top: 0.85rem;
+  gap: 0.35rem;
 }
 
 .actionBtn {
-  flex: 1;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.4rem;
-  padding: 0.5rem 0.7rem;
+  width: 32px;
+  height: 32px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border);
-  background: var(--surface-2);
+  background: var(--surface);
   color: var(--text);
   font-size: 0.85rem;
   font-weight: 600;
@@ -413,11 +511,6 @@
 .actionBtn:disabled {
   opacity: 0.55;
   cursor: not-allowed;
-}
-
-.viewBtn:hover:not(:disabled) {
-  color: var(--accent-strong);
-  border-color: var(--accent);
 }
 
 .deleteBtn:hover:not(:disabled) {
@@ -553,13 +646,13 @@
   background: var(--surface);
 }
 
-.modalInfo .fileName {
+.modalInfo .productName {
   font-size: 1.05rem;
 }
 
 /* ---------- Footer ---------- */
 .footer {
-  margin-top: 3rem;
+  margin-top: 4rem;
   padding-top: 1.5rem;
   border-top: 1px solid var(--border);
   text-align: center;
@@ -571,13 +664,24 @@
   color: var(--text-muted);
 }
 
+@media (max-width: 860px) {
+  .hero {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 600px) {
   .grid {
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
     gap: 1rem;
   }
 
-  .statPill {
+  .statPill,
+  .fileTime {
     display: none;
+  }
+
+  .dropzone {
+    padding: 1.75rem 1.25rem;
   }
 }

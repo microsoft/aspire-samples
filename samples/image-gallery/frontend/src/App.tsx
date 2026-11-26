@@ -3,14 +3,17 @@ import {
   ArrowUpTrayIcon,
   PhotoIcon,
   TrashIcon,
-  EyeIcon,
   XMarkIcon,
   SunIcon,
   MoonIcon,
   ExclamationCircleIcon,
   ClockIcon,
   CheckBadgeIcon,
-  RectangleStackIcon,
+  ArrowPathIcon,
+  CircleStackIcon,
+  QueueListIcon,
+  CpuChipIcon,
+  Squares2X2Icon,
 } from '@heroicons/react/24/outline'
 import styles from './App.module.css'
 
@@ -24,6 +27,45 @@ interface Image {
 }
 
 type Theme = 'light' | 'dark'
+
+const pipeline = [
+  { label: 'Upload API', icon: ArrowUpTrayIcon },
+  { label: 'Blob Storage', icon: CircleStackIcon },
+  { label: 'Thumbnails queue', icon: QueueListIcon },
+  { label: 'Thumbnail worker', icon: CpuChipIcon },
+  { label: 'Catalog grid', icon: Squares2X2Icon },
+]
+
+// "field-chronograph-watch.jpg" -> "Field Chronograph Watch"
+function productName(fileName: string) {
+  const base = fileName.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' ').trim()
+  return base.replace(/\b\w/g, c => c.toUpperCase()) || fileName
+}
+
+function formatLabel(contentType: string) {
+  return contentType.replace('image/', '').toUpperCase()
+}
+
+function timeAgo(iso: string) {
+  // The API returns UTC timestamps without a zone designator.
+  const uploaded = new Date(/[zZ]|[+-]\d\d:\d\d$/.test(iso) ? iso : `${iso}Z`).getTime()
+  const seconds = Math.max(0, Math.round((Date.now() - uploaded) / 1000))
+  if (seconds < 60) return 'just now'
+  const minutes = Math.round(seconds / 60)
+  if (minutes < 60) return `${minutes} min ago`
+  const hours = Math.round(minutes / 60)
+  if (hours < 24) return `${hours} h ago`
+  return new Date(uploaded).toLocaleDateString()
+}
+
+async function problemMessage(body: string, fallback: string) {
+  try {
+    const problem = JSON.parse(body)
+    return problem.detail || problem.title || fallback
+  } catch {
+    return fallback
+  }
+}
 
 function getInitialTheme(): Theme {
   const current = document.documentElement.dataset.theme
@@ -73,15 +115,11 @@ function App() {
     }
   }
 
-  // Poll for thumbnail updates every 3 seconds
+  // Poll quickly while thumbnails are processing, and slowly otherwise so photos added
+  // from the Aspire dashboard commands show up without a reload.
   useEffect(() => {
-    const interval = setInterval(() => {
-      const hasPendingThumbnails = images.some(img => !img.thumbnailProcessed)
-      if (hasPendingThumbnails) {
-        fetchImages()
-      }
-    }, 3000)
-
+    const hasPendingThumbnails = images.some(img => !img.thumbnailProcessed)
+    const interval = setInterval(fetchImages, hasPendingThumbnails ? 2000 : 8000)
     return () => clearInterval(interval)
   }, [images])
 
@@ -135,7 +173,7 @@ function App() {
             fileInputRef.current.value = ''
           }
         } else {
-          setErrorMessage('Upload failed. Please try again.')
+          problemMessage(xhr.responseText, 'Upload failed. Please try again.').then(setErrorMessage)
           setUploading(false)
         }
       })
@@ -187,7 +225,7 @@ function App() {
   }
 
   const handleDelete = async (id: number) => {
-    if (!confirm('Delete this image?')) return
+    if (!confirm('Delete this photo?')) return
 
     if (!antiforgeryToken) {
       setErrorMessage('Security token not available. Please refresh the page.')
@@ -241,6 +279,7 @@ function App() {
   }
 
   const processingCount = images.filter(img => !img.thumbnailProcessed).length
+  const readyCount = images.length - processingCount
   const statusMessage = uploading
     ? `Uploading, ${uploadProgress} percent complete.`
     : processingCount > 0
@@ -263,14 +302,15 @@ function App() {
             </span>
             <span className={styles.brandText}>
               <span className={styles.brandName}>Lumina</span>
-              <span className={styles.brandTag}>Aspire media library</span>
+              <span className={styles.brandTag}>Catalog photo studio</span>
             </span>
           </div>
 
           <div className={styles.topbarActions}>
             <span className={styles.statPill}>
-              <RectangleStackIcon aria-hidden="true" />
-              {images.length} item{images.length === 1 ? '' : 's'}
+              {processingCount > 0
+                ? <><ArrowPathIcon aria-hidden="true" className={styles.spinning} />{processingCount} processing</>
+                : <><CheckBadgeIcon aria-hidden="true" />All thumbnails ready</>}
             </span>
             <button
               type="button"
@@ -287,49 +327,56 @@ function App() {
         </header>
 
         <main id="main">
-          <section className={styles.intro} aria-labelledby="intro-title">
-            <h1 className={styles.introTitle} id="intro-title">Your media library</h1>
-            <p className={styles.introLead}>
-              Upload images and Lumina stores the original, then a queue-triggered
-              job generates thumbnails in the background — refreshing here as they
-              finish.
-            </p>
-          </section>
+          <div className={styles.hero}>
+            <section className={styles.intro} aria-labelledby="intro-title">
+              <h1 className={styles.introTitle} id="intro-title">Product photos</h1>
+              <p className={styles.introLead}>
+                Upload studio shots for the spring home &amp; lifestyle catalog. Originals land in Blob Storage
+                and a queue-triggered worker renders the 300&times;300 storefront thumbnails.
+              </p>
+              <ol className={styles.pipeline} aria-label="Processing pipeline">
+                {pipeline.map(({ label, icon: Icon }) => (
+                  <li key={label}><Icon aria-hidden="true" />{label}</li>
+                ))}
+              </ol>
+            </section>
 
-          <button
-            type="button"
-            className={`${styles.dropzone} ${isDragging ? styles.dragging : ''}`}
-            onDragEnter={handleDragEnter}
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-            onClick={() => fileInputRef.current?.click()}
-            aria-label="Upload an image. Drop a file here or activate to browse."
-          >
-            {uploading ? (
-              <div className={styles.progress}>
-                <div
-                  className={styles.progressTrack}
-                  role="progressbar"
-                  aria-valuenow={uploadProgress}
-                  aria-valuemin={0}
-                  aria-valuemax={100}
-                  aria-label="Upload progress"
-                >
-                  <div className={styles.progressFill} style={{ width: `${uploadProgress}%` }} />
+            <button
+              type="button"
+              className={`${styles.dropzone} ${isDragging ? styles.dragging : ''}`}
+              onDragEnter={handleDragEnter}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              onClick={() => fileInputRef.current?.click()}
+              aria-label="Upload an image. Drop a file here or activate to browse."
+            >
+              {uploading ? (
+                <div className={styles.progress}>
+                  <div
+                    className={styles.progressTrack}
+                    role="progressbar"
+                    aria-valuenow={uploadProgress}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-label="Upload progress"
+                  >
+                    <div className={styles.progressFill} style={{ transform: `scaleX(${uploadProgress / 100})` }} />
+                  </div>
+                  <p className={styles.progressLabel}>Uploading… {uploadProgress}%</p>
                 </div>
-                <p className={styles.progressLabel}>Uploading… {uploadProgress}%</p>
-              </div>
-            ) : (
-              <>
-                <span className={styles.dropIcon} aria-hidden="true">
-                  <ArrowUpTrayIcon />
-                </span>
-                <span className={styles.dropTitle}>Drop an image, or click to browse</span>
-                <span className={styles.dropHint}>JPG, PNG, GIF or WebP · up to 10&nbsp;MB</span>
-              </>
-            )}
-          </button>
+              ) : (
+                <>
+                  <span className={styles.dropIcon} aria-hidden="true">
+                    <ArrowUpTrayIcon />
+                  </span>
+                  <span className={styles.dropTitle}>Drop a product photo, or click to browse</span>
+                  <span className={styles.dropHint}>JPG, PNG, GIF or WebP · up to 10&nbsp;MB</span>
+                </>
+              )}
+            </button>
+          </div>
+
           <input
             ref={fileInputRef}
             id="file-input"
@@ -351,12 +398,23 @@ function App() {
           <div className="sr-only" aria-live="polite">{statusMessage}</div>
 
           <div className={styles.libraryHeader}>
-            <h2 className={styles.libraryTitle}>Library</h2>
-            <span className={styles.libraryMeta}>
-              {images.length === 0
-                ? 'No images yet'
-                : `${images.length} image${images.length === 1 ? '' : 's'}${processingCount > 0 ? ` · ${processingCount} processing` : ''}`}
-            </span>
+            <h2 className={styles.libraryTitle}>Catalog photos</h2>
+            {images.length > 0 && (
+              <dl className={styles.stats}>
+                <div className={styles.stat}>
+                  <dt>Photos</dt>
+                  <dd>{images.length}</dd>
+                </div>
+                <div className={styles.stat}>
+                  <dt>Thumbnails ready</dt>
+                  <dd>{readyCount}</dd>
+                </div>
+                <div className={`${styles.stat} ${processingCount > 0 ? styles.statActive : ''}`}>
+                  <dt>In queue</dt>
+                  <dd>{processingCount}</dd>
+                </div>
+              </dl>
+            )}
           </div>
 
           {images.length === 0 && !uploading ? (
@@ -364,8 +422,8 @@ function App() {
               <span className={styles.emptyIcon} aria-hidden="true">
                 <PhotoIcon />
               </span>
-              <p className={styles.emptyTitle}>Your library is empty</p>
-              <p>Upload your first image to see it appear here with a generated thumbnail.</p>
+              <p className={styles.emptyTitle}>No product photos yet</p>
+              <p>Upload a photo, or run <strong>Upload sample photos</strong> on the api resource in the Aspire dashboard.</p>
             </div>
           ) : (
             <ul className={styles.grid}>
@@ -380,7 +438,7 @@ function App() {
                   >
                     {image.thumbnailProcessed ? (
                       <>
-                        <img src={`/api/images/${image.id}/thumbnail`} alt={image.fileName} />
+                        <img src={`/api/images/${image.id}/thumbnail`} alt={productName(image.fileName)} />
                         <span className={styles.thumbBadge}>
                           <CheckBadgeIcon aria-hidden="true" />
                           Ready
@@ -393,27 +451,24 @@ function App() {
                       </div>
                     )}
                   </button>
+                  <div className={styles.cardActions}>
+                    <button
+                      type="button"
+                      className={`${styles.actionBtn} ${styles.deleteBtn}`}
+                      onClick={() => handleDelete(image.id)}
+                      title="Delete photo"
+                    >
+                      <TrashIcon aria-hidden="true" />
+                      <span className="sr-only">Delete {image.fileName}</span>
+                    </button>
+                  </div>
                   <div className={styles.cardBody}>
-                    <p className={styles.fileName} title={image.fileName}>{image.fileName}</p>
-                    <p className={styles.fileMeta}>{formatFileSize(image.size)}</p>
-                    <div className={styles.cardActions}>
-                      <button
-                        type="button"
-                        className={`${styles.actionBtn} ${styles.viewBtn}`}
-                        onClick={() => openLightbox(image)}
-                        disabled={!image.thumbnailProcessed}
-                      >
-                        <EyeIcon aria-hidden="true" />
-                        View
-                      </button>
-                      <button
-                        type="button"
-                        className={`${styles.actionBtn} ${styles.deleteBtn}`}
-                        onClick={() => handleDelete(image.id)}
-                      >
-                        <TrashIcon aria-hidden="true" />
-                        Delete
-                      </button>
+                    <div className={styles.cardText}>
+                      <p className={styles.productName} title={productName(image.fileName)}>{productName(image.fileName)}</p>
+                      <p className={styles.fileMeta} title={image.fileName}>
+                        {formatLabel(image.contentType)} · {formatFileSize(image.size)}
+                        <span className={styles.fileTime}> · {timeAgo(image.uploadedAt)}</span>
+                      </p>
                     </div>
                   </div>
                 </li>
@@ -423,8 +478,8 @@ function App() {
 
           <footer className={styles.footer}>
             <p>
-              <strong>Lumina</strong> — an Aspire sample. Azure Blob Storage,
-              Storage Queues and event-triggered Container Apps Jobs.
+              <strong>Lumina</strong> — an Aspire sample. Azure Blob Storage, Storage Queues,
+              Azure SQL and event-triggered Container Apps Jobs.
             </p>
           </footer>
         </main>
@@ -450,8 +505,8 @@ function App() {
             </button>
             <img src={`/api/images/${selectedImage.id}/blob`} alt={selectedImage.fileName} />
             <div className={styles.modalInfo}>
-              <p className={styles.fileName}>{selectedImage.fileName}</p>
-              <p className={styles.fileMeta}>{formatFileSize(selectedImage.size)}</p>
+              <p className={styles.productName}>{productName(selectedImage.fileName)}</p>
+              <p className={styles.fileMeta}>{selectedImage.fileName} · {formatLabel(selectedImage.contentType)} · {formatFileSize(selectedImage.size)}</p>
             </div>
           </div>
         </div>
