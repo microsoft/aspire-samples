@@ -1,0 +1,47 @@
+@ApiService_HostAddress = http://localhost:5180
+
+### Clinicians and their upcoming workload
+GET {{ApiService_HostAddress}}/api/clinicians
+Accept: application/json
+
+### Upcoming appointments for a clinician
+GET {{ApiService_HostAddress}}/api/appointments?clinicianId=2
+Accept: application/json
+
+### A single appointment
+GET {{ApiService_HostAddress}}/api/appointments/1
+Accept: application/json
+
+### Book an appointment
+POST {{ApiService_HostAddress}}/api/appointments
+Content-Type: application/json
+
+{
+  "clinicianId": 2,
+  "patientId": 5,
+  "startsAt": "2027-01-12T14:30:00+00:00",
+  "durationMinutes": 30,
+  "reason": "Chest pain follow-up"
+}
+
+### 400 validation problem details
+POST {{ApiService_HostAddress}}/api/appointments
+Content-Type: application/json
+
+{
+  "clinicianId": 2,
+  "patientId": 5,
+  "startsAt": "2020-01-01T09:10:00+00:00",
+  "durationMinutes": 20,
+  "reason": ""
+}
+
+### Cancel an appointment
+POST {{ApiService_HostAddress}}/api/appointments/1/cancel
+
+### 404 problem details
+GET {{ApiService_HostAddress}}/api/appointments/9999
+Accept: application/problem+json
+
+### OpenAPI document
+GET {{ApiService_HostAddress}}/openapi/v1.json

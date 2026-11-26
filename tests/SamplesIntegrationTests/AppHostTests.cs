@@ -202,7 +202,7 @@ public class AppHostTests(ITestOutputHelper testOutput)
                 { "apiservice", ["/alive", "/health", "/todos", "/todos/1", "/catalog", "/catalog/1", "/addressbook", "/addressbook/1", "/scalar"] }
             }),
             new TestEndpoints("DatabaseMigrations.AppHost", new() {
-                { "api", ["/alive", "/health", "/"] }
+                { "api", ["/alive", "/health", "/api/clinicians", "/api/appointments", "/openapi/v1.json"] }
             })
             {
                 WaitForResources = [new("migration", KnownResourceStates.Finished)]
