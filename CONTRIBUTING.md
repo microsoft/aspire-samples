@@ -56,7 +56,7 @@ Every sample should show what Aspire does for a real app, not just that the app 
 
 ## Validate your change
 
-Run the same checks as CI before you open a pull request:
+Run the same checks as CI from the repository root before you open a pull request. Each command that changes directory runs in a subshell, so the block works top to bottom:
 
 ```bash
 # Restore TypeScript AppHosts and run npm ci and builds for every committed package-lock.json
@@ -66,13 +66,13 @@ bash ./build/validate-javascript.sh
 bash ./build/validate-go.sh
 
 # Build every solution, file-based AppHost, TypeScript AppHost, and standalone project
-cd build && ./build.sh -p:SkipTypeScriptRestore=true   # Windows: .\build.cmd
+(cd build && ./build.sh -p:SkipTypeScriptRestore=true)   # Windows: cd build; .\build.cmd
 
 # Run the integration tests (Linux with Docker); filter to your sample's AppHost when iterating
-cd tests && dotnet test ./SamplesTests.slnx
+(cd tests && dotnet test ./SamplesTests.slnx)
 
 # Spring Petclinic only
-cd samples/spring-petclinic/api && ./mvnw test
+(cd samples/spring-petclinic/api && ./mvnw test)
 ```
 
 Then run the sample with `aspire run`, exercise its endpoints and commands, and check its traces, metrics, and structured logs in the dashboard.
