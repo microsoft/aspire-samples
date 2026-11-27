@@ -1,0 +1,69 @@
+@ApiService_HostAddress = http://localhost:5468
+
+### Product catalog (PostgreSQL)
+GET {{ApiService_HostAddress}}/products
+Accept: application/json
+
+### Products in one category
+GET {{ApiService_HostAddress}}/products?category=Camping
+Accept: application/json
+
+### Customer accounts (MySQL)
+GET {{ApiService_HostAddress}}/customers/3
+Accept: application/json
+
+### Recent orders (SQL Server)
+GET {{ApiService_HostAddress}}/orders?limit=5
+Accept: application/json
+
+### An order with its lines (SQL Server) and its customer (MySQL)
+GET {{ApiService_HostAddress}}/orders/1
+Accept: application/json
+
+### Place an order across all three databases
+POST {{ApiService_HostAddress}}/orders
+Content-Type: application/json
+
+{
+  "customerId": 3,
+  "lines": [
+    { "productId": 1, "quantity": 1 },
+    { "productId": 13, "quantity": 2 }
+  ]
+}
+
+### 400 validation problem details
+POST {{ApiService_HostAddress}}/orders
+Content-Type: application/json
+
+{
+  "customerId": 3,
+  "lines": [
+    { "productId": 1, "quantity": 0 }
+  ]
+}
+
+### 404 problem details (unknown customer)
+POST {{ApiService_HostAddress}}/orders
+Content-Type: application/json
+
+{
+  "customerId": 999,
+  "lines": [
+    { "productId": 1, "quantity": 1 }
+  ]
+}
+
+### 409 problem details (the tent is out of stock)
+POST {{ApiService_HostAddress}}/orders
+Content-Type: application/json
+
+{
+  "customerId": 3,
+  "lines": [
+    { "productId": 8, "quantity": 1 }
+  ]
+}
+
+### OpenAPI document
+GET {{ApiService_HostAddress}}/openapi/v1.json

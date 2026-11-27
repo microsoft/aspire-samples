@@ -199,7 +199,7 @@ public class AppHostTests(ITestOutputHelper testOutput)
             //    { "ginapp", ["/"] }
             //}),
             new TestEndpoints("DatabaseContainers.AppHost", new() {
-                { "apiservice", ["/alive", "/health", "/todos", "/todos/1", "/catalog", "/catalog/1", "/addressbook", "/addressbook/1", "/scalar"] }
+                { "apiservice", ["/alive", "/health", "/products", "/products/1", "/customers", "/customers/1", "/orders", "/orders/1", "/scalar", "/openapi/v1.json"] }
             }),
             new TestEndpoints("DatabaseMigrations.AppHost", new() {
                 { "api", ["/alive", "/health", "/"] }
