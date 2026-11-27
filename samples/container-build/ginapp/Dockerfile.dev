@@ -1,14 +1,14 @@
-# Development Dockerfile with Air for hot reload
-ARG GO_VERSION=1.24.2
+# Development image (aspire run / aspire start): Air rebuilds and restarts the app when bind-mounted sources change.
+ARG GO_VERSION=1.27.4
 FROM golang:${GO_VERSION}
 
 WORKDIR /app
 
-# Install Air for hot reload
-RUN go install github.com/air-verse/air@latest
+RUN go install github.com/air-verse/air@v1.67.4
 
-# The source code will be bind mounted at runtime
-# We'll download dependencies on first build via Air
-# This ensures we always use the latest go.mod/go.sum from the bind mount
+# Bake the module cache into the image so the container starts without downloading dependencies.
+# The source itself is bind mounted over /app at run time.
+COPY go.mod go.sum ./
+RUN go mod download
 
 CMD ["air", "-c", ".air.toml"]

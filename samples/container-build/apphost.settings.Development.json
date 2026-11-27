@@ -1,6 +1,6 @@
 {
   "Parameters": {
-    "goversion": "1.25.4"
+    "goversion": "1.27.4"
   },
   "Logging": {
     "LogLevel": {

@@ -14,17 +14,17 @@ tmp_dir = "tmp"
   follow_symlink = false
   full_bin = ""
   include_dir = []
-  include_ext = ["go", "tpl", "tmpl", "html"]
+  include_ext = ["go", "html", "json"]
   include_file = []
-  kill_delay = "0s"
+  kill_delay = "3s"
   log = "build-errors.log"
   poll = true
   poll_interval = 500
   post_cmd = []
-  pre_cmd = ["go get -d ./..."]
+  pre_cmd = []
   rerun = false
   rerun_delay = 500
-  send_interrupt = false
+  send_interrupt = true
   stop_on_error = false
 
 [color]

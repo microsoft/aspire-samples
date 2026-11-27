@@ -196,7 +196,7 @@ public class AppHostTests(ITestOutputHelper testOutput)
             }),
             // Can't reference this AppHost directly as it's a file-based app now
             //new TestEndpoints("ContainerBuild.AppHost", new() {
-            //    { "ginapp", ["/"] }
+            //    { "ginapp", ["/health", "/flags", "/scalar", "/openapi.json"] }
             //}),
             new TestEndpoints("DatabaseContainers.AppHost", new() {
                 { "apiservice", ["/alive", "/health", "/todos", "/todos/1", "/catalog", "/catalog/1", "/addressbook", "/addressbook/1", "/scalar"] }

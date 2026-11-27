@@ -1,0 +1,1349 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Contoso Feature Flags API",
+    "version": "1.0.0",
+    "summary": "Feature flags for the Contoso Outfitters storefront.",
+    "description": "Feature flags for the Contoso Outfitters storefront, served by a Go and Gin app that Aspire builds from a Dockerfile.\n\nEvaluate flags for a shopper with an **evaluation context**: a `targetingKey` (the shopper ID) plus attributes such as `plan`, `country`, and `platform`. Each flag resolves in this order:\n\n1. A **disabled** flag serves its `offVariant` (`DISABLED`).\n2. The first matching **targeting rule** wins (`TARGETING_MATCH`).\n3. A **percentage rollout** hashes the flag and targeting key into a bucket, so a shopper keeps the same variant across requests (`SPLIT`).\n4. Otherwise the flag serves its `defaultVariant` (`DEFAULT`, or `STATIC` for a flag without rules).\n\nReasons follow [OpenFeature](https://openfeature.dev/specification/types#resolution-reason). Every evaluation is recorded as a `feature_flag.evaluation` span event and counted by the `featureflags.evaluations` metric. Errors are [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457) problem details that carry the `traceId` of the failing request, so you can jump straight to its trace in the Aspire dashboard.",
+    "license": {
+      "name": "MIT",
+      "identifier": "MIT"
+    }
+  },
+  "tags": [
+    {
+      "name": "Evaluation",
+      "description": "Resolve flags for a shopper, one at a time or in bulk."
+    },
+    {
+      "name": "Flags",
+      "description": "Manage the flag catalog: variants, targeting rules, and percentage rollouts."
+    },
+    {
+      "name": "Rollouts",
+      "description": "Progressive delivery: move a rollout through 5, 10, 25, 50, and 100%."
+    }
+  ],
+  "paths": {
+    "/evaluate": {
+      "post": {
+        "operationId": "evaluateFlags",
+        "tags": [
+          "Evaluation"
+        ],
+        "summary": "Evaluate flags for a shopper",
+        "description": "Resolves every flag in the catalog, or only the keys listed in `flags`, for one evaluation context. Storefront pages call this once when they load.\n\nUnknown keys don't fail the request: they come back with the reason `ERROR` and the error code `FLAG_NOT_FOUND`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkEvaluationRequest"
+              },
+              "examples": {
+                "homePage": {
+                  "summary": "Home page: every flag",
+                  "value": {
+                    "context": {
+                      "targetingKey": "shopper-48213",
+                      "attributes": {
+                        "plan": "premium",
+                        "country": "US",
+                        "platform": "ios"
+                      }
+                    }
+                  }
+                },
+                "productPage": {
+                  "summary": "Product page: selected flags",
+                  "value": {
+                    "context": {
+                      "targetingKey": "shopper-10577",
+                      "attributes": {
+                        "plan": "free",
+                        "country": "DE",
+                        "platform": "web"
+                      }
+                    },
+                    "flags": [
+                      "search.semantic-ranking",
+                      "catalog.recommendations",
+                      "mobile.ar-tent-preview"
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BulkEvaluation"
+                },
+                "example": {
+                  "targetingKey": "shopper-48213",
+                  "evaluatedAt": "2026-11-26T19:12:45.118Z",
+                  "flags": [
+                    {
+                      "flagKey": "catalog.recommendations",
+                      "value": "trending-near-you",
+                      "variant": "trending",
+                      "reason": "SPLIT",
+                      "flagVersion": 1
+                    },
+                    {
+                      "flagKey": "checkout.express-pay",
+                      "value": true,
+                      "variant": "on",
+                      "reason": "SPLIT",
+                      "flagVersion": 3
+                    },
+                    {
+                      "flagKey": "loyalty.points-multiplier",
+                      "value": 3,
+                      "variant": "triple",
+                      "reason": "TARGETING_MATCH",
+                      "flagVersion": 1
+                    },
+                    {
+                      "flagKey": "mobile.ar-tent-preview",
+                      "value": true,
+                      "variant": "on",
+                      "reason": "TARGETING_MATCH",
+                      "flagVersion": 1
+                    },
+                    {
+                      "flagKey": "payments.fraud-screening-v3",
+                      "value": false,
+                      "variant": "off",
+                      "reason": "SPLIT",
+                      "flagVersion": 1
+                    },
+                    {
+                      "flagKey": "search.semantic-ranking",
+                      "value": true,
+                      "variant": "on",
+                      "reason": "TARGETING_MATCH",
+                      "flagVersion": 1
+                    },
+                    {
+                      "flagKey": "shipping.free-threshold-usd",
+                      "value": 49,
+                      "variant": "holiday",
+                      "reason": "STATIC",
+                      "flagVersion": 1
+                    },
+                    {
+                      "flagKey": "storefront.winter-sale-banner",
+                      "value": false,
+                      "variant": "off",
+                      "reason": "DISABLED",
+                      "flagVersion": 1
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "The resolved flags, sorted by key."
+          },
+          "400": {
+            "$ref": "#/components/responses/ValidationFailed"
+          },
+          "413": {
+            "$ref": "#/components/responses/PayloadTooLarge"
+          },
+          "415": {
+            "$ref": "#/components/responses/UnsupportedMediaType"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      }
+    },
+    "/flags/{key}/evaluate": {
+      "parameters": [
+        {
+          "name": "key",
+          "in": "path",
+          "required": true,
+          "description": "The flag key, for example `checkout.express-pay`.",
+          "schema": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+([.-][a-z0-9]+)*$",
+            "maxLength": 64
+          },
+          "example": "checkout.express-pay"
+        }
+      ],
+      "post": {
+        "operationId": "evaluateFlag",
+        "tags": [
+          "Evaluation"
+        ],
+        "summary": "Evaluate one flag",
+        "description": "Resolves a single flag the way a server-side SDK does at a decision point, such as rendering the checkout page. The result has the served variant, its value, and the reason it was chosen.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EvaluationRequest"
+              },
+              "example": {
+                "context": {
+                  "targetingKey": "shopper-48213",
+                  "attributes": {
+                    "plan": "plus",
+                    "country": "US",
+                    "platform": "web"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Evaluation"
+                },
+                "examples": {
+                  "split": {
+                    "summary": "Percentage rollout",
+                    "value": {
+                      "flagKey": "checkout.express-pay",
+                      "value": true,
+                      "variant": "on",
+                      "reason": "SPLIT",
+                      "flagVersion": 3
+                    }
+                  },
+                  "targetingMatch": {
+                    "summary": "Targeting rule matched",
+                    "value": {
+                      "flagKey": "loyalty.points-multiplier",
+                      "value": 2,
+                      "variant": "double",
+                      "reason": "TARGETING_MATCH",
+                      "flagVersion": 1
+                    }
+                  },
+                  "disabled": {
+                    "summary": "Flag is disabled",
+                    "value": {
+                      "flagKey": "storefront.winter-sale-banner",
+                      "value": false,
+                      "variant": "off",
+                      "reason": "DISABLED",
+                      "flagVersion": 1
+                    }
+                  }
+                }
+              }
+            },
+            "description": "The resolved flag."
+          },
+          "400": {
+            "$ref": "#/components/responses/ValidationFailed"
+          },
+          "404": {
+            "$ref": "#/components/responses/FlagNotFound"
+          },
+          "413": {
+            "$ref": "#/components/responses/PayloadTooLarge"
+          },
+          "415": {
+            "$ref": "#/components/responses/UnsupportedMediaType"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      }
+    },
+    "/flags": {
+      "get": {
+        "operationId": "listFlags",
+        "tags": [
+          "Flags"
+        ],
+        "summary": "List flags",
+        "description": "Returns the flag catalog sorted by key. Use `enabled` to list only enabled or only disabled flags.",
+        "parameters": [
+          {
+            "name": "enabled",
+            "in": "query",
+            "required": false,
+            "description": "Return only enabled (`true`) or disabled (`false`) flags.",
+            "schema": {
+              "type": "boolean"
+            },
+            "example": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Flag"
+                  }
+                },
+                "example": [
+                  {
+                    "key": "checkout.express-pay",
+                    "description": "Show Apple Pay and Google Pay express buttons on the cart page.",
+                    "enabled": true,
+                    "variants": {
+                      "off": false,
+                      "on": true
+                    },
+                    "defaultVariant": "off",
+                    "offVariant": "off",
+                    "rules": [],
+                    "rollout": [
+                      {
+                        "variant": "on",
+                        "weight": 25
+                      },
+                      {
+                        "variant": "off",
+                        "weight": 75
+                      }
+                    ],
+                    "version": 3,
+                    "updatedAt": "2026-11-26T18:42:07Z"
+                  },
+                  {
+                    "key": "search.semantic-ranking",
+                    "description": "Rank product search results with the semantic relevance model.",
+                    "enabled": true,
+                    "variants": {
+                      "off": false,
+                      "on": true
+                    },
+                    "defaultVariant": "off",
+                    "offVariant": "off",
+                    "rules": [
+                      {
+                        "attribute": "plan",
+                        "values": [
+                          "premium"
+                        ],
+                        "variant": "on"
+                      }
+                    ],
+                    "rollout": [
+                      {
+                        "variant": "on",
+                        "weight": 30
+                      },
+                      {
+                        "variant": "off",
+                        "weight": 70
+                      }
+                    ],
+                    "version": 1,
+                    "updatedAt": "2026-11-26T18:30:00Z"
+                  }
+                ]
+              }
+            },
+            "description": "The flags."
+          },
+          "400": {
+            "$ref": "#/components/responses/ValidationFailed"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      },
+      "post": {
+        "operationId": "createFlag",
+        "tags": [
+          "Flags"
+        ],
+        "summary": "Create a flag",
+        "description": "Adds a flag to the catalog. Every variant referenced by `defaultVariant`, `offVariant`, `rules`, and `rollout` must exist, and rollout weights must add up to 100.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Flag"
+              },
+              "example": {
+                "key": "search.typo-tolerance",
+                "description": "Correct typos in product search queries before matching.",
+                "enabled": true,
+                "variants": {
+                  "on": true,
+                  "off": false
+                },
+                "defaultVariant": "off",
+                "offVariant": "off",
+                "rules": [
+                  {
+                    "attribute": "country",
+                    "values": [
+                      "US",
+                      "CA",
+                      "GB",
+                      "AU"
+                    ],
+                    "variant": "on"
+                  }
+                ],
+                "rollout": [
+                  {
+                    "variant": "on",
+                    "weight": 5
+                  },
+                  {
+                    "variant": "off",
+                    "weight": 95
+                  }
+                ]
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "The flag was created.",
+            "headers": {
+              "Location": {
+                "description": "The URL of the new flag.",
+                "schema": {
+                  "type": "string"
+                },
+                "example": "/flags/search.typo-tolerance"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Flag"
+                },
+                "example": {
+                  "key": "search.typo-tolerance",
+                  "description": "Correct typos in product search queries before matching.",
+                  "enabled": true,
+                  "variants": {
+                    "on": true,
+                    "off": false
+                  },
+                  "defaultVariant": "off",
+                  "offVariant": "off",
+                  "rules": [
+                    {
+                      "attribute": "country",
+                      "values": [
+                        "US",
+                        "CA",
+                        "GB",
+                        "AU"
+                      ],
+                      "variant": "on"
+                    }
+                  ],
+                  "rollout": [
+                    {
+                      "variant": "on",
+                      "weight": 5
+                    },
+                    {
+                      "variant": "off",
+                      "weight": 95
+                    }
+                  ],
+                  "version": 1,
+                  "updatedAt": "2026-11-26T19:05:12Z"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ValidationFailed"
+          },
+          "409": {
+            "description": "A flag with the same key already exists.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                },
+                "example": {
+                  "type": "https://tools.ietf.org/html/rfc9110#section-15.5.10",
+                  "title": "Conflict",
+                  "status": 409,
+                  "detail": "A flag with key 'search.typo-tolerance' already exists. Use PATCH to change it.",
+                  "instance": "/flags",
+                  "traceId": "4bf92f3577b34da6a3ce929d0e0e4736"
+                }
+              }
+            }
+          },
+          "413": {
+            "$ref": "#/components/responses/PayloadTooLarge"
+          },
+          "415": {
+            "$ref": "#/components/responses/UnsupportedMediaType"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      }
+    },
+    "/flags/{key}": {
+      "parameters": [
+        {
+          "name": "key",
+          "in": "path",
+          "required": true,
+          "description": "The flag key, for example `checkout.express-pay`.",
+          "schema": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+([.-][a-z0-9]+)*$",
+            "maxLength": 64
+          },
+          "example": "checkout.express-pay"
+        }
+      ],
+      "get": {
+        "operationId": "getFlag",
+        "tags": [
+          "Flags"
+        ],
+        "summary": "Get a flag",
+        "description": "Returns one flag with its variants, targeting rules, rollout, and version.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Flag"
+                },
+                "example": {
+                  "key": "checkout.express-pay",
+                  "description": "Show Apple Pay and Google Pay express buttons on the cart page.",
+                  "enabled": true,
+                  "variants": {
+                    "off": false,
+                    "on": true
+                  },
+                  "defaultVariant": "off",
+                  "offVariant": "off",
+                  "rules": [],
+                  "rollout": [
+                    {
+                      "variant": "on",
+                      "weight": 25
+                    },
+                    {
+                      "variant": "off",
+                      "weight": 75
+                    }
+                  ],
+                  "version": 3,
+                  "updatedAt": "2026-11-26T18:42:07Z"
+                }
+              }
+            },
+            "description": "The flag."
+          },
+          "404": {
+            "$ref": "#/components/responses/FlagNotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      },
+      "patch": {
+        "operationId": "updateFlag",
+        "tags": [
+          "Flags"
+        ],
+        "summary": "Update a flag",
+        "description": "Changes only the fields you send. Set `enabled` to `false` as a kill switch: every evaluation then serves `offVariant`. Each change increments `version`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FlagPatch"
+              },
+              "examples": {
+                "killSwitch": {
+                  "summary": "Turn a flag off",
+                  "value": {
+                    "enabled": false
+                  }
+                },
+                "rollout": {
+                  "summary": "Change the rollout",
+                  "value": {
+                    "rollout": [
+                      {
+                        "variant": "on",
+                        "weight": 50
+                      },
+                      {
+                        "variant": "off",
+                        "weight": 50
+                      }
+                    ]
+                  }
+                },
+                "targeting": {
+                  "summary": "Target premium shoppers",
+                  "value": {
+                    "rules": [
+                      {
+                        "attribute": "plan",
+                        "values": [
+                          "premium"
+                        ],
+                        "variant": "on"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Flag"
+                },
+                "example": {
+                  "key": "checkout.express-pay",
+                  "description": "Show Apple Pay and Google Pay express buttons on the cart page.",
+                  "enabled": false,
+                  "variants": {
+                    "off": false,
+                    "on": true
+                  },
+                  "defaultVariant": "off",
+                  "offVariant": "off",
+                  "rules": [],
+                  "rollout": [
+                    {
+                      "variant": "on",
+                      "weight": 25
+                    },
+                    {
+                      "variant": "off",
+                      "weight": 75
+                    }
+                  ],
+                  "version": 4,
+                  "updatedAt": "2026-11-26T18:42:07Z"
+                }
+              }
+            },
+            "description": "The updated flag."
+          },
+          "400": {
+            "$ref": "#/components/responses/ValidationFailed"
+          },
+          "404": {
+            "$ref": "#/components/responses/FlagNotFound"
+          },
+          "413": {
+            "$ref": "#/components/responses/PayloadTooLarge"
+          },
+          "415": {
+            "$ref": "#/components/responses/UnsupportedMediaType"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteFlag",
+        "tags": [
+          "Flags"
+        ],
+        "summary": "Delete a flag",
+        "description": "Removes a retired flag. Clients that still ask for it get `FLAG_NOT_FOUND`.",
+        "responses": {
+          "204": {
+            "description": "The flag was deleted."
+          },
+          "404": {
+            "$ref": "#/components/responses/FlagNotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      }
+    },
+    "/flags/{key}/rollout/advance": {
+      "parameters": [
+        {
+          "name": "key",
+          "in": "path",
+          "required": true,
+          "description": "The flag key, for example `checkout.express-pay`.",
+          "schema": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+([.-][a-z0-9]+)*$",
+            "maxLength": 64
+          },
+          "example": "checkout.express-pay"
+        }
+      ],
+      "post": {
+        "operationId": "advanceRollout",
+        "tags": [
+          "Rollouts"
+        ],
+        "summary": "Advance a progressive rollout",
+        "description": "Moves a two-variant rollout to its next stage (5, 10, 25, 50, then 100%) by shifting weight from the default variant to the other variant. Shoppers already in the rollout stay in it, because buckets are sticky.\n\nReturns `409` when the flag doesn't have a two-variant rollout or is already at 100%.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RolloutAdvance"
+                },
+                "example": {
+                  "flagKey": "checkout.express-pay",
+                  "variant": "on",
+                  "from": 10,
+                  "to": 25,
+                  "flag": {
+                    "key": "checkout.express-pay",
+                    "description": "Show Apple Pay and Google Pay express buttons on the cart page.",
+                    "enabled": true,
+                    "variants": {
+                      "off": false,
+                      "on": true
+                    },
+                    "defaultVariant": "off",
+                    "offVariant": "off",
+                    "rules": [],
+                    "rollout": [
+                      {
+                        "variant": "on",
+                        "weight": 25
+                      },
+                      {
+                        "variant": "off",
+                        "weight": 75
+                      }
+                    ],
+                    "version": 3,
+                    "updatedAt": "2026-11-26T18:42:07Z"
+                  }
+                }
+              }
+            },
+            "description": "The rollout moved to its next stage."
+          },
+          "404": {
+            "$ref": "#/components/responses/FlagNotFound"
+          },
+          "409": {
+            "description": "The flag can't be advanced.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                },
+                "example": {
+                  "type": "https://tools.ietf.org/html/rfc9110#section-15.5.10",
+                  "title": "Conflict",
+                  "status": 409,
+                  "detail": "Can't advance 'checkout.express-pay': rollout is already at 100%.",
+                  "instance": "/flags/checkout.express-pay/rollout/advance",
+                  "traceId": "4bf92f3577b34da6a3ce929d0e0e4736"
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "VariantValue": {
+        "type": [
+          "boolean",
+          "string",
+          "number"
+        ],
+        "description": "A variant's value: a boolean, string, or number.",
+        "examples": [
+          true,
+          "trending-near-you",
+          49
+        ]
+      },
+      "Flag": {
+        "type": "object",
+        "description": "A feature flag: named variants plus the rules that decide which variant a shopper gets.",
+        "required": [
+          "key",
+          "variants",
+          "defaultVariant",
+          "offVariant"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "key": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+([.-][a-z0-9]+)*$",
+            "maxLength": 64,
+            "description": "Unique key in `area.feature` form.",
+            "examples": [
+              "checkout.express-pay"
+            ]
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 280,
+            "description": "What the flag controls.",
+            "examples": [
+              "Show Apple Pay and Google Pay express buttons on the cart page."
+            ]
+          },
+          "enabled": {
+            "type": "boolean",
+            "default": false,
+            "description": "When `false`, every evaluation serves `offVariant`."
+          },
+          "variants": {
+            "type": "object",
+            "minProperties": 1,
+            "additionalProperties": {
+              "$ref": "#/components/schemas/VariantValue"
+            },
+            "description": "Variant names and their values.",
+            "examples": [
+              {
+                "on": true,
+                "off": false
+              }
+            ]
+          },
+          "defaultVariant": {
+            "type": "string",
+            "description": "Served when the flag is enabled and no rule or rollout applies.",
+            "examples": [
+              "off"
+            ]
+          },
+          "offVariant": {
+            "type": "string",
+            "description": "Served while the flag is disabled.",
+            "examples": [
+              "off"
+            ]
+          },
+          "rules": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TargetingRule"
+            },
+            "description": "Targeting rules, checked in order. The first match wins."
+          },
+          "rollout": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Allocation"
+            },
+            "description": "Percentage rollout. Weights add up to 100; an empty list means no rollout."
+          },
+          "version": {
+            "type": "integer",
+            "readOnly": true,
+            "description": "Incremented on every change.",
+            "examples": [
+              3
+            ]
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true,
+            "description": "When the flag last changed (UTC)."
+          }
+        }
+      },
+      "TargetingRule": {
+        "type": "object",
+        "description": "Serves `variant` when the context attribute equals one of `values`.",
+        "required": [
+          "attribute",
+          "values",
+          "variant"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "attribute": {
+            "type": "string",
+            "description": "Context attribute to match.",
+            "examples": [
+              "plan"
+            ]
+          },
+          "values": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string"
+            },
+            "description": "Values that match.",
+            "examples": [
+              [
+                "premium"
+              ]
+            ]
+          },
+          "variant": {
+            "type": "string",
+            "description": "Variant to serve on a match.",
+            "examples": [
+              "on"
+            ]
+          }
+        }
+      },
+      "Allocation": {
+        "type": "object",
+        "description": "One slice of a percentage rollout.",
+        "required": [
+          "variant",
+          "weight"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "variant": {
+            "type": "string",
+            "examples": [
+              "on"
+            ]
+          },
+          "weight": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100,
+            "description": "Percentage of shoppers that get the variant.",
+            "examples": [
+              25
+            ]
+          }
+        }
+      },
+      "FlagPatch": {
+        "type": "object",
+        "description": "A partial update. Omitted fields keep their current values.",
+        "additionalProperties": false,
+        "minProperties": 1,
+        "properties": {
+          "description": {
+            "type": "string",
+            "maxLength": 280
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "defaultVariant": {
+            "type": "string"
+          },
+          "offVariant": {
+            "type": "string"
+          },
+          "rules": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TargetingRule"
+            }
+          },
+          "rollout": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Allocation"
+            }
+          }
+        }
+      },
+      "EvaluationContext": {
+        "type": "object",
+        "description": "Who the flags are evaluated for, in OpenFeature terms.",
+        "required": [
+          "targetingKey"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "targetingKey": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "Stable ID that keeps rollout buckets sticky, such as the shopper ID.",
+            "examples": [
+              "shopper-48213"
+            ]
+          },
+          "attributes": {
+            "type": "object",
+            "maxProperties": 20,
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Attributes that targeting rules match, such as `plan` (`free`, `plus`, `premium`), `country`, and `platform` (`web`, `ios`, `android`).",
+            "examples": [
+              {
+                "plan": "premium",
+                "country": "US",
+                "platform": "ios"
+              }
+            ]
+          }
+        }
+      },
+      "EvaluationRequest": {
+        "type": "object",
+        "required": [
+          "context"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "context": {
+            "$ref": "#/components/schemas/EvaluationContext"
+          }
+        }
+      },
+      "BulkEvaluationRequest": {
+        "type": "object",
+        "required": [
+          "context"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "context": {
+            "$ref": "#/components/schemas/EvaluationContext"
+          },
+          "flags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Flag keys to evaluate. Omit to evaluate every flag.",
+            "examples": [
+              [
+                "search.semantic-ranking",
+                "catalog.recommendations"
+              ]
+            ]
+          }
+        }
+      },
+      "Evaluation": {
+        "type": "object",
+        "description": "The resolved value of one flag for one evaluation context.",
+        "required": [
+          "flagKey",
+          "value",
+          "reason"
+        ],
+        "properties": {
+          "flagKey": {
+            "type": "string",
+            "examples": [
+              "checkout.express-pay"
+            ]
+          },
+          "value": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/VariantValue"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The served variant's value, or `null` on error."
+          },
+          "variant": {
+            "type": "string",
+            "description": "The served variant.",
+            "examples": [
+              "on"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "STATIC",
+              "DEFAULT",
+              "TARGETING_MATCH",
+              "SPLIT",
+              "DISABLED",
+              "ERROR"
+            ],
+            "description": "Why the variant was served (OpenFeature resolution reason)."
+          },
+          "errorCode": {
+            "type": "string",
+            "enum": [
+              "FLAG_NOT_FOUND"
+            ],
+            "description": "Set when `reason` is `ERROR`."
+          },
+          "flagVersion": {
+            "type": "integer",
+            "description": "Version of the flag definition that was evaluated.",
+            "examples": [
+              3
+            ]
+          }
+        }
+      },
+      "BulkEvaluation": {
+        "type": "object",
+        "required": [
+          "targetingKey",
+          "evaluatedAt",
+          "flags"
+        ],
+        "properties": {
+          "targetingKey": {
+            "type": "string",
+            "examples": [
+              "shopper-48213"
+            ]
+          },
+          "evaluatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "flags": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Evaluation"
+            }
+          }
+        }
+      },
+      "RolloutAdvance": {
+        "type": "object",
+        "required": [
+          "flagKey",
+          "variant",
+          "from",
+          "to",
+          "flag"
+        ],
+        "properties": {
+          "flagKey": {
+            "type": "string",
+            "examples": [
+              "checkout.express-pay"
+            ]
+          },
+          "variant": {
+            "type": "string",
+            "description": "The variant being rolled out.",
+            "examples": [
+              "on"
+            ]
+          },
+          "from": {
+            "type": "integer",
+            "description": "Rollout percentage before the change.",
+            "examples": [
+              10
+            ]
+          },
+          "to": {
+            "type": "integer",
+            "description": "Rollout percentage after the change.",
+            "examples": [
+              25
+            ]
+          },
+          "flag": {
+            "$ref": "#/components/schemas/Flag"
+          }
+        }
+      },
+      "ProblemDetails": {
+        "type": "object",
+        "description": "An RFC 9457 problem details response.",
+        "required": [
+          "type",
+          "title",
+          "status"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "format": "uri"
+          },
+          "title": {
+            "type": "string"
+          },
+          "status": {
+            "type": "integer"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "instance": {
+            "type": "string"
+          },
+          "traceId": {
+            "type": "string",
+            "description": "Trace ID of the failing request; search for it in the Aspire dashboard's Traces page."
+          }
+        }
+      },
+      "ValidationProblemDetails": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ProblemDetails"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "errors": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "description": "Validation messages by field."
+              }
+            }
+          }
+        ]
+      }
+    },
+    "responses": {
+      "ValidationFailed": {
+        "description": "The request is invalid.",
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "$ref": "#/components/schemas/ValidationProblemDetails"
+            },
+            "example": {
+              "type": "https://tools.ietf.org/html/rfc9110#section-15.5.1",
+              "title": "One or more validation errors occurred.",
+              "status": 400,
+              "detail": "The flag definition is invalid.",
+              "instance": "/flags",
+              "errors": {
+                "rollout": [
+                  "Rollout weights must add up to 100 (got 90)."
+                ],
+                "defaultVariant": [
+                  "'enabled' isn't one of the flag's variants."
+                ]
+              },
+              "traceId": "4bf92f3577b34da6a3ce929d0e0e4736"
+            }
+          }
+        }
+      },
+      "FlagNotFound": {
+        "description": "No flag has this key.",
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "$ref": "#/components/schemas/ProblemDetails"
+            },
+            "example": {
+              "type": "https://tools.ietf.org/html/rfc9110#section-15.5.5",
+              "title": "Not Found",
+              "status": 404,
+              "detail": "No feature flag has the key 'checkout.gift-wrap-upsell'.",
+              "instance": "/flags/checkout.gift-wrap-upsell/evaluate",
+              "traceId": "4bf92f3577b34da6a3ce929d0e0e4736"
+            }
+          }
+        }
+      },
+      "PayloadTooLarge": {
+        "description": "The request body is larger than 64 KB.",
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "$ref": "#/components/schemas/ProblemDetails"
+            },
+            "example": {
+              "type": "https://tools.ietf.org/html/rfc9110#section-15.5.14",
+              "title": "Request Entity Too Large",
+              "status": 413,
+              "detail": "The request body must be at most 64 KB.",
+              "instance": "/evaluate",
+              "traceId": "4bf92f3577b34da6a3ce929d0e0e4736"
+            }
+          }
+        }
+      },
+      "UnsupportedMediaType": {
+        "description": "The request body isn't JSON.",
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "$ref": "#/components/schemas/ProblemDetails"
+            },
+            "example": {
+              "type": "https://tools.ietf.org/html/rfc9110#section-15.5.16",
+              "title": "Unsupported Media Type",
+              "status": 415,
+              "detail": "Send the request body as application/json.",
+              "instance": "/evaluate",
+              "traceId": "4bf92f3577b34da6a3ce929d0e0e4736"
+            }
+          }
+        }
+      },
+      "ServerError": {
+        "description": "An unexpected error occurred.",
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "$ref": "#/components/schemas/ProblemDetails"
+            },
+            "example": {
+              "type": "https://tools.ietf.org/html/rfc9110#section-15.6.1",
+              "title": "Internal Server Error",
+              "status": 500,
+              "detail": "An unexpected error occurred.",
+              "instance": "/evaluate",
+              "traceId": "4bf92f3577b34da6a3ce929d0e0e4736"
+            }
+          }
+        }
+      }
+    }
+  }
+}

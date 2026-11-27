@@ -2,8 +2,10 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
+	"net/http"
 	"os"
 	"os/signal"
 	"strconv"
@@ -12,101 +14,66 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"go.opentelemetry.io/contrib/bridges/otelslog"
 )
 
 func main() {
-    ctx := context.Background()
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
 
-    // Initialize OpenTelemetry (only if configured)
-    shutdown, otelEnabled, err := initOpenTelemetry(ctx)
-    if err != nil {
-        fmt.Printf("Warning: Failed to initialize OpenTelemetry: %v\n", err)
-        fmt.Println("Continuing without OpenTelemetry instrumentation...")
-        // Don't exit - continue running without OTEL
-        otelEnabled = false
-        shutdown = func(context.Context) error { return nil }
-    }
-    defer func() {
-        if err := shutdown(ctx); err != nil {
-            fmt.Printf("Failed to shutdown OpenTelemetry: %v\n", err)
-        }
-    }()
+	logger, shutdownTelemetry, err := setupTelemetry(ctx)
+	if err != nil {
+		logger = slog.New(slog.NewTextHandler(os.Stdout, nil))
+		logger.Warn("Continuing without OpenTelemetry: the exporters couldn't be created", "error", err)
+		shutdownTelemetry = func(context.Context) error { return nil }
+	}
+	slog.SetDefault(logger)
 
-    // Set up structured logging
-    var logger *slog.Logger
-    if otelEnabled {
-        // Use OpenTelemetry bridge for logging when OTEL is enabled
-        logger = slog.New(otelslog.NewHandler("ginapp"))
-        slog.SetDefault(logger)
-        slog.Info("Starting Gin application with OpenTelemetry enabled")
-    } else {
-        // Use standard text handler when OTEL is not configured
-        logger = slog.New(slog.NewTextHandler(os.Stdout, nil))
-        slog.SetDefault(logger)
-        slog.Info("Starting Gin application (OpenTelemetry not configured)")
-    }
+	port, err := strconv.Atoi(os.Getenv("PORT"))
+	if err != nil {
+		logger.Error("Set the PORT environment variable to the port to listen on", "PORT", os.Getenv("PORT"))
+		os.Exit(1)
+	}
 
-    // Create a Gin router with default middleware: logger and recovery (crash-free) middleware
-    router := gin.Default()
+	store := NewFlagStore(seedFlags)
+	metrics, err := newFlagMetrics(store)
+	if err != nil {
+		logger.Error("Failed to create the Contoso.FeatureFlags instruments", "error", err)
+		os.Exit(1)
+	}
+	api := &flagAPI{store: store, metrics: metrics, logger: logger}
 
-    // Add OpenTelemetry middleware
-    setupMiddleware(router, otelEnabled)
+	// The AppHost enables the admin endpoints (behind the dashboard commands) only in run mode.
+	var admin *adminAPI
+	if strings.EqualFold(os.Getenv("FLAGS_ADMIN_ENABLED"), "true") {
+		admin = newAdminAPI(api, port)
+	}
 
-    // Configure trusted proxies
-    trustedProxies := os.Getenv("TRUSTED_PROXIES")
-    if trustedProxies == "all" {
-        // Trust all networks (default, no method call required)
-        slog.Info("Trusting all proxy networks")
-    } else if trustedProxies != "" {
-        // Trust specific networks
-        proxies := strings.Split(trustedProxies, ";")
-        router.SetTrustedProxies(proxies)
-        slog.Info("Configured trusted proxies", "proxies", proxies)
-    } else {
-        // Disable trusted proxies
-        router.SetTrustedProxies(nil)
-        slog.Info("Disabled trusted proxies")
-    }
+	router := gin.New()
+	router.HandleMethodNotAllowed = true
+	configureTrustedProxies(router, logger)
+	setupMiddleware(router)
+	setupRoutes(router, api, admin)
 
-    // Configure routes
-    setupRoutes(router)
+	server := &http.Server{Addr: fmt.Sprintf(":%d", port), Handler: router, ReadHeaderTimeout: 10 * time.Second}
+	serverErr := make(chan error, 1)
+	go func() { serverErr <- server.ListenAndServe() }()
+	logger.Info("Feature flag service listening", "port", port, "flags", len(seedFlags), "admin_endpoints", admin != nil)
 
-    portVar := os.Getenv("PORT")
-    if portVar == "" {
-        slog.Error("Environment variable PORT is not set")
-        return
-    }
+	select {
+	case err := <-serverErr:
+		if !errors.Is(err, http.ErrServerClosed) {
+			logger.Error("Server failed", "error", err)
+		}
+	case <-ctx.Done():
+		logger.Info("Shutting down; draining in-flight requests")
+	}
 
-    port, err := strconv.Atoi(portVar)
-    if err != nil {
-        slog.Error("Error converting PORT to integer", "error", err)
-        return
-    }
-
-    endpoint := fmt.Sprintf(":%d", port)
-    slog.Info("Starting server", "endpoint", endpoint)
-
-    // Set up graceful shutdown
-    srv := make(chan error, 1)
-    go func() {
-        srv <- router.Run(endpoint)
-    }()
-
-    // Wait for interrupt signal or server error
-    quit := make(chan os.Signal, 1)
-    signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-
-    select {
-    case err := <-srv:
-        if err != nil {
-            slog.Error("Server failed", "error", err)
-        }
-    case sig := <-quit:
-        slog.Info("Shutting down server", "signal", sig)
-    }
-
-    // Give outstanding requests time to complete
-    time.Sleep(2 * time.Second)
-    slog.Info("Server stopped")
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	if err := server.Shutdown(shutdownCtx); err != nil {
+		logger.Error("Graceful shutdown failed", "error", err)
+	}
+	if err := shutdownTelemetry(shutdownCtx); err != nil {
+		fmt.Fprintf(os.Stderr, "Failed to flush telemetry: %v\n", err)
+	}
 }

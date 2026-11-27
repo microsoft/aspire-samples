@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Contoso Feature Flags API reference</title>
+    <meta name="description" content="Interactive API reference for the Contoso Feature Flags service, a Go and Gin app that Aspire builds from a Dockerfile." />
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23007d9c'/%3E%3Cpath d='M11 7v18' stroke='white' stroke-width='2.6' stroke-linecap='round'/%3E%3Cpath d='M12 8h11l-3 4.5 3 4.5H12Z' fill='white'/%3E%3C/svg%3E" />
+    <style>
+      .light-mode {
+        --scalar-color-accent: #007d9c;
+        --scalar-background-accent: rgba(0, 125, 156, 0.1);
+        --scalar-button-1: #007d9c;
+        --scalar-button-1-color: #ffffff;
+        --scalar-button-1-hover: #00667f;
+      }
+
+      .dark-mode {
+        --scalar-color-accent: #3cc8ec;
+        --scalar-background-1: #0f1820;
+        --scalar-background-2: #15212b;
+        --scalar-background-3: #1d2c38;
+        --scalar-background-accent: rgba(0, 173, 216, 0.14);
+        --scalar-border-color: rgba(120, 173, 199, 0.16);
+        --scalar-button-1: #00add8;
+        --scalar-button-1-color: #04222c;
+        --scalar-button-1-hover: #2bc7ef;
+      }
+
+      .dark-mode .t-doc__sidebar {
+        --scalar-sidebar-background-1: #0c141b;
+        --scalar-sidebar-color-active: #3cc8ec;
+        --scalar-sidebar-item-active-background: rgba(0, 173, 216, 0.16);
+      }
+
+      .light-mode .t-doc__sidebar {
+        --scalar-sidebar-color-active: #007d9c;
+        --scalar-sidebar-item-active-background: rgba(0, 125, 156, 0.1);
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="app"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@scalar/api-reference@1.85.0/dist/browser/standalone.min.js"></script>
+    <script>
+      Scalar.createApiReference('#app', {
+        url: '/openapi.json',
+        // Code samples and "Test Request" target whichever host and port Aspire mapped to the container.
+        servers: [{ url: window.location.origin, description: 'ginapp container' }],
+        agent: { disabled: true },
+        theme: 'default',
+        layout: 'modern',
+        defaultHttpClient: { targetKey: 'shell', clientKey: 'curl' },
+        showDeveloperTools: 'never',
+        metaData: {
+          title: 'Contoso Feature Flags API reference',
+          description: 'Interactive API reference for the Contoso Feature Flags service.',
+        },
+      });
+    </script>
+  </body>
+</html>

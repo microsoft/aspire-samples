@@ -1,52 +1,42 @@
 package main
 
 import (
-	"strconv"
-	"time"
+	"log/slog"
+	"net/http"
+	"os"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
-	"go.opentelemetry.io/otel/attribute"
-	otelmetric "go.opentelemetry.io/otel/metric"
 )
 
-// setupMiddleware configures all middleware for the Gin router
-func setupMiddleware(router *gin.Engine, otelEnabled bool) {
-	if !otelEnabled {
-		return
+// setupMiddleware adds tracing (server spans named "METHOD /route" plus HTTP server metrics), console access logs,
+// and panic recovery that answers with problem details. Health probes aren't traced or logged.
+func setupMiddleware(router *gin.Engine) {
+	serviceName := os.Getenv("OTEL_SERVICE_NAME")
+	if serviceName == "" {
+		serviceName = "ginapp"
 	}
-
-	// Add OpenTelemetry tracing middleware
-	router.Use(otelgin.Middleware("ginapp"))
-
-	// Add custom metrics middleware
-	router.Use(metricsMiddleware())
+	router.Use(otelgin.Middleware(serviceName, otelgin.WithGinFilter(func(c *gin.Context) bool { return c.FullPath() != "/health" })))
+	router.Use(gin.LoggerWithConfig(gin.LoggerConfig{SkipPaths: []string{"/health"}}))
+	router.Use(gin.CustomRecovery(func(c *gin.Context, _ any) {
+		writeProblem(c, http.StatusInternalServerError, "An unexpected error occurred.", nil)
+	}))
 }
 
-// metricsMiddleware records HTTP request metrics
-func metricsMiddleware() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		start := time.Now()
-
-		// Process request
-		c.Next()
-
-		// Record metrics
-		duration := float64(time.Since(start).Milliseconds())
-		statusCode := strconv.Itoa(c.Writer.Status())
-
-		attrs := otelmetric.WithAttributes(
-			attribute.String("http.method", c.Request.Method),
-			attribute.String("http.route", c.FullPath()),
-			attribute.String("http.status_code", statusCode),
-		)
-
-		if httpRequestCounter != nil {
-			httpRequestCounter.Add(c.Request.Context(), 1, attrs)
+// configureTrustedProxies applies TRUSTED_PROXIES: "all", a semicolon-separated list of networks, or unset (none).
+func configureTrustedProxies(router *gin.Engine, logger *slog.Logger) {
+	switch trustedProxies := os.Getenv("TRUSTED_PROXIES"); trustedProxies {
+	case "all":
+		logger.Info("Trusting all proxy networks")
+	case "":
+		_ = router.SetTrustedProxies(nil)
+	default:
+		proxies := strings.Split(trustedProxies, ";")
+		if err := router.SetTrustedProxies(proxies); err != nil {
+			logger.Error("Invalid TRUSTED_PROXIES value", "error", err)
+			os.Exit(1)
 		}
-
-		if httpDuration != nil {
-			httpDuration.Record(c.Request.Context(), duration, attrs)
-		}
+		logger.Info("Configured trusted proxies", "proxies", proxies)
 	}
 }

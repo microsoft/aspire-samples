@@ -1,0 +1,6 @@
+tmp/
+*.log
+*.md
+.air.toml
+Dockerfile*
+.dockerignore
