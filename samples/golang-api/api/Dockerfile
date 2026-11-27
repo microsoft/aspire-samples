@@ -1,4 +1,4 @@
-FROM golang:1.23-alpine3.21 AS builder
+FROM golang:1.26-alpine3.24 AS builder
 
 WORKDIR /app
 
@@ -9,7 +9,7 @@ RUN go mod download
 COPY . ./
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main .
 
-FROM alpine:3.21
+FROM alpine:3.24
 
 RUN apk --no-cache add ca-certificates \
     && addgroup -S app \

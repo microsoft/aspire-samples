@@ -3,8 +3,8 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>golang-api · Aspire API reference</title>
-    <meta name="description" content="Interactive API reference for the golang-api Aspire sample — a Go items API built with chi and an in-memory store." />
+    <title>Field Service Work Orders API · golang-api</title>
+    <meta name="description" content="Interactive API reference for the golang-api Aspire sample — a Go field-service work-order API with OpenTelemetry." />
     <link
       rel="icon"
       type="image/svg+xml"
@@ -92,6 +92,7 @@
         box-sizing: border-box;
         width: var(--refs-sidebar-width, 288px);
         height: 56px;
+        font-family: var(--scalar-font, "Inter", system-ui, -apple-system, "Segoe UI", sans-serif);
         display: flex;
         align-items: center;
         gap: 11px;
@@ -102,6 +103,11 @@
           linear-gradient(180deg, #0c1822 0%, #0a141d 100%),
           radial-gradient(120% 160% at 0% 0%, rgba(0, 173, 216, 0.22), transparent 62%);
         background-blend-mode: normal;
+      }
+      .light-mode .go-brand {
+        border-bottom-color: rgba(7, 59, 76, 0.1);
+        border-right-color: rgba(7, 59, 76, 0.1);
+        background: linear-gradient(180deg, #ffffff 0%, #f6fbfc 100%);
       }
       /* Make room at the top of the sidebar for the fixed brand. */
       .scalar-app .t-doc__sidebar {
@@ -144,6 +150,15 @@
         text-transform: uppercase;
         color: #93acbb;
       }
+      .light-mode .go-brand__name {
+        color: #0b2531;
+      }
+      .light-mode .go-brand__name b {
+        color: #007d9c;
+      }
+      .light-mode .go-brand__sub {
+        color: #44606e;
+      }
 
       /* A soft cyan aura behind the hero for a polished, distinctly-Go feel */
       .references-rendered {
@@ -179,23 +194,25 @@
       </svg>
       <span class="go-brand__text">
         <span class="go-brand__name">golang<b>-api</b></span>
-        <span class="go-brand__sub">Aspire sample</span>
+        <span class="go-brand__sub">Field service · Aspire sample</span>
       </span>
     </div>
     <div id="app"></div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@scalar/api-reference@1.58.0/dist/browser/standalone.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@scalar/api-reference@1.85.0/dist/browser/standalone.min.js"></script>
     <script>
       Scalar.createApiReference('#app', {
         url: '/openapi.json',
         theme: 'none',
-        darkMode: true,
         layout: 'modern',
         hideModels: false,
-        hideDownloadButton: false,
+        documentDownloadType: 'json',
+        showDeveloperTools: 'never',
+        agent: { disabled: true },
+        telemetry: false,
         defaultHttpClient: { targetKey: 'shell', clientKey: 'curl' },
         metaData: {
-          title: 'golang-api · Aspire API reference',
+          title: 'Field Service Work Orders API · golang-api',
           description: 'Interactive API reference for the golang-api Aspire sample.',
         },
       });

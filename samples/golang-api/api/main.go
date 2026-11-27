@@ -3,23 +3,25 @@ package main
 import (
 	"context"
 	_ "embed"
-	"encoding/json"
 	"errors"
-	"io"
+	"fmt"
 	"log"
+	"log/slog"
 	"net"
 	"net/http"
 	"os"
 	"os/signal"
+	"runtime/debug"
 	"strconv"
 	"strings"
-	"sync"
 	"syscall"
 	"time"
-	"unicode/utf8"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/trace"
 )
 
 // openAPISpec is the OpenAPI 3.1 document describing this API. It is served
@@ -28,195 +30,30 @@ import (
 //go:embed openapi.json
 var openAPISpec []byte
 
-// apiReferenceHTML is the themed Scalar API reference page served as the
-// browser-facing developer UX from / (for browsers) and /reference.
+// apiReferenceHTML is the themed Scalar API reference page served from /scalar
+// and, for browsers, from /.
 //
 //go:embed reference.html
 var apiReferenceHTML []byte
 
 const (
-	maxJSONRequestBodyBytes = 1 << 20
-	maxItemNameLength       = 200
-	maxStoredItems          = 1000
-	defaultBindHost         = "127.0.0.1"
+	maxWorkOrders   = 1000
+	defaultBindHost = "127.0.0.1"
 )
 
-var (
-	errStoreFull        = errors.New("store is at capacity")
-	errItemNameRequired = errors.New("item name is required")
-	errItemNameTooLong  = errors.New("item name is too long")
-)
-
-type Item struct {
-	ID        int       `json:"id"`
-	Name      string    `json:"name"`
-	Completed bool      `json:"completed"`
-	CreatedAt time.Time `json:"createdAt"`
-}
-
-type Store struct {
-	mu       sync.RWMutex
-	items    map[int]*Item
-	nextID   int
-	maxItems int
-}
-
-func NewStore(maxItems int) *Store {
-	return &Store{
-		items:    make(map[int]*Item),
-		nextID:   1,
-		maxItems: maxItems,
-	}
-}
-
-func (s *Store) GetAll() []*Item {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
-
-	items := make([]*Item, 0, len(s.items))
-	for _, item := range s.items {
-		items = append(items, item)
-	}
-	return items
-}
-
-func (s *Store) Get(id int) (*Item, bool) {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
-
-	item, ok := s.items[id]
-	return item, ok
-}
-
-func (s *Store) Create(name string) (*Item, error) {
-	if err := validateItemName(name); err != nil {
-		return nil, err
-	}
-
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
-	if len(s.items) >= s.maxItems {
-		return nil, errStoreFull
-	}
-
-	item := &Item{
-		ID:        s.nextID,
-		Name:      name,
-		Completed: false,
-		CreatedAt: time.Now(),
-	}
-	s.items[s.nextID] = item
-	s.nextID++
-	return item, nil
-}
-
-func (s *Store) Update(id int, name *string, completed *bool) (*Item, bool, error) {
-	if name != nil {
-		if err := validateItemName(*name); err != nil {
-			return nil, false, err
-		}
-	}
-
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
-	item, ok := s.items[id]
-	if !ok {
-		return nil, false, nil
-	}
-
-	if name != nil {
-		item.Name = *name
-	}
-	if completed != nil {
-		item.Completed = *completed
-	}
-	return item, true, nil
-}
-
-func (s *Store) Delete(id int) bool {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
-	_, ok := s.items[id]
-	if ok {
-		delete(s.items, id)
-	}
-	return ok
-}
-
-func validateItemName(name string) error {
-	if name == "" {
-		return errItemNameRequired
-	}
-	if utf8.RuneCountInString(name) > maxItemNameLength {
-		return errItemNameTooLong
-	}
-	return nil
-}
-
-func decodeJSONBody(w http.ResponseWriter, r *http.Request, dst any) bool {
-	r.Body = http.MaxBytesReader(w, r.Body, maxJSONRequestBodyBytes)
-	defer r.Body.Close()
-
-	decoder := json.NewDecoder(r.Body)
-	if err := decoder.Decode(dst); err != nil {
-		writeJSONDecodeError(w, err)
-		return false
-	}
-
-	if err := decoder.Decode(&struct{}{}); err != io.EOF {
-		writeJSONDecodeError(w, err)
-		return false
-	}
-
-	return true
-}
-
-func writeJSONResponse(w http.ResponseWriter, v any) {
-	if err := json.NewEncoder(w).Encode(v); err != nil {
-		log.Printf("write JSON response: %v", err)
-	}
-}
-
-func writeJSONDecodeError(w http.ResponseWriter, err error) {
-	var maxBytesErr *http.MaxBytesError
-	if errors.As(err, &maxBytesErr) {
-		http.Error(w, "Request body too large", http.StatusRequestEntityTooLarge)
-		return
-	}
-
-	http.Error(w, "Invalid request body", http.StatusBadRequest)
-}
-
-func writeStoreError(w http.ResponseWriter, err error) {
-	switch {
-	case errors.Is(err, errItemNameRequired):
-		http.Error(w, "Name is required", http.StatusBadRequest)
-	case errors.Is(err, errItemNameTooLong):
-		http.Error(w, "Name is too long", http.StatusBadRequest)
-	case errors.Is(err, errStoreFull):
-		http.Error(w, "Item limit reached", http.StatusConflict)
-	default:
-		http.Error(w, "Unable to store item", http.StatusInternalServerError)
-	}
-}
-
-func seedStore(store *Store) error {
-	for _, name := range []string{"Learn Go", "Build APIs", "Deploy with Aspire"} {
-		if _, err := store.Create(name); err != nil {
-			return err
-		}
-	}
-	return nil
+// ServiceInfo is returned from / to non-browser clients.
+type ServiceInfo struct {
+	Name         string `json:"name"`
+	Version      string `json:"version"`
+	APIReference string `json:"apiReference"`
+	OpenAPI      string `json:"openApi"`
 }
 
 // writeAPIReference serves the themed Scalar API reference page.
 func writeAPIReference(w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	if _, err := w.Write(apiReferenceHTML); err != nil {
-		log.Printf("write API reference: %v", err)
+		slog.Error("Failed to write API reference", "error", err)
 	}
 }
 
@@ -253,137 +90,121 @@ func prefersHTML(accept string) bool {
 	return false
 }
 
-func main() {
-	store := NewStore(maxStoredItems)
+// routeTelemetry runs inside the otelhttp server span. Once chi has matched a route, it renames the span to
+// "METHOD /route" and adds http.route to the span and to the http.server.* metrics.
+func routeTelemetry(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		next.ServeHTTP(w, r)
+		route := chi.RouteContext(r.Context()).RoutePattern()
+		if route == "" {
+			return
+		}
+		span := trace.SpanFromContext(r.Context())
+		span.SetName(r.Method + " " + route)
+		span.SetAttributes(attribute.String("http.route", route))
+		if labeler, ok := otelhttp.LabelerFromContext(r.Context()); ok {
+			labeler.Add(attribute.String("http.route", route))
+		}
+	})
+}
 
-	// Add some initial data
-	if err := seedStore(store); err != nil {
-		log.Fatal(err)
+// recoverer turns panics into a logged error and a 500 problem details response.
+func recoverer(logger *slog.Logger) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			defer func() {
+				if v := recover(); v != nil {
+					if v == http.ErrAbortHandler {
+						panic(v)
+					}
+					trace.SpanFromContext(r.Context()).SetStatus(codes.Error, fmt.Sprint(v))
+					logger.ErrorContext(r.Context(), "Unhandled panic", "panic", fmt.Sprint(v), "stack", string(debug.Stack()))
+					writeInternalError(w, r)
+				}
+			}()
+			next.ServeHTTP(w, r)
+		})
 	}
+}
 
+func newRouter(h *handlers, logger *slog.Logger, adminEnabled bool) http.Handler {
 	r := chi.NewRouter()
-	r.Use(middleware.Logger)
-	r.Use(middleware.Recoverer)
-	r.Use(middleware.RequestID)
+	r.Use(routeTelemetry, recoverer(logger))
+
+	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
+		writeProblem(w, r, ProblemDetails{Status: http.StatusNotFound, Title: "Resource not found",
+			Detail: "No route matches this path. See /scalar for the API reference."})
+	})
+	r.MethodNotAllowed(func(w http.ResponseWriter, r *http.Request) {
+		writeProblem(w, r, ProblemDetails{Status: http.StatusMethodNotAllowed, Title: "Method not allowed",
+			Detail: r.Method + " isn't supported on this path. See /scalar for the API reference."})
+	})
 
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		// Browsers land on the interactive Scalar API reference; programmatic
-		// clients keep receiving the original JSON service metadata.
+		// clients keep receiving JSON service metadata.
 		if prefersHTML(r.Header.Get("Accept")) {
 			writeAPIReference(w)
 			return
 		}
-
-		writeJSONResponse(w, map[string]string{
-			"message": "Go API with in-memory storage",
-			"version": "1.0.0",
-		})
+		writeJSON(w, http.StatusOK, ServiceInfo{Name: "Field Service Work Orders API", Version: "1.0.0", APIReference: "/scalar", OpenAPI: "/openapi.json"})
 	})
-
+	r.Get("/scalar", func(w http.ResponseWriter, r *http.Request) { writeAPIReference(w) })
 	r.Get("/reference", func(w http.ResponseWriter, r *http.Request) {
-		writeAPIReference(w)
+		http.Redirect(w, r, "/scalar", http.StatusMovedPermanently)
 	})
-
 	r.Get("/openapi.json", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		if _, err := w.Write(openAPISpec); err != nil {
-			log.Printf("write OpenAPI document: %v", err)
+			slog.Error("Failed to write OpenAPI document", "error", err)
 		}
 	})
-
 	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		writeJSONResponse(w, map[string]string{"status": "healthy"})
+		writeJSON(w, http.StatusOK, map[string]string{"status": "healthy"})
 	})
 
-	r.Get("/items", func(w http.ResponseWriter, r *http.Request) {
-		items := store.GetAll()
-		w.Header().Set("Content-Type", "application/json")
-		writeJSONResponse(w, items)
-	})
+	r.Get("/work-orders", h.listWorkOrders)
+	r.Post("/work-orders", h.createWorkOrder)
+	r.Get("/work-orders/{id}", h.getWorkOrder)
+	r.Patch("/work-orders/{id}", h.updateWorkOrder)
+	r.Delete("/work-orders/{id}", h.deleteWorkOrder)
 
-	r.Get("/items/{id}", func(w http.ResponseWriter, r *http.Request) {
-		id, err := strconv.Atoi(chi.URLParam(r, "id"))
-		if err != nil {
-			http.Error(w, "Invalid ID", http.StatusBadRequest)
-			return
+	// Seed and simulate exist only for local runs; the AppHost enables them in run mode.
+	if adminEnabled {
+		r.Post("/admin/seed", h.seed)
+		r.Post("/admin/simulate", h.simulate)
+	}
+	return r
+}
+
+func main() {
+	os.Exit(run())
+}
+
+// run starts the API and returns the process exit code once it stops, after flushing telemetry.
+func run() int {
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
+	logger, shutdownTelemetry, err := setupTelemetry(ctx)
+	if err != nil {
+		log.Printf("set up OpenTelemetry: %v", err)
+		return 1
+	}
+	defer func() {
+		flushCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		if err := shutdownTelemetry(flushCtx); err != nil {
+			log.Printf("shut down OpenTelemetry: %v", err)
 		}
+	}()
 
-		item, ok := store.Get(id)
-		if !ok {
-			http.Error(w, "Item not found", http.StatusNotFound)
-			return
-		}
-
-		w.Header().Set("Content-Type", "application/json")
-		writeJSONResponse(w, item)
-	})
-
-	r.Post("/items", func(w http.ResponseWriter, r *http.Request) {
-		var req struct {
-			Name string `json:"name"`
-		}
-
-		if !decodeJSONBody(w, r, &req) {
-			return
-		}
-
-		item, err := store.Create(req.Name)
-		if err != nil {
-			writeStoreError(w, err)
-			return
-		}
-
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusCreated)
-		writeJSONResponse(w, item)
-	})
-
-	r.Put("/items/{id}", func(w http.ResponseWriter, r *http.Request) {
-		id, err := strconv.Atoi(chi.URLParam(r, "id"))
-		if err != nil {
-			http.Error(w, "Invalid ID", http.StatusBadRequest)
-			return
-		}
-
-		var req struct {
-			Name      *string `json:"name"`
-			Completed *bool   `json:"completed"`
-		}
-
-		if !decodeJSONBody(w, r, &req) {
-			return
-		}
-
-		item, ok, err := store.Update(id, req.Name, req.Completed)
-		if err != nil {
-			writeStoreError(w, err)
-			return
-		}
-		if !ok {
-			http.Error(w, "Item not found", http.StatusNotFound)
-			return
-		}
-
-		w.Header().Set("Content-Type", "application/json")
-		writeJSONResponse(w, item)
-	})
-
-	r.Delete("/items/{id}", func(w http.ResponseWriter, r *http.Request) {
-		id, err := strconv.Atoi(chi.URLParam(r, "id"))
-		if err != nil {
-			http.Error(w, "Invalid ID", http.StatusBadRequest)
-			return
-		}
-
-		ok := store.Delete(id)
-		if !ok {
-			http.Error(w, "Item not found", http.StatusNotFound)
-			return
-		}
-
-		w.WriteHeader(http.StatusNoContent)
-	})
+	svc, err := NewService(NewStore(maxWorkOrders), logger)
+	if err != nil {
+		logger.Error("Failed to create work-order instruments", "error", err.Error())
+		return 1
+	}
+	svc.Seed(ctx)
 
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -393,23 +214,30 @@ func main() {
 	if host == "" {
 		host = defaultBindHost
 	}
+	selfHost := host
+	if ip := net.ParseIP(host); ip != nil && ip.IsUnspecified() {
+		selfHost = "127.0.0.1"
+	}
+
+	adminEnabled, _ := strconv.ParseBool(os.Getenv("WORKORDERS_ADMIN_ENABLED"))
+	h := &handlers{svc: svc, simulator: NewSimulator("http://"+net.JoinHostPort(selfHost, port), svc)}
+	handler := otelhttp.NewHandler(newRouter(h, logger, adminEnabled), "api",
+		otelhttp.WithFilter(func(r *http.Request) bool { return r.URL.Path != "/health" }),
+		otelhttp.WithSpanNameFormatter(func(_ string, r *http.Request) string { return r.Method }))
 
 	addr := net.JoinHostPort(host, port)
 	server := &http.Server{
 		Addr:              addr,
-		Handler:           r,
+		Handler:           handler,
 		ReadTimeout:       5 * time.Second,
 		ReadHeaderTimeout: 2 * time.Second,
-		WriteTimeout:      10 * time.Second,
+		WriteTimeout:      15 * time.Second,
 		IdleTimeout:       60 * time.Second,
 	}
 
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
-	defer stop()
-
 	serverErrs := make(chan error, 1)
 	go func() {
-		log.Printf("Starting server on %s", addr)
+		logger.Info("Starting work-order API", "address", addr, "admin_enabled", adminEnabled)
 		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			serverErrs <- err
 		}
@@ -419,15 +247,18 @@ func main() {
 	select {
 	case err, ok := <-serverErrs:
 		if ok && err != nil {
-			log.Fatalf("server error: %v", err)
+			logger.Error("Server error", "error", err.Error())
+			return 1
 		}
 	case <-ctx.Done():
-		log.Println("Shutdown signal received, draining in-flight requests...")
+		logger.Info("Shutdown signal received, draining in-flight requests")
 	}
 
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	if err := server.Shutdown(shutdownCtx); err != nil {
-		log.Printf("server shutdown: %v", err)
+		logger.Error("Server shutdown failed", "error", err.Error())
+		return 1
 	}
+	return 0
 }

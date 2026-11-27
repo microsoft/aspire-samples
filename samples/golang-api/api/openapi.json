@@ -1,13 +1,13 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "golang-api",
+    "title": "Field Service Work Orders API",
     "version": "1.0.0",
-    "summary": "A tiny, idiomatic Go items API — hosted with Aspire.",
-    "description": "A lightweight **items** API written in **Go** with the [chi](https://github.com/go-chi/chi) router and a thread-safe in-memory store. It ships as a sample for **Aspire**, which runs the Go process during local development and packages it as a container for deployment.\n\nThe store is seeded with three items (`Learn Go`, `Build APIs`, `Deploy with Aspire`) and resets every time the process restarts. Use the **Test Request** button on any operation to try it live against this running instance.\n\n> This is a demo API: there is no authentication, and all data lives in memory.",
+    "summary": "Dispatch, track, and close field-service work orders. A Go API hosted with Aspire.",
+    "description": "Dispatchers at a commercial HVAC, refrigeration, electrical, and plumbing contractor use this API to open **work orders** for customer issues, such as a walk-in freezer alarm or a quarterly boiler inspection, assign technicians, and track each job from `open` through `in_progress` to `completed` or `cancelled`.\n\n## Dispatch rules\n\n- A technician must be assigned before work starts or completes.\n- Completed and cancelled work orders are closed. Changing them returns `409 Conflict`.\n- `reportedAt` records when the customer reported the issue. Resolution time is measured from it.\n\n## Errors\n\nErrors are [RFC 9457 problem details](https://www.rfc-editor.org/rfc/rfc9457) (`application/problem+json`). Validation problems list each invalid field in `errors`, and every problem includes a `traceId` that you can look up on the **Traces** page of the Aspire dashboard.\n\n## Telemetry\n\nEvery request is traced with OpenTelemetry: an `otelhttp` server span plus a `work_order.*` domain span with lifecycle events. The `FieldService.WorkOrders` meter records work-order metrics, and `slog` logs are exported through `otelslog`, correlated with their traces.\n\n> This is a demo API: there's no authentication, and work orders live in memory.",
     "contact": {
       "name": "Aspire samples",
-      "url": "https://github.com/dotnet/aspire-samples"
+      "url": "https://github.com/microsoft/aspire-samples"
     },
     "license": {
       "name": "MIT",
@@ -22,30 +22,363 @@
   ],
   "tags": [
     {
-      "name": "Items",
-      "description": "Create, read, update, and delete items in the in-memory store."
+      "name": "Work orders",
+      "description": "Open, dispatch, update, and close work orders."
     },
     {
-      "name": "System",
-      "description": "Service metadata and health probes used by Aspire."
+      "name": "Operations",
+      "description": "Local-run helpers behind the Aspire dashboard's **Seed work orders** and **Simulate traffic** commands. They exist only when `WORKORDERS_ADMIN_ENABLED=true`, which the AppHost sets in run mode."
+    },
+    {
+      "name": "Service",
+      "description": "Service metadata and the health probe that Aspire uses."
     }
   ],
   "paths": {
+    "/work-orders": {
+      "get": {
+        "tags": ["Work orders"],
+        "operationId": "listWorkOrders",
+        "summary": "List work orders",
+        "description": "Returns the dispatch queue, sorted by priority (urgent first) and then by due date. Filters combine, so `?status=open&priority=urgent` returns urgent jobs that are waiting for a technician.",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Only return work orders with this status.",
+            "schema": { "$ref": "#/components/schemas/Status" },
+            "example": "open"
+          },
+          {
+            "name": "priority",
+            "in": "query",
+            "description": "Only return work orders with this priority.",
+            "schema": { "$ref": "#/components/schemas/Priority" },
+            "example": "urgent"
+          },
+          {
+            "name": "assignee",
+            "in": "query",
+            "description": "Only return work orders assigned to this technician (case-insensitive).",
+            "schema": { "type": "string" },
+            "example": "Aiko Tanaka"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The matching work orders, highest priority first.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/WorkOrder" }
+                },
+                "example": [
+                  {
+                    "id": 1,
+                    "title": "Walk-in freezer alarm — Harbor Bistro",
+                    "priority": "urgent",
+                    "status": "in_progress",
+                    "assignee": "Aiko Tanaka",
+                    "dueDate": "2026-11-27",
+                    "overdue": false,
+                    "reportedAt": "2026-11-27T13:05:00Z",
+                    "createdAt": "2026-11-27T13:15:00Z",
+                    "updatedAt": "2026-11-27T14:25:00Z"
+                  },
+                  {
+                    "id": 3,
+                    "title": "Rooftop unit not cooling — Mercy Clinic",
+                    "priority": "high",
+                    "status": "open",
+                    "assignee": "Dev Patel",
+                    "dueDate": "2026-11-28",
+                    "overdue": false,
+                    "reportedAt": "2026-11-27T06:05:00Z",
+                    "createdAt": "2026-11-27T06:15:00Z",
+                    "updatedAt": "2026-11-27T12:05:00Z"
+                  }
+                ]
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/ValidationProblem" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      },
+      "post": {
+        "tags": ["Work orders"],
+        "operationId": "createWorkOrder",
+        "summary": "Open a work order",
+        "description": "Opens a work order in the `open` status and returns it with a `Location` header. `priority` defaults to `normal`. Set `reportedAt` when the customer reported the issue earlier than dispatch opened the job, for example an after-hours call; it defaults to now and can't be in the future.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateWorkOrderRequest" },
+              "examples": {
+                "emergency": {
+                  "summary": "Emergency call, technician assigned",
+                  "value": {
+                    "title": "Walk-in freezer alarm — Harbor Bistro",
+                    "priority": "urgent",
+                    "assignee": "Aiko Tanaka",
+                    "dueDate": "2026-11-27",
+                    "reportedAt": "2026-11-27T13:05:00Z"
+                  }
+                },
+                "inspection": {
+                  "summary": "Scheduled inspection, not yet assigned",
+                  "value": {
+                    "title": "Quarterly boiler inspection — Oakwood Apartments",
+                    "priority": "low",
+                    "dueDate": "2026-12-04"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The work order was opened.",
+            "headers": {
+              "Location": {
+                "description": "The URL of the new work order.",
+                "schema": { "type": "string" },
+                "example": "/work-orders/13"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/WorkOrder" },
+                "example": {
+                  "id": 13,
+                  "title": "Walk-in freezer alarm — Harbor Bistro",
+                  "priority": "urgent",
+                  "status": "open",
+                  "assignee": "Aiko Tanaka",
+                  "dueDate": "2026-11-27",
+                  "overdue": false,
+                  "reportedAt": "2026-11-27T13:05:00Z",
+                  "createdAt": "2026-11-27T13:12:41Z",
+                  "updatedAt": "2026-11-27T13:12:41Z"
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/ValidationProblem" },
+          "409": {
+            "description": "The backlog is at capacity (1,000 work orders).",
+            "content": {
+              "application/problem+json": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetails" },
+                "example": {
+                  "type": "https://tools.ietf.org/html/rfc9110#section-15.5.10",
+                  "title": "Backlog is at capacity",
+                  "status": 409,
+                  "detail": "The in-memory store holds at most 1000 work orders. Delete closed work orders and try again.",
+                  "instance": "/work-orders",
+                  "traceId": "4bf92f3577b34da6a3ce929d0e0e4736"
+                }
+              }
+            }
+          },
+          "413": { "$ref": "#/components/responses/PayloadTooLarge" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      }
+    },
+    "/work-orders/{id}": {
+      "parameters": [{ "$ref": "#/components/parameters/WorkOrderId" }],
+      "get": {
+        "tags": ["Work orders"],
+        "operationId": "getWorkOrder",
+        "summary": "Get a work order",
+        "description": "Returns one work order. `overdue` is `true` when an open or in-progress job has passed its due date.",
+        "responses": {
+          "200": {
+            "description": "The work order.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/WorkOrder" },
+                "example": {
+                  "id": 7,
+                  "title": "Noisy compressor on reach-in cooler — Corner Grocer",
+                  "priority": "normal",
+                  "status": "in_progress",
+                  "assignee": "Jordan Reyes",
+                  "dueDate": "2026-11-26",
+                  "overdue": true,
+                  "reportedAt": "2026-11-25T11:05:00Z",
+                  "createdAt": "2026-11-25T11:15:00Z",
+                  "updatedAt": "2026-11-26T21:45:00Z"
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/ValidationProblem" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      },
+      "patch": {
+        "tags": ["Work orders"],
+        "operationId": "updateWorkOrder",
+        "summary": "Update, assign, or close a work order",
+        "description": "Applies a partial update: omitted fields are left unchanged. Use it to assign a technician, start work (`in_progress`), reprioritize, or close the job as `completed` or `cancelled`.\n\nA technician must be assigned before work starts or completes, and closed work orders return `409 Conflict`. Completing a job records its resolution time, measured from `reportedAt`, on the `workorders.resolution.duration` histogram.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/UpdateWorkOrderRequest" },
+              "examples": {
+                "dispatch": {
+                  "summary": "Assign a technician and start work",
+                  "value": { "assignee": "Dev Patel", "status": "in_progress" }
+                },
+                "complete": {
+                  "summary": "Complete the job",
+                  "value": { "status": "completed" }
+                },
+                "escalate": {
+                  "summary": "Escalate and move the due date",
+                  "value": { "priority": "urgent", "dueDate": "2026-11-27" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The updated work order.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/WorkOrder" },
+                "example": {
+                  "id": 3,
+                  "title": "Rooftop unit not cooling — Mercy Clinic",
+                  "priority": "high",
+                  "status": "completed",
+                  "assignee": "Dev Patel",
+                  "dueDate": "2026-11-28",
+                  "overdue": false,
+                  "reportedAt": "2026-11-27T06:05:00Z",
+                  "createdAt": "2026-11-27T06:15:00Z",
+                  "updatedAt": "2026-11-27T15:41:09Z",
+                  "completedAt": "2026-11-27T15:41:09Z"
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/ValidationProblem" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": {
+            "description": "The work order is completed or cancelled, so it can't change.",
+            "content": {
+              "application/problem+json": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetails" },
+                "example": {
+                  "type": "https://tools.ietf.org/html/rfc9110#section-15.5.10",
+                  "title": "Work order is closed",
+                  "status": 409,
+                  "detail": "Completed and cancelled work orders can't be changed. Open a follow-up work order instead.",
+                  "instance": "/work-orders/9",
+                  "traceId": "0af7651916cd43dd8448eb211c80319c"
+                }
+              }
+            }
+          },
+          "413": { "$ref": "#/components/responses/PayloadTooLarge" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      },
+      "delete": {
+        "tags": ["Work orders"],
+        "operationId": "deleteWorkOrder",
+        "summary": "Delete a work order",
+        "description": "Removes a work order, for example one opened by mistake. Prefer cancelling jobs so that the history is kept.",
+        "responses": {
+          "204": { "description": "The work order was deleted." },
+          "400": { "$ref": "#/components/responses/ValidationProblem" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      }
+    },
+    "/admin/seed": {
+      "post": {
+        "tags": ["Operations"],
+        "operationId": "seedWorkOrders",
+        "summary": "Seed the sample backlog",
+        "description": "Replaces every work order with a realistic 12-job backlog across restaurants, clinics, offices, and schools. This is what the dashboard's **Seed work orders** command calls.",
+        "responses": {
+          "200": {
+            "description": "The number of work orders in the new backlog.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/SeedResult" },
+                "example": { "seeded": 12 }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/simulate": {
+      "post": {
+        "tags": ["Operations"],
+        "operationId": "simulateTraffic",
+        "summary": "Simulate dispatch traffic",
+        "description": "Acts like a dispatch console: it calls this API over HTTP to open, start, and complete jobs, browse queues, and send a few requests that fail validation, hit a missing work order, or try to reopen a closed one. Each call is a client span in one trace. This is what the dashboard's **Simulate traffic** command calls.",
+        "parameters": [
+          {
+            "name": "steps",
+            "in": "query",
+            "description": "How many dispatcher actions to simulate.",
+            "schema": { "type": "integer", "minimum": 1, "maximum": 50, "default": 12 },
+            "example": 12
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A summary of the simulated requests.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/SimulationResult" },
+                "example": {
+                  "requests": 17,
+                  "created": 4,
+                  "started": 3,
+                  "completed": 3,
+                  "rejected": 2,
+                  "statuses": { "200": 10, "201": 4, "400": 1, "404": 1, "409": 1 }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/ValidationProblem" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      }
+    },
     "/": {
       "get": {
-        "tags": ["System"],
-        "operationId": "getApiInfo",
-        "summary": "API information",
-        "description": "Returns service metadata. When opened in a browser (an `Accept: text/html` request) this same route serves the interactive API reference you are reading now.",
+        "tags": ["Service"],
+        "operationId": "getServiceInfo",
+        "summary": "Service information",
+        "description": "Returns service metadata. Browsers, which send `Accept: text/html`, get this API reference instead.",
         "responses": {
           "200": {
             "description": "Service metadata.",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ApiInfo" },
+                "schema": { "$ref": "#/components/schemas/ServiceInfo" },
                 "example": {
-                  "message": "Go API with in-memory storage",
-                  "version": "1.0.0"
+                  "name": "Field Service Work Orders API",
+                  "version": "1.0.0",
+                  "apiReference": "/scalar",
+                  "openApi": "/openapi.json"
                 }
               }
             }
@@ -55,10 +388,10 @@
     },
     "/health": {
       "get": {
-        "tags": ["System"],
+        "tags": ["Service"],
         "operationId": "getHealth",
         "summary": "Health check",
-        "description": "Liveness probe used by Aspire's `withHttpHealthCheck`. Always returns `200` while the process is serving.",
+        "description": "Liveness probe used by the AppHost's `WithHttpHealthCheck`. It isn't traced, so it doesn't crowd the dashboard.",
         "responses": {
           "200": {
             "description": "The service is healthy.",
@@ -71,249 +404,264 @@
           }
         }
       }
-    },
-    "/items": {
-      "get": {
-        "tags": ["Items"],
-        "operationId": "listItems",
-        "summary": "List all items",
-        "description": "Returns every item currently in the store. Order is not guaranteed.",
-        "responses": {
-          "200": {
-            "description": "The full collection of items.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": { "$ref": "#/components/schemas/Item" }
-                },
-                "example": [
-                  { "id": 1, "name": "Learn Go", "completed": false, "createdAt": "2026-01-15T09:24:00Z" },
-                  { "id": 2, "name": "Build APIs", "completed": false, "createdAt": "2026-01-15T09:24:00Z" },
-                  { "id": 3, "name": "Deploy with Aspire", "completed": false, "createdAt": "2026-01-15T09:24:00Z" }
-                ]
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "tags": ["Items"],
-        "operationId": "createItem",
-        "summary": "Create an item",
-        "description": "Adds a new item to the store. The `name` is required and is trimmed to a maximum of 200 characters.",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": { "$ref": "#/components/schemas/NewItem" },
-              "example": { "name": "Write integration tests" }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "The item was created.",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/Item" },
-                "example": { "id": 4, "name": "Write integration tests", "completed": false, "createdAt": "2026-01-15T09:30:00Z" }
-              }
-            }
-          },
-          "400": { "$ref": "#/components/responses/BadRequest" },
-          "409": { "$ref": "#/components/responses/Conflict" },
-          "413": { "$ref": "#/components/responses/PayloadTooLarge" }
-        }
-      }
-    },
-    "/items/{id}": {
-      "parameters": [
-        { "$ref": "#/components/parameters/ItemId" }
-      ],
-      "get": {
-        "tags": ["Items"],
-        "operationId": "getItem",
-        "summary": "Get an item by ID",
-        "responses": {
-          "200": {
-            "description": "The requested item.",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/Item" },
-                "example": { "id": 1, "name": "Learn Go", "completed": false, "createdAt": "2026-01-15T09:24:00Z" }
-              }
-            }
-          },
-          "400": { "$ref": "#/components/responses/BadRequest" },
-          "404": { "$ref": "#/components/responses/NotFound" }
-        }
-      },
-      "put": {
-        "tags": ["Items"],
-        "operationId": "updateItem",
-        "summary": "Update an item",
-        "description": "Updates the `name` and/or `completed` fields of an existing item. Both fields are optional; omitted fields are left unchanged. An empty body (`{}`) returns the item untouched.",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": { "$ref": "#/components/schemas/ItemUpdate" },
-              "example": { "completed": true }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "The updated item.",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/Item" },
-                "example": { "id": 1, "name": "Learn Go", "completed": true, "createdAt": "2026-01-15T09:24:00Z" }
-              }
-            }
-          },
-          "400": { "$ref": "#/components/responses/BadRequest" },
-          "404": { "$ref": "#/components/responses/NotFound" },
-          "413": { "$ref": "#/components/responses/PayloadTooLarge" }
-        }
-      },
-      "delete": {
-        "tags": ["Items"],
-        "operationId": "deleteItem",
-        "summary": "Delete an item",
-        "responses": {
-          "204": { "description": "The item was deleted. No content is returned." },
-          "400": { "$ref": "#/components/responses/BadRequest" },
-          "404": { "$ref": "#/components/responses/NotFound" }
-        }
-      }
     }
   },
   "components": {
     "parameters": {
-      "ItemId": {
+      "WorkOrderId": {
         "name": "id",
         "in": "path",
         "required": true,
-        "description": "The integer identifier of the item.",
+        "description": "The work order ID.",
         "schema": { "type": "integer", "minimum": 1 },
-        "example": 1
+        "example": 3
       }
     },
     "responses": {
-      "BadRequest": {
-        "description": "The request was malformed (for example an invalid ID, an unreadable body, or a missing/too-long name).",
+      "ValidationProblem": {
+        "description": "The request is invalid. `errors` lists each invalid field.",
         "content": {
-          "text/plain": {
-            "schema": { "type": "string" },
-            "example": "Invalid request body"
+          "application/problem+json": {
+            "schema": { "$ref": "#/components/schemas/ValidationProblemDetails" },
+            "example": {
+              "type": "https://tools.ietf.org/html/rfc9110#section-15.5.1",
+              "title": "One or more validation errors occurred.",
+              "status": 400,
+              "detail": "Fix the fields listed in errors and try again.",
+              "instance": "/work-orders",
+              "errors": {
+                "priority": ["The priority must be one of low, normal, high, or urgent."],
+                "title": ["A title is required."]
+              },
+              "traceId": "5b8aa5a2d2c872e8321cf37308d69df2"
+            }
           }
         }
       },
       "NotFound": {
-        "description": "No item exists with the given ID.",
+        "description": "No work order exists with this ID.",
         "content": {
-          "text/plain": {
-            "schema": { "type": "string" },
-            "example": "Item not found"
-          }
-        }
-      },
-      "Conflict": {
-        "description": "The store has reached its capacity and cannot accept more items.",
-        "content": {
-          "text/plain": {
-            "schema": { "type": "string" },
-            "example": "Item limit reached"
+          "application/problem+json": {
+            "schema": { "$ref": "#/components/schemas/ProblemDetails" },
+            "example": {
+              "type": "https://tools.ietf.org/html/rfc9110#section-15.5.5",
+              "title": "Work order not found",
+              "status": 404,
+              "detail": "No work order exists with ID 9412.",
+              "instance": "/work-orders/9412",
+              "traceId": "a3ce929d0e0e47364bf92f3577b34da6"
+            }
           }
         }
       },
       "PayloadTooLarge": {
-        "description": "The request body exceeded the 1 MiB limit.",
+        "description": "The request body is larger than 1 MiB.",
         "content": {
-          "text/plain": {
-            "schema": { "type": "string" },
-            "example": "Request body too large"
+          "application/problem+json": {
+            "schema": { "$ref": "#/components/schemas/ProblemDetails" },
+            "example": {
+              "type": "https://tools.ietf.org/html/rfc9110#section-15.5.14",
+              "title": "Request body too large",
+              "status": 413,
+              "detail": "The request body must be 1 MiB or smaller.",
+              "instance": "/work-orders",
+              "traceId": "8448eb211c80319c0af7651916cd43dd"
+            }
+          }
+        }
+      },
+      "InternalServerError": {
+        "description": "An unexpected error occurred. The error and its stack are logged with the request's trace.",
+        "content": {
+          "application/problem+json": {
+            "schema": { "$ref": "#/components/schemas/ProblemDetails" },
+            "example": {
+              "type": "https://tools.ietf.org/html/rfc9110#section-15.6.1",
+              "title": "An unexpected error occurred.",
+              "status": 500,
+              "detail": "Use the traceId to find the failed request in the Aspire dashboard.",
+              "instance": "/work-orders/3",
+              "traceId": "d0e0e4736a3ce9294bf92f3577b34da6"
+            }
           }
         }
       }
     },
     "schemas": {
-      "Item": {
+      "Priority": {
+        "type": "string",
+        "description": "Dispatch priority. `urgent` jobs, such as a freezer failure or a tripped breaker, go to the top of the queue.",
+        "enum": ["low", "normal", "high", "urgent"],
+        "examples": ["high"]
+      },
+      "Status": {
+        "type": "string",
+        "description": "Lifecycle status. `completed` and `cancelled` work orders are closed.",
+        "enum": ["open", "in_progress", "completed", "cancelled"],
+        "examples": ["in_progress"]
+      },
+      "WorkOrder": {
         "type": "object",
-        "description": "A single item in the store.",
-        "required": ["id", "name", "completed", "createdAt"],
+        "description": "A field-service job at a customer site, such as a repair or an inspection.",
+        "required": ["id", "title", "priority", "status", "overdue", "reportedAt", "createdAt", "updatedAt"],
         "properties": {
-          "id": {
-            "type": "integer",
-            "description": "Server-assigned, monotonically increasing identifier.",
-            "examples": [1]
-          },
-          "name": {
+          "id": { "type": "integer", "description": "Server-assigned ID.", "examples": [3] },
+          "title": {
             "type": "string",
-            "description": "Human-readable label for the item.",
-            "minLength": 1,
+            "description": "What needs doing, and where.",
             "maxLength": 200,
-            "examples": ["Learn Go"]
+            "examples": ["Rooftop unit not cooling — Mercy Clinic"]
           },
-          "completed": {
+          "priority": { "$ref": "#/components/schemas/Priority" },
+          "status": { "$ref": "#/components/schemas/Status" },
+          "assignee": {
+            "type": "string",
+            "description": "The assigned technician. Omitted while the job is unassigned.",
+            "maxLength": 100,
+            "examples": ["Dev Patel"]
+          },
+          "dueDate": { "type": "string", "format": "date", "description": "The date the job is due.", "examples": ["2026-11-28"] },
+          "overdue": {
             "type": "boolean",
-            "description": "Whether the item has been completed.",
+            "description": "Whether an open or in-progress job has passed its due date.",
             "examples": [false]
           },
-          "createdAt": {
+          "reportedAt": {
             "type": "string",
             "format": "date-time",
-            "description": "RFC 3339 timestamp set when the item was created.",
-            "examples": ["2026-01-15T09:24:00Z"]
-          }
-        }
-      },
-      "NewItem": {
-        "type": "object",
-        "description": "Payload for creating an item.",
-        "required": ["name"],
-        "properties": {
-          "name": {
-            "type": "string",
-            "description": "Label for the new item.",
-            "minLength": 1,
-            "maxLength": 200,
-            "examples": ["Write integration tests"]
-          }
-        }
-      },
-      "ItemUpdate": {
-        "type": "object",
-        "description": "Partial update for an item. Provide only the fields you want to change.",
-        "properties": {
-          "name": {
-            "type": "string",
-            "description": "New label for the item.",
-            "minLength": 1,
-            "maxLength": 200,
-            "examples": ["Learn Go (advanced)"]
+            "description": "When the customer reported the issue. Resolution time is measured from this time.",
+            "examples": ["2026-11-27T06:05:00Z"]
           },
-          "completed": {
-            "type": "boolean",
-            "description": "New completion state.",
-            "examples": [true]
+          "createdAt": { "type": "string", "format": "date-time", "description": "When dispatch opened the work order.", "examples": ["2026-11-27T06:15:00Z"] },
+          "updatedAt": { "type": "string", "format": "date-time", "description": "When the work order last changed.", "examples": ["2026-11-27T12:05:00Z"] },
+          "completedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the job was completed. Omitted until then.",
+            "examples": ["2026-11-27T15:41:09Z"]
           }
         }
       },
-      "ApiInfo": {
+      "CreateWorkOrderRequest": {
         "type": "object",
-        "description": "Service metadata returned from the API root.",
-        "required": ["message", "version"],
+        "description": "A new work order. Unknown fields are rejected.",
+        "required": ["title"],
+        "additionalProperties": false,
         "properties": {
-          "message": { "type": "string", "examples": ["Go API with in-memory storage"] },
-          "version": { "type": "string", "examples": ["1.0.0"] }
+          "title": {
+            "type": "string",
+            "description": "What needs doing, and where.",
+            "minLength": 1,
+            "maxLength": 200,
+            "examples": ["Walk-in freezer alarm — Harbor Bistro"]
+          },
+          "priority": {
+            "$ref": "#/components/schemas/Priority",
+            "description": "Dispatch priority. Defaults to `normal`."
+          },
+          "assignee": { "type": "string", "description": "The technician to assign, if known.", "maxLength": 100, "examples": ["Aiko Tanaka"] },
+          "dueDate": { "type": "string", "format": "date", "description": "The date the job is due.", "examples": ["2026-11-27"] },
+          "reportedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the customer reported the issue, if earlier than now. Can't be in the future.",
+            "examples": ["2026-11-27T13:05:00Z"]
+          }
+        }
+      },
+      "UpdateWorkOrderRequest": {
+        "type": "object",
+        "description": "A partial update. Omitted fields are left unchanged, and unknown fields are rejected.",
+        "additionalProperties": false,
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "What needs doing, and where.",
+            "minLength": 1,
+            "maxLength": 200,
+            "examples": ["Rooftop unit not cooling — Mercy Clinic"]
+          },
+          "priority": { "$ref": "#/components/schemas/Priority" },
+          "assignee": {
+            "type": "string",
+            "description": "The technician to assign. Use an empty string to unassign an open job.",
+            "maxLength": 100,
+            "examples": ["Dev Patel"]
+          },
+          "status": { "$ref": "#/components/schemas/Status" },
+          "dueDate": { "type": "string", "format": "date", "description": "The new due date.", "examples": ["2026-11-28"] }
+        }
+      },
+      "ProblemDetails": {
+        "type": "object",
+        "description": "An RFC 9457 problem details response.",
+        "required": ["type", "title", "status"],
+        "properties": {
+          "type": { "type": "string", "format": "uri", "description": "A URI that identifies the problem type." },
+          "title": { "type": "string", "description": "A short summary of the problem." },
+          "status": { "type": "integer", "description": "The HTTP status code." },
+          "detail": { "type": "string", "description": "An explanation specific to this occurrence." },
+          "instance": { "type": "string", "description": "The request path." },
+          "traceId": {
+            "type": "string",
+            "description": "The W3C trace ID of the request. Search for it on the Traces page of the Aspire dashboard.",
+            "examples": ["4bf92f3577b34da6a3ce929d0e0e4736"]
+          }
+        }
+      },
+      "ValidationProblemDetails": {
+        "description": "Problem details for a 400 response, with the invalid fields.",
+        "allOf": [
+          { "$ref": "#/components/schemas/ProblemDetails" },
+          {
+            "type": "object",
+            "required": ["errors"],
+            "properties": {
+              "errors": {
+                "type": "object",
+                "description": "Error messages keyed by JSON field name.",
+                "additionalProperties": { "type": "array", "items": { "type": "string" } }
+              }
+            }
+          }
+        ]
+      },
+      "SeedResult": {
+        "type": "object",
+        "required": ["seeded"],
+        "properties": {
+          "seeded": { "type": "integer", "description": "The number of work orders in the new backlog.", "examples": [12] }
+        }
+      },
+      "SimulationResult": {
+        "type": "object",
+        "description": "A summary of one simulated dispatch session.",
+        "required": ["requests", "created", "started", "completed", "rejected", "statuses"],
+        "properties": {
+          "requests": { "type": "integer", "description": "HTTP requests sent.", "examples": [17] },
+          "created": { "type": "integer", "description": "Work orders opened.", "examples": [4] },
+          "started": { "type": "integer", "description": "Work orders moved to `in_progress`.", "examples": [3] },
+          "completed": { "type": "integer", "description": "Work orders completed.", "examples": [3] },
+          "rejected": { "type": "integer", "description": "Requests that returned a 4xx problem.", "examples": [2] },
+          "statuses": {
+            "type": "object",
+            "description": "Responses counted by HTTP status code.",
+            "additionalProperties": { "type": "integer" }
+          }
+        }
+      },
+      "ServiceInfo": {
+        "type": "object",
+        "required": ["name", "version", "apiReference", "openApi"],
+        "properties": {
+          "name": { "type": "string", "examples": ["Field Service Work Orders API"] },
+          "version": { "type": "string", "examples": ["1.0.0"] },
+          "apiReference": { "type": "string", "description": "Path of the Scalar API reference.", "examples": ["/scalar"] },
+          "openApi": { "type": "string", "description": "Path of this OpenAPI document.", "examples": ["/openapi.json"] }
         }
       },
       "HealthStatus": {
         "type": "object",
-        "description": "Health probe result.",
         "required": ["status"],
         "properties": {
           "status": { "type": "string", "examples": ["healthy"] }
