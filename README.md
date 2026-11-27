@@ -36,67 +36,69 @@ Dev Containers and CI install the same CLI version automatically.
 - [Cloud / AI / event-driven](#cloud--ai--event-driven)
 - [.NET + frontend and platform](#net--frontend-and-platform)
 
+The **Highlights** column lists what each sample shows off in the Aspire dashboard. See [CONTRIBUTING.md](./CONTRIBUTING.md) for the quality bar behind it.
+
 ### Full-stack JavaScript / TypeScript
 
-| Sample | Workload languages | AppHost | Deploy | Description |
-| --- | --- | --- | --- | --- |
-| [Integrating Frontend Apps](./samples/aspire-with-javascript) | JavaScript, TypeScript | C# AppHost | Run only | React, Vue, and Angular frontends integrated with Aspire. |
-| [Node + Redis + Vite](./samples/node-express-redis) | JavaScript, TypeScript | TypeScript AppHost | Docker Compose | Express API + React/Vite frontend + Redis behind YARP. |
-| [Node.js Weather Explorer](./samples/aspire-with-node) | JavaScript, TypeScript | TypeScript AppHost | Run only | Interactive Leaflet weather map; Express + OpenTelemetry API over the Open-Meteo external service. |
-| [Vite + YARP Static Files](./samples/vite-yarp-static) | JavaScript, TypeScript | TypeScript AppHost | Docker Compose | Vite frontend served through YARP in run and publish modes. |
+| Sample | Workload languages | AppHost | Deploy | Description | Highlights |
+| --- | --- | --- | --- | --- | --- |
+| [Integrating Frontend Apps](./samples/aspire-with-javascript) | JavaScript, TypeScript | C# AppHost | Run only | Angular, React, Vue, and Vite shipment-tracking boards on one .NET API. | Browser-to-API traces, custom metrics, Scalar, dashboard commands |
+| [Node + Redis + Vite](./samples/node-express-redis) | JavaScript, TypeScript | TypeScript AppHost | Docker Compose | Shopping cart service: Express API with Redis-backed carts and a React storefront behind YARP. | Browser-to-Redis traces, span links, pino structured logs, Scalar |
+| [Node.js Fleet Weather Risk](./samples/aspire-with-node) | JavaScript, TypeScript | TypeScript AppHost | Run only | Dispatch board that scores delivery-route weather risk from the Open-Meteo external service. | Browser-to-external-service traces, custom metrics, Scalar, dashboard commands |
+| [Vite + YARP Static Files](./samples/vite-yarp-static) | JavaScript, TypeScript | TypeScript AppHost | Docker Compose | Vite frontend served through YARP in run and publish modes. | YARP static files, Docker Compose publish |
 
 ### Polyglot full-stack
 
-| Sample | Workload languages | AppHost | Deploy | Description |
-| --- | --- | --- | --- | --- |
-| [Integrating Python Apps](./samples/aspire-with-python) | Python, JavaScript | C# AppHost | Run only | FastAPI backend + React frontend integrated with Aspire. |
-| [Vite + C# + PostgreSQL](./samples/vite-csharp-postgres) | C#, JavaScript, TypeScript | TypeScript AppHost | Docker Compose | React frontend + C# API + PostgreSQL in a single Aspire app. |
-| [Vite + React + FastAPI](./samples/vite-react-fastapi) | Python, JavaScript, TypeScript | TypeScript AppHost | Docker Compose | React frontend + FastAPI backend behind YARP. |
-| [Spring Petclinic](./samples/spring-petclinic) | Java, TypeScript | TypeScript AppHost | Run only | Angular frontend + Spring Boot API + PostgreSQL using the official Java hosting integration. |
-| [Polyglot Task Queue](./samples/polyglot-task-queue) | JavaScript, Python, C# | TypeScript AppHost | Docker Compose | React + Node API + Python/C# workers coordinated through RabbitMQ. |
-| [RAG Document Q&A](./samples/rag-document-qa-svelte) | Python, JavaScript | TypeScript AppHost | Run only | Svelte frontend + FastAPI + Qdrant + OpenAI. |
+| Sample | Workload languages | AppHost | Deploy | Description | Highlights |
+| --- | --- | --- | --- | --- | --- |
+| [Integrating Python Apps](./samples/aspire-with-python) | Python, JavaScript | C# AppHost | Run only | Inventory availability: FastAPI with Redis cache-aside and a React frontend. | Browser-to-Redis traces, cache hit/miss metrics, Scalar, dashboard commands |
+| [Vite + C# + PostgreSQL](./samples/vite-csharp-postgres) | C#, JavaScript, TypeScript | TypeScript AppHost | Docker Compose | IT service desk queue: React frontend, C# API, and PostgreSQL. | Browser-to-PostgreSQL traces, SLA metrics, Scalar, dashboard commands |
+| [Vite + React + FastAPI](./samples/vite-react-fastapi) | Python, JavaScript, TypeScript | TypeScript AppHost | Docker Compose | Team task board: React frontend and FastAPI behind YARP. | Browser-to-API traces, custom metrics, Scalar, dashboard commands |
+| [Spring Petclinic](./samples/spring-petclinic) | Java, TypeScript | TypeScript AppHost | Run only | Clinic front desk: an Angular app books visits through a Spring Boot API on PostgreSQL, using the official Java hosting integration. | Browser-to-PostgreSQL traces, Java agent metrics, springdoc Scalar, dashboard commands |
+| [Polyglot Task Queue](./samples/polyglot-task-queue) | JavaScript, Python, C# | TypeScript AppHost | Docker Compose | Back-office document pipeline: a React board and Node API route work over RabbitMQ to Python, C#, and Node.js workers. | One trace across RabbitMQ and three languages, per-worker metrics, Scalar, dashboard commands |
+| [RAG Document Q&A](./samples/rag-document-qa-svelte) | Python, JavaScript | TypeScript AppHost | Run only | Employee handbook Q&A with cited answers: Svelte frontend, FastAPI, Qdrant, and OpenAI. | GenAI telemetry, browser traces, Scalar |
 
 ### Backend integrations by language
 
-| Sample | Workload languages | AppHost | Deploy | Description |
-| --- | --- | --- | --- | --- |
-| [Integrating a Go App](./samples/container-build) | Go | C# AppHost | Docker Compose | Builds and runs a Go Gin app from a Dockerfile with Aspire. |
-| [Custom MailDev and MailKit integrations](./samples/maildev-mailkit) | C#, TypeScript | TypeScript AppHost | Run only | Authors custom hosting and client integrations with ATS-generated TypeScript APIs. |
-| [Go API](./samples/golang-api) | Go | Go AppHost | Docker Compose | Go + chi API with Aspire-managed run and publish flows. |
-| [Python FastAPI + PostgreSQL](./samples/python-fastapi-postgres) | Python | TypeScript AppHost | Docker Compose | FastAPI CRUD API wired to PostgreSQL and pgAdmin. |
-| [Python OpenAI Agent](./samples/python-openai-agent) | Python | TypeScript AppHost | Docker Compose | FastAPI AI agent sample with OpenAI integration. |
-| [Python Script](./samples/python-script) | Python | TypeScript AppHost | Run only | Minimal Python script sample using a file-based AppHost. |
+| Sample | Workload languages | AppHost | Deploy | Description | Highlights |
+| --- | --- | --- | --- | --- | --- |
+| [Integrating a Go App](./samples/container-build) | Go | C# AppHost | Docker Compose | Go Gin feature-flag service built from a Dockerfile: hot reload in run mode, distroless image for publish. | Dockerfile build, rollout gauge, otelslog logs, Scalar |
+| [Custom MailDev and MailKit integrations](./samples/maildev-mailkit) | C#, TypeScript | TypeScript AppHost | Run only | Custom hosting and client integrations with ATS-generated TypeScript APIs, sending transactional email. | Custom integrations, email traces, Scalar, dashboard commands |
+| [Go API](./samples/golang-api) | Go | Go AppHost | Docker Compose | Field-service work-order API built with Go and chi. | Go AppHost, otelhttp traces, otelslog logs, Scalar |
+| [Python FastAPI + PostgreSQL](./samples/python-fastapi-postgres) | Python | TypeScript AppHost | Docker Compose | Customer CRM API: FastAPI and PostgreSQL with pgAdmin. | SQL spans, problem details, Scalar, dashboard commands |
+| [Python OpenAI Agent](./samples/python-openai-agent) | Python | TypeScript AppHost | Docker Compose | Order-support AI agent built on FastAPI and OpenAI tool calling. | GenAI telemetry, tool-call traces, Scalar |
+| [Python Script](./samples/python-script) | Python | TypeScript AppHost | Run only | Minimal Python script sample using a file-based AppHost. | Python script resource |
 
 ### Interactive terminals
 
-| Sample | Workload languages | AppHost | Deploy | Description |
-| --- | --- | --- | --- | --- |
-| [Terminal basics: C#](./samples/terminals/basics-csharp) | C# | C# AppHost | Run only | Slumber REST TUI + notes API + Redis REPL using Aspire 17.0. |
-| [Terminal basics: TypeScript](./samples/terminals/basics-typescript) | TypeScript | TypeScript AppHost | Run only | Slumber REST TUI + notes API + Redis REPL using Aspire 17.0. |
-| [Terminal automation](./samples/terminals/automation-csharp) | C# | C# AppHost | Run only | Automate Slumber CRUD with terminal input, screen assertions, and API verification using Aspire 17.0. |
-| [Custom docked SQL REPL](./samples/terminals/docked-repl-csharp) | C# | C# AppHost | Run only | Custom rqlite resource with an on-demand docked SQL shell using Aspire 17.0. |
+| Sample | Workload languages | AppHost | Deploy | Description | Highlights |
+| --- | --- | --- | --- | --- | --- |
+| [Terminal basics: C#](./samples/terminals/basics-csharp) | C# | C# AppHost | Run only | Slumber REST TUI + notes API + Redis REPL using Aspire 17.0. | Resource terminal, docked REPL, Scalar, dashboard commands |
+| [Terminal basics: TypeScript](./samples/terminals/basics-typescript) | TypeScript | TypeScript AppHost | Run only | Slumber REST TUI + notes API + Redis REPL using Aspire 17.0. | Resource terminal, docked REPL, pino structured logs, Scalar |
+| [Terminal automation](./samples/terminals/automation-csharp) | C# | C# AppHost | Run only | Automate Slumber CRUD with terminal input, screen assertions, and API verification using Aspire 17.0. | Terminal automation, correlated logs and traces |
+| [Custom docked SQL REPL](./samples/terminals/docked-repl-csharp) | C# | C# AppHost | Run only | Custom rqlite resource with an on-demand docked SQL shell using Aspire 17.0. | Docked terminal command |
 
 ### Cloud / AI / event-driven
 
-| Sample | Workload languages | AppHost | Deploy | Description |
-| --- | --- | --- | --- | --- |
-| [Azure Functions](./samples/aspire-with-azure-functions) | C# | C# AppHost | Azure | Integrates Azure Functions, ASP.NET Core, and Blazor with Aspire. |
-| [Image Gallery](./samples/image-gallery) | C#, JavaScript, TypeScript | C# AppHost | Azure | Upload and process images with Azure Blob, Queues, SQL, and Container Apps Jobs. |
-| [Custom Metrics Visualization](./samples/Metrics) | C# | C# AppHost | Run only | Collects and visualizes custom metrics with Prometheus and Grafana. |
-| [Standalone Aspire dashboard](./samples/standalone-dashboard) | C# | C# AppHost | Run only | Runs the Aspire dashboard container against any OpenTelemetry source. |
+| Sample | Workload languages | AppHost | Deploy | Description | Highlights |
+| --- | --- | --- | --- | --- | --- |
+| [Azure Functions](./samples/aspire-with-azure-functions) | C# | C# AppHost | Azure | Insurance claim photo intake: Blazor front end, Blob Storage, and a blob-triggered Azure Function. | One trace per upload, custom metrics, Scalar, dashboard commands |
+| [Image Gallery](./samples/image-gallery) | C#, JavaScript, TypeScript | C# AppHost | Azure | Product-photo pipeline: Blob Storage, SQL, and queue-triggered thumbnails in Container Apps Jobs. | API-to-queue-to-job traces, custom metrics, Scalar |
+| [Custom Metrics Visualization](./samples/Metrics) | C# | C# AppHost | Run only | Checkout service metrics flowing through an OpenTelemetry Collector to Prometheus and Grafana. | Grafana dashboard, exemplars, Scalar, dashboard commands |
+| [Standalone Aspire dashboard](./samples/standalone-dashboard) | C# | C# AppHost | Run only | Runs the Aspire dashboard container against any OpenTelemetry source. | Standalone dashboard |
 
 ### .NET + frontend and platform
 
-| Sample | Workload languages | AppHost | Deploy | Description |
-| --- | --- | --- | --- | --- |
-| [Aspire Shop](./samples/aspire-shop) | C# | C# AppHost | Run only | Distributed e-commerce sample app demonstrating Aspire integration. |
-| [HealthChecksUI](./samples/health-checks-ui) | C# | C# AppHost | Docker Compose | Demonstrates isolated health endpoints with HealthChecksUI. |
-| [Integrating Client Apps](./samples/client-apps-integration) | C# | C# AppHost | Run only | Integrates Windows Forms and WPF apps with Aspire. |
-| [Integrating Orleans](./samples/orleans-voting) | C# | C# AppHost | Run only | Distributed actor model sample built with Orleans. |
-| [Working with Database Containers](./samples/database-containers) | C#, SQL | C# AppHost | Run only | Initializes and uses PostgreSQL, MongoDB, and SQL Server containers. |
-| [Running EF Core Migrations](./samples/database-migrations) | C# | C# AppHost | Run only | Runs Entity Framework Core migrations inside Aspire workflows. |
-| [Persisting Data with Volume Mounts](./samples/volume-mount) | C# | C# AppHost | Run only | Demonstrates data persistence with containers, Azure Storage, and SQL Server. |
-| [Custom Aspire hosting resources](./samples/custom-resources) | C# | C# AppHost | Run only | Demonstrates authoring custom hosting resources with Aspire. |
+| Sample | Workload languages | AppHost | Deploy | Description | Highlights |
+| --- | --- | --- | --- | --- | --- |
+| [Aspire Shop](./samples/aspire-shop) | C# | C# AppHost | Run only | Blazor storefront with a PostgreSQL catalog API and a Redis-backed gRPC basket service. | gRPC traces, custom metrics, Scalar, dashboard commands |
+| [HealthChecksUI](./samples/health-checks-ui) | C# | C# AppHost | Docker Compose | Payments gateway with per-dependency health checks and the HealthChecksUI container. | Degraded health states, Scalar, dashboard commands |
+| [Integrating Client Apps](./samples/client-apps-integration) | C# | C# AppHost | Run only | Integrates Windows Forms and WPF apps with Aspire. | Desktop app telemetry |
+| [Integrating Orleans](./samples/orleans-voting) | C# | C# AppHost | Run only | Event box office: one grain per event serializes seat reservations on a three-silo cluster. | Cross-silo traces, contention metrics, Scalar, dashboard commands |
+| [Working with Database Containers](./samples/database-containers) | C#, SQL | C# AppHost | Run only | PostgreSQL, MySQL, and SQL Server containers seeded from init scripts and used by one orders API. | Init scripts, three-database traces, Scalar, dashboard commands |
+| [Running EF Core Migrations](./samples/database-migrations) | C# | C# AppHost | Run only | A migration worker brings a clinic appointments schema up to date before the API starts. | WaitForCompletion, migration spans, Scalar, dashboard commands |
+| [Persisting Data with Volume Mounts](./samples/volume-mount) | C# | C# AppHost | Run only | Equipment inspections stored in SQL Server and Azure Blob Storage on persistent Docker volumes. | Persistent volumes, Scalar, dashboard commands |
+| [Custom Aspire hosting resources](./samples/custom-resources) | C# | C# AppHost | Run only | Demonstrates authoring custom hosting resources with Aspire. | Custom resource states |
 
 ## eShop
 
