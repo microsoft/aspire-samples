@@ -1,46 +1,71 @@
+/**
+ * OpenTelemetry bootstrap for the task queue API.
+ *
+ * Preload this module before the app (`node --import ./instrumentation.js`; the AppHost sets
+ * NODE_OPTIONS) so the instrumentations can patch http, Express and pino before `index.js`
+ * imports them.
+ *
+ * Aspire injects OTEL_EXPORTER_OTLP_ENDPOINT / _HEADERS / _PROTOCOL and OTEL_SERVICE_NAME.
+ * The AppHost asks for OTLP over HTTP/protobuf: the gRPC exporter (@grpc/grpc-js) ignores
+ * NODE_EXTRA_CA_CERTS, so it can't verify the dashboard's development certificate.
+ *
+ * @see https://opentelemetry.io/docs/languages/js/getting-started/nodejs/
+ */
+import { register } from 'node:module';
 import { env } from 'node:process';
-import { NodeSDK } from '@opentelemetry/sdk-node';
-import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-grpc';
-import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-grpc';
-import { OTLPLogExporter } from '@opentelemetry/exporter-logs-otlp-grpc';
-import { SimpleLogRecordProcessor } from '@opentelemetry/sdk-logs';
-import { PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
+import { OTLPLogExporter } from '@opentelemetry/exporter-logs-otlp-proto';
+import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-proto';
+import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-proto';
+import { ExpressInstrumentation, ExpressLayerType } from '@opentelemetry/instrumentation-express';
 import { HttpInstrumentation } from '@opentelemetry/instrumentation-http';
-import { ExpressInstrumentation } from '@opentelemetry/instrumentation-express';
-import { diag, DiagConsoleLogger, DiagLogLevel } from '@opentelemetry/api';
-import { credentials } from '@grpc/grpc-js';
+import { PinoInstrumentation } from '@opentelemetry/instrumentation-pino';
+import { RuntimeNodeInstrumentation } from '@opentelemetry/instrumentation-runtime-node';
+import { BatchLogRecordProcessor } from '@opentelemetry/sdk-logs';
+import { PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
+import { NodeSDK } from '@opentelemetry/sdk-node';
 
-const environment = process.env.NODE_ENV || 'development';
+// Requests that would flood the trace list: the dashboard's health probe and the task board's
+// long-lived server-sent event stream.
+const UNTRACED_PATHS = ['/health', '/tasks/stream'];
 
-// For troubleshooting, set the log level to DiagLogLevel.DEBUG
-//diag.setLogger(new DiagConsoleLogger(), environment === 'development' ? DiagLogLevel.INFO : DiagLogLevel.WARN);
+if (env.OTEL_EXPORTER_OTLP_ENDPOINT) {
+  // The app imports Express and pino as ES modules, which bypasses require() patching.
+  // The import-in-the-middle loader hook lets the instrumentations patch them.
+  register('@opentelemetry/instrumentation/hook.mjs', import.meta.url);
 
-const otlpServer = env.OTEL_EXPORTER_OTLP_ENDPOINT;
+  const sdk = new NodeSDK({
+    traceExporter: new OTLPTraceExporter(),
+    metricReaders: [
+      new PeriodicExportingMetricReader({
+        exporter: new OTLPMetricExporter(),
+        // Aspire sets a short interval in run mode so charts update quickly.
+        exportIntervalMillis: Number(env.OTEL_METRIC_EXPORT_INTERVAL ?? 60_000),
+      }),
+    ],
+    logRecordProcessors: [new BatchLogRecordProcessor({ exporter: new OTLPLogExporter() })],
+    instrumentations: [
+      // Server spans for incoming requests, joined to the caller's W3C `traceparent` (the browser,
+      // through the Vite dev server proxy, or the dashboard's command button).
+      new HttpInstrumentation({
+        ignoreIncomingRequestHook: (req) => UNTRACED_PATHS.some((path) => req.url?.split('?')[0] === path),
+      }),
+      // Names server spans after the matched route ("POST /tasks"). Middleware and handler layer
+      // spans are skipped so each task's trace stays focused on the messaging hops.
+      new ExpressInstrumentation({
+        ignoreLayersType: [ExpressLayerType.MIDDLEWARE, ExpressLayerType.REQUEST_HANDLER, ExpressLayerType.ROUTER],
+      }),
+      // Bridges pino records to OTLP logs and stamps them with trace_id/span_id.
+      new PinoInstrumentation(),
+      // Event loop, GC and heap metrics.
+      new RuntimeNodeInstrumentation(),
+    ],
+  });
 
-if (otlpServer) {
-    console.log(`OTLP endpoint: ${otlpServer}`);
+  sdk.start();
 
-    const isHttps = otlpServer.startsWith('https://');
-    const collectorOptions = {
-        credentials: !isHttps
-            ? credentials.createInsecure()
-            : credentials.createSsl()
-    };
-
-    const sdk = new NodeSDK({
-        traceExporter: new OTLPTraceExporter(collectorOptions),
-        metricReader: new PeriodicExportingMetricReader({
-            exportIntervalMillis: environment === 'development' ? 5000 : 10000,
-            exporter: new OTLPMetricExporter(collectorOptions),
-        }),
-        logRecordProcessor: new SimpleLogRecordProcessor({
-            exporter: new OTLPLogExporter(collectorOptions)
-        }),
-        instrumentations: [
-            new HttpInstrumentation(),
-            new ExpressInstrumentation()
-        ],
-    });
-
-    sdk.start();
+  const shutdown = () => {
+    sdk.shutdown().finally(() => process.exit(0));
+  };
+  process.on('SIGTERM', shutdown);
+  process.on('SIGINT', shutdown);
 }

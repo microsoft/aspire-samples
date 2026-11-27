@@ -1,330 +1,466 @@
-import { useState, useEffect, useRef } from 'react';
-import type { ComponentType } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import {
-  Send,
-  Trash2,
-  Cpu,
-  BarChart3,
-  FileText,
-  Activity,
+  CircleCheck,
+  CircleX,
   Clock,
-  CheckCircle2,
-  SkipForward,
-  AlertTriangle,
-  Terminal,
+  FileSpreadsheet,
+  FileText,
+  LoaderCircle,
+  Receipt,
+  Send,
+  Sparkles,
+  Trash2,
+  type LucideIcon,
 } from 'lucide-react';
-import './style.css';
+import { traced } from './lib/tracing';
+
+type TaskType = 'analyze' | 'report' | 'extract';
+type TaskStatus = 'queued' | 'processing' | 'completed' | 'failed';
+
+interface Fact {
+  label: string;
+  value: string;
+}
 
 interface Task {
   id: string;
-  type: string;
+  type: TaskType;
+  name: string;
   data: string;
-  status: string;
+  status: TaskStatus;
+  worker: string;
   createdAt: string;
+  startedAt?: string;
   completedAt?: string;
-  result?: any;
-  worker?: string;
-  error?: string;
+  durationMs?: number;
+  traceId?: string;
+  result?: { headline: string; facts: Fact[]; details: Record<string, unknown> } | null;
+  error?: { type: string; message: string } | null;
 }
 
-type IconType = ComponentType<{ size?: number; strokeWidth?: number; 'aria-hidden'?: boolean | 'true' | 'false' }>;
+interface WorkerStats extends Record<TaskStatus, number> {
+  averageDurationMs: number | null;
+}
 
-const statusDisplayOrder = ['queued', 'processing', 'completed', 'skipped', 'error'] as const;
+interface Snapshot {
+  tasks: Task[];
+  totals: Record<TaskStatus | 'all', number>;
+  workers: Partial<Record<TaskType, WorkerStats>>;
+}
 
-const statusMeta: Record<string, { label: string; chip: string; Icon: IconType }> = {
-  queued: { label: 'Queued', chip: 'chip chip-queued', Icon: Clock },
-  processing: { label: 'Processing', chip: 'chip chip-processing', Icon: Activity },
-  completed: { label: 'Completed', chip: 'chip chip-completed', Icon: CheckCircle2 },
-  skipped: { label: 'Skipped', chip: 'chip chip-skipped', Icon: SkipForward },
-  error: { label: 'Error', chip: 'chip chip-error', Icon: AlertTriangle },
-  failed: { label: 'Failed', chip: 'chip chip-error', Icon: AlertTriangle },
+interface Sample {
+  type: TaskType;
+  name: string;
+  data: string;
+}
+
+interface Problem {
+  title?: string;
+  detail?: string;
+  errors?: Record<string, string[]>;
+}
+
+const TASK_TYPES: Record<TaskType, { label: string; language: string; worker: string; queue: string; does: string; input: string; Icon: LucideIcon }> = {
+  analyze: {
+    label: 'Dataset analysis',
+    language: 'Python',
+    worker: 'worker-python',
+    queue: 'tasks.analyze',
+    does: 'pandas totals, leaders and trends',
+    input: 'CSV with a header row',
+    Icon: FileSpreadsheet,
+  },
+  report: {
+    label: 'Report generation',
+    language: 'C#',
+    worker: 'worker-csharp',
+    queue: 'tasks.report',
+    does: 'sections, highlights and action items',
+    input: 'Markdown meeting notes',
+    Icon: FileText,
+  },
+  extract: {
+    label: 'Invoice extraction',
+    language: 'Node.js',
+    worker: 'worker-node',
+    queue: 'tasks.extract',
+    does: 'invoice number, PO, total and due date',
+    input: 'Emailed invoice text',
+    Icon: Receipt,
+  },
+};
+const TYPE_ORDER: TaskType[] = ['analyze', 'report', 'extract'];
+
+const STATUS: Record<TaskStatus, { label: string; Icon: LucideIcon }> = {
+  queued: { label: 'Queued', Icon: Clock },
+  processing: { label: 'Processing', Icon: LoaderCircle },
+  completed: { label: 'Completed', Icon: CircleCheck },
+  failed: { label: 'Failed', Icon: CircleX },
+};
+const STATUS_ORDER: TaskStatus[] = ['queued', 'processing', 'completed', 'failed'];
+
+const EMPTY_SNAPSHOT: Snapshot = {
+  tasks: [],
+  totals: { queued: 0, processing: 0, completed: 0, failed: 0, all: 0 },
+  workers: {},
 };
 
-const typeMeta: Record<string, { label: string; worker: string; Icon: IconType }> = {
-  analyze: { label: 'Data analysis', worker: 'Python', Icon: BarChart3 },
-  report: { label: 'Report generation', worker: 'C#', Icon: FileText },
-};
+const seconds = (ms: number) => `${(ms / 1000).toFixed(ms < 10_000 ? 2 : 1)} s`;
+const clock = (iso: string) => new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
-// Keep task cards compact: show the first few lines of the submitted payload
-// and summarise the rest rather than printing every row.
-function truncateData(data: string, maxLines = 6): string {
-  const lines = data.split(/\r?\n/);
-  if (lines.length <= maxLines) return data;
-  const remaining = lines.length - maxLines;
-  return `${lines.slice(0, maxLines).join('\n')}\n… ${remaining} more line${remaining === 1 ? '' : 's'}`;
+/** Follows the API's task board over server-sent events. EventSource reconnects on its own. */
+function useTaskStream() {
+  const [snapshot, setSnapshot] = useState<Snapshot>(EMPTY_SNAPSHOT);
+  const [connected, setConnected] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    const source = new EventSource('/tasks/stream');
+    source.onopen = () => setConnected(true);
+    source.onmessage = (event) => {
+      setSnapshot(JSON.parse(event.data) as Snapshot);
+      setConnected(true);
+    };
+    source.onerror = () => setConnected(false);
+    return () => source.close();
+  }, []);
+
+  return { ...snapshot, connected };
+}
+
+async function problemMessage(response: Response) {
+  const problem = (await response.json().catch(() => ({}))) as Problem;
+  const fieldErrors = Object.values(problem.errors ?? {}).flat();
+  return fieldErrors.length ? fieldErrors.join(' ') : (problem.detail ?? `The API answered ${response.status}.`);
 }
 
 function App() {
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [taskType, setTaskType] = useState<string>('analyze');
-  const [taskData, setTaskData] = useState<string>('');
-  const [loading, setLoading] = useState(false);
-  const [online, setOnline] = useState<boolean | null>(null);
-  const [message, setMessage] = useState('');
-  const submittingRef = useRef(false);
-
-  const fetchTasks = async () => {
-    try {
-      const response = await fetch('/tasks');
-      const data = await response.json();
-      setTasks(data);
-    } catch (error) {
-      console.error('Failed to fetch tasks:', error);
-    }
-  };
-
-  const fetchHealth = async () => {
-    try {
-      const response = await fetch('/health');
-      setOnline(response.ok);
-    } catch {
-      setOnline(false);
-    }
-  };
+  const { tasks, totals, workers, connected } = useTaskStream();
+  const [samples, setSamples] = useState<Partial<Record<TaskType, Sample>>>({});
+  const [type, setType] = useState<TaskType>('extract');
+  const [name, setName] = useState('');
+  const [data, setData] = useState('');
+  const [busy, setBusy] = useState<'submit' | 'samples' | 'clear' | null>(null);
+  const [notice, setNotice] = useState<{ tone: 'ok' | 'error'; text: string } | null>(null);
 
   useEffect(() => {
-    fetchTasks();
-    fetchHealth();
-    const interval = setInterval(() => {
-      fetchTasks();
-      fetchHealth();
-    }, 2000);
-    return () => clearInterval(interval);
+    fetch('/tasks/samples')
+      .then((response) => (response.ok ? (response.json() as Promise<Sample[]>) : []))
+      .then((list) => setSamples(Object.fromEntries(list.map((sample) => [sample.type, sample]))))
+      .catch(() => setSamples({}));
   }, []);
 
-  const submitTask = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (submittingRef.current || !taskData.trim()) return;
+  const meta = TASK_TYPES[type];
 
-    submittingRef.current = true;
-    setLoading(true);
-    const typeLabel = typeMeta[taskType]?.label ?? taskType;
+  const loadSample = () => {
+    const sample = samples[type];
+    if (!sample) return;
+    setName(sample.name);
+    setData(sample.data);
+  };
+
+  const submitTask = async (event: FormEvent) => {
+    event.preventDefault();
+    if (busy || !data.trim()) return;
+    setBusy('submit');
+    setNotice(null);
     try {
-      const response = await fetch('/tasks', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type: taskType, data: taskData }),
+      await traced('submit task', { 'taskqueue.task.type': type }, async () => {
+        const response = await fetch('/tasks', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type, data, ...(name.trim() && { name: name.trim() }) }),
+        });
+        if (!response.ok) throw new Error(await problemMessage(response));
+        const task = (await response.json()) as Task;
+        setNotice({ tone: 'ok', text: `Queued ${task.id} on ${meta.queue} for the ${meta.language} worker.` });
+        setName('');
+        setData('');
       });
-      if (!response.ok) throw new Error(`Request failed: ${response.status}`);
-      setTaskData('');
-      await fetchTasks();
-      setMessage(`Task submitted: ${typeLabel}. Queued for processing.`);
-    } catch (error) {
-      console.error('Failed to submit task:', error);
-      setMessage('Could not submit the task. Please try again.');
+    } catch (err) {
+      setNotice({ tone: 'error', text: (err as Error).message });
     } finally {
-      submittingRef.current = false;
-      setLoading(false);
+      setBusy(null);
     }
   };
 
-  const clearTasks = async () => {
-    if (loading) return;
-    if (!confirm('Clear all tasks?')) return;
-
-    setLoading(true);
+  const submitSamples = async () => {
+    setBusy('samples');
+    setNotice(null);
     try {
-      await fetch('/tasks', { method: 'DELETE' });
-      await fetchTasks();
-      setMessage('Cleared all tasks from the board.');
-    } catch (error) {
-      console.error('Failed to clear tasks:', error);
-      setMessage('Could not clear the tasks. Please try again.');
+      await traced('submit sample tasks', {}, async () => {
+        const response = await fetch('/tasks/samples', { method: 'POST' });
+        if (!response.ok) throw new Error(await problemMessage(response));
+        setNotice({ tone: 'ok', text: 'Queued one sample document for each worker: Python, C# and Node.js.' });
+      });
+    } catch (err) {
+      setNotice({ tone: 'error', text: (err as Error).message });
     } finally {
-      setLoading(false);
+      setBusy(null);
     }
   };
 
-  const statusCounts = statusDisplayOrder.map((status) => ({
-    status,
-    label: statusMeta[status].label,
-    Icon: statusMeta[status].Icon,
-    count: tasks.filter((task) =>
-      status === 'error' ? task.status === 'error' || task.status === 'failed' : task.status === status
-    ).length,
-  }));
+  const clearBoard = async () => {
+    setBusy('clear');
+    setNotice(null);
+    try {
+      await traced('clear board', {}, async () => {
+        const response = await fetch('/tasks', { method: 'DELETE' });
+        if (!response.ok) throw new Error(await problemMessage(response));
+        const { cleared } = (await response.json()) as { cleared: number };
+        setNotice({ tone: 'ok', text: `Cleared ${cleared} ${cleared === 1 ? 'task' : 'tasks'} from the board.` });
+      });
+    } catch (err) {
+      setNotice({ tone: 'error', text: (err as Error).message });
+    } finally {
+      setBusy(null);
+    }
+  };
 
   return (
     <>
-      <a className="skip-link" href="#main">
-        Skip to task board
+      <a className="skip-link" href="#stream">
+        Skip to the task stream
       </a>
 
       <div className="shell">
-        <header className="flex flex-col gap-3">
-          <p className="text-accent inline-flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-[0.22em]">
-            <Terminal size={15} aria-hidden="true" />
-            Aspire · Polyglot task queue
-          </p>
-          <h1 className="font-mono text-4xl font-extrabold tracking-tight sm:text-5xl">Task Queue</h1>
-          <p className="text-muted max-w-2xl text-base">
-            Submit a job and an Aspire-orchestrated worker picks it up from a RabbitMQ queue, runs it
-            in the background, and streams the result back here — data analysis in Python, report
-            generation in C#.
-          </p>
-
-          <div className="hud-panel mt-1 flex flex-wrap items-center gap-x-5 gap-y-3 px-4 py-3">
-            <span className="inline-flex items-center gap-2 font-mono text-sm font-semibold">
-              <span
-                className="live-dot"
-                style={online === false ? { background: '#fb7185', boxShadow: '0 0 10px 1px rgba(251,113,133,0.8)' } : undefined}
-                aria-hidden="true"
-              />
-              {online === false ? 'System offline' : 'System online'}
+        <header className="masthead">
+          <div className="masthead-copy">
+            <h1>Polyglot Task Queue</h1>
+            <p className="lede">
+              Back-office documents go onto RabbitMQ and the worker written in the best language for the job picks them
+              up: Python analyzes datasets, C# writes reports, Node.js extracts invoices. Results stream back here.
+            </p>
+          </div>
+          <div className="status-bar">
+            <span className={`connection ${connected === false ? 'is-offline' : ''}`}>
+              <span className="connection-dot" aria-hidden="true" />
+              {connected === false ? 'Reconnecting to the task stream…' : 'Live task stream'}
             </span>
-            <span className="hud-divider hidden h-5 border-l sm:block" aria-hidden="true" />
-            <ul className="flex flex-wrap items-center gap-x-5 gap-y-1" aria-label="Task status totals">
-              {statusCounts.map(({ status, label, Icon, count }) => (
-                <li key={status} className="inline-flex items-center gap-1.5 font-mono text-sm">
-                  <Icon size={15} aria-hidden="true" />
-                  <span className="font-bold tabular-nums">{count}</span>
-                  <span className="text-muted">{label.toLowerCase()}</span>
+            <ul className="totals" aria-label="Tasks on the board by status">
+              {STATUS_ORDER.map((status) => (
+                <li key={status} className={`total total-${status}`}>
+                  <span className="total-count">{totals[status]}</span> {STATUS[status].label.toLowerCase()}
                 </li>
               ))}
             </ul>
           </div>
         </header>
 
-        <div className="board">
-        <section className="dispatch hud-panel flex flex-col gap-4 p-5 sm:p-6" aria-labelledby="submit-heading">
-          <h2 id="submit-heading" className="font-mono text-lg font-bold">
-            Dispatch task
+        <section className="panel lanes" aria-labelledby="lanes-heading">
+          <h2 id="lanes-heading" className="visually-hidden">
+            Workers
           </h2>
-          <form onSubmit={submitTask} className="flex flex-col gap-4">
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="task-type" className="font-mono text-sm font-semibold">
-                Task type
-              </label>
-              <select
-                id="task-type"
-                className="hud-field"
-                value={taskType}
-                onChange={(e) => setTaskType(e.target.value)}
-                disabled={loading}
-              >
-                <option value="analyze">Data analysis · Python</option>
-                <option value="report">Report generation · C#</option>
-              </select>
-            </div>
-
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="task-data" className="font-mono text-sm font-semibold">
-                Task data <span className="text-muted font-normal">(CSV or JSON)</span>
-              </label>
-              <textarea
-                id="task-data"
-                className="hud-field resize-y"
-                value={taskData}
-                onChange={(e) => setTaskData(e.target.value)}
-                placeholder="Enter data to process…"
-                rows={4}
-                aria-describedby="task-data-help"
-                disabled={loading}
-              />
-              <p id="task-data-help" className="text-muted text-xs">
-                The payload is sent to a worker over RabbitMQ and processed off the request thread.
-              </p>
-            </div>
-
-            <div className="flex flex-wrap gap-3">
-              <button type="submit" className="btn btn-primary" disabled={loading || !taskData.trim()}>
-                <Send size={17} aria-hidden="true" />
-                Submit task
-              </button>
-              <button
-                type="button"
-                className="btn btn-ghost"
-                onClick={clearTasks}
-                disabled={loading || tasks.length === 0}
-              >
-                <Trash2 size={17} aria-hidden="true" />
-                Clear all
-              </button>
-            </div>
-          </form>
+          {TYPE_ORDER.map((taskType) => {
+            const lane = TASK_TYPES[taskType];
+            const stats = workers[taskType];
+            const active = (stats?.queued ?? 0) + (stats?.processing ?? 0);
+            return (
+              <article key={taskType} className={`lane lang-${taskType}`}>
+                <div className="lane-head">
+                  <span className="lang-badge">{lane.language}</span>
+                  <h3>{lane.label}</h3>
+                </div>
+                <p className="lane-route">
+                  <code>{lane.queue}</code> → <code>{lane.worker}</code>
+                </p>
+                <p className="lane-does">{lane.does}</p>
+                <dl className="lane-stats">
+                  <div>
+                    <dt>Done</dt>
+                    <dd>{stats?.completed ?? 0}</dd>
+                  </div>
+                  <div>
+                    <dt>Failed</dt>
+                    <dd className={stats?.failed ? 'has-failures' : undefined}>{stats?.failed ?? 0}</dd>
+                  </div>
+                  <div>
+                    <dt>In flight</dt>
+                    <dd>{active}</dd>
+                  </div>
+                  <div>
+                    <dt>Avg time</dt>
+                    <dd>{stats?.averageDurationMs != null ? seconds(stats.averageDurationMs) : '–'}</dd>
+                  </div>
+                </dl>
+              </article>
+            );
+          })}
         </section>
 
-        <main id="main" className="hud-panel flex flex-col gap-4 p-5 sm:p-6">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <h2 className="font-mono text-lg font-bold">Task stream</h2>
-            <span className="text-muted font-mono text-sm tabular-nums">
-              {tasks.length} {tasks.length === 1 ? 'task' : 'tasks'} on the board
-            </span>
-          </div>
+        <div className="board">
+          <section className="panel dispatch" aria-labelledby="dispatch-heading">
+            <h2 id="dispatch-heading">New task</h2>
+            <form onSubmit={submitTask} className="dispatch-form">
+              <fieldset className="type-picker">
+                <legend>Task type</legend>
+                {TYPE_ORDER.map((taskType) => {
+                  const option = TASK_TYPES[taskType];
+                  return (
+                    <label key={taskType} className={`type-option lang-${taskType}`}>
+                      <input
+                        type="radio"
+                        name="task-type"
+                        value={taskType}
+                        checked={type === taskType}
+                        onChange={() => setType(taskType)}
+                      />
+                      <option.Icon size={18} aria-hidden="true" />
+                      <span className="type-option-label">{option.label}</span>
+                      <span className="lang-badge">{option.language}</span>
+                    </label>
+                  );
+                })}
+              </fieldset>
 
-          {tasks.length === 0 ? (
-            <p className="text-muted border-border rounded-xl border border-dashed px-4 py-12 text-center font-mono">
-              No tasks yet. Submit a job above to see it move through the queue.
-            </p>
-          ) : (
-            <ul className="flex flex-col gap-4">
-              {tasks.map((task) => {
-                const meta = statusMeta[task.status] ?? {
-                  label: task.status,
-                  chip: 'chip chip-skipped',
-                  Icon: Clock,
-                };
-                const tmeta = typeMeta[task.type];
-                const TypeIcon = tmeta?.Icon ?? FileText;
-                const StatusIcon = meta.Icon;
-                return (
-                  <li key={task.id} className="border-border rounded-xl border bg-[var(--panel-2)] p-4">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="text-id font-mono text-sm font-semibold break-all">{task.id}</span>
-                      <span className={meta.chip}>
-                        <StatusIcon size={13} aria-hidden="true" />
-                        {meta.label}
-                      </span>
-                      {task.worker && (
-                        <span className="worker-chip">
-                          <Cpu size={13} aria-hidden="true" />
-                          {task.worker}
-                        </span>
-                      )}
-                      <span className="text-accent ml-auto inline-flex items-center gap-1.5 font-mono text-sm font-semibold">
-                        <TypeIcon size={15} aria-hidden="true" />
-                        {tmeta?.label ?? task.type}
-                      </span>
-                    </div>
+              <div className="field">
+                <label htmlFor="task-name">Document name</label>
+                <input
+                  id="task-name"
+                  className="input"
+                  value={name}
+                  maxLength={120}
+                  placeholder={samples[type]?.name ?? 'document.txt'}
+                  onChange={(event) => setName(event.target.value)}
+                />
+              </div>
 
-                    <div className="mt-3 flex flex-col gap-3">
-                      <div>
-                        <p className="text-muted mb-1 font-mono text-xs font-bold uppercase tracking-wider">Data</p>
-                        <pre className="code-block">{truncateData(task.data)}</pre>
-                      </div>
+              <div className="field">
+                <div className="field-label-row">
+                  <label htmlFor="task-data">Document</label>
+                  <button type="button" className="link-button" onClick={loadSample} disabled={!samples[type]}>
+                    Use sample
+                  </button>
+                </div>
+                <textarea
+                  id="task-data"
+                  className="input input-code"
+                  value={data}
+                  rows={7}
+                  maxLength={10_000}
+                  placeholder={`${meta.input}…`}
+                  aria-describedby="task-data-help"
+                  onChange={(event) => setData(event.target.value)}
+                />
+                <p id="task-data-help" className="hint">
+                  {meta.input}. Published to <code>{meta.queue}</code> for <code>{meta.worker}</code>.
+                </p>
+              </div>
 
-                      {task.result && (
-                        <div>
-                          <p className="text-muted mb-1 font-mono text-xs font-bold uppercase tracking-wider">Result</p>
-                          <pre className="code-block code-scroll">{JSON.stringify(task.result, null, 2)}</pre>
-                        </div>
-                      )}
+              <button type="submit" className="button button-primary" disabled={busy !== null || !data.trim()}>
+                <Send size={16} aria-hidden="true" />
+                {busy === 'submit' ? 'Queuing…' : 'Submit task'}
+              </button>
+            </form>
 
-                      {task.error && (
-                        <div>
-                          <p className="text-muted mb-1 font-mono text-xs font-bold uppercase tracking-wider">Error</p>
-                          <pre className="code-block">{task.error}</pre>
-                        </div>
-                      )}
-                    </div>
+            <div className="dispatch-extras">
+              <button type="button" className="button button-secondary" onClick={submitSamples} disabled={busy !== null}>
+                <Sparkles size={16} aria-hidden="true" />
+                {busy === 'samples' ? 'Queuing…' : 'Submit sample tasks'}
+              </button>
+              <p className="hint">One sample document per worker, in a single trace across all three languages.</p>
+              <button
+                type="button"
+                className="button button-quiet"
+                onClick={clearBoard}
+                disabled={busy !== null || totals.all === 0}
+              >
+                <Trash2 size={16} aria-hidden="true" />
+                Clear board
+              </button>
+            </div>
 
-                    <div className="text-muted hud-divider mt-3 flex flex-wrap justify-between gap-2 border-t pt-3 font-mono text-xs">
-                      <span>Created {new Date(task.createdAt).toLocaleString()}</span>
-                      {task.completedAt && <span>Completed {new Date(task.completedAt).toLocaleString()}</span>}
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </main>
+            {notice && (
+              <p className={`notice notice-${notice.tone}`} role={notice.tone === 'error' ? 'alert' : 'status'}>
+                {notice.text}
+              </p>
+            )}
+          </section>
+
+          <main id="stream" className="panel stream" aria-labelledby="stream-heading">
+            <div className="stream-head">
+              <h2 id="stream-heading">Task stream</h2>
+              <span className="stream-count">
+                {totals.all > tasks.length ? `Latest ${tasks.length} of ${totals.all}` : `${totals.all} ${totals.all === 1 ? 'task' : 'tasks'}`}
+              </span>
+            </div>
+
+            {tasks.length === 0 ? (
+              <div className="empty">
+                <p className="empty-title">No tasks on the board yet</p>
+                <p>Submit a document, or queue the samples to watch all three workers pick up a task.</p>
+              </div>
+            ) : (
+              <ol className="task-list">
+                {tasks.map((task) => (
+                  <TaskCard key={task.id} task={task} />
+                ))}
+              </ol>
+            )}
+          </main>
         </div>
       </div>
-
-      <p role="status" aria-live="polite" className="visually-hidden">
-        {message}
-      </p>
     </>
+  );
+}
+
+function TaskCard({ task }: { task: Task }) {
+  const meta = TASK_TYPES[task.type];
+  const status = STATUS[task.status] ?? STATUS.queued;
+  const pending = task.status === 'queued' || task.status === 'processing';
+
+  return (
+    <li className={`task task-${task.status}`}>
+      <div className="task-head">
+        <span className={`chip chip-${task.status}`}>
+          <status.Icon size={13} aria-hidden="true" className={task.status === 'processing' ? 'spin' : undefined} />
+          {status.label}
+        </span>
+        <span className="task-name">{task.name}</span>
+        <span className={`lang-badge lang-${task.type}`}>{meta?.language ?? task.worker}</span>
+      </div>
+
+      <p className={`task-headline ${task.error ? 'is-error' : ''}`}>
+        {task.result?.headline ??
+          (task.error
+            ? `${task.error.type}: ${task.error.message}`
+            : task.status === 'processing'
+              ? `${task.worker} is working on it…`
+              : `Waiting in ${meta?.queue ?? 'the queue'}…`)}
+      </p>
+
+      {task.result?.facts?.length ? (
+        <dl className="facts">
+          {task.result.facts.map((fact) => (
+            <div key={fact.label} className="fact">
+              <dt>{fact.label}</dt>
+              <dd>{fact.value}</dd>
+            </div>
+          ))}
+        </dl>
+      ) : null}
+
+      <div className="task-meta">
+        <span className="mono">{task.id}</span>
+        {task.traceId && (
+          <span className="mono" title={`Trace ${task.traceId}: search for it in the Aspire dashboard`}>
+            trace {task.traceId.slice(0, 8)}
+          </span>
+        )}
+        <span>{meta?.label ?? task.type}</span>
+        <span>queued {clock(task.createdAt)}</span>
+        {!pending && task.durationMs != null && (
+          <span>
+            {seconds(task.durationMs)} in {task.worker}
+          </span>
+        )}
+      </div>
+
+      <details className="task-details">
+        <summary>Document{task.result ? ' and result' : ''}</summary>
+        <pre className="code-block">{task.data}</pre>
+        {task.result && <pre className="code-block">{JSON.stringify(task.result.details, null, 2)}</pre>}
+      </details>
+    </li>
   );
 }
 

@@ -1,476 +1,174 @@
-// Initialize OpenTelemetry instrumentation first
-import './instrumentation.js';
-
+/**
+ * Polyglot task queue API: routes back-office documents to Python, C# and Node.js workers over
+ * RabbitMQ and keeps a live task board.
+ *
+ * instrumentation.js is preloaded through NODE_OPTIONS (see apphost.mts). In run mode the Vite dev
+ * server proxies `/tasks` and `/health` here; in publish mode this app also serves the built UI.
+ */
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { apiReference } from '@scalar/express-api-reference';
 import express from 'express';
-import amqp from 'amqplib';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
-import { trace, SpanStatusCode, propagation, context } from '@opentelemetry/api';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-// Get tracer from the global tracer provider
-const tracer = trace.getTracer('api-service');
+import * as board from './board.js';
+import { logger } from './logger.js';
+import { connect, consume, isConnected, RESULTS_QUEUE, STATUS_QUEUE } from './messaging.js';
+import { buildOpenApiDocument } from './openapi.js';
+import { ProblemError, validationProblem, writeProblem } from './problems.js';
+import { SAMPLE_DOCUMENTS, simulateBurst, submitSamples } from './samples.js';
+import { onResult, onStatus, parseSubmission, submitTask, TASK_QUEUES } from './tasks.js';
 
 const app = express();
-const port = process.env.PORT || 3000;
-const JSON_BODY_LIMIT = '64kb';
-const MAX_TASK_DATA_LENGTH = 10_000;
-const DEFAULT_TASK_LIST_LIMIT = 100;
-const MAX_TASK_LIST_LIMIT = 500;
-const SUPPORTED_TASK_TYPES = new Set(['analyze', 'report']);
+const port = Number(process.env.PORT ?? 3000);
+const simulationEnabled = process.env.ENABLE_BURST_SIMULATION === 'true';
+const openApiDocument = buildOpenApiDocument({ simulation: simulationEnabled });
 
-app.use(express.json({ limit: JSON_BODY_LIMIT }));
-app.use((error, req, res, next) => {
-    if (error.type === 'entity.too.large') {
-        return res.status(413).json({ error: `Request body must be ${JSON_BODY_LIMIT} or smaller` });
-    }
+app.disable('x-powered-by');
+app.use(express.json({ limit: '64kb' }));
+// Publish mode: the frontend's build output is copied into ./public (see apphost.mts).
+app.use(express.static(join(dirname(fileURLToPath(import.meta.url)), 'public')));
 
-    if (error.type === 'entity.parse.failed') {
-        return res.status(400).json({ error: 'Request body must be valid JSON' });
-    }
-
-    return next(error);
-});
-app.use(express.static(join(__dirname, 'public')));
-
-function validateTaskRequest(body) {
-    if (!body || typeof body !== 'object' || Array.isArray(body)) {
-        return 'Request body must be a JSON object';
-    }
-
-    const { type, data } = body;
-
-    if (typeof type !== 'string' || type.trim().length === 0) {
-        return 'type is required';
-    }
-
-    if (!SUPPORTED_TASK_TYPES.has(type)) {
-        return `type must be one of: ${Array.from(SUPPORTED_TASK_TYPES).join(', ')}`;
-    }
-
-    if (typeof data !== 'string' || data.length === 0) {
-        return 'data is required';
-    }
-
-    if (data.length > MAX_TASK_DATA_LENGTH) {
-        return `data must be ${MAX_TASK_DATA_LENGTH} characters or fewer`;
-    }
-
-    return null;
+/**
+ * Parses an optional whole number within bounds.
+ * @param {unknown} value
+ * @param {{ name: string, min: number, max: number, fallback: number }} options
+ */
+function wholeNumber(value, { name, min, max, fallback }) {
+  if (value === undefined) return fallback;
+  const number = typeof value === 'string' && /^\d+$/.test(value) ? Number(value) : NaN;
+  if (!Number.isInteger(number) || number < min || number > max) {
+    throw validationProblem({ [name]: [`${name} must be a whole number from ${min} to ${max}.`] });
+  }
+  return number;
 }
 
-function parseTaskListLimit(value) {
-    if (value === undefined) {
-        return { limit: DEFAULT_TASK_LIST_LIMIT };
-    }
+/**
+ * Wraps a handler so expected problems (4xx) are written right away. They don't reach Express's
+ * error handling, so the server span isn't marked as failed for a client error.
+ * @param {(req: import('express').Request, res: import('express').Response) => Promise<void> | void} handler
+ * @returns {import('express').RequestHandler}
+ */
+const route = (handler) => async (req, res, next) => {
+  try {
+    await handler(req, res);
+  } catch (err) {
+    if (err instanceof ProblemError && err.status < 500) writeProblem(req, res, err);
+    else next(err);
+  }
+};
 
-    const rawLimit = Array.isArray(value) ? value[0] : value;
-    if (typeof rawLimit !== 'string' || !/^\d+$/.test(rawLimit)) {
-        return { error: `limit must be a positive integer up to ${MAX_TASK_LIST_LIMIT}` };
-    }
-
-    const parsedLimit = Number.parseInt(rawLimit, 10);
-    if (parsedLimit < 1) {
-        return { error: `limit must be a positive integer up to ${MAX_TASK_LIST_LIMIT}` };
-    }
-
-    return { limit: Math.min(parsedLimit, MAX_TASK_LIST_LIMIT) };
-}
-
-// ============================================================================
-// STATE MANAGEMENT
-// ============================================================================
-// RabbitMQ is the source of truth. The Map is an in-memory read cache.
-// Background consumers continuously update the Map from RabbitMQ messages.
-// HTTP requests ONLY read from the Map - they NEVER query RabbitMQ directly.
-// ============================================================================
-const tasks = new Map();
-
-// RabbitMQ connections
-let consumerChannel = null;  // Background consumers reading from queues
-let publisherChannel = null; // Publishing messages (from HTTP requests)
-const rabbitmqUrl = process.env.MESSAGING_URI;
-const TASKS_QUEUE = 'tasks';
-const RESULTS_QUEUE = 'results';
-const TASK_STATUS_QUEUE = 'task_status';
-
-// ============================================================================
-// RABBITMQ CONNECTION & BACKGROUND MESSAGE CONSUMERS
-// ============================================================================
-// These consumers run continuously in the background, updating the tasks Map
-// as messages arrive. HTTP endpoints never touch RabbitMQ - they only read
-// from the Map that these background consumers keep up to date.
-// ============================================================================
-
-async function connectRabbitMQ() {
-    try {
-        console.log('🔌 Connecting to RabbitMQ...');
-        const connection = await amqp.connect(rabbitmqUrl);
-
-        // Create two channels for different purposes
-        consumerChannel = await connection.createChannel();  // For background consumption
-        publisherChannel = await connection.createChannel(); // For publishing from HTTP handlers
-
-        // Declare queues on both channels
-        await consumerChannel.assertQueue(TASKS_QUEUE, { durable: true });
-        await consumerChannel.assertQueue(RESULTS_QUEUE, { durable: true });
-        await consumerChannel.assertQueue(TASK_STATUS_QUEUE, { durable: true });
-
-        await publisherChannel.assertQueue(TASKS_QUEUE, { durable: true });
-        await publisherChannel.assertQueue(RESULTS_QUEUE, { durable: true });
-        await publisherChannel.assertQueue(TASK_STATUS_QUEUE, { durable: true });
-
-        console.log('✓ Connected to RabbitMQ (consumer + publisher channels)');
-
-        // Start background consumers - these run continuously
-        console.log('🔄 Starting background message consumers...');
-        await startBackgroundConsumers();
-        console.log('✓ Background consumers running');
-
-        await restoreTaskState();
-    } catch (error) {
-        console.error('✗ RabbitMQ connection error:', error);
-        // Retry connection after 5 seconds
-        setTimeout(connectRabbitMQ, 5000);
-    }
-}
-
-async function startBackgroundConsumers() {
-    // These consumers run continuously in the background
-    // They update the tasks Map as messages arrive from RabbitMQ
-    await consumeTaskStatus();
-    await consumeResults();
-}
-
-async function publishTaskStatus(taskId, status, additionalData = {}) {
-    if (!publisherChannel) return;
-
-    const statusMessage = {
-        taskId,
-        status,
-        timestamp: new Date().toISOString(),
-        ...additionalData
-    };
-
-    return tracer.startActiveSpan(`rabbitmq.publish task_status`, (span) => {
-        try {
-            span.setAttribute('messaging.system', 'rabbitmq');
-            span.setAttribute('messaging.destination', TASK_STATUS_QUEUE);
-            span.setAttribute('messaging.operation', 'publish');
-            span.setAttribute('task.id', taskId);
-            span.setAttribute('task.status', status);
-
-            // Inject trace context into message headers
-            const headers = {};
-            propagation.inject(context.active(), headers);
-
-            publisherChannel.sendToQueue(
-                TASK_STATUS_QUEUE,
-                Buffer.from(JSON.stringify(statusMessage)),
-                {
-                    persistent: true,
-                    headers
-                }
-            );
-
-            console.log(`📊 Published status update for task ${taskId}: ${status}`);
-            span.setStatus({ code: SpanStatusCode.OK });
-        } catch (error) {
-            console.error(`Error publishing status for task ${taskId}:`, error);
-            span.recordException(error);
-            span.setStatus({ code: SpanStatusCode.ERROR, message: error.message });
-        } finally {
-            span.end();
-        }
-    });
-}
-
-async function consumeTaskStatus() {
-    console.log('📥 Background consumer: Listening for task status updates...');
-
-    await consumerChannel.consume(TASK_STATUS_QUEUE, (msg) => {
-        if (msg) {
-            // Extract trace context from message headers
-            const parentContext = propagation.extract(context.active(), msg.properties.headers || {});
-
-            context.with(parentContext, () => {
-                tracer.startActiveSpan(`rabbitmq.process task_status`, (span) => {
-                    try {
-                        span.setAttribute('messaging.system', 'rabbitmq');
-                        span.setAttribute('messaging.source', TASK_STATUS_QUEUE);
-                        span.setAttribute('messaging.operation', 'process');
-
-                        const statusUpdate = JSON.parse(msg.content.toString());
-                        span.setAttribute('task.id', statusUpdate.taskId);
-                        span.setAttribute('task.status', statusUpdate.status);
-
-                        console.log(`📊 [Background] Received status update for task ${statusUpdate.taskId}: ${statusUpdate.status}`);
-
-                        // Get or create task in cache
-                        let task = tasks.get(statusUpdate.taskId);
-                        if (!task) {
-                            // Create task from status update (source of truth is RabbitMQ)
-                            task = {
-                                id: statusUpdate.taskId,
-                                type: statusUpdate.type || 'unknown',
-                                data: statusUpdate.data || '',
-                                status: statusUpdate.status,
-                                createdAt: statusUpdate.createdAt || statusUpdate.timestamp || new Date().toISOString()
-                            };
-                            tasks.set(statusUpdate.taskId, task);
-                            console.log(`📝 [Background] Created new task in cache: ${task.id}`);
-                            span.addEvent('task.created_in_cache');
-                        } else {
-                            // Update existing task
-                            task.status = statusUpdate.status;
-
-                            // Update worker if provided
-                            if (statusUpdate.worker) {
-                                task.worker = statusUpdate.worker;
-                                span.setAttribute('task.worker', statusUpdate.worker);
-                            }
-
-                            // Handle error status
-                            const statusError = statusUpdate.error || statusUpdate.additionalData?.error;
-                            if (statusUpdate.status === 'error' && statusError) {
-                                task.error = statusError;
-                                span.setAttribute('task.error', statusError);
-                            }
-                            console.log(`🔄 [Background] Updated task in cache: ${task.id} -> ${task.status}`);
-                            span.addEvent('task.updated_in_cache');
-                        }
-
-                        consumerChannel.ack(msg);
-                        span.setStatus({ code: SpanStatusCode.OK });
-                    } catch (error) {
-                        console.error('[Background] Error processing status update:', error);
-                        span.recordException(error);
-                        span.setStatus({ code: SpanStatusCode.ERROR, message: error.message });
-                        consumerChannel.nack(msg, false, false); // Don't requeue malformed messages
-                    } finally {
-                        span.end();
-                    }
-                });
-            });
-        }
-    });
-}
-
-async function restoreTaskState() {
-    console.log('Task state will be built from RabbitMQ messages...');
-    // The cache is ephemeral and rebuilt from consuming messages
-    // Status updates and results from RabbitMQ will populate the cache
-    // For persistent storage, you'd typically use a database alongside RabbitMQ
-}
-
-async function consumeResults() {
-    console.log('📥 Background consumer: Listening for task results...');
-
-    await consumerChannel.consume(RESULTS_QUEUE, (msg) => {
-        if (msg) {
-            // Extract trace context from message headers
-            const parentContext = propagation.extract(context.active(), msg.properties.headers || {});
-
-            context.with(parentContext, () => {
-                tracer.startActiveSpan(`rabbitmq.process results`, (span) => {
-                    try {
-                        span.setAttribute('messaging.system', 'rabbitmq');
-                        span.setAttribute('messaging.source', RESULTS_QUEUE);
-                        span.setAttribute('messaging.operation', 'process');
-
-                        const result = JSON.parse(msg.content.toString());
-                        span.setAttribute('task.id', result.taskId);
-                        span.setAttribute('task.worker', result.worker);
-
-                        console.log(`✅ [Background] Received result for task ${result.taskId}`);
-
-                        // Update task in cache - RabbitMQ is the source of truth
-                        let task = tasks.get(result.taskId);
-                        if (!task) {
-                            // Create task from result if it doesn't exist
-                            task = {
-                                id: result.taskId,
-                                type: 'unknown',
-                                data: '',
-                                status: 'completed',
-                                createdAt: new Date().toISOString()
-                            };
-                            tasks.set(result.taskId, task);
-                            console.log(`📝 [Background] Created completed task in cache: ${task.id}`);
-                            span.addEvent('task.created_completed');
-                        } else {
-                            task.status = 'completed';
-                        }
-
-                        task.result = result.result;
-                        task.completedAt = result.completedAt || new Date().toISOString();
-                        task.worker = result.worker;
-
-                        console.log(`✅ [Background] Task completed: ${task.id} by ${task.worker}`);
-                        span.addEvent('task.completed_in_cache');
-                        span.setStatus({ code: SpanStatusCode.OK });
-
-                        consumerChannel.ack(msg);
-                    } catch (error) {
-                        console.error('[Background] Error processing result:', error);
-                        span.recordException(error);
-                        span.setStatus({ code: SpanStatusCode.ERROR, message: error.message });
-                        consumerChannel.nack(msg, false, false);
-                    } finally {
-                        span.end();
-                    }
-                });
-            });
-        }
-    });
-}
-
-// ============================================================================
-// HTTP ENDPOINTS
-// ============================================================================
-// These endpoints ONLY read from the tasks Map (or publish to RabbitMQ).
-// They NEVER query RabbitMQ directly for data.
-// The Map is kept up to date by background consumers.
-// ============================================================================
-
-// Root endpoint
-app.get('/', (req, res) => {
-    res.json({
-        message: 'Task Queue API',
-        endpoints: ['/tasks', '/tasks/:id', '/health']
-    });
+app.get('/', (_req, res) => {
+  res.redirect('/scalar');
 });
 
-// Health check - only reads from cache
-app.get('/health', async (req, res) => {
-    try {
-        if (!consumerChannel || !publisherChannel) {
-            return res.status(503).json({
-                status: 'unhealthy',
-                rabbitmq: 'disconnected'
-            });
-        }
-
-        return res.json({
-            status: 'healthy',
-            rabbitmq: 'connected',
-            cachedTasks: tasks.size  // Reading from cache, not RabbitMQ
-        });
-    } catch (error) {
-        res.status(503).json({
-            status: 'unhealthy',
-            error: error.message
-        });
-    }
+app.get('/health', (_req, res) => {
+  const connected = isConnected();
+  res.status(connected ? 200 : 503).json({
+    status: connected ? 'healthy' : 'unhealthy',
+    rabbitmq: connected ? 'connected' : 'disconnected',
+    tasksOnBoard: board.snapshot().totals.all,
+  });
 });
 
-// Submit a new task - publishes to RabbitMQ but doesn't touch the cache
-app.post('/tasks', async (req, res) => {
-    // Express auto-instrumentation creates a span, we'll use it as parent
-    return tracer.startActiveSpan('task.submit', async (span) => {
-        try {
-            const validationError = validateTaskRequest(req.body);
-            if (validationError) {
-                span.setStatus({ code: SpanStatusCode.ERROR, message: validationError });
-                return res.status(400).json({ error: validationError });
-            }
+app.get('/tasks', route((req, res) => {
+  const limit = wholeNumber(req.query.limit, { name: 'limit', min: 1, max: 500, fallback: 100 });
+  res.set('X-Total-Count', String(board.snapshot().totals.all));
+  res.json(board.list(limit));
+}));
 
-            const { type, data } = req.body;
+app.post('/tasks', route(async (req, res) => {
+  const task = await submitTask(parseSubmission(req.body));
+  res.status(202).location(`/tasks/${task.id}`).json(task);
+}));
 
-            const taskId = `task-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-            const createdAt = new Date().toISOString();
-
-            span.setAttribute('task.id', taskId);
-            span.setAttribute('task.type', type);
-
-            // IMPORTANT: Don't add to cache here!
-            // The background consumer will add it when it consumes the status message
-
-            // 1. Publish status to RabbitMQ (source of truth)
-            await publishTaskStatus(taskId, 'queued', {
-                type,
-                data,
-                createdAt
-            });
-
-            // 2. Publish task to workers queue with trace context
-            const message = JSON.stringify({
-                taskId,
-                type,
-                data
-            });
-
-            // Inject trace context into message headers for workers
-            const headers = {};
-            propagation.inject(context.active(), headers);
-
-            publisherChannel.sendToQueue(TASKS_QUEUE, Buffer.from(message), {
-                persistent: true,
-                headers
-            });
-
-            console.log(`✓ [HTTP] Task ${taskId} published to queues (type: ${type})`);
-            span.addEvent('task.published');
-            span.setStatus({ code: SpanStatusCode.OK });
-
-            // Return task details immediately for UX
-            // Background consumer will add this to cache when it processes the status message
-            res.status(201).json({
-                id: taskId,
-                type,
-                data,
-                status: 'queued',
-                createdAt
-            });
-        } catch (error) {
-            console.error('Error creating task:', error);
-            span.recordException(error);
-            span.setStatus({ code: SpanStatusCode.ERROR, message: error.message });
-            res.status(500).json({ error: error.message });
-        } finally {
-            span.end();
-        }
-    });
+app.delete('/tasks', (_req, res) => {
+  const cleared = board.clear();
+  logger.info({ cleared }, `Cleared ${cleared} tasks from the board`);
+  res.json({ cleared });
 });
 
-// Get all tasks - reads ONLY from cache (Map), never queries RabbitMQ
-app.get('/tasks', (req, res) => {
-    const { limit, error } = parseTaskListLimit(req.query.limit);
-    if (error) {
-        return res.status(400).json({ error });
-    }
-
-    const allTasks = Array.from(tasks.values()).sort((a, b) =>
-        new Date(b.createdAt) - new Date(a.createdAt)
-    ).slice(0, limit);
-
-    res.set('X-Total-Count', String(tasks.size));
-    res.set('X-Result-Limit', String(limit));
-    res.json(allTasks);
+app.get('/tasks/stream', (req, res) => {
+  res.set({ 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', Connection: 'keep-alive' });
+  res.flushHeaders();
+  /** @param {ReturnType<typeof board.snapshot>} snapshot */
+  const send = (snapshot) => res.write(`data: ${JSON.stringify(snapshot)}\n\n`);
+  send(board.snapshot());
+  const unsubscribe = board.subscribe(send);
+  const keepAlive = setInterval(() => res.write(': keep-alive\n\n'), 15_000);
+  req.on('close', () => {
+    clearInterval(keepAlive);
+    unsubscribe();
+  });
 });
 
-// Get task by ID - reads ONLY from cache (Map), never queries RabbitMQ
-app.get('/tasks/:id', (req, res) => {
-    const task = tasks.get(req.params.id);
-    if (!task) {
-        return res.status(404).json({ error: 'Task not found' });
-    }
-    res.json(task);
+app.get('/tasks/samples', (_req, res) => {
+  res.json(SAMPLE_DOCUMENTS);
 });
 
-// Clear all tasks - only clears cache (for demo purposes)
-// Note: Tasks in RabbitMQ queues are not affected
-app.delete('/tasks', (req, res) => {
-    const count = tasks.size;
-    tasks.clear();
-    res.json({ message: `Cleared ${count} tasks from cache` });
+app.post('/tasks/samples', route(async (_req, res) => {
+  res.status(202).json(await submitSamples());
+}));
+
+app.get('/tasks/:taskId', route((req, res) => {
+  const task = board.get(req.params.taskId);
+  if (!task) {
+    throw new ProblemError(404, 'Task not found', `No task has the id '${req.params.taskId}'. Tasks are kept on the board until it is cleared (up to 500).`);
+  }
+  res.json(task);
+}));
+
+if (simulationEnabled) {
+  // Also exposed as the "Simulate burst" dashboard command (run mode only, see apphost.mts).
+  app.post('/simulate/burst', route(async (req, res) => {
+    const count = wholeNumber(req.query.tasks, { name: 'tasks', min: 1, max: 100, fallback: 24 });
+    res.status(202).json(await simulateBurst(count));
+  }));
+}
+
+app.get('/openapi.json', (_req, res) => {
+  res.json(openApiDocument);
 });
 
-// Connect to RabbitMQ before starting server
-connectRabbitMQ();
+app.use(
+  '/scalar',
+  apiReference({
+    content: openApiDocument,
+    theme: 'kepler',
+    _integration: 'express',
+    metaData: { title: 'Polyglot Task Queue API reference' },
+  }),
+);
+
+app.use((req, res) => {
+  writeProblem(req, res, new ProblemError(404, 'Not found', `${req.method} ${req.originalUrl} is not an API operation. See /scalar.`));
+});
+
+/** @type {import('express').ErrorRequestHandler} */
+const errorHandler = (err, req, res, _next) => {
+  if (err instanceof ProblemError) {
+    writeProblem(req, res, err);
+    return;
+  }
+  // Body parser errors (malformed JSON, oversized body) carry a 4xx status.
+  if (typeof err?.status === 'number' && err.status >= 400 && err.status < 500) {
+    writeProblem(
+      req,
+      res,
+      err.status === 413
+        ? new ProblemError(413, 'Request body too large', 'The request body must be 64 KB or smaller.')
+        : validationProblem({ body: [err.type === 'entity.parse.failed' ? 'The request body is not valid JSON.' : String(err.message)] }),
+    );
+    return;
+  }
+  logger.error({ error: err?.message }, 'Unhandled error');
+  writeProblem(req, res, new ProblemError(500, 'Unexpected error', 'The server failed to process the request.'));
+};
+app.use(errorHandler);
 
 app.listen(port, () => {
-    console.log(`✓ API listening on port ${port}`);
+  logger.info({ port, simulationEnabled }, `Task queue API listening on port ${port}`);
+});
+
+await connect([...TASK_QUEUES, STATUS_QUEUE, RESULTS_QUEUE], async (channel) => {
+  await consume(channel, STATUS_QUEUE, onStatus);
+  await consume(channel, RESULTS_QUEUE, onResult);
 });

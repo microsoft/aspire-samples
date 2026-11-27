@@ -1,17 +1,14 @@
 [project]
 name = "worker-python"
 version = "0.1.0"
-description = "Python data processing worker for polyglot task queue"
-readme = "README.md"
+description = "Python worker for the polyglot task queue: profiles CSV datasets with pandas"
 requires-python = ">=3.12"
 dependencies = [
     "aio-pika>=9.6.2",
     "pandas>=3.0.3",
-    "numpy>=2.4.4",
-    "opentelemetry-api>=1.41.1",
-    "opentelemetry-sdk>=1.41.1",
-    "opentelemetry-exporter-otlp-proto-grpc>=1.41.1",
-    "opentelemetry-instrumentation>=0.62b1"
+    "opentelemetry-sdk>=1.45.2",
+    "opentelemetry-exporter-otlp-proto-grpc>=1.45.2",
+    "opentelemetry-instrumentation-logging>=0.66b2",
 ]
 
 [dependency-groups]

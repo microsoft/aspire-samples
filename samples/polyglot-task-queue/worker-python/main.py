@@ -1,318 +1,253 @@
+"""Python worker: consumes `tasks.analyze` and profiles CSV datasets with pandas.
+
+Each task continues the trace the API started: the W3C trace context comes in the message headers,
+and the worker's `publish task_status` and `publish results` spans carry it back to the API.
+"""
+
 import asyncio
 import json
+import logging
 import os
+import random
+import re
 import sys
-from datetime import datetime
-import pandas as pd
-import numpy as np
-from aio_pika import connect_robust, Message, DeliveryMode
-from aio_pika.abc import AbstractIncomingMessage
+import time
+import uuid
+from datetime import datetime, timezone
+from urllib.parse import urlparse
 
-# OpenTelemetry imports
-from opentelemetry import trace, propagate
-from opentelemetry.sdk.trace import TracerProvider
-from opentelemetry.sdk.trace.export import BatchSpanProcessor
-from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
-from opentelemetry.sdk.resources import Resource, SERVICE_NAME, SERVICE_VERSION
-from opentelemetry.trace import Status, StatusCode
+from telemetry import WorkerMetrics, configure_opentelemetry, tracer
 
-# Initialize OpenTelemetry
-resource = Resource(attributes={
-    SERVICE_NAME: os.environ.get('OTEL_SERVICE_NAME', 'worker-python'),
-    SERVICE_VERSION: '1.0.0'
-})
+# Configure providers before anything creates loggers or instruments.
+configure_opentelemetry()
 
-provider = TracerProvider(resource=resource)
-processor = BatchSpanProcessor(OTLPSpanExporter(
-    endpoint=os.environ.get('OTEL_EXPORTER_OTLP_ENDPOINT', 'http://localhost:4317'),
-    insecure=True
-))
-provider.add_span_processor(processor)
-trace.set_tracer_provider(provider)
+from aio_pika import DeliveryMode, Message, connect_robust  # noqa: E402
+from aio_pika.abc import AbstractChannel, AbstractIncomingMessage  # noqa: E402
+from opentelemetry import propagate  # noqa: E402
+from opentelemetry.propagators.textmap import Getter  # noqa: E402
+from opentelemetry.trace import Span, SpanKind, Status, StatusCode  # noqa: E402
 
-tracer = trace.get_tracer(__name__, '1.0.0')
+from analysis import DatasetError, analyze, load  # noqa: E402
 
-print(f"[{datetime.now().isoformat()}] 📊 OpenTelemetry initialized")
-print(f"[{datetime.now().isoformat()}] 📤 Exporting to: {os.environ.get('OTEL_EXPORTER_OTLP_ENDPOINT', 'http://localhost:4317')}")
+WORKER = "worker-python"
+TASK_TYPE = "analyze"
+QUEUE = "tasks.analyze"
+STATUS_QUEUE = "task_status"
+RESULTS_QUEUE = "results"
+PREFETCH = 4
+MAX_DATA_LENGTH = 10_000
+TASK_ID = re.compile(r"^task-[0-9a-f]{8}$")
 
-TASKS_QUEUE = 'tasks'
-RESULTS_QUEUE = 'results'
-TASK_STATUS_QUEUE = 'task_status'
-WORKER_NAME = 'python-worker'
-MAX_TASK_DATA_LENGTH = 10_000
-SUPPORTED_TASK_TYPES = {'analyze', 'report'}
+logger = logging.getLogger("taskqueue.worker")
+worker_metrics = WorkerMetrics()
+broker = urlparse(os.environ.get("MESSAGING_URI", "amqp://localhost:5672"))
 
-def validate_task(task) -> str | None:
-    """Validate the internal task message before processing."""
-    if not isinstance(task, dict):
-        return 'task message must be a JSON object'
 
-    task_id = task.get('taskId')
-    if not isinstance(task_id, str) or not task_id.strip():
-        return 'taskId is required'
+class InvalidTaskError(ValueError):
+    """The message isn't a task this worker can process."""
 
-    task_type = task.get('type')
-    if not isinstance(task_type, str) or not task_type.strip():
-        return 'type is required'
 
-    if task_type not in SUPPORTED_TASK_TYPES:
-        return f"unsupported task type '{task_type}'"
+class HeaderGetter(Getter):
+    """AMQP header values arrive as str or bytes, depending on the publisher's client library."""
 
-    data = task.get('data')
-    if not isinstance(data, str) or not data:
-        return 'data is required'
+    def get(self, carrier, key):
+        value = carrier.get(key)
+        if value is None:
+            return None
+        return [value.decode() if isinstance(value, bytes) else str(value)]
 
-    if len(data) > MAX_TASK_DATA_LENGTH:
-        return f'data must be {MAX_TASK_DATA_LENGTH} characters or fewer'
+    def keys(self, carrier):
+        return list(carrier.keys())
 
-    return None
 
-async def publish_task_status(channel, task_id, status, **additional_data):
-    """Publish task status update to RabbitMQ with trace context."""
+HEADER_GETTER = HeaderGetter()
+
+
+def messaging_attributes(operation: str, queue: str, message_id: str | None, task_id: str | None, size: int) -> dict:
+    """Messaging semantic-convention attributes. Messages use the default exchange with the queue
+    name as the routing key, so the destination is the routing key alone."""
+    attributes = {
+        "messaging.system": "rabbitmq",
+        "messaging.operation.type": operation,
+        "messaging.operation.name": "publish" if operation == "send" else "process",
+        "messaging.destination.name": queue,
+        "messaging.rabbitmq.destination.routing_key": queue,
+        "messaging.message.body.size": size,
+        "server.address": broker.hostname or "localhost",
+        "server.port": broker.port or 5672,
+    }
+    if message_id:
+        attributes["messaging.message.id"] = message_id
+    if task_id:
+        attributes["messaging.message.conversation_id"] = task_id
+    return attributes
+
+
+async def publish(channel: AbstractChannel, queue: str, payload: dict) -> None:
+    """Publishes JSON under a PRODUCER span whose context is injected into the message headers."""
+    body = json.dumps(payload).encode()
+    message_id = uuid.uuid4().hex
+    attributes = messaging_attributes("send", queue, message_id, payload["taskId"], len(body))
+    with tracer.start_as_current_span(f"publish {queue}", kind=SpanKind.PRODUCER, attributes=attributes):
+        headers: dict[str, str] = {}
+        propagate.inject(headers)
+        # Publisher confirms are on by default, so this waits for the broker to accept the message.
+        await channel.default_exchange.publish(
+            Message(
+                body,
+                content_type="application/json",
+                delivery_mode=DeliveryMode.PERSISTENT,
+                message_id=message_id,
+                correlation_id=payload["taskId"],
+                timestamp=datetime.now(timezone.utc),
+                headers=headers,
+            ),
+            routing_key=queue,
+        )
+
+
+def validate(task: object) -> tuple[str, str | None]:
+    """Returns the task id and a validation error, if any."""
+    if not isinstance(task, dict) or not isinstance(task.get("taskId"), str) or not TASK_ID.match(task["taskId"]):
+        raise InvalidTaskError("The message has no valid taskId.")
+    if task.get("type") != TASK_TYPE:
+        return task["taskId"], f"Unsupported task type '{task.get('type')}'; this worker handles '{TASK_TYPE}'."
+    data = task.get("data")
+    if not isinstance(data, str) or not data.strip():
+        return task["taskId"], "The document is empty."
+    if len(data) > MAX_DATA_LENGTH:
+        return task["taskId"], f"The document is longer than {MAX_DATA_LENGTH} characters."
+    return task["taskId"], None
+
+
+async def analyze_dataset(task_id: str, name: str, data: str) -> dict:
+    """The domain span: loads the dataset (simulated latency) and profiles it with pandas."""
     with tracer.start_as_current_span(
-        'rabbitmq.publish task_status',
-        kind=trace.SpanKind.PRODUCER
+        "analyze dataset", attributes={"taskqueue.task.id": task_id, "taskqueue.document.name": name}
     ) as span:
-        try:
-            # Messaging semantic conventions
-            span.set_attribute('messaging.system', 'rabbitmq')
-            span.set_attribute('messaging.destination.name', TASK_STATUS_QUEUE)
-            span.set_attribute('messaging.operation', 'publish')
-            span.set_attribute('task.id', task_id)
-            span.set_attribute('task.status', status)
+        # Stands in for downloading the dataset from storage before pandas reads it.
+        await asyncio.sleep(random.uniform(0.25, 0.75))
+        frame = load(data)
+        span.add_event("dataset.loaded", {"taskqueue.dataset.rows": len(frame), "taskqueue.dataset.columns": len(frame.columns)})
+        worker_metrics.dataset_rows.record(len(frame))
 
-            status_message = {
-                'taskId': task_id,
-                'status': status,
-                'worker': WORKER_NAME,
-                'timestamp': datetime.now().isoformat(),
-                **additional_data
+        result = analyze(frame)
+        details = result["details"]
+        span.set_attributes(
+            {
+                "taskqueue.dataset.rows": details["rows"],
+                "taskqueue.dataset.columns": len(details["columns"]),
+                "taskqueue.dataset.measure": details["measure"],
             }
-
-            # Inject trace context into message headers
-            headers = {}
-            propagate.inject(headers)
-
-            await channel.default_exchange.publish(
-                Message(
-                    body=json.dumps(status_message).encode(),
-                    delivery_mode=DeliveryMode.PERSISTENT,
-                    headers=headers
-                ),
-                routing_key=TASK_STATUS_QUEUE
-            )
-
-            print(f"[{datetime.now().isoformat()}] Status update published: {task_id} -> {status}")
-            span.set_status(Status(StatusCode.OK))
-        except Exception as e:
-            print(f"[{datetime.now().isoformat()}] Error publishing status: {e}", file=sys.stderr)
-            span.record_exception(e)
-            span.set_status(Status(StatusCode.ERROR, str(e)))
-
-async def process_task(task_data: dict) -> dict:
-    """Process data analysis tasks using pandas."""
-    try:
-        # Parse the input data (expecting CSV or JSON)
-        data_str = task_data.get('data', '')
-
-        # Try to parse as CSV first
-        try:
-            from io import StringIO
-            df = pd.read_csv(StringIO(data_str))
-        except Exception:
-            # If CSV fails, try JSON
-            try:
-                df = pd.DataFrame(json.loads(data_str))
-            except Exception:
-                # Fall back to treating as simple text
-                lines = [line.strip() for line in data_str.strip().split('\n') if line.strip()]
-                df = pd.DataFrame({'values': lines})
-
-        # Perform data analysis
-        result = {
-            'row_count': len(df),
-            'column_count': len(df.columns),
-            'columns': list(df.columns),
-            'summary': {}
-        }
-
-        # Generate statistics for numeric columns
-        numeric_cols = df.select_dtypes(include=[np.number]).columns
-        if len(numeric_cols) > 0:
-            result['summary']['numeric'] = {}
-            for col in numeric_cols:
-                result['summary']['numeric'][col] = {
-                    'mean': float(df[col].mean()),
-                    'median': float(df[col].median()),
-                    'std': float(df[col].std()),
-                    'min': float(df[col].min()),
-                    'max': float(df[col].max())
-                }
-
-        # Count for categorical columns
-        categorical_cols = df.select_dtypes(include=['object']).columns
-        if len(categorical_cols) > 0:
-            result['summary']['categorical'] = {}
-            for col in categorical_cols:
-                value_counts = df[col].value_counts().head(5).to_dict()
-                result['summary']['categorical'][col] = {
-                    'unique_count': int(df[col].nunique()),
-                    'top_values': {str(k): int(v) for k, v in value_counts.items()}
-                }
-
-        # Add first few rows as preview
-        result['preview'] = df.head(5).to_dict(orient='records')
-
+        )
+        span.add_event("dataset.profiled", {"taskqueue.dataset.numeric_columns": len(details["numeric"])})
         return result
 
-    except Exception as e:
-        return {
-            'error': str(e),
-            'error_type': type(e).__name__
-        }
 
-async def on_message(message: AbstractIncomingMessage, channel):
-    """Handle incoming task messages with distributed tracing."""
-    async with message.process():
-        # Extract trace context from message headers
-        headers_dict = dict(message.headers) if message.headers else {}
-        ctx = propagate.extract(headers_dict)
+async def handle_task(channel: AbstractChannel, task: dict, span: Span) -> None:
+    task_id, invalid = validate(task)
+    name = str(task.get("name") or "dataset.csv")
+    span.set_attributes({"taskqueue.task.id": task_id, "taskqueue.task.type": TASK_TYPE, "taskqueue.document.name": name})
 
-        with tracer.start_as_current_span(
-            'rabbitmq.process task',
-            context=ctx,
-            kind=trace.SpanKind.CONSUMER
-        ) as span:
-            try:
-                # Messaging semantic conventions
-                span.set_attribute('messaging.system', 'rabbitmq')
-                span.set_attribute('messaging.source.name', TASKS_QUEUE)
-                span.set_attribute('messaging.operation', 'process')
+    attributes = {"taskqueue.task.type": TASK_TYPE}
+    started = time.perf_counter()
+    worker_metrics.active.add(1, attributes)
+    await publish(channel, STATUS_QUEUE, {"taskId": task_id, "status": "processing", "worker": WORKER, "startedAt": datetime.now(timezone.utc).isoformat()})
 
-                task = json.loads(message.body.decode())
-                validation_error = validate_task(task)
-                task_id = task.get('taskId') if isinstance(task, dict) else None
+    result, error = None, None
+    try:
+        if invalid:
+            raise InvalidTaskError(invalid)
+        result = await analyze_dataset(task_id, name, task["data"])
+        details = result["details"]
+        logger.info(
+            "Analyzed %s: %s",
+            name,
+            result["headline"],
+            extra={
+                "task_id": task_id,
+                "document_name": name,
+                "rows": details["rows"],
+                "columns": len(details["columns"]),
+                "measure": details["measure"],
+                "measure_total": details["numeric"][details["measure"]]["sum"],
+            },
+        )
+    except Exception as exc:
+        error = {"type": type(exc).__name__, "message": str(exc)}
+        worker_metrics.failed.add(1, {**attributes, "error.type": error["type"]})
+        span.add_event("task.failed", {"error.type": error["type"]})
+        # Bad documents are expected; anything else is a bug worth an error with a stack trace.
+        expected = isinstance(exc, (DatasetError, InvalidTaskError))
+        logger.log(
+            logging.WARNING if expected else logging.ERROR,
+            "Could not analyze %s: %s",
+            name,
+            exc,
+            exc_info=None if expected else exc,
+            extra={"task_id": task_id, "document_name": name, "error_type": error["type"]},
+        )
+    finally:
+        worker_metrics.active.add(-1, attributes)
 
-                if validation_error:
-                    print(f"[{datetime.now().isoformat()}] Dropping invalid task message: {validation_error}", file=sys.stderr)
-                    if isinstance(task_id, str) and task_id.strip():
-                        await publish_task_status(channel, task_id, 'error', error=validation_error)
-                    span.set_status(Status(StatusCode.ERROR, validation_error))
-                    span.add_event('task.invalid', {'reason': validation_error})
-                    return
+    outcome = "failed" if error else "completed"
+    duration_ms = round((time.perf_counter() - started) * 1000)
+    worker_metrics.processed.add(1, {**attributes, "taskqueue.task.outcome": outcome})
+    worker_metrics.duration.record(duration_ms / 1000, {**attributes, "taskqueue.task.outcome": outcome})
+    await publish(
+        channel,
+        RESULTS_QUEUE,
+        {
+            "taskId": task_id,
+            "status": outcome,
+            "worker": WORKER,
+            "completedAt": datetime.now(timezone.utc).isoformat(),
+            "durationMs": duration_ms,
+            "result": result,
+            "error": error,
+        },
+    )
 
-                task_id = task['taskId']
-                task_type = task['type']
 
-                span.set_attribute('task.id', task_id)
-                span.set_attribute('task.type', task_type)
-                span.set_attribute('messaging.message.id', task_id)
+async def on_message(channel: AbstractChannel, message: AbstractIncomingMessage) -> None:
+    """Handles one delivery under a CONSUMER span parented to the API's publish span."""
+    parent = propagate.extract(message.headers or {}, getter=HEADER_GETTER)
+    attributes = messaging_attributes("process", QUEUE, message.message_id, message.correlation_id, len(message.body))
+    attributes["messaging.rabbitmq.message.delivery_tag"] = message.delivery_tag or 0
+    with tracer.start_as_current_span(
+        f"process {QUEUE}", context=parent, kind=SpanKind.CONSUMER, attributes=attributes, record_exception=False
+    ) as span:
+        try:
+            await handle_task(channel, json.loads(message.body), span)
+            await message.ack()
+        except Exception as exc:
+            # Drop messages that can't be handled instead of redelivering them forever.
+            span.record_exception(exc)
+            span.set_status(Status(StatusCode.ERROR, str(exc)))
+            span.set_attribute("error.type", type(exc).__name__)
+            logger.error("Dropped a %s message that could not be processed: %s", QUEUE, exc, extra={"error_type": type(exc).__name__})
+            await message.reject(requeue=False)
 
-                print(f"[{datetime.now().isoformat()}] Processing task {task_id} (type: {task_type})")
 
-                # Publish processing status
-                await publish_task_status(channel, task_id, 'processing')
+async def main() -> None:
+    if "MESSAGING_URI" not in os.environ:
+        sys.exit("MESSAGING_URI is not set; run the worker from the Aspire AppHost.")
 
-                # Only process 'analyze' tasks
-                if task_type != 'analyze':
-                    print(f"[{datetime.now().isoformat()}] Skipping task {task_id} - not an analyze task")
-                    await publish_task_status(channel, task_id, 'skipped', reason='not an analyze task')
-                    span.add_event('task.skipped', {'reason': 'not an analyze task'})
-                    span.set_status(Status(StatusCode.OK))
-                    return
-
-                # Process the task with a child span
-                with tracer.start_as_current_span('task.process_data') as process_span:
-                    process_span.set_attribute('task.id', task_id)
-                    result = await process_task(task)
-
-                    if 'error' in result:
-                        process_span.set_attribute('task.error', result['error'])
-                        process_span.set_status(Status(StatusCode.ERROR, result['error']))
-                    else:
-                        process_span.set_status(Status(StatusCode.OK))
-
-                # Send result back with trace context
-                with tracer.start_as_current_span(
-                    'rabbitmq.publish results',
-                    kind=trace.SpanKind.PRODUCER
-                ) as publish_span:
-                    publish_span.set_attribute('messaging.system', 'rabbitmq')
-                    publish_span.set_attribute('messaging.destination.name', RESULTS_QUEUE)
-                    publish_span.set_attribute('messaging.operation', 'publish')
-                    publish_span.set_attribute('task.id', task_id)
-
-                    result_message = {
-                        'taskId': task_id,
-                        'worker': WORKER_NAME,
-                        'result': result,
-                        'completedAt': datetime.now().isoformat()
-                    }
-
-                    # Inject trace context into result message
-                    result_headers = {}
-                    propagate.inject(result_headers)
-
-                    await channel.default_exchange.publish(
-                        Message(
-                            body=json.dumps(result_message).encode(),
-                            delivery_mode=DeliveryMode.PERSISTENT,
-                            headers=result_headers
-                        ),
-                        routing_key=RESULTS_QUEUE
-                    )
-
-                    print(f"[{datetime.now().isoformat()}] Completed task {task_id}")
-                    publish_span.set_status(Status(StatusCode.OK))
-
-                span.add_event('task.completed')
-                span.set_status(Status(StatusCode.OK))
-
-            except Exception as e:
-                print(f"[{datetime.now().isoformat()}] Error processing message: {e}", file=sys.stderr)
-                span.record_exception(e)
-                span.set_status(Status(StatusCode.ERROR, str(e)))
-                # Publish error status
-                if 'task_id' in locals():
-                    await publish_task_status(channel, task_id, 'error', error=str(e))
-
-async def main():
-    """Main worker loop."""
-    rabbitmq_url = os.environ.get('MESSAGING_URI')
-
-    if not rabbitmq_url:
-        print("Error: MESSAGING_URI environment variable not set", file=sys.stderr)
-        sys.exit(1)
-
-    print(f"[{datetime.now().isoformat()}] Connecting to RabbitMQ...")
-
-    # Connect with automatic reconnection
-    connection = await connect_robust(rabbitmq_url)
-
+    connection = await connect_robust(os.environ["MESSAGING_URI"])
     async with connection:
         channel = await connection.channel()
-
-        # Set prefetch count to process one message at a time
-        await channel.set_qos(prefetch_count=1)
-
-        # Declare queues
-        tasks_queue = await channel.declare_queue(TASKS_QUEUE, durable=True)
+        await channel.set_qos(prefetch_count=PREFETCH)
+        queue = await channel.declare_queue(QUEUE, durable=True)
+        await channel.declare_queue(STATUS_QUEUE, durable=True)
         await channel.declare_queue(RESULTS_QUEUE, durable=True)
-        await channel.declare_queue(TASK_STATUS_QUEUE, durable=True)
 
-        print(f"[{datetime.now().isoformat()}] Python worker started. Waiting for tasks...")
-
-        # Start consuming
-        await tasks_queue.consume(lambda msg: on_message(msg, channel))
-
-        # Keep the worker running
+        await queue.consume(lambda message: on_message(channel, message))
+        logger.info("Python worker consuming %s (up to %d tasks at a time)", QUEUE, PREFETCH, extra={"queue": QUEUE, "prefetch": PREFETCH})
         await asyncio.Future()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
-        print(f"\n[{datetime.now().isoformat()}] Worker stopped")
-    except Exception as e:
-        print(f"[{datetime.now().isoformat()}] Fatal error: {e}", file=sys.stderr)
-        sys.exit(1)
+        pass

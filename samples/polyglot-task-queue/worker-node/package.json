@@ -1,0 +1,25 @@
+{
+  "name": "task-queue-worker-node",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Node.js worker: extracts invoice fields from emailed invoices",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "node --import ./instrumentation.js index.js"
+  },
+  "dependencies": {
+    "@opentelemetry/api": "~1.9.1",
+    "@opentelemetry/exporter-logs-otlp-proto": "^0.223.2",
+    "@opentelemetry/exporter-metrics-otlp-proto": "^0.223.2",
+    "@opentelemetry/exporter-trace-otlp-proto": "^0.223.2",
+    "@opentelemetry/instrumentation": "^0.223.2",
+    "@opentelemetry/instrumentation-pino": "^0.69.0",
+    "@opentelemetry/instrumentation-runtime-node": "^0.36.1",
+    "@opentelemetry/sdk-logs": "^0.223.2",
+    "@opentelemetry/sdk-metrics": "^2.12.1",
+    "@opentelemetry/sdk-node": "^0.223.2",
+    "amqplib": "^2.0.1",
+    "pino": "^10.4.0"
+  }
+}
