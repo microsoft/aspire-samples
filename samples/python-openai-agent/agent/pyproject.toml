@@ -1,11 +1,21 @@
 [project]
-name = "ai-agent"
-version = "1.0.0"
-description = "AI Chat Agent powered by OpenAI and FastAPI"
-requires-python = ">=3.10"
+name = "support-agent"
+version = "2.0.0"
+description = "Order-support AI agent powered by OpenAI tool calling, FastAPI, and OpenTelemetry"
+requires-python = ">=3.11"
 dependencies = [
-    "fastapi",
-    "uvicorn[standard]",
-    "openai",
-    "pydantic",
+    "fastapi>=0.165.0",
+    "uvicorn[standard]>=0.54.0",
+    "openai>=3.57.0",
+    "pydantic>=2.11",
+    "scalar-fastapi>=1.10.1",
+    "opentelemetry-sdk>=1.45.2",
+    "opentelemetry-exporter-otlp-proto-grpc>=1.45.2",
+    "opentelemetry-instrumentation-fastapi>=0.66b2",
+    "opentelemetry-instrumentation-logging>=0.66b2",
+    "opentelemetry-instrumentation-openai-v2>=2.4b0",
+    # openai-v2 2.4b0 imports `opentelemetry.util.genai.instruments` (removed in 1.2b0)
+    # and `httpx` (openai 3.x itself moved to httpx2).
+    "opentelemetry-util-genai>=1.1b0,<1.2",
+    "httpx>=0.28",
 ]
