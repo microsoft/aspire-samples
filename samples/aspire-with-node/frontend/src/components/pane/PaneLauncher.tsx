@@ -1,27 +1,23 @@
-/** Collapsed-state pill showing the current temperature + place; taps to reopen the pane. */
-import { toDisplayTemp } from '../../lib/format';
-import type { CurrentWeather } from '../../types/weather';
-import { WeatherIcon } from '../icons/WeatherIcon';
-import { ExpandGlyph, PanelGlyph } from '../icons/Glyphs';
+/** Collapsed-state pill with the fleet's go / delay / reroute counts; taps to reopen the pane. */
+import type { Recommendation } from '../../types/fleet';
+import { ExpandGlyph, TruckGlyph } from '../icons/Glyphs';
 
 interface PaneLauncherProps {
-  current: CurrentWeather | undefined;
-  useCelsius: boolean;
-  primaryLocation: string;
+  totals: Record<Recommendation, number>;
   onExpand: () => void;
 }
 
-export function PaneLauncher({ current, useCelsius, primaryLocation, onExpand }: PaneLauncherProps) {
+export function PaneLauncher({ totals, onExpand }: PaneLauncherProps) {
   return (
-    <button type="button" className="pane-launcher" onClick={onExpand} aria-label="Show weather panel">
+    <button type="button" className="pane-launcher" onClick={onExpand} aria-label="Show dispatch panel">
       <span className="launcher-icon">
-        {current ? <WeatherIcon code={current.weatherCode} size={26} decorative /> : <PanelGlyph />}
+        <TruckGlyph size={24} />
       </span>
       <span className="launcher-readout">
-        <span className="launcher-temp">
-          {current ? toDisplayTemp(current.temperatureC, useCelsius) : 'Weather'}
+        <span className="launcher-title">Fleet Weather Risk</span>
+        <span className="launcher-counts">
+          {totals.reroute} reroute · {totals.delay} delay · {totals.go} go
         </span>
-        <span className="launcher-place">{primaryLocation}</span>
       </span>
       <span className="launcher-expand" aria-hidden="true">
         <ExpandGlyph />

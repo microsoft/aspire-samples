@@ -1,248 +1,211 @@
 /**
- * Import the OpenTelemetry instrumentation setup first, before any other modules.
- * This ensures all subsequent imports are automatically instrumented for
- * distributed tracing, metrics, and logging in the Aspire dashboard.
+ * Fleet Weather API: scores delivery routes for weather risk and recommends go / delay / reroute.
+ *
+ * Express 5 runs on tsx; instrumentation.ts is preloaded through NODE_OPTIONS (see apphost.mts).
  */
-import "./instrumentation.ts";
-import express from "express";
-import { existsSync } from "fs";
-import { join } from "path";
-import { apiReference } from "@scalar/express-api-reference";
-import { openApiDocument } from "./openapi.ts";
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
+import { trace } from '@opentelemetry/api';
+import { apiReference } from '@scalar/express-api-reference';
+import express, { type ErrorRequestHandler, type Request, type Response } from 'express';
+import { assessRoute, type RouteInput } from './assessment.ts';
+import { FLEET_ROUTES, findRoute, routeDistanceKm, type Waypoint } from './fleet.ts';
+import { logger } from './logger.ts';
+import { UpstreamError } from './openMeteo.ts';
+import { openApiDocument } from './openapi.ts';
 
 const app = express();
-const port = process.env.PORT || 5000;
+const port = Number(process.env.PORT ?? 5000);
 
-// Base URL for the Open-Meteo forecast API. Injected by the Aspire AppHost, which
-// models Open-Meteo as an external service; falls back to the public endpoint.
-const OPEN_METEO_URL = (process.env.OPEN_METEO_URL || "https://api.open-meteo.com").replace(/\/+$/, "");
-// Keyless reverse geocoding used to turn map coordinates into a friendly place name.
-const REVERSE_GEOCODE_URL = "https://api.bigdatacloud.net/data/reverse-geocode-client";
-// Keyless forward geocoding (place name -> coordinates) for the search box.
-const GEOCODING_URL = "https://geocoding-api.open-meteo.com/v1/search";
+const DEFAULT_WINDOW_HOURS = 24;
+const MAX_WINDOW_HOURS = 48;
+const MAX_WAYPOINTS = 10;
 
-interface OpenMeteoCurrent {
-  time?: string;
-  temperature_2m?: number;
-  apparent_temperature?: number;
-  relative_humidity_2m?: number;
-  weather_code?: number;
-  wind_speed_10m?: number;
-  is_day?: number;
-  uv_index?: number;
-}
+app.disable('x-powered-by');
+app.use(express.json({ limit: '16kb' }));
 
-interface OpenMeteoHourly {
-  time?: string[];
-  temperature_2m?: (number | null)[];
-  weather_code?: number[];
-}
+type ValidationErrors = Record<string, string[]>;
 
-interface OpenMeteoDaily {
-  time?: string[];
-  weather_code?: number[];
-  temperature_2m_max?: number[];
-  temperature_2m_min?: number[];
-  precipitation_probability_max?: (number | null)[];
-  sunrise?: string[];
-  sunset?: string[];
-}
+const PROBLEM_TYPES: Record<number, string> = {
+  400: 'https://tools.ietf.org/html/rfc9110#section-15.5.1',
+  404: 'https://tools.ietf.org/html/rfc9110#section-15.5.5',
+  500: 'https://tools.ietf.org/html/rfc9110#section-15.6.1',
+  502: 'https://tools.ietf.org/html/rfc9110#section-15.6.3',
+};
 
-interface OpenMeteoForecast {
-  timezone?: string;
-  current?: OpenMeteoCurrent;
-  hourly?: OpenMeteoHourly;
-  daily?: OpenMeteoDaily;
-}
-
-interface PlaceName {
-  name: string | null;
-  region: string | null;
-  country: string | null;
-}
-
-/** Best-effort reverse geocode; returns null if the lookup fails or times out. */
-async function reverseGeocode(lat: number, lon: number): Promise<PlaceName | null> {
-  try {
-    const url = new URL(REVERSE_GEOCODE_URL);
-    url.searchParams.set("latitude", lat.toString());
-    url.searchParams.set("longitude", lon.toString());
-    url.searchParams.set("localityLanguage", "en");
-    const response = await fetch(url, { signal: AbortSignal.timeout(2500) });
-    if (!response.ok) return null;
-    const data = (await response.json()) as {
-      city?: string;
-      locality?: string;
-      principalSubdivision?: string;
-      countryName?: string;
-    };
-    return {
-      name: data.city || data.locality || data.principalSubdivision || null,
-      region: data.principalSubdivision || null,
-      country: data.countryName || null,
-    };
-  } catch {
-    return null;
-  }
-}
-
-/**
- * Returns the real current conditions and 5-day forecast for a coordinate.
- * Coordinates come from the map's current position on the client.
- */
-app.get("/api/weather", async (req, res) => {
-  const lat = Number(req.query.lat);
-  const lon = Number(req.query.lon);
-  if (!Number.isFinite(lat) || !Number.isFinite(lon) || lat < -90 || lat > 90 || lon < -180 || lon > 180) {
-    res.status(400).json({ error: "Query params 'lat' (-90..90) and 'lon' (-180..180) are required." });
-    return;
-  }
-
-  try {
-    const url = new URL("/v1/forecast", OPEN_METEO_URL);
-    url.searchParams.set("latitude", lat.toString());
-    url.searchParams.set("longitude", lon.toString());
-    url.searchParams.set("current", "temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m,is_day,uv_index");
-    url.searchParams.set("hourly", "temperature_2m,weather_code");
-    url.searchParams.set("daily", "weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunrise,sunset");
-    url.searchParams.set("timezone", "auto");
-    url.searchParams.set("forecast_days", "5");
-
-    const [forecastResponse, place] = await Promise.all([
-      fetch(url, { signal: AbortSignal.timeout(8000) }),
-      reverseGeocode(lat, lon),
-    ]);
-    if (!forecastResponse.ok) {
-      throw new Error(`Open-Meteo responded ${forecastResponse.status}`);
-    }
-
-    const data = (await forecastResponse.json()) as OpenMeteoForecast;
-    const current = data.current ?? {};
-    const daily = data.daily ?? {};
-    const days = (daily.time ?? []).slice(0, 5).map((date, i) => ({
-      date,
-      weatherCode: daily.weather_code?.[i] ?? 0,
-      maxC: daily.temperature_2m_max?.[i] ?? null,
-      minC: daily.temperature_2m_min?.[i] ?? null,
-      precipitationProb: daily.precipitation_probability_max?.[i] ?? null,
-    }));
-
-    // Upcoming hours starting from the current hour (times are already local to the place).
-    const hourly = data.hourly ?? {};
-    const hourlyTimes = hourly.time ?? [];
-    const nowHour = (current.time ?? "").slice(0, 13);
-    let startIdx = hourlyTimes.findIndex((t) => t.slice(0, 13) >= nowHour);
-    if (startIdx < 0) startIdx = 0;
-    const hours = hourlyTimes.slice(startIdx, startIdx + 12).map((time, i) => ({
-      time,
-      temperatureC: hourly.temperature_2m?.[startIdx + i] ?? null,
-      weatherCode: hourly.weather_code?.[startIdx + i] ?? 0,
-    }));
-
-    res.json({
-      location: {
-        name: place?.name ?? null,
-        region: place?.region ?? null,
-        country: place?.country ?? null,
-        latitude: lat,
-        longitude: lon,
-        timezone: data.timezone ?? null,
-      },
-      current: {
-        temperatureC: current.temperature_2m ?? null,
-        apparentC: current.apparent_temperature ?? null,
-        humidity: current.relative_humidity_2m ?? null,
-        weatherCode: current.weather_code ?? 0,
-        windSpeedKph: current.wind_speed_10m ?? null,
-        uvIndex: current.uv_index ?? null,
-        isDay: current.is_day === 1,
-        time: current.time ?? null,
-      },
-      sun: {
-        sunrise: daily.sunrise?.[0] ?? null,
-        sunset: daily.sunset?.[0] ?? null,
-      },
-      hourly: hours,
-      daily: days,
+/** Writes an RFC 9457 problem details response that carries the trace id for the dashboard. */
+function problem(req: Request, res: Response, status: number, title: string, detail: string, errors?: ValidationErrors) {
+  res
+    .status(status)
+    .type('application/problem+json')
+    .json({
+      type: PROBLEM_TYPES[status] ?? 'about:blank',
+      title,
+      status,
+      detail,
+      instance: req.originalUrl,
+      traceId: trace.getActiveSpan()?.spanContext().traceId,
+      ...(errors && { errors }),
     });
-  } catch (err) {
-    console.error("Failed to load weather forecast:", err);
-    res.status(502).json({ error: "Failed to load weather data for this location." });
+}
+
+function parseWindowHours(value: unknown, errors: ValidationErrors): number {
+  if (value === undefined) return DEFAULT_WINDOW_HOURS;
+  const hours = Number(value);
+  if (!Number.isInteger(hours) || hours < 1 || hours > MAX_WINDOW_HOURS) {
+    errors.windowHours = [`windowHours must be a whole number of hours from 1 to ${MAX_WINDOW_HOURS}.`];
   }
+  return hours;
+}
+
+/** `Cache-Control: no-cache` asks for a fresh forecast instead of the 10-minute cache. */
+const wantsFresh = (req: Request) => /\bno-cache\b/i.test(req.get('cache-control') ?? '');
+
+function badRequest(req: Request, res: Response, errors: ValidationErrors) {
+  problem(req, res, 400, 'One or more validation errors occurred.', 'See errors for the invalid fields.', errors);
+}
+
+/** Validates a custom route body: an optional name, 2-10 waypoints and an optional window. */
+function parseCustomRoute(body: unknown, errors: ValidationErrors): RouteInput {
+  const input = (typeof body === 'object' && body !== null ? body : {}) as Record<string, unknown>;
+  const name = typeof input.name === 'string' && input.name.trim() ? input.name.trim() : 'Custom route';
+  if (name.length > 80) errors.name = ['name must be 80 characters or fewer.'];
+
+  const raw = input.waypoints;
+  const waypoints: Waypoint[] = [];
+  if (!Array.isArray(raw) || raw.length < 2 || raw.length > MAX_WAYPOINTS) {
+    errors.waypoints = [`Provide between 2 and ${MAX_WAYPOINTS} waypoints.`];
+  } else {
+    raw.forEach((item: unknown, i) => {
+      const point = (typeof item === 'object' && item !== null ? item : {}) as Record<string, unknown>;
+      const { lat, lon } = point;
+      if (typeof lat !== 'number' || lat < -90 || lat > 90) errors[`waypoints[${i}].lat`] = ['lat must be a number from -90 to 90.'];
+      if (typeof lon !== 'number' || lon < -180 || lon > 180) errors[`waypoints[${i}].lon`] = ['lon must be a number from -180 to 180.'];
+      const label = typeof point.name === 'string' && point.name.trim() ? point.name.trim().slice(0, 60) : `Stop ${i + 1}`;
+      waypoints.push({ name: label, lat: Number(lat), lon: Number(lon) });
+    });
+  }
+  return { id: null, name, corridor: null, waypoints };
+}
+
+app.get('/api/routes', (_req, res) => {
+  res.json(
+    FLEET_ROUTES.map((route) => ({
+      ...route,
+      legCount: route.waypoints.length - 1,
+      distanceKm: routeDistanceKm(route.waypoints),
+    })),
+  );
 });
 
-/** Searches for places by name and returns up to five coordinate matches. */
-app.get("/api/geocode", async (req, res) => {
-  const query = typeof req.query.q === "string" ? req.query.q.trim() : "";
-  if (query.length < 2) {
-    res.status(400).json({ error: "Query param 'q' (min 2 characters) is required." });
+app.get('/api/routes/:routeId/assessment', async (req, res) => {
+  const route = findRoute(req.params.routeId);
+  if (!route) {
+    problem(req, res, 404, 'Route not found', `No predefined route has the id '${req.params.routeId}'. GET /api/routes lists them.`);
     return;
   }
-
-  try {
-    const url = new URL(GEOCODING_URL);
-    url.searchParams.set("name", query);
-    url.searchParams.set("count", "5");
-    url.searchParams.set("language", "en");
-    url.searchParams.set("format", "json");
-
-    const response = await fetch(url, { signal: AbortSignal.timeout(6000) });
-    if (!response.ok) {
-      throw new Error(`Geocoding responded ${response.status}`);
-    }
-
-    const data = (await response.json()) as {
-      results?: Array<{ name: string; admin1?: string; country?: string; latitude: number; longitude: number }>;
-    };
-    const results = (data.results ?? []).map((result) => ({
-      name: result.name,
-      region: result.admin1 ?? null,
-      country: result.country ?? null,
-      latitude: result.latitude,
-      longitude: result.longitude,
-    }));
-
-    res.json({ results });
-  } catch (err) {
-    console.error("Failed to geocode place:", err);
-    res.status(502).json({ error: "Failed to search for that place." });
+  const errors: ValidationErrors = {};
+  const windowHours = parseWindowHours(req.query.windowHours, errors);
+  if (Object.keys(errors).length) {
+    badRequest(req, res, errors);
+    return;
   }
+  res.json(await assessRoute(route, windowHours, 'predefined', wantsFresh(req)));
 });
 
-app.get("/health", (_req, res) => {
-  res.send("Healthy");
+// Also exposed as the "Assess all routes" dashboard command (see apphost.mts).
+app.post('/api/routes/assessments', async (req, res) => {
+  const errors: ValidationErrors = {};
+  const windowHours = parseWindowHours(req.query.windowHours, errors);
+  if (Object.keys(errors).length) {
+    badRequest(req, res, errors);
+    return;
+  }
+  const fresh = wantsFresh(req);
+  const assessments = await Promise.all(FLEET_ROUTES.map((route) => assessRoute(route, windowHours, 'predefined', fresh)));
+  const totals = { go: 0, delay: 0, reroute: 0 };
+  for (const assessment of assessments) totals[assessment.recommendation]++;
+  logger.info(
+    { windowHours, ...totals },
+    `Fleet assessed: ${totals.go} go, ${totals.delay} delay, ${totals.reroute} reroute`,
+  );
+  res.json({
+    windowHours,
+    assessedAt: new Date().toISOString(),
+    totals,
+    routes: assessments.map(({ routeId, name, recommendation, overallRiskScore, riskLevel, summary }) => ({
+      routeId,
+      name,
+      recommendation,
+      overallRiskScore,
+      riskLevel,
+      summary,
+    })),
+  });
 });
 
-// Expose the raw OpenAPI 3.1 document for external tooling and clients.
-app.get("/openapi.json", (_req, res) => {
+app.post('/api/assessments', async (req, res) => {
+  const errors: ValidationErrors = {};
+  const route = parseCustomRoute(req.body, errors);
+  const windowHours = parseWindowHours((req.body as Record<string, unknown> | undefined)?.windowHours, errors);
+  if (Object.keys(errors).length) {
+    badRequest(req, res, errors);
+    return;
+  }
+  res.json(await assessRoute(route, windowHours, 'custom', wantsFresh(req)));
+});
+
+app.use('/api', (req, res) => {
+  problem(req, res, 404, 'Not found', `${req.method} ${req.originalUrl} is not an API operation. See /scalar.`);
+});
+
+app.get('/health', (_req, res) => {
+  res.type('text/plain').send('Healthy');
+});
+
+app.get('/openapi.json', (_req, res) => {
   res.json(openApiDocument);
 });
 
-// Render an interactive Scalar API reference from the OpenAPI document at /reference.
 app.use(
-  "/reference",
+  '/scalar',
   apiReference({
     content: openApiDocument,
-    theme: "deepSpace",
-    layout: "modern",
-    _integration: "express",
-    metaData: { title: "Aspire Weather Explorer API" },
+    theme: 'purple',
+    _integration: 'express',
+    metaData: { title: 'Fleet Weather API reference' },
   }),
 );
+app.get('/reference', (_req, res) => {
+  res.redirect(301, '/scalar');
+});
 
-// Serve static files from the "static" directory if it exists (used in publish/deploy mode
-// when the frontend's build output is bundled into this container via publishWithContainerFiles)
-const staticDir = join(import.meta.dirname, "..", "static");
+// In publish mode the frontend build is copied into ./static (publishWithContainerFiles in apphost.mts).
+const staticDir = join(import.meta.dirname, '..', 'static');
 if (existsSync(staticDir)) {
   app.use(express.static(staticDir));
 } else {
-  // Dev mode (no bundled SPA): point the API root at the Scalar reference instead of
-  // Express's default "Cannot GET /" response.
-  app.get("/", (_req, res) => {
-    res.redirect("/reference");
+  app.get('/', (_req, res) => {
+    res.redirect('/scalar');
   });
 }
 
+const errorHandler: ErrorRequestHandler = (err, req, res, _next) => {
+  if (err instanceof UpstreamError) {
+    logger.error({ error: err.message }, 'Forecast provider unavailable');
+    problem(req, res, 502, 'Forecast provider unavailable', 'Open-Meteo could not be reached or returned an error. Try again shortly.');
+    return;
+  }
+  // Body parser errors (malformed JSON, oversized body) carry a 4xx status.
+  if (typeof err?.status === 'number' && err.status >= 400 && err.status < 500) {
+    badRequest(req, res, { body: [err.type === 'entity.parse.failed' ? 'The request body is not valid JSON.' : String(err.message)] });
+    return;
+  }
+  logger.error({ error: (err as Error)?.message }, 'Unhandled error');
+  problem(req, res, 500, 'Unexpected error', 'The server failed to process the request.');
+};
+app.use(errorHandler);
+
 app.listen(port, () => {
-  console.log(`API server listening on port ${port}`);
+  logger.info({ port }, `Fleet Weather API listening on port ${port}`);
 });

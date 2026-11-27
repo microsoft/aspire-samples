@@ -1,219 +1,451 @@
 /**
- * OpenAPI 3.1 description of the Weather Explorer API.
- *
- * This document powers the interactive Scalar API reference served at `/reference`
- * and is also exposed as raw JSON at `/openapi.json` for external tooling. Keep it
- * in sync with the route handlers in `index.ts`.
+ * OpenAPI 3.1 description of the Fleet Weather API, served raw at `/openapi.json` and rendered
+ * by Scalar at `/scalar`. Keep it in sync with the handlers in index.ts and the types in
+ * assessment.ts and risk.ts.
  */
+import { FLEET_ROUTES } from './fleet.ts';
 
-const errorSchema = {
-  type: "object",
-  properties: {
-    error: { type: "string", description: "Human-readable failure message." },
-  },
-  required: ["error"],
+const ref = (name: string) => ({ $ref: `#/components/schemas/${name}` });
+const json = (schema: object, example?: unknown) => ({
+  'application/json': { schema, ...(example !== undefined && { example }) },
+});
+const problemJson = (example: object) => ({ 'application/problem+json': { schema: ref('ProblemDetails'), example } });
+
+const riskLevels = ['low', 'moderate', 'high', 'severe'];
+const recommendations = ['go', 'delay', 'reroute'];
+const hazardTypes = ['wind', 'rain', 'snow', 'ice', 'visibility', 'thunderstorm', 'cold'];
+
+const exampleTraceId = '4bf92f3577b34da6a3ce929d0e0e4736';
+
+const exampleAssessment = {
+  routeId: 'den-gjt',
+  name: 'Denver → Grand Junction',
+  corridor: 'I-70',
+  source: 'predefined',
+  windowHours: 24,
+  assessedAt: '2026-11-27T04:12:09.512Z',
+  distanceKm: 324,
+  recommendation: 'reroute',
+  overallRiskScore: 96,
+  riskLevel: 'severe',
+  summary: 'Reroute: high wind (101 km/h) on Idaho Springs → Eisenhower Tunnel.',
+  legs: [
+    {
+      index: 0,
+      from: 'Denver',
+      to: 'Idaho Springs',
+      distanceKm: 45,
+      riskScore: 41,
+      riskLevel: 'moderate',
+      hazards: [
+        { type: 'wind', label: 'High wind', severity: 'moderate', score: 41, peakValue: 57.6, unit: 'km/h', peakAt: '2026-11-27T13:00Z' },
+      ],
+      conditions: { maxGustKph: 58, minTempC: -6.1, maxTempC: 4.2, precipitationMm: 0, snowfallCm: 0.4, minVisibilityM: 18400 },
+      path: [[39.7392, -104.9903], [39.7409, -105.252], [39.7425, -105.5136]],
+    },
+    {
+      index: 1,
+      from: 'Idaho Springs',
+      to: 'Eisenhower Tunnel',
+      distanceKm: 36,
+      riskScore: 96,
+      riskLevel: 'severe',
+      hazards: [
+        { type: 'wind', label: 'High wind', severity: 'severe', score: 86, peakValue: 100.8, unit: 'km/h', peakAt: '2026-11-27T15:00Z' },
+        { type: 'visibility', label: 'Low visibility', severity: 'high', score: 73, peakValue: 300, unit: 'm', peakAt: '2026-11-27T19:00Z' },
+        { type: 'snow', label: 'Snow', severity: 'moderate', score: 47, peakValue: 1.1, unit: 'cm/h', peakAt: '2026-11-27T19:00Z' },
+      ],
+      conditions: { maxGustKph: 101, minTempC: -12.6, maxTempC: -0.9, precipitationMm: 6.4, snowfallCm: 9.1, minVisibilityM: 300 },
+      path: [[39.7425, -105.5136], [39.7111, -105.7213], [39.6797, -105.9289]],
+    },
+  ],
 };
 
 export const openApiDocument = {
-  openapi: "3.1.0",
+  openapi: '3.1.0',
   info: {
-    title: "Aspire Weather Explorer API",
-    version: "1.0.0",
-    description:
-      "Server-side weather and geocoding endpoints for the Aspire Weather Explorer.\n\n" +
-      "Current conditions and forecasts come from [Open-Meteo](https://open-meteo.com); " +
-      "place lookups use Open-Meteo geocoding and BigDataCloud reverse geocoding. " +
-      "All upstreams are keyless.",
+    title: 'Fleet Weather API',
+    version: '1.0.0',
+    summary: 'Weather risk scoring for delivery routes.',
+    description: [
+      'Scores each leg of a delivery route for weather risk over the next 1-48 hours and recommends whether to **go**, **delay** or **reroute**.',
+      '',
+      'Each leg is sampled at its start, midpoint and end with one multi-coordinate [Open-Meteo](https://open-meteo.com) forecast request (hourly gusts, rain, showers, snowfall, visibility, temperature and WMO weather code).',
+      '',
+      '| Hazard | Moderate | High | Severe |',
+      '| --- | --- | --- | --- |',
+      '| Wind gusts | 50 km/h | 70 km/h | 90 km/h |',
+      '| Heavy rain | 4 mm/h | 8 mm/h | 16 mm/h |',
+      '| Snowfall | 0.5 cm/h | 1.5 cm/h | 3 cm/h |',
+      '| Icing | rain at or below 0.5 °C | freezing drizzle | freezing rain |',
+      '| Low visibility | 2,000 m | 500 m | 200 m |',
+      '| Thunderstorm | | thunder | thunder with hail |',
+      '| Extreme cold | -20 °C | -30 °C | -40 °C |',
+      '',
+      'A leg scores 0-100: its worst hazard plus 5 for each additional hazard. Routes are **rerouted** when any leg has a severe wind, snow or icing hazard, **delayed** when the worst leg scores 60 or more, and otherwise cleared to **go**.',
+      '',
+      'Forecasts are cached for 10 minutes per leg and window, which keeps a full fleet assessment well inside the Open-Meteo free tier. Send `Cache-Control: no-cache` to re-check with fresh forecasts.',
+      '',
+      'Errors use [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457) problem details with a `traceId` you can paste into the Aspire dashboard.',
+    ].join('\n'),
+    license: { name: 'MIT', identifier: 'MIT' },
   },
-  servers: [{ url: "/", description: "This API instance" }],
+  servers: [{ url: '/', description: 'This API instance' }],
   tags: [
-    { name: "Weather", description: "Current conditions and multi-day forecasts." },
-    { name: "Geocoding", description: "Turn place names into coordinates." },
-    { name: "System", description: "Operational endpoints." },
+    { name: 'Routes', description: "The fleet's predefined linehaul routes." },
+    { name: 'Assessments', description: 'Weather risk assessments with a go / delay / reroute recommendation.' },
+    { name: 'System', description: 'Operational endpoints.' },
   ],
   paths: {
-    "/api/weather": {
+    '/api/routes': {
       get: {
-        tags: ["Weather"],
-        summary: "Current conditions and 5-day forecast",
+        tags: ['Routes'],
+        operationId: 'listRoutes',
+        summary: 'List fleet routes',
+        description: 'Returns the predefined routes with their waypoints, leg count and great-circle distance.',
+        responses: {
+          '200': {
+            description: 'The fleet routes.',
+            content: json({ type: 'array', items: ref('FleetRoute') }, [
+              {
+                ...FLEET_ROUTES[0],
+                legCount: FLEET_ROUTES[0].waypoints.length - 1,
+                distanceKm: 254,
+              },
+            ]),
+          },
+        },
+      },
+    },
+    '/api/routes/{routeId}/assessment': {
+      get: {
+        tags: ['Assessments'],
+        operationId: 'assessRoute',
+        summary: 'Assess a predefined route',
         description:
-          "Returns current conditions, the next 12 hours, and a 5-day forecast for a " +
-          "coordinate, plus a best-effort place name from reverse geocoding.",
-        operationId: "getWeather",
+          'Forecasts every leg of the route over the requested window, scores each leg and returns the dispatch recommendation. Each leg lists its hazards (peak value and time) and summary conditions.',
         parameters: [
           {
-            name: "lat",
-            in: "query",
+            name: 'routeId',
+            in: 'path',
             required: true,
-            description: "Latitude in decimal degrees.",
-            schema: { type: "number", minimum: -90, maximum: 90, examples: [47.6] },
+            description: 'Route id from `GET /api/routes`.',
+            schema: { type: 'string', enum: FLEET_ROUTES.map((route) => route.id) },
+            example: 'den-gjt',
           },
-          {
-            name: "lon",
-            in: "query",
-            required: true,
-            description: "Longitude in decimal degrees.",
-            schema: { type: "number", minimum: -180, maximum: 180, examples: [-122.3] },
-          },
+          { $ref: '#/components/parameters/windowHours' },
+          { $ref: '#/components/parameters/CacheControl' },
         ],
         responses: {
-          "200": {
-            description: "Weather forecast for the requested coordinate.",
-            content: { "application/json": { schema: { $ref: "#/components/schemas/Weather" } } },
+          '200': { description: 'The route assessment.', content: json(ref('RouteAssessment'), exampleAssessment) },
+          '400': {
+            description: '`windowHours` is not a whole number from 1 to 48.',
+            content: problemJson({
+              type: 'https://tools.ietf.org/html/rfc9110#section-15.5.1',
+              title: 'One or more validation errors occurred.',
+              status: 400,
+              detail: 'See errors for the invalid fields.',
+              instance: '/api/routes/den-gjt/assessment?windowHours=72',
+              traceId: exampleTraceId,
+              errors: { windowHours: ['windowHours must be a whole number of hours from 1 to 48.'] },
+            }),
           },
-          "400": {
-            description: "Missing or out-of-range coordinates.",
-            content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } },
+          '404': {
+            description: 'No predefined route has this id.',
+            content: problemJson({
+              type: 'https://tools.ietf.org/html/rfc9110#section-15.5.5',
+              title: 'Route not found',
+              status: 404,
+              detail: "No predefined route has the id 'den-lax'. GET /api/routes lists them.",
+              instance: '/api/routes/den-lax/assessment',
+              traceId: exampleTraceId,
+            }),
           },
-          "502": {
-            description: "The upstream weather provider could not be reached.",
-            content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } },
-          },
+          '502': { $ref: '#/components/responses/UpstreamUnavailable' },
         },
       },
     },
-    "/api/geocode": {
-      get: {
-        tags: ["Geocoding"],
-        summary: "Search for places by name",
-        description: "Returns up to five coordinate matches for a place-name query.",
-        operationId: "geocode",
-        parameters: [
-          {
-            name: "q",
-            in: "query",
-            required: true,
-            description: "Place name to search for (minimum 2 characters).",
-            schema: { type: "string", minLength: 2, examples: ["Seattle"] },
-          },
-        ],
+    '/api/routes/assessments': {
+      post: {
+        tags: ['Assessments'],
+        operationId: 'assessAllRoutes',
+        summary: 'Assess all routes',
+        description:
+          'Assesses every predefined route in parallel and returns one summary line per route plus totals. The Aspire dashboard runs this as the **Assess all routes** command on the `api` resource.',
+        parameters: [{ $ref: '#/components/parameters/windowHours' }, { $ref: '#/components/parameters/CacheControl' }],
         responses: {
-          "200": {
-            description: "Matching places (may be empty).",
-            content: { "application/json": { schema: { $ref: "#/components/schemas/GeocodeResults" } } },
+          '200': {
+            description: 'A fleet-wide summary.',
+            content: json(ref('FleetAssessment'), {
+              windowHours: 24,
+              assessedAt: '2026-11-27T04:12:11.087Z',
+              totals: { go: 1, delay: 2, reroute: 2 },
+              routes: [
+                {
+                  routeId: 'den-gjt',
+                  name: 'Denver → Grand Junction',
+                  recommendation: 'reroute',
+                  overallRiskScore: 96,
+                  riskLevel: 'severe',
+                  summary: 'Reroute: high wind (101 km/h) on Idaho Springs → Eisenhower Tunnel.',
+                },
+                {
+                  routeId: 'dfw-hou',
+                  name: 'Dallas → Houston',
+                  recommendation: 'go',
+                  overallRiskScore: 33,
+                  riskLevel: 'moderate',
+                  summary: 'Clear to dispatch: worst leg Huntsville → Houston has high wind (52.9 km/h).',
+                },
+              ],
+            }),
           },
-          "400": {
-            description: "Query too short or missing.",
-            content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } },
-          },
-          "502": {
-            description: "The upstream geocoding provider could not be reached.",
-            content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } },
-          },
+          '400': { $ref: '#/components/responses/ValidationProblem' },
+          '502': { $ref: '#/components/responses/UpstreamUnavailable' },
         },
       },
     },
-    "/health": {
-      get: {
-        tags: ["System"],
-        summary: "Liveness probe",
-        description: "Returns `Healthy` when the service is up. Used by the Aspire health check.",
-        operationId: "health",
+    '/api/assessments': {
+      post: {
+        tags: ['Assessments'],
+        operationId: 'assessCustomRoute',
+        summary: 'Assess a custom route',
+        description:
+          'Assesses an ad hoc route through 2-10 waypoints, in order. Waypoints without a name are labeled `Stop 1`, `Stop 2` and so on.',
+        parameters: [{ $ref: '#/components/parameters/CacheControl' }],
+        requestBody: {
+          required: true,
+          content: json(ref('CustomRouteRequest'), {
+            name: 'Cheyenne → Rock Springs',
+            windowHours: 12,
+            waypoints: [
+              { name: 'Cheyenne', lat: 41.14, lon: -104.8202 },
+              { name: 'Laramie', lat: 41.3114, lon: -105.5911 },
+              { name: 'Rawlins', lat: 41.7911, lon: -107.2387 },
+              { name: 'Rock Springs', lat: 41.5875, lon: -109.2029 },
+            ],
+          }),
+        },
         responses: {
-          "200": {
-            description: "The service is healthy.",
-            content: { "text/plain": { schema: { type: "string", examples: ["Healthy"] } } },
+          '200': {
+            description: 'The custom route assessment (`routeId` is null and `source` is `custom`).',
+            content: json(ref('RouteAssessment')),
           },
+          '400': {
+            description: 'The body is not valid JSON, or a field is missing or out of range.',
+            content: problemJson({
+              type: 'https://tools.ietf.org/html/rfc9110#section-15.5.1',
+              title: 'One or more validation errors occurred.',
+              status: 400,
+              detail: 'See errors for the invalid fields.',
+              instance: '/api/assessments',
+              traceId: exampleTraceId,
+              errors: { waypoints: ['Provide between 2 and 10 waypoints.'] },
+            }),
+          },
+          '502': { $ref: '#/components/responses/UpstreamUnavailable' },
+        },
+      },
+    },
+    '/health': {
+      get: {
+        tags: ['System'],
+        operationId: 'health',
+        summary: 'Liveness probe',
+        description: 'Returns `Healthy` when the service is up. The AppHost uses it as the resource health check.',
+        responses: {
+          '200': { description: 'The service is healthy.', content: { 'text/plain': { schema: { type: 'string' }, example: 'Healthy' } } },
         },
       },
     },
   },
   components: {
+    parameters: {
+      CacheControl: {
+        name: 'Cache-Control',
+        in: 'header',
+        required: false,
+        description: 'Send `no-cache` to fetch fresh forecasts from Open-Meteo instead of the 10-minute forecast cache.',
+        schema: { type: 'string', enum: ['no-cache'] },
+      },
+      windowHours: {
+        name: 'windowHours',
+        in: 'query',
+        required: false,
+        description: 'Forecast window in hours, starting at the current hour.',
+        schema: { type: 'integer', minimum: 1, maximum: 48, default: 24 },
+        example: 24,
+      },
+    },
+    responses: {
+      ValidationProblem: {
+        description: '`windowHours` is not a whole number from 1 to 48.',
+        content: problemJson({
+          type: 'https://tools.ietf.org/html/rfc9110#section-15.5.1',
+          title: 'One or more validation errors occurred.',
+          status: 400,
+          detail: 'See errors for the invalid fields.',
+          instance: '/api/routes/assessments?windowHours=0',
+          traceId: exampleTraceId,
+          errors: { windowHours: ['windowHours must be a whole number of hours from 1 to 48.'] },
+        }),
+      },
+      UpstreamUnavailable: {
+        description: 'Open-Meteo could not be reached, timed out or returned an error.',
+        content: problemJson({
+          type: 'https://tools.ietf.org/html/rfc9110#section-15.6.3',
+          title: 'Forecast provider unavailable',
+          status: 502,
+          detail: 'Open-Meteo could not be reached or returned an error. Try again shortly.',
+          instance: '/api/routes/den-slc/assessment',
+          traceId: exampleTraceId,
+        }),
+      },
+    },
     schemas: {
-      Error: errorSchema,
-      Location: {
-        type: "object",
-        description: "Resolved place metadata for the requested coordinate.",
+      Waypoint: {
+        type: 'object',
+        description: 'A named stop, junction or mountain pass on a route.',
         properties: {
-          name: { type: ["string", "null"], description: "City or locality name, if known." },
-          region: { type: ["string", "null"], description: "State, province, or region." },
-          country: { type: ["string", "null"] },
-          latitude: { type: "number" },
-          longitude: { type: "number" },
-          timezone: { type: ["string", "null"], description: "IANA timezone reported by the provider." },
+          name: { type: 'string', maxLength: 60, examples: ['Eisenhower Tunnel'] },
+          lat: { type: 'number', minimum: -90, maximum: 90, description: 'Latitude in decimal degrees.', examples: [39.6797] },
+          lon: { type: 'number', minimum: -180, maximum: 180, description: 'Longitude in decimal degrees.', examples: [-105.9289] },
         },
-        required: ["latitude", "longitude"],
+        required: ['lat', 'lon'],
       },
-      Current: {
-        type: "object",
-        description: "Current conditions. Temperatures are in Celsius; the client converts as needed.",
+      FleetRoute: {
+        type: 'object',
         properties: {
-          temperatureC: { type: ["number", "null"] },
-          apparentC: { type: ["number", "null"], description: "Apparent ('feels like') temperature." },
-          humidity: { type: ["number", "null"], description: "Relative humidity, percent." },
-          weatherCode: { type: "integer", description: "WMO weather interpretation code." },
-          windSpeedKph: { type: ["number", "null"] },
-          uvIndex: { type: ["number", "null"] },
-          isDay: { type: "boolean", description: "True when the sun is up at the location." },
-          time: { type: ["string", "null"], description: "Local observation time (ISO 8601)." },
+          id: { type: 'string', examples: ['den-gjt'] },
+          name: { type: 'string', examples: ['Denver → Grand Junction'] },
+          region: { type: 'string', examples: ['Colorado Rockies'] },
+          corridor: { type: 'string', description: 'Highways the route follows.', examples: ['I-70'] },
+          legCount: { type: 'integer', minimum: 1 },
+          distanceKm: { type: 'integer', description: 'Great-circle distance through the waypoints, in kilometers.' },
+          waypoints: { type: 'array', items: ref('Waypoint'), minItems: 2 },
         },
+        required: ['id', 'name', 'region', 'corridor', 'legCount', 'distanceKm', 'waypoints'],
       },
-      Sun: {
-        type: "object",
+      Hazard: {
+        type: 'object',
+        description: 'The worst hour of one hazard type on a leg.',
         properties: {
-          sunrise: { type: ["string", "null"], description: "Local sunrise time (ISO 8601)." },
-          sunset: { type: ["string", "null"], description: "Local sunset time (ISO 8601)." },
+          type: { type: 'string', enum: hazardTypes },
+          label: { type: 'string', examples: ['High wind'] },
+          severity: { type: 'string', enum: riskLevels.slice(1) },
+          score: { type: 'integer', minimum: 30, maximum: 100 },
+          peakValue: { type: 'number', description: 'Worst observed value, in `unit`.', examples: [100.8] },
+          unit: { type: 'string', examples: ['km/h'] },
+          peakAt: { type: 'string', format: 'date-time', description: 'Forecast hour (UTC) of the peak.' },
         },
+        required: ['type', 'label', 'severity', 'score', 'peakValue', 'unit', 'peakAt'],
       },
-      HourlyPoint: {
-        type: "object",
+      LegConditions: {
+        type: 'object',
+        description: 'Summary of the forecast across the leg and window.',
         properties: {
-          time: { type: "string", description: "Local hour (ISO 8601)." },
-          temperatureC: { type: ["number", "null"] },
-          weatherCode: { type: "integer", description: "WMO weather interpretation code." },
+          maxGustKph: { type: 'integer' },
+          minTempC: { type: 'number' },
+          maxTempC: { type: 'number' },
+          precipitationMm: { type: 'number', description: 'Rain and showers at the wettest sample point.' },
+          snowfallCm: { type: 'number', description: 'Snowfall at the snowiest sample point.' },
+          minVisibilityM: { type: ['integer', 'null'] },
         },
-        required: ["time"],
+        required: ['maxGustKph', 'minTempC', 'maxTempC', 'precipitationMm', 'snowfallCm', 'minVisibilityM'],
       },
-      DailyPoint: {
-        type: "object",
+      LegAssessment: {
+        type: 'object',
         properties: {
-          date: { type: "string", description: "Local date (ISO 8601)." },
-          weatherCode: { type: "integer", description: "WMO weather interpretation code." },
-          maxC: { type: ["number", "null"], description: "Daily high in Celsius." },
-          minC: { type: ["number", "null"], description: "Daily low in Celsius." },
-          precipitationProb: { type: ["number", "null"], description: "Max precipitation probability, percent." },
-        },
-        required: ["date"],
-      },
-      Weather: {
-        type: "object",
-        properties: {
-          location: { $ref: "#/components/schemas/Location" },
-          current: { $ref: "#/components/schemas/Current" },
-          sun: { $ref: "#/components/schemas/Sun" },
-          hourly: {
-            type: "array",
-            description: "Up to 12 upcoming hours starting at the current hour.",
-            items: { $ref: "#/components/schemas/HourlyPoint" },
-          },
-          daily: {
-            type: "array",
-            description: "5-day forecast starting today.",
-            items: { $ref: "#/components/schemas/DailyPoint" },
+          index: { type: 'integer', minimum: 0 },
+          from: { type: 'string' },
+          to: { type: 'string' },
+          distanceKm: { type: 'integer' },
+          riskScore: { type: 'integer', minimum: 0, maximum: 100 },
+          riskLevel: { type: 'string', enum: riskLevels },
+          hazards: { type: 'array', items: ref('Hazard'), description: 'Hazards of at least moderate severity, worst first.' },
+          conditions: ref('LegConditions'),
+          path: {
+            type: 'array',
+            description: 'Forecast sample points as `[lat, lon]`: start, midpoint and end.',
+            items: { type: 'array', items: { type: 'number' }, minItems: 2, maxItems: 2 },
           },
         },
-        required: ["location", "current", "sun", "hourly", "daily"],
+        required: ['index', 'from', 'to', 'distanceKm', 'riskScore', 'riskLevel', 'hazards', 'conditions', 'path'],
       },
-      GeocodeResult: {
-        type: "object",
+      RouteAssessment: {
+        type: 'object',
         properties: {
-          name: { type: "string" },
-          region: { type: ["string", "null"], description: "State, province, or region." },
-          country: { type: ["string", "null"] },
-          latitude: { type: "number" },
-          longitude: { type: "number" },
+          routeId: { type: ['string', 'null'], description: 'Null for custom routes.' },
+          name: { type: 'string' },
+          corridor: { type: ['string', 'null'] },
+          source: { type: 'string', enum: ['predefined', 'custom'] },
+          windowHours: { type: 'integer', minimum: 1, maximum: 48 },
+          assessedAt: { type: 'string', format: 'date-time' },
+          distanceKm: { type: 'integer' },
+          recommendation: { type: 'string', enum: recommendations },
+          overallRiskScore: { type: 'integer', minimum: 0, maximum: 100, description: 'The worst leg score.' },
+          riskLevel: { type: 'string', enum: riskLevels },
+          summary: { type: 'string', description: 'One-line explanation of the recommendation.' },
+          legs: { type: 'array', items: ref('LegAssessment') },
         },
-        required: ["name", "latitude", "longitude"],
+        required: [
+          'routeId', 'name', 'corridor', 'source', 'windowHours', 'assessedAt', 'distanceKm',
+          'recommendation', 'overallRiskScore', 'riskLevel', 'summary', 'legs',
+        ],
       },
-      GeocodeResults: {
-        type: "object",
+      RouteSummary: {
+        type: 'object',
         properties: {
-          results: {
-            type: "array",
-            items: { $ref: "#/components/schemas/GeocodeResult" },
+          routeId: { type: 'string' },
+          name: { type: 'string' },
+          recommendation: { type: 'string', enum: recommendations },
+          overallRiskScore: { type: 'integer', minimum: 0, maximum: 100 },
+          riskLevel: { type: 'string', enum: riskLevels },
+          summary: { type: 'string' },
+        },
+        required: ['routeId', 'name', 'recommendation', 'overallRiskScore', 'riskLevel', 'summary'],
+      },
+      FleetAssessment: {
+        type: 'object',
+        properties: {
+          windowHours: { type: 'integer' },
+          assessedAt: { type: 'string', format: 'date-time' },
+          totals: {
+            type: 'object',
+            description: 'Number of routes per recommendation.',
+            properties: { go: { type: 'integer' }, delay: { type: 'integer' }, reroute: { type: 'integer' } },
+            required: ['go', 'delay', 'reroute'],
+          },
+          routes: { type: 'array', items: ref('RouteSummary') },
+        },
+        required: ['windowHours', 'assessedAt', 'totals', 'routes'],
+      },
+      CustomRouteRequest: {
+        type: 'object',
+        properties: {
+          name: { type: 'string', maxLength: 80, default: 'Custom route' },
+          windowHours: { type: 'integer', minimum: 1, maximum: 48, default: 24 },
+          waypoints: { type: 'array', items: ref('Waypoint'), minItems: 2, maxItems: 10 },
+        },
+        required: ['waypoints'],
+      },
+      ProblemDetails: {
+        type: 'object',
+        description: 'RFC 9457 problem details.',
+        properties: {
+          type: { type: 'string', format: 'uri' },
+          title: { type: 'string' },
+          status: { type: 'integer' },
+          detail: { type: 'string' },
+          instance: { type: 'string' },
+          traceId: { type: 'string', description: 'W3C trace id of the failed request; search for it in the Aspire dashboard.' },
+          errors: {
+            type: 'object',
+            description: 'Validation messages keyed by field.',
+            additionalProperties: { type: 'array', items: { type: 'string' } },
           },
         },
-        required: ["results"],
+        required: ['type', 'title', 'status'],
       },
     },
   },
