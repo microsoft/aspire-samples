@@ -21,4 +21,8 @@ internal static partial class Log
     [LoggerMessage(EventId = 3005, Level = LogLevel.Information,
         Message = "Simulated {ShopperCount} shoppers: {OrdersPlaced} orders placed ({Revenue} USD), {BasketsAbandoned} baskets abandoned, {BasketsLeftOpen} left open, {Failed} failed")]
     public static partial void ShopperTrafficSimulated(this ILogger logger, int shopperCount, int ordersPlaced, decimal revenue, int basketsAbandoned, int basketsLeftOpen, int failed);
+
+    [LoggerMessage(EventId = 3006, Level = LogLevel.Information,
+        Message = "Captured catalog prices for {ItemCount} unpriced items in the basket for buyer {BuyerId}")]
+    public static partial void UnitPricesBackfilled(this ILogger logger, int itemCount, string buyerId);
 }

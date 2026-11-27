@@ -58,23 +58,28 @@
         {
             <div class="cart-layout">
                 <ul class="cart-lines" aria-label="Items in this order">
-                    @foreach (var line in lines.Where(l => l.Item is not null))
+                    @foreach (var line in lines)
                     {
-                        var item = line.Item!;
-
-                        <li class="cart-line">
+                        <li class="cart-line @(line.Item is null ? "is-unavailable" : null)">
                             <div class="cart-line-media">
-                                <img src="catalog/images/@line.ProductId" alt="@item.Name" loading="lazy" />
+                                @if (line.Item is not null)
+                                {
+                                    <img src="catalog/images/@line.ProductId" alt="@line.Item.Name" loading="lazy" />
+                                }
+                                else
+                                {
+                                    <span class="cart-line-media-fallback" aria-hidden="true">@Icons.Handbag</span>
+                                }
                             </div>
                             <div class="cart-line-info">
-                                @if (item.CatalogBrand is { Brand: var brand })
+                                @if (line.Item?.CatalogBrand is { Brand: var brand })
                                 {
                                     <p class="cart-line-brand">@brand</p>
                                 }
-                                <h2 class="cart-line-name">@item.Name</h2>
-                                <p class="cart-line-unit">@line.Quantity × @item.Price.ToString("C")</p>
+                                <h2 class="cart-line-name">@(line.Item?.Name ?? "Item no longer available")</h2>
+                                <p class="cart-line-unit">@line.Quantity × @line.UnitPrice.ToString("C")</p>
                             </div>
-                            <p class="cart-line-total">@((item.Price * line.Quantity).ToString("C"))</p>
+                            <p class="cart-line-total">@line.Total.ToString("C")</p>
                         </li>
                     }
                 </ul>
@@ -103,6 +108,10 @@
         }
         else if (lines.Count == 0)
         {
+            @* Keep the checkout form registered, so a checkout posted after this basket was already checked out
+               (from another tab, or a double submit) is handled and rejected rather than failing with a 400 *@
+            <EditForm Model="this" FormName="cart-checkout" OnValidSubmit="HandleCheckout" />
+
             <div class="cart-empty">
                 <span class="cart-empty-icon" aria-hidden="true">@Icons.Handbag</span>
                 <h2 class="cart-empty-title">Your cart is empty</h2>
@@ -136,7 +145,7 @@
                                         <p class="cart-line-brand">@brand</p>
                                     }
                                     <h2 class="cart-line-name">@line.Item.Name</h2>
-                                    <p class="cart-line-unit">@line.Item.Price.ToString("C") each</p>
+                                    <p class="cart-line-unit">@line.UnitPrice.ToString("C") each</p>
                                 }
                                 else
                                 {
@@ -168,8 +177,8 @@
                                         </button>
                                     </EditForm>
 
-                                    <p class="cart-line-total" aria-label="@($"Line total {(line.Item.Price * line.Quantity).ToString("C")}")">
-                                        @((line.Item.Price * line.Quantity).ToString("C"))
+                                    <p class="cart-line-total" aria-label="@($"Line total {line.Total.ToString("C")}")">
+                                        @line.Total.ToString("C")
                                     </p>
                                 }
                                 else
@@ -200,10 +209,14 @@
                             <dd>@Subtotal.ToString("C")</dd>
                         </div>
                     </dl>
-                    <p class="summary-note">Subtotal is calculated from current Catalog service prices.</p>
+                    <p class="summary-note">Prices were captured from the Catalog service when each item was added.</p>
+                    @if (HasUnavailableItems)
+                    {
+                        <p class="summary-note">Remove items that are no longer available to check out.</p>
+                    }
 
                     <EditForm Model="this" FormName="cart-checkout" OnValidSubmit="HandleCheckout" data-enhance>
-                        <button type="submit" class="btn btn-primary btn-block">
+                        <button type="submit" class="btn btn-primary btn-block" disabled="@HasUnavailableItems">
                             <span class="btn-icon" aria-hidden="true">@Icons.Check</span>
                             <span>Checkout</span>
                         </button>
@@ -232,6 +245,9 @@
     List<CartLine> lines = new();
     OrderConfirmation? order;
 
+    // Catalog entries for the products in the basket, or null for products that are no longer in the catalog
+    readonly Dictionary<int, CatalogItem?> catalogItems = new();
+
     [SupplyParameterFromForm]
     public int ProductId { get; set; }
 
@@ -240,7 +256,9 @@
 
     int TotalItemCount => lines.Where(l => l.Item is not null).Sum(l => l.Quantity);
 
-    decimal Subtotal => lines.Where(l => l.Item is not null).Sum(l => l.Item!.Price * l.Quantity);
+    decimal Subtotal => lines.Where(l => l.Item is not null).Sum(l => l.Total);
+
+    bool HasUnavailableItems => lines.Any(l => l.Item is null);
 
     protected override async Task OnInitializedAsync()
     {
@@ -249,9 +267,13 @@
 
         if (available && basket is { Items.Count: > 0 })
         {
-            var resolved = await Task.WhenAll(basket.Items.Select(async item =>
-                new CartLine(item.ProductId, item.Quantity, await CatalogService.GetItemAsync(item.ProductId))));
-            lines = resolved.ToList();
+            lines = await ToCartLinesAsync(basket.Items);
+
+            if (lines.Any(l => l.UnitPrice <= 0 && l.Item is not null))
+            {
+                basket = await BasketClient.BackfillUnitPricesAsync(basket, catalogItems.Values.OfType<CatalogItem>());
+                lines = await ToCartLinesAsync(basket.Items);
+            }
         }
 
         loaded = true;
@@ -280,14 +302,23 @@
 
     private async Task HandleCheckout()
     {
-        // Render the confirmation in place: the lines loaded for this request are the items that were ordered.
+        // Products that left the catalog can't be ordered, so they have to be removed first
+        if (HasUnavailableItems)
+        {
+            return;
+        }
+
         order = await BasketClient.CheckoutBasketAsync("user");
 
         if (order is null)
         {
             // The basket was already checked out or emptied elsewhere, so reload its current state.
             Navigation.Refresh();
+            return;
         }
+
+        // Confirm exactly what the Basket service ordered, at the prices it totaled
+        lines = await ToCartLinesAsync(order.Items);
     }
 
     private async Task HandleClear()
@@ -298,5 +329,22 @@
         Navigation.Refresh();
     }
 
-    private record CartLine(int ProductId, int Quantity, CatalogItem? Item);
+    private async Task<List<CartLine>> ToCartLinesAsync(IReadOnlyCollection<BasketItem> items)
+    {
+        var missing = items.Select(i => i.ProductId).Distinct().Where(id => !catalogItems.ContainsKey(id)).ToArray();
+        var found = await Task.WhenAll(missing.Select(CatalogService.GetItemAsync));
+
+        foreach (var (productId, item) in missing.Zip(found))
+        {
+            catalogItems[productId] = item;
+        }
+
+        return [.. items.Select(i => new CartLine(i.ProductId, i.Quantity, i.UnitPrice, catalogItems[i.ProductId]))];
+    }
+
+    // UnitPrice is the price captured when the item was added, which is what the Basket service totals at checkout
+    private record CartLine(int ProductId, int Quantity, decimal UnitPrice, CatalogItem? Item)
+    {
+        public decimal Total => UnitPrice * Quantity;
+    }
 }

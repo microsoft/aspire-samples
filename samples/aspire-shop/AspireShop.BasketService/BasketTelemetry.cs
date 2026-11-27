@@ -77,7 +77,15 @@ public sealed class BasketTelemetry
         _orderValue.Record((double)orderTotal);
     }
 
-    public void CheckoutRejected(string outcome) => _checkouts.Add(1, Outcome(outcome));
+    public void CheckoutRejected(string outcome, bool basketRemoved)
+    {
+        if (basketRemoved)
+        {
+            _activeBaskets.Add(-1);
+        }
+
+        _checkouts.Add(1, Outcome(outcome));
+    }
 
     private static KeyValuePair<string, object?> Outcome(string outcome) => new("aspireshop.checkout.outcome", outcome);
 }

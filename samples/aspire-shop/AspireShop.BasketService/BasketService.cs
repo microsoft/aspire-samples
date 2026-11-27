@@ -26,16 +26,19 @@ public class BasketService(IBasketRepository repository, BasketTelemetry telemet
 
     public override async Task<CustomerBasketResponse> UpdateBasket(CustomerBasketRequest request, ServerCallContext context)
     {
+        if (string.IsNullOrEmpty(request.BuyerId))
+        {
+            throw new RpcException(new Status(StatusCode.InvalidArgument, "A buyer id is required"));
+        }
+
         using var activity = BasketTelemetry.ActivitySource.StartActivity("update basket");
         activity?.SetTag("aspireshop.buyer.id", request.BuyerId);
 
-        var previous = await repository.GetBasketAsync(request.BuyerId);
         var customerBasket = MapToCustomerBasket(request);
 
-        if (!await repository.UpdateBasketAsync(customerBasket))
-        {
-            throw new RpcException(new Status(StatusCode.NotFound, $"Basket with buyer id {request.BuyerId} does not exist"));
-        }
+        // The write returns the basket it replaced, so the metrics describe this exact change even when
+        // updates for the same buyer overlap (only one of them can find no previous basket and create it)
+        var previous = await repository.UpdateBasketAsync(customerBasket);
 
         var (itemsAdded, itemsRemoved) = CompareQuantities(previous, customerBasket);
         telemetry.BasketChanged(created: previous is null, itemsAdded, itemsRemoved);
@@ -58,13 +61,16 @@ public class BasketService(IBasketRepository repository, BasketTelemetry telemet
         using var activity = BasketTelemetry.ActivitySource.StartActivity("checkout basket");
         activity?.SetTag("aspireshop.buyer.id", buyerId);
 
-        var basket = await repository.GetBasketAsync(buyerId);
+        // Take the basket out of Redis in one step, so when checkouts of the same basket overlap only one of
+        // them gets its items and the others find no basket and are rejected
+        var basket = await repository.TakeBasketAsync(buyerId);
 
         if (basket is not { Items.Count: > 0 })
         {
             var outcome = basket is null ? "not_found" : "empty";
             activity?.SetTag("aspireshop.checkout.outcome", outcome);
-            telemetry.CheckoutRejected(outcome);
+            // An empty basket was taken too, which leaves the buyer with the same (empty) cart
+            telemetry.CheckoutRejected(outcome, basketRemoved: basket is not null);
             logger.CheckoutRejected(buyerId, outcome);
 
             throw basket is null
@@ -72,7 +78,7 @@ public class BasketService(IBasketRepository repository, BasketTelemetry telemet
                 : new RpcException(new Status(StatusCode.FailedPrecondition, $"Basket with buyer id {buyerId} is empty"));
         }
 
-        activity?.AddEvent(new ActivityEvent("basket.loaded"));
+        activity?.AddEvent(new ActivityEvent("basket.taken"));
 
         var order = new Order
         {
@@ -88,19 +94,19 @@ public class BasketService(IBasketRepository repository, BasketTelemetry telemet
 
         // Payment and fulfillment would be implemented here
 
-        await repository.DeleteBasketAsync(buyerId);
-        activity?.AddEvent(new ActivityEvent("basket.cleared"));
-
         activity?.SetTag("aspireshop.checkout.outcome", "completed");
         telemetry.CheckoutCompleted(order.Total);
         logger.OrderCreated(order.Id, buyerId, order.ItemCount, order.Total);
 
-        return new CheckoutCustomerBasketResponse
+        var response = new CheckoutCustomerBasketResponse
         {
             OrderId = order.Id,
             ItemCount = order.ItemCount,
             Total = order.Total
         };
+        response.Items.AddRange(order.Items.Select(MapToBasketItemResponse));
+
+        return response;
     }
 
     public override async Task<DeleteCustomerBasketResponse> DeleteBasket(DeleteCustomerBasketRequest request, ServerCallContext context)
@@ -134,21 +140,19 @@ public class BasketService(IBasketRepository repository, BasketTelemetry telemet
         {
             BuyerId = customerBasket.BuyerId
         };
-
-        foreach (var item in customerBasket.Items)
-        {
-            response.Items.Add(new BasketItemResponse
-            {
-                Id = item.Id ?? Guid.NewGuid().ToString(),
-                OldUnitPrice = item.OldUnitPrice,
-                ProductId = item.ProductId,
-                Quantity = item.Quantity,
-                UnitPrice = item.UnitPrice
-            });
-        }
+        response.Items.AddRange(customerBasket.Items.Select(MapToBasketItemResponse));
 
         return response;
     }
+
+    private static BasketItemResponse MapToBasketItemResponse(BasketItem item) => new()
+    {
+        Id = item.Id ?? Guid.NewGuid().ToString(),
+        OldUnitPrice = item.OldUnitPrice,
+        ProductId = item.ProductId,
+        Quantity = item.Quantity,
+        UnitPrice = item.UnitPrice
+    };
 
     private static CustomerBasket MapToCustomerBasket(CustomerBasketRequest customerBasketRequest)
     {

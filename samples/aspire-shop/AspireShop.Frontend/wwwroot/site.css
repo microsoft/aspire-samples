@@ -1229,6 +1229,12 @@ h1:focus-visible {
     width: 100%;
 }
 
+.btn:disabled {
+    opacity: .5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
 .btn-primary {
     background: var(--accent-strong);
     color: var(--accent-contrast);

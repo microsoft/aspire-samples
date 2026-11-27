@@ -67,7 +67,7 @@ public class BasketServiceClient(Basket.BasketClient client, FrontendTelemetry t
         try
         {
             var response = await client.CheckoutBasketAsync(new CheckoutCustomerBasketRequest { BuyerId = buyerId });
-            var order = new OrderConfirmation(response.OrderId, response.ItemCount, response.Total);
+            var order = new OrderConfirmation(response.OrderId, response.ItemCount, response.Total, [.. response.Items.Select(MapToBasketItem)]);
             var elapsed = Stopwatch.GetElapsedTime(start);
 
             activity?.SetTag("aspireshop.order.id", order.OrderId);
@@ -92,6 +92,31 @@ public class BasketServiceClient(Basket.BasketClient client, FrontendTelemetry t
     public async Task DeleteBasketAsync(string buyerId)
     {
         _ = await client.DeleteBasketAsync(new DeleteCustomerBasketRequest { BuyerId = buyerId });
+    }
+
+    /// <summary>
+    /// Baskets saved by earlier versions of the sample didn't capture a unit price. Capture the current catalog
+    /// price for those items, so the cart shows the same prices the Basket service totals at checkout.
+    /// </summary>
+    public async Task<CustomerBasket> BackfillUnitPricesAsync(CustomerBasket basket, IEnumerable<CatalogItem> catalogItems)
+    {
+        var prices = catalogItems.ToDictionary(i => i.Id, i => i.Price);
+        var unpriced = basket.Items.Where(i => i.UnitPrice <= 0 && prices.ContainsKey(i.ProductId)).ToList();
+
+        if (unpriced.Count == 0)
+        {
+            return basket;
+        }
+
+        foreach (var item in unpriced)
+        {
+            item.UnitPrice = prices[item.ProductId];
+        }
+
+        var response = await client.UpdateBasketAsync(MapToCustomerBasketRequest(basket));
+        logger.UnitPricesBackfilled(unpriced.Count, basket.BuyerId!);
+
+        return MapToCustomerBasket(response);
     }
 
     public async Task<CustomerBasket> AdjustItemQuantityAsync(string buyerId, int productId, int delta)
@@ -165,21 +190,20 @@ public class BasketServiceClient(Basket.BasketClient client, FrontendTelemetry t
         {
             BuyerId = wireBasket.BuyerId
         };
-
-        foreach (var item in wireBasket.Items)
-        {
-            response.Items.Add(new BasketItem
-            {
-                Id = item.Id,
-                OldUnitPrice = item.OldUnitPrice,
-                ProductId = item.ProductId,
-                Quantity = item.Quantity,
-                UnitPrice = item.UnitPrice
-            });
-        }
+        response.Items.AddRange(wireBasket.Items.Select(MapToBasketItem));
 
         return response;
     }
+
+    private static BasketItem MapToBasketItem(BasketItemResponse item) => new()
+    {
+        Id = item.Id,
+        OldUnitPrice = item.OldUnitPrice,
+        ProductId = item.ProductId,
+        Quantity = item.Quantity,
+        UnitPrice = item.UnitPrice
+    };
 }
 
-public record OrderConfirmation(string OrderId, int ItemCount, decimal Total);
+/// <summary>An order created by the Basket service, with the items it ordered at the prices it totaled.</summary>
+public record OrderConfirmation(string OrderId, int ItemCount, decimal Total, IReadOnlyList<BasketItem> Items);
