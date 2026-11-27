@@ -44,13 +44,14 @@ Every sample should show what Aspire does for a real app, not just that the app 
   ![Description of what the image shows (dark theme)](./images/<sample>-<page>-dark.png#gh-dark-mode-only)
   ```
 
-- Optimize images losslessly (for example with `oxipng`) to stay under about 400 KB each. Delete images that no longer match the UI, and don't leave dangling references.
+- Optimize images losslessly (for example with `oxipng`). Aim for about 400 KB each; pages full of photos or map tiles can be larger. Delete images that no longer match the UI, and don't leave dangling references.
+- [aspire.dev](https://aspire.dev) builds its samples gallery from each README: the first `#` heading is the title, the first paragraph is the description, and the first image (with its `#gh-light-mode-only` / `#gh-dark-mode-only` pair) is the thumbnail. Keep all three meaningful.
 
 ## Engineering rules
 
 - Builds use `TreatWarningsAsErrors` and `NuGetAuditMode=direct`, so new package references must be warning-free and free of known vulnerabilities. Use current stable versions.
 - Don't bump the Aspire packages or the preview-pinned Java hosting and PostgreSQL Entity Framework Core integrations outside a release update. Keep all samples on the same OpenTelemetry package baseline. Dependabot ignores `OpenTelemetry.*`, so update those by hand.
-- Keep sample folder names and resource names stable so inbound links keep working. If you change routes, update the sample's entry in [`tests/SamplesIntegrationTests/AppHostTests.cs`](./tests/SamplesIntegrationTests/AppHostTests.cs).
+- Keep sample folder names stable so inbound links keep working. If you rename resources or change routes, update the sample's entry in [`tests/SamplesIntegrationTests/AppHostTests.cs`](./tests/SamplesIntegrationTests/AppHostTests.cs) and check [aspire.dev](https://github.com/microsoft/aspire.dev) for pages that reference them.
 - Keep code idiomatic and concise, and comment only code that isn't obvious. Don't commit secrets.
 
 ## Validate your change
