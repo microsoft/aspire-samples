@@ -1,0 +1,180 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Expressive gradient hero in Angular's brand spectrum (white text clears AA on every stop). */
+.hero {
+  position: relative;
+  overflow: hidden;
+  padding: 1.5rem;
+  border-radius: var(--mat-sys-corner-large);
+  color: #fff;
+  background-color: var(--ng-hero-fallback);
+  background-image: linear-gradient(0deg, rgba(0, 0, 0, 0.16), rgba(0, 0, 0, 0.16)), var(--ng-hero-gradient);
+  box-shadow: 0 28px 60px -32px color-mix(in srgb, var(--ng-grad-end) 65%, transparent);
+}
+.hero::after {
+  content: '';
+  position: absolute;
+  inset: -55% -25% auto auto;
+  width: 20rem;
+  height: 20rem;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.24), transparent 65%);
+  pointer-events: none;
+}
+.hero > * {
+  position: relative;
+  z-index: 1;
+}
+.hero-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+.hero-eyebrow {
+  margin: 0;
+  font: var(--mat-sys-label-medium);
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.92);
+}
+.hero-id {
+  margin: 0.4rem 0 0;
+  font: var(--mat-sys-headline-medium);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  font-variant-numeric: tabular-nums;
+}
+.hero-route {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin: 0.35rem 0 0;
+  font: var(--mat-sys-title-medium);
+}
+.hero-progress {
+  height: 6px;
+  margin: 1rem 0 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.24);
+  overflow: hidden;
+}
+.hero-progress span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #fff;
+}
+.hero-eta {
+  display: flex;
+  flex-direction: column;
+  margin: 1rem 0 0;
+  padding: 0.75rem 0.9rem;
+  border-radius: var(--mat-sys-corner-medium);
+  background: rgba(255, 255, 255, 0.16);
+}
+.hero-eta-label {
+  font: var(--mat-sys-label-medium);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.9);
+}
+.hero-eta-value {
+  font: var(--mat-sys-title-large);
+  font-weight: 700;
+}
+.hero-eta-relative {
+  font: var(--mat-sys-body-medium);
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.panel {
+  padding: 1.25rem;
+  border-radius: var(--mat-sys-corner-large);
+  background: var(--mat-sys-surface-container);
+  border: 1px solid var(--mat-sys-outline-variant);
+}
+.facts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin: 0 0 1.25rem;
+}
+.facts > div {
+  padding: 0.7rem 0.9rem;
+  border-radius: var(--mat-sys-corner-medium);
+  background: var(--mat-sys-surface-container-highest);
+}
+dt {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font: var(--mat-sys-label-medium);
+  color: var(--mat-sys-on-surface-variant);
+}
+dt mat-icon,
+.where mat-icon {
+  font-size: 1rem;
+  width: 1rem;
+  height: 1rem;
+}
+dd {
+  margin: 0.2rem 0 0;
+  font: var(--mat-sys-title-small);
+  color: var(--mat-sys-on-surface);
+}
+
+.history-title {
+  margin: 0 0 0.75rem;
+  font: var(--mat-sys-title-medium);
+  font-weight: 700;
+}
+.timeline {
+  list-style: none;
+  margin: 0 0 0 0.5rem;
+  padding: 0 0 0 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  border-left: 2px solid var(--mat-sys-outline-variant);
+}
+.timeline li {
+  position: relative;
+}
+.timeline li::before {
+  content: '';
+  position: absolute;
+  left: calc(-1.5rem - 7px);
+  top: 0.3rem;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--mat-sys-surface-container);
+  border: 2px solid var(--mat-sys-outline);
+}
+.timeline li.latest::before {
+  background: var(--tone-fg);
+  border-color: var(--tone-fg);
+  box-shadow: 0 0 0 4px var(--tone-bg);
+}
+.what {
+  margin: 0;
+  font: var(--mat-sys-body-large);
+  font-weight: 500;
+  color: var(--mat-sys-on-surface);
+}
+.where {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin: 0.1rem 0 0;
+  font: var(--mat-sys-body-small);
+  color: var(--mat-sys-on-surface-variant);
+}

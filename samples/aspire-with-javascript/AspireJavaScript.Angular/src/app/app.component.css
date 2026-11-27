@@ -105,8 +105,8 @@
   padding: clamp(1.5rem, 4vw, 2.75rem) clamp(1rem, 4vw, 2rem) 3rem;
 }
 
-.forecast-head {
-  margin-bottom: 0.25rem;
+.board-head {
+  margin-bottom: 1rem;
 }
 .eyebrow {
   margin: 0;
@@ -116,7 +116,7 @@
   text-transform: uppercase;
   color: var(--mat-sys-primary);
 }
-.forecast-title {
+.board-title {
   margin: 0.1rem 0 0;
   font: var(--mat-sys-headline-medium);
   font-weight: 700;
@@ -124,220 +124,131 @@
   color: var(--mat-sys-on-surface);
 }
 
+.count {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.4rem;
+  margin-left: 0.4rem;
+  padding: 0 0.35rem;
+  border-radius: 999px;
+  font: var(--mat-sys-label-small);
+  font-weight: 700;
+  color: var(--tone-fg, var(--mat-sys-on-secondary-container));
+  background: var(--tone-bg, var(--mat-sys-secondary-container));
+}
+
 .progress-rail {
   min-height: 4px;
   margin: 0.75rem 0 0.25rem;
 }
-
 .status {
-  margin: 0 0 1.25rem;
+  margin: 0 0 1rem;
   font: var(--mat-sys-body-medium);
   color: var(--mat-sys-on-surface-variant);
 }
 
-/* Featured day -------------------------------------------------------------- */
-.hero {
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1.5rem clamp(1.5rem, 5vw, 4rem);
-  padding: clamp(1.5rem, 4vw, 2.5rem);
-  border-radius: var(--mat-sys-corner-large);
-  color: #fff;
-  background-color: var(--ng-hero-fallback);
-  background-image:
-    linear-gradient(0deg, rgba(0, 0, 0, 0.16), rgba(0, 0, 0, 0.16)),
-    var(--ng-hero-gradient);
-  box-shadow: 0 28px 60px -32px color-mix(in srgb, var(--ng-grad-end) 65%, transparent);
-  animation: rise 0.5s ease both;
-}
-.hero::after {
-  content: '';
-  position: absolute;
-  inset: -45% -12% auto auto;
-  width: 24rem;
-  height: 24rem;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.26), transparent 65%);
-  pointer-events: none;
-}
-.hero-when {
-  position: relative;
-  z-index: 1;
-}
-.hero-eyebrow {
-  margin: 0 0 0.6rem;
-  font: var(--mat-sys-label-medium);
-  font-weight: 600;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.92);
-}
-.hero-day {
-  margin: 0;
-  font: var(--mat-sys-display-small);
-  font-weight: 700;
-  letter-spacing: -0.02em;
-}
-.hero-date {
-  margin: 0.15rem 0 0;
-  font: var(--mat-sys-title-medium);
-  color: rgba(255, 255, 255, 0.9);
-}
-.hero-summary {
-  display: inline-block;
-  margin: 0.9rem 0 0;
-  padding: 0.32rem 0.9rem;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.18);
-  font: var(--mat-sys-title-small);
-  font-weight: 600;
-}
-.hero-figure {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  align-items: center;
-  gap: clamp(0.75rem, 3vw, 2rem);
-}
-.hero-figure-icon mat-icon {
-  font-size: clamp(3.5rem, 9vw, 5.5rem);
-  width: clamp(3.5rem, 9vw, 5.5rem);
-  height: clamp(3.5rem, 9vw, 5.5rem);
-  color: rgba(255, 255, 255, 0.95);
-}
-.hero-temp {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  margin: 0;
-  line-height: 0.95;
-}
-.hero-temp-c {
-  font-size: clamp(3.75rem, 12vw, 6rem);
-  font-weight: 700;
-  letter-spacing: -0.03em;
-  font-variant-numeric: tabular-nums;
-}
-.hero-temp-c .deg {
-  font-weight: 400;
-}
-.hero-temp-f {
-  margin-top: 0.35rem;
-  font: var(--mat-sys-title-medium);
-  color: rgba(255, 255, 255, 0.9);
-  font-variant-numeric: tabular-nums;
-}
-
-/* Remaining days ------------------------------------------------------------ */
-.forecast-grid {
-  list-style: none;
-  margin: 1.25rem 0 0;
-  padding: 0;
+/* Board ---------------------------------------------------------------------- */
+.layout {
   display: grid;
-  gap: 1rem;
-  grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
+  grid-template-columns: minmax(0, 1fr) minmax(0, 26rem);
+  gap: 1.5rem;
+  align-items: start;
 }
-.grid-item {
-  animation: rise 0.5s ease both;
-  animation-delay: calc(var(--i, 0) * 70ms);
-}
-.day {
-  height: 100%;
-  box-sizing: border-box;
+.shipments {
+  list-style: none;
+  margin: 0;
+  padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.85rem;
-  padding: 1.1rem;
-  border-radius: var(--mat-sys-corner-medium);
-  background: var(--mat-sys-surface-container);
-  border: 1px solid var(--mat-sys-outline-variant);
+  gap: 0.75rem;
 }
-.day-head {
+.shipments li {
+  animation: rise 0.45s ease both;
+  animation-delay: calc(var(--i, 0) * 45ms);
+}
+.shipment {
+  width: 100%;
   display: flex;
-  align-items: baseline;
+  flex-direction: column;
+  gap: 0.45rem;
+  padding: 1rem 1.15rem;
+  text-align: left;
+  font: inherit;
+  color: var(--mat-sys-on-surface);
+  background: var(--mat-sys-surface-container-low);
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: var(--mat-sys-corner-medium);
+  cursor: pointer;
+  transition: border-color 150ms ease, background 150ms ease, transform 150ms ease;
+}
+.shipment:hover {
+  background: var(--mat-sys-surface-container);
+  transform: translateY(-1px);
+}
+.shipment:focus-visible {
+  outline: 3px solid var(--mat-sys-primary);
+  outline-offset: 2px;
+}
+.shipment.selected {
+  border-color: transparent;
+  background: var(--mat-sys-surface-container-high);
+  box-shadow: inset 4px 0 0 var(--ng-grad-mid), 0 12px 28px -20px var(--ng-grad-end);
+}
+.shipment-top {
+  display: flex;
+  align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
+  flex-wrap: wrap;
 }
-.day-name {
-  margin: 0;
+.shipment-id {
   font: var(--mat-sys-title-medium);
   font-weight: 700;
-  color: var(--mat-sys-on-surface);
+  font-variant-numeric: tabular-nums;
 }
-.day-date {
-  margin: 0;
+.shipment-route,
+.shipment-meta,
+.shipment-meta span {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.3rem;
+}
+.shipment-route {
+  font: var(--mat-sys-body-large);
+  font-weight: 500;
+}
+.shipment-meta {
+  gap: 0.25rem 1rem;
   font: var(--mat-sys-body-small);
   color: var(--mat-sys-on-surface-variant);
 }
-.day-icon {
-  display: grid;
-  place-items: center;
-  width: 2.75rem;
-  height: 2.75rem;
-  border-radius: 14px;
-  background: var(--tone-bg);
-  color: var(--tone-fg);
+.shipment mat-icon {
+  font-size: 1.05rem;
+  width: 1.05rem;
+  height: 1.05rem;
 }
-.day-icon mat-icon {
-  font-size: 1.5rem;
-  width: 1.5rem;
-  height: 1.5rem;
-}
-.day-stats {
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-}
-.day-stats .stat {
-  margin: 0;
-}
-.day-temp {
-  margin: 0;
-  display: flex;
-  align-items: baseline;
-  gap: 0.4rem;
-}
-.day-temp-c {
-  font: var(--mat-sys-headline-small);
-  font-weight: 700;
-  color: var(--mat-sys-on-surface);
-  font-variant-numeric: tabular-nums;
-}
-.day-temp-f {
-  font: var(--mat-sys-body-medium);
+.shipment-scan {
+  font: var(--mat-sys-body-small);
   color: var(--mat-sys-on-surface-variant);
-  font-variant-numeric: tabular-nums;
 }
-.day-summary {
-  margin: 0;
-  font: var(--mat-sys-body-medium);
-  font-weight: 500;
-  color: var(--mat-sys-on-surface);
+.detail {
+  position: sticky;
+  top: 1rem;
+}
+.detail-placeholder {
+  min-height: 22rem;
+  border-radius: var(--mat-sys-corner-large);
 }
 
-.day-icon[data-tone='cold'] {
-  --tone-bg: #d3e6ff;
-  --tone-fg: #0b3b73;
-}
-.day-icon[data-tone='cool'] {
-  --tone-bg: #d3ecea;
-  --tone-fg: #0c4a44;
-}
-.day-icon[data-tone='mild'] {
-  --tone-bg: #ecdcff;
-  --tone-fg: #4a2079;
-}
-.day-icon[data-tone='warm'] {
-  --tone-bg: #ffe0c2;
-  --tone-fg: #6a3a06;
-}
-.day-icon[data-tone='hot'] {
-  --tone-bg: #ffd6e2;
-  --tone-fg: #7a1338;
+@media (max-width: 900px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+  .detail {
+    position: static;
+    scroll-margin-top: 1rem;
+  }
 }
 
 /* States -------------------------------------------------------------------- */
@@ -432,28 +343,5 @@
 @keyframes pulse {
   50% {
     opacity: 0.45;
-  }
-}
-
-@media (prefers-color-scheme: dark) {
-  .day-icon[data-tone='cold'] {
-    --tone-bg: #16385f;
-    --tone-fg: #d3e6ff;
-  }
-  .day-icon[data-tone='cool'] {
-    --tone-bg: #0f433d;
-    --tone-fg: #c7efe9;
-  }
-  .day-icon[data-tone='mild'] {
-    --tone-bg: #3a1f5e;
-    --tone-fg: #ecdcff;
-  }
-  .day-icon[data-tone='warm'] {
-    --tone-bg: #5a3408;
-    --tone-fg: #ffe0c2;
-  }
-  .day-icon[data-tone='hot'] {
-    --tone-bg: #5e1330;
-    --tone-fg: #ffd6e2;
   }
 }

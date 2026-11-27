@@ -1,71 +1,55 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  OnInit,
-  computed,
-  inject,
-  signal,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { DatePipe } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { MatButtonModule } from '@angular/material/button';
+import { MatChipsModule } from '@angular/material/chips';
 import { MatIconModule, MatIconRegistry } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { WeatherForecast, WeatherForecasts } from '../types/weatherForecast';
+import { SpanStatusCode, trace } from '@opentelemetry/api';
+import { StatusChipComponent } from './status-chip/status-chip.component';
+import { ShipmentDetailComponent } from './shipment-detail/shipment-detail.component';
+import {
+  STATUS_LABELS,
+  ShipmentBoard,
+  ShipmentDetail,
+  ShipmentStatus,
+  StatusCount,
+} from '../types/shipment';
 
 type LoadState = 'loading' | 'ready' | 'error';
-type TempTone = 'cold' | 'cool' | 'mild' | 'warm' | 'hot';
 
-const SUMMARY_ICONS: Record<string, string> = {
-  Freezing: 'severe_cold',
-  Bracing: 'air',
-  Chilly: 'weather_snowy',
-  Cool: 'cloud',
-  Mild: 'partly_cloudy_day',
-  Warm: 'sunny',
-  Balmy: 'clear_day',
-  Hot: 'device_thermostat',
-  Sweltering: 'local_fire_department',
-  Scorching: 'whatshot',
-};
+// A no-op tracer unless src/telemetry.ts registered a provider (run mode only).
+const tracer = trace.getTracer('angular-tracking-board');
 
 @Component({
   selector: 'app-root',
   standalone: true,
   imports: [
+    DatePipe,
     MatButtonModule,
+    MatChipsModule,
     MatIconModule,
     MatProgressBarModule,
+    StatusChipComponent,
+    ShipmentDetailComponent,
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AppComponent implements OnInit {
-  protected readonly title = 'weather';
-  protected readonly forecasts = signal<WeatherForecasts>([]);
+  protected readonly statusLabels = STATUS_LABELS;
+  protected readonly statuses = Object.keys(STATUS_LABELS) as ShipmentStatus[];
+  protected readonly board = signal<ShipmentBoard | null>(null);
+  protected readonly counts = signal<StatusCount[]>([]);
+  protected readonly filter = signal<ShipmentStatus | null>(null);
   protected readonly state = signal<LoadState>('loading');
 
-  /** The featured (first) day, shown large in the hero. */
-  protected readonly lead = computed<WeatherForecast | null>(
-    () => this.forecasts()[0] ?? null,
-  );
-  /** The remaining days, shown in the responsive card grid. */
-  protected readonly rest = computed<WeatherForecasts>(() =>
-    this.forecasts().slice(1),
-  );
+  protected readonly selectedId = signal<string | null>(null);
+  protected readonly detail = signal<ShipmentDetail | null>(null);
+  protected readonly detailState = signal<LoadState | 'idle'>('idle');
 
   private readonly http = inject(HttpClient);
-
-  private readonly weekdayLong = new Intl.DateTimeFormat(undefined, {
-    weekday: 'long',
-  });
-  private readonly weekdayShort = new Intl.DateTimeFormat(undefined, {
-    weekday: 'short',
-  });
-  private readonly monthDay = new Intl.DateTimeFormat(undefined, {
-    month: 'short',
-    day: 'numeric',
-  });
 
   constructor(iconRegistry: MatIconRegistry) {
     // Render every <mat-icon> with the Material Symbols (outlined) font.
@@ -77,65 +61,86 @@ export class AppComponent implements OnInit {
   }
 
   load(): void {
+    const status = this.filter();
     this.state.set('loading');
-    this.http.get<WeatherForecasts>('api/weatherforecast').subscribe({
-      next: (result) => {
-        this.forecasts.set(result ?? []);
-        this.state.set('ready');
-      },
-      error: (err) => {
-        console.error('Failed to load weather forecast', err);
-        this.forecasts.set([]);
-        this.state.set('error');
-      },
+    // The UI span parents the fetch span, so the dashboard shows one browser-to-API trace per board load.
+    tracer.startActiveSpan('load shipment board', { attributes: { 'contoso.shipment.status_filter': status ?? 'all' } }, (span) => {
+      this.http.get<ShipmentBoard>('api/shipments', { params: status ? { status } : {} }).subscribe({
+        next: (result) => {
+          this.board.set(result);
+          this.counts.set(result.statusCounts.length ? result.statusCounts : this.counts());
+          this.state.set('ready');
+          const first = result.shipments[0]?.id ?? null;
+          if (!result.shipments.some((s) => s.id === this.selectedId())) this.select(first);
+          span.end();
+        },
+        error: (err) => {
+          console.error('Failed to load shipments', err);
+          this.board.set(null);
+          this.state.set('error');
+          span.setStatus({ code: SpanStatusCode.ERROR, message: String(err?.message ?? err) });
+          span.end();
+        },
+      });
     });
   }
 
-  protected summaryIcon(summary: string): string {
-    return SUMMARY_ICONS[summary] ?? 'thermostat';
+  protected setFilter(status: ShipmentStatus | null): void {
+    if (status === this.filter()) return;
+    this.filter.set(status);
+    this.load();
   }
 
-  protected tempTone(celsius: number): TempTone {
-    if (celsius < -5) return 'cold';
-    if (celsius < 6) return 'cool';
-    if (celsius < 19) return 'mild';
-    if (celsius < 31) return 'warm';
-    return 'hot';
+  protected select(id: string | null, scrollIntoView = false): void {
+    this.selectedId.set(id);
+    if (!id) {
+      this.detail.set(null);
+      this.detailState.set('idle');
+      return;
+    }
+    this.detailState.set('loading');
+    // "track shipment" -> GET -> GET /api/shipments/{id} -> shipments.track -> carrier.track, as one trace.
+    tracer.startActiveSpan('track shipment', { attributes: { 'contoso.shipment.id': id } }, (span) => {
+      this.http.get<ShipmentDetail>(`api/shipments/${encodeURIComponent(id)}`).subscribe({
+        next: (result) => {
+          if (this.selectedId() === id) {
+            this.detail.set(result);
+            this.detailState.set('ready');
+            if (scrollIntoView && matchMedia('(max-width: 900px)').matches) {
+              queueMicrotask(() => document.getElementById('detail')?.scrollIntoView({ behavior: 'smooth' }));
+            }
+          }
+          span.end();
+        },
+        error: (err) => {
+          console.error(`Failed to load shipment ${id}`, err);
+          if (this.selectedId() === id) this.detailState.set('error');
+          span.setStatus({ code: SpanStatusCode.ERROR, message: String(err?.message ?? err) });
+          span.end();
+        },
+      });
+    });
   }
 
-  /** Full weekday (e.g. "Monday"); used for the featured day. */
-  protected weekday(iso: string): string {
-    return this.format(iso, this.weekdayLong);
+  protected countFor(status: ShipmentStatus): number {
+    return this.counts().find((c) => c.status === status)?.count ?? 0;
   }
 
-  /** Short weekday (e.g. "Mon"); used for the grid cards. */
-  protected shortWeekday(iso: string): string {
-    return this.format(iso, this.weekdayShort);
-  }
-
-  /** Calendar date (e.g. "Jun 8"). */
-  protected calendarDate(iso: string): string {
-    return this.format(iso, this.monthDay);
+  protected get total(): number {
+    return this.counts().reduce((sum, c) => sum + c.count, 0);
   }
 
   protected get statusText(): string {
     switch (this.state()) {
       case 'loading':
-        return 'Loading the latest forecast…';
+        return 'Loading shipments…';
       case 'error':
-        return 'Could not reach the weather service. Select refresh to try again.';
-      default:
-        return `Showing a ${this.forecasts().length}-day forecast.`;
+        return 'Could not reach the shipments API. Select refresh to try again.';
+      default: {
+        const shown = this.board()?.shipments.length ?? 0;
+        const filter = this.filter();
+        return `Showing ${shown} ${shown === 1 ? 'shipment' : 'shipments'}${filter ? ` · ${STATUS_LABELS[filter]}` : ''}.`;
+      }
     }
-  }
-
-  // Parse the API's "yyyy-MM-dd" string as a *local* date so the weekday never
-  // shifts a day in time zones behind UTC.
-  private format(iso: string, formatter: Intl.DateTimeFormat): string {
-    const [year, month, day] = (iso ?? '').split('-').map(Number);
-    if (!year || !month || !day) {
-      return iso ?? '';
-    }
-    return formatter.format(new Date(year, month - 1, day));
   }
 }

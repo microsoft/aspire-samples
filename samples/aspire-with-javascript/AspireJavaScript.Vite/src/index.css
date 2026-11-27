@@ -22,6 +22,7 @@
   --panel: #fff6fb;
   --panel-2: #fdeaf6;
   --edge: rgba(176, 38, 131, 0.35);
+  --rule: rgba(176, 38, 131, 0.18);
   --ink: #2a0a3a;
   --muted: #4a2b5c;
   --accent: #b02683;
@@ -53,6 +54,7 @@
     --panel: #160a30;
     --panel-2: #1d0f3d;
     --edge: rgba(45, 226, 230, 0.4);
+    --rule: rgba(45, 226, 230, 0.16);
     --ink: #f4ecff;
     --muted: #c5b2e8;
     --accent: #ff5cc8;
@@ -228,30 +230,175 @@ body {
   outline-offset: 3px;
 }
 
-.row-rule + .row-rule {
-  border-top: 1px solid color-mix(in srgb, var(--edge) 55%, transparent);
+/* ---------- Shipment board ---------- */
+.board-row {
+  color: var(--ink);
+  cursor: pointer;
+  transition: background 140ms ease;
+}
+.board-row:hover {
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+}
+.board-row[aria-pressed="true"] {
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  box-shadow: inset 4px 0 0 var(--accent);
+}
+.board-row:focus-visible {
+  outline: 3px solid var(--accent-2);
+  outline-offset: -3px;
 }
 
-.chip {
+/* Neon status chips: tinted in day mode, glowing outlines at night. */
+[data-status="label-created"] {
+  --neon: #8a3ffc;
+  --neon-ink: #5b1fb8;
+}
+[data-status="in-transit"] {
+  --neon: #0fb5bb;
+  --neon-ink: #075e63;
+}
+[data-status="out-for-delivery"] {
+  --neon: #f08a00;
+  --neon-ink: #7a4200;
+}
+[data-status="delivered"] {
+  --neon: #18b45b;
+  --neon-ink: #0b5c2d;
+}
+[data-status="exception"] {
+  --neon: #ff2e63;
+  --neon-ink: #a3002b;
+}
+
+@media (prefers-color-scheme: dark) {
+  [data-status="label-created"] {
+    --neon: #c084ff;
+    --neon-ink: #d9b8ff;
+  }
+  [data-status="in-transit"] {
+    --neon: #2de2e6;
+    --neon-ink: #2de2e6;
+  }
+  [data-status="out-for-delivery"] {
+    --neon: #ffb347;
+    --neon-ink: #ffb347;
+  }
+  [data-status="delivered"] {
+    --neon: #39ff88;
+    --neon-ink: #39ff88;
+  }
+  [data-status="exception"] {
+    --neon: #ff4f8b;
+    --neon-ink: #ff7aa8;
+  }
+}
+
+.neon-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--neon-ink);
+  background: color-mix(in srgb, var(--neon) 16%, transparent);
+  border: 1px solid color-mix(in srgb, var(--neon) 70%, transparent);
+  box-shadow: 0 0 var(--glow-blur) color-mix(in srgb, var(--neon) 55%, transparent);
+  text-shadow: 0 0 calc(var(--glow-blur) / 2) color-mix(in srgb, var(--neon) 70%, transparent);
+}
+
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0.55rem 0.45rem 0.9rem;
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  color: var(--neon-ink, var(--ink));
+  background: var(--panel);
+  border: 1px solid color-mix(in srgb, var(--neon, var(--accent)) 60%, transparent);
+  box-shadow: 0 8px 22px -16px var(--halo);
+}
+.filter-chip[aria-pressed="true"] {
   color: #fff;
-  box-shadow: 0 0 var(--glow-blur) color-mix(in srgb, currentColor 60%, transparent);
+  background: linear-gradient(120deg, var(--neon, var(--btn-from)), color-mix(in srgb, var(--neon, var(--btn-to)) 70%, var(--btn-to)));
+  box-shadow: 0 0 var(--glow-blur) var(--neon, var(--halo));
 }
-.chip.cold {
-  background: linear-gradient(135deg, #4f7bff, #2f6bff);
+.filter-chip:focus-visible {
+  outline: 3px solid var(--accent-2);
+  outline-offset: 3px;
 }
-.chip.cool {
-  background: linear-gradient(135deg, #21c7d8, #0a8ea0);
+.filter-count {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.6rem;
+  padding: 0 0.35rem;
+  border-radius: 999px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+  background: color-mix(in srgb, var(--neon, var(--accent)) 18%, transparent);
 }
-.chip.mild {
-  background: linear-gradient(135deg, #9b5cff, #6f2dd6);
-}
-.chip.warm {
-  background: linear-gradient(135deg, #ff9d3c, #ef6d17);
-}
-.chip.hot {
-  background: linear-gradient(135deg, #ff4f8b, #e01f63);
+.filter-chip[aria-pressed="true"] .filter-count {
+  color: #fff;
+  background: rgba(0, 0, 0, 0.22);
 }
 
+.neon-track {
+  height: 6px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--edge) 60%, transparent);
+  overflow: hidden;
+}
+.neon-track span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--accent-2), var(--neon, var(--accent)));
+  box-shadow: 0 0 var(--glow-blur) var(--neon, var(--accent));
+}
+
+.scan-log {
+  position: relative;
+  margin: 0;
+  padding: 0 0 0 1.25rem;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  border-left: 2px solid color-mix(in srgb, var(--accent-2) 45%, transparent);
+}
+.scan-log li {
+  position: relative;
+}
+.scan-log li::before {
+  content: "";
+  position: absolute;
+  left: calc(-1.25rem - 6px);
+  top: 0.4rem;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--panel);
+  border: 2px solid var(--accent-2);
+}
+.scan-log li.latest::before {
+  background: var(--neon, var(--accent));
+  border-color: var(--neon, var(--accent));
+  box-shadow: 0 0 10px var(--neon, var(--accent));
+}
+.scan-log li.latest p:first-child {
+  color: var(--neon-ink, var(--ink));
+}
 @media (prefers-reduced-motion: reduce) {
   .synth-grid {
     animation: none;

@@ -129,6 +129,63 @@ body::before {
   border: 0;
 }
 
+/* Shipment status colours: `--status` for fills and the active journey step, `--status-soft` for tinted
+   backgrounds, and `--status-ink` for text on surfaces (AA contrast in both themes). */
+[data-status='label-created'] {
+  --status: #64748b;
+  --status-soft: rgba(100, 116, 139, 0.14);
+  --status-soft-strong: rgba(100, 116, 139, 0.4);
+  --status-ink: #475569;
+}
+[data-status='in-transit'] {
+  --status: var(--aspire);
+  --status-soft: rgba(91, 70, 229, 0.12);
+  --status-soft-strong: rgba(91, 70, 229, 0.35);
+  --status-ink: #4a36d1;
+}
+[data-status='out-for-delivery'] {
+  --status: #d97706;
+  --status-soft: rgba(217, 119, 6, 0.13);
+  --status-soft-strong: rgba(217, 119, 6, 0.38);
+  --status-ink: #9a4d00;
+}
+[data-status='delivered'] {
+  --status: var(--vue-green);
+  --status-soft: rgba(66, 184, 131, 0.16);
+  --status-soft-strong: rgba(66, 184, 131, 0.45);
+  --status-ink: var(--vue-green-strong);
+}
+[data-status='exception'] {
+  --status: #e5484d;
+  --status-soft: rgba(229, 72, 77, 0.13);
+  --status-soft-strong: rgba(229, 72, 77, 0.38);
+  --status-ink: #c22c33;
+}
+
+@media (prefers-color-scheme: dark) {
+  [data-status='label-created'] {
+    --status: #8291a8;
+    --status-ink: #c3cedd;
+  }
+  [data-status='in-transit'] {
+    --status: #7c6cf0;
+    --status-soft: rgba(124, 108, 240, 0.2);
+    --status-ink: var(--aspire);
+  }
+  [data-status='out-for-delivery'] {
+    --status: #f59e0b;
+    --status-soft: rgba(245, 158, 11, 0.18);
+    --status-ink: #fbbf5a;
+  }
+  [data-status='delivered'] {
+    --status-soft: rgba(66, 184, 131, 0.2);
+  }
+  [data-status='exception'] {
+    --status: #f0565b;
+    --status-soft: rgba(240, 86, 91, 0.2);
+    --status-ink: #ff8f92;
+  }
+}
 @media (prefers-reduced-motion: reduce) {
   body::before {
     animation: none;

@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import ForecastCarousel from './components/ForecastCarousel.vue'
+import ShipmentBoard from './components/ShipmentBoard.vue'
 </script>
 
 <template>
-  <a class="skip-link" href="#main">Skip to forecast</a>
+  <a class="skip-link" href="#main">Skip to shipments</a>
 
   <div class="shell">
     <header class="masthead">
@@ -12,17 +12,17 @@ import ForecastCarousel from './components/ForecastCarousel.vue'
         <polygon points="9.5,0 18,0 24,10 30,0 38.5,0 24,25" fill="#42b883" />
       </svg>
       <div class="wordmark">
-        <p class="kicker">Aspire &middot; Vue + Vite</p>
-        <h1>Vue Weather</h1>
+        <p class="kicker">Contoso &middot; Vue + Vite</p>
+        <h1>Vue Tracking</h1>
       </div>
     </header>
 
     <main id="main" class="main">
-      <ForecastCarousel />
+      <ShipmentBoard />
     </main>
 
     <footer class="colophon">
-      <p>Five-day weather forecast demo &middot; powered by <strong>Aspire</strong>.</p>
+      <p>Contoso shipment tracking demo &middot; powered by <strong>Aspire</strong>.</p>
     </footer>
   </div>
 </template>
@@ -45,7 +45,7 @@ import ForecastCarousel from './components/ForecastCarousel.vue'
 }
 
 .shell {
-  max-width: 940px;
+  max-width: 1280px;
   margin: 0 auto;
   padding: clamp(1.75rem, 5vw, 4rem) 1.25rem 3rem;
   display: flex;
@@ -81,7 +81,7 @@ h1 {
 }
 
 .main {
-  view-transition-name: forecast-panel;
+  view-transition-name: shipment-board;
 }
 
 .colophon {

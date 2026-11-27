@@ -1,0 +1,17 @@
+/* Material 3 tonal chip; every tone comes from styles.scss so dark mode follows automatically. */
+:host {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.7rem 0.2rem 0.45rem;
+  border-radius: 8px;
+  font: var(--mat-sys-label-large);
+  white-space: nowrap;
+  color: var(--tone-fg);
+  background: var(--tone-bg);
+}
+mat-icon {
+  font-size: 1.1rem;
+  width: 1.1rem;
+  height: 1.1rem;
+}

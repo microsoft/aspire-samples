@@ -1,0 +1,53 @@
+<article class="hero" aria-labelledby="detail-title">
+  <div class="hero-top">
+    <p class="hero-eyebrow">Tracking number</p>
+    <app-status-chip [status]="shipment().status" />
+  </div>
+  <h2 id="detail-title" class="hero-id">{{ shipment().id }}</h2>
+  <p class="hero-route">
+    {{ shipment().origin }}
+    <mat-icon aria-hidden="true">arrow_right_alt</mat-icon>
+    {{ shipment().destination }}
+  </p>
+  <div
+    class="hero-progress"
+    role="progressbar"
+    aria-label="Route progress"
+    [attr.aria-valuenow]="shipment().progress"
+    aria-valuemin="0"
+    aria-valuemax="100"
+  >
+    <span [style.width.%]="shipment().progress"></span>
+  </div>
+  <p class="hero-eta">
+    <span class="hero-eta-label">{{ shipment().status === 'delivered' ? 'Delivered' : 'Estimated arrival' }}</span>
+    <span class="hero-eta-value">{{ shipment().eta | date: 'EEE, MMM d · h:mm a' }}</span>
+    <span class="hero-eta-relative">{{ etaRelative() }} · {{ shipment().progress }}% of the route complete</span>
+  </p>
+</article>
+
+<section class="panel" aria-labelledby="history-title">
+  <dl class="facts">
+    <div>
+      <dt><mat-icon aria-hidden="true">local_shipping</mat-icon>Carrier</dt>
+      <dd>{{ shipment().carrier }}</dd>
+    </div>
+    <div>
+      <dt><mat-icon aria-hidden="true">scale</mat-icon>Weight</dt>
+      <dd>{{ shipment().weightKg | number: '1.1-1' }} kg</dd>
+    </div>
+  </dl>
+
+  <h3 id="history-title" class="history-title">Scan history</h3>
+  <ol class="timeline">
+    @for (scan of detail().history; track scan.at; let first = $first) {
+      <li [class.latest]="first" [attr.data-status]="first ? shipment().status : null">
+        <p class="what">{{ scan.description }}</p>
+        <p class="where">
+          <mat-icon aria-hidden="true">location_on</mat-icon>
+          {{ scan.location }} · {{ scan.at | date: 'EEE, MMM d, h:mm a' }}
+        </p>
+      </li>
+    }
+  </ol>
+</section>

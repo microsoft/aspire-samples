@@ -1,14 +1,14 @@
-<a class="skip-link" href="#forecast">Skip to forecast</a>
+<a class="skip-link" href="#board">Skip to shipments</a>
 
 <div class="brand-stripe" aria-hidden="true"></div>
 
 <header class="masthead">
   <span class="brand-mark" aria-hidden="true">
-    <mat-icon>partly_cloudy_day</mat-icon>
+    <mat-icon>deployed_code</mat-icon>
   </span>
   <span class="brand-text">
-    <span class="brand-eyebrow">Aspire · Angular</span>
-    <h1 class="masthead-title"><span class="brand-accent">Angular</span> Weather</h1>
+    <span class="brand-eyebrow">Contoso · Aspire</span>
+    <h1 class="masthead-title"><span class="brand-accent">Angular</span> Tracking</h1>
   </span>
   <button
     mat-flat-button
@@ -16,98 +16,105 @@
     type="button"
     (click)="load()"
     [disabled]="state() === 'loading'"
-    [attr.aria-label]="state() === 'loading' ? 'Refreshing forecast' : 'Refresh forecast'"
+    [attr.aria-label]="state() === 'loading' ? 'Refreshing shipments' : 'Refresh shipments'"
   >
     <mat-icon aria-hidden="true" [class.spin]="state() === 'loading'">refresh</mat-icon>
     <span class="refresh-label">{{ state() === 'loading' ? 'Refreshing' : 'Refresh' }}</span>
   </button>
 </header>
 
-<main id="forecast" class="page" [attr.aria-busy]="state() === 'loading'">
-  <section class="forecast" aria-labelledby="forecast-heading">
-    <div class="forecast-head">
-      <p class="eyebrow">Five-day outlook</p>
-      <h2 id="forecast-heading" class="forecast-title">Weather forecast</h2>
-    </div>
+<main id="board" class="page" [attr.aria-busy]="state() === 'loading'">
+  <div class="board-head">
+    <p class="eyebrow">Shipment board</p>
+    <h2 class="board-title">Where's my parcel?</h2>
+  </div>
 
-    <div class="progress-rail" aria-hidden="true">
-      @if (state() === 'loading') {
-        <mat-progress-bar mode="indeterminate"></mat-progress-bar>
-      }
-    </div>
-
-    <p class="status" role="status" aria-live="polite">{{ statusText }}</p>
-
-    @if (state() === 'error') {
-      <div class="notice">
-        <span class="notice-icon" aria-hidden="true"><mat-icon>cloud_off</mat-icon></span>
-        <p class="notice-text">We couldn’t reach the weather service right now.</p>
-        <button mat-stroked-button type="button" class="notice-retry" (click)="load()">
-          <mat-icon aria-hidden="true">refresh</mat-icon>
-          Try again
-        </button>
-      </div>
-    } @else if (lead(); as featured) {
-      <article class="hero" aria-labelledby="hero-day">
-        <div class="hero-when">
-          <p class="hero-eyebrow">Featured day</p>
-          <h3 id="hero-day" class="hero-day">{{ weekday(featured.date) }}</h3>
-          <p class="hero-date">{{ calendarDate(featured.date) }}</p>
-          <p class="hero-summary">{{ featured.summary }}</p>
-        </div>
-        <div class="hero-figure">
-          <span class="hero-figure-icon" aria-hidden="true">
-            <mat-icon>{{ summaryIcon(featured.summary) }}</mat-icon>
-          </span>
-          <p class="hero-temp">
-            <span class="hero-temp-c">{{ featured.temperatureC }}<span class="deg">°</span></span>
-            <span class="hero-temp-f">{{ featured.temperatureF }}°F</span>
-          </p>
-        </div>
-      </article>
-
-      <ul class="forecast-grid">
-        @for (day of rest(); track day.date; let i = $index) {
-          <li class="grid-item" [style.--i]="i">
-            <article class="day" [attr.aria-labelledby]="'day-' + i + '-name'">
-              <header class="day-head">
-                <h3 class="day-name" [id]="'day-' + i + '-name'">{{ shortWeekday(day.date) }}</h3>
-                <p class="day-date">{{ calendarDate(day.date) }}</p>
-              </header>
-              <span class="day-icon" [attr.data-tone]="tempTone(day.temperatureC)" aria-hidden="true">
-                <mat-icon>{{ summaryIcon(day.summary) }}</mat-icon>
-              </span>
-              <dl class="day-stats">
-                <div class="stat">
-                  <dt class="visually-hidden">Temperature</dt>
-                  <dd class="day-temp">
-                    <span class="day-temp-c">{{ day.temperatureC }}°</span>
-                    <span class="day-temp-f">{{ day.temperatureF }}°F</span>
-                  </dd>
-                </div>
-                <div class="stat">
-                  <dt class="visually-hidden">Conditions</dt>
-                  <dd class="day-summary">{{ day.summary }}</dd>
-                </div>
-              </dl>
-            </article>
-          </li>
-        }
-      </ul>
-    } @else if (state() === 'loading') {
-      <div class="hero skeleton" aria-hidden="true"></div>
-      <ul class="forecast-grid" aria-hidden="true">
-        @for (slot of [1, 2, 3, 4]; track slot) {
-          <li class="grid-item"><div class="day skeleton"></div></li>
-        }
-      </ul>
-    } @else {
-      <p class="empty">No forecast data is available right now.</p>
+  <mat-chip-listbox class="filters" aria-label="Filter by status" hideSingleSelectionIndicator>
+    <mat-chip-option [selected]="filter() === null" (click)="setFilter(null)">
+      All <span class="count">{{ total }}</span>
+    </mat-chip-option>
+    @for (status of statuses; track status) {
+      <mat-chip-option [selected]="filter() === status" (click)="setFilter(status)">
+        {{ statusLabels[status] }}
+        <span class="count" [attr.data-status]="status">{{ countFor(status) }}</span>
+      </mat-chip-option>
     }
-  </section>
+  </mat-chip-listbox>
+
+  <div class="progress-rail" aria-hidden="true">
+    @if (state() === 'loading') {
+      <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    }
+  </div>
+  <p class="status" role="status" aria-live="polite">{{ statusText }}</p>
+
+  @if (state() === 'error') {
+    <div class="notice">
+      <span class="notice-icon" aria-hidden="true"><mat-icon>cloud_off</mat-icon></span>
+      <p class="notice-text">We couldn’t reach the shipments API right now.</p>
+      <button mat-stroked-button type="button" (click)="load()">
+        <mat-icon aria-hidden="true">refresh</mat-icon>
+        Try again
+      </button>
+    </div>
+  } @else if (board(); as b) {
+    <div class="layout">
+      <ul class="shipments" aria-label="Shipments">
+        @for (s of b.shipments; track s.id; let i = $index) {
+          <li [style.--i]="i">
+            <button
+              type="button"
+              class="shipment"
+              [class.selected]="s.id === selectedId()"
+              [attr.aria-pressed]="s.id === selectedId()"
+              (click)="select(s.id, true)"
+            >
+              <span class="shipment-top">
+                <span class="shipment-id">{{ s.id }}</span>
+                <app-status-chip [status]="s.status" />
+              </span>
+              <span class="shipment-route">
+                {{ s.origin }} <mat-icon aria-hidden="true">arrow_right_alt</mat-icon> {{ s.destination }}
+              </span>
+              <span class="shipment-meta">
+                <span><mat-icon aria-hidden="true">local_shipping</mat-icon>{{ s.carrier }}</span>
+                <span><mat-icon aria-hidden="true">schedule</mat-icon>{{ s.status === 'delivered' ? 'Delivered' : 'ETA' }} {{ s.eta | date: 'MMM d, h:mm a' }}</span>
+              </span>
+              <span class="shipment-scan">{{ s.lastScan.description }} · {{ s.lastScan.location }}</span>
+            </button>
+          </li>
+        } @empty {
+          <li class="empty">No shipments with this status right now.</li>
+        }
+      </ul>
+
+      <aside id="detail" class="detail" aria-live="polite">
+        @switch (detailState()) {
+          @case ('ready') {
+            @if (detail(); as d) {
+              <app-shipment-detail [detail]="d" />
+            }
+          }
+          @case ('loading') {
+            @if (detail(); as d) {
+              <app-shipment-detail [detail]="d" />
+            } @else {
+              <div class="detail-placeholder skeleton" aria-label="Loading shipment"></div>
+            }
+          }
+          @case ('error') {
+            <div class="notice"><p class="notice-text">That shipment couldn’t be loaded.</p></div>
+          }
+          @default {
+            <div class="notice"><p class="notice-text">Select a shipment to see its journey.</p></div>
+          }
+        }
+      </aside>
+    </div>
+  }
 
   <p class="byline">
-    <mat-icon aria-hidden="true">bolt</mat-icon>
-    Powered by <strong>Aspire</strong>
+    <mat-icon aria-hidden="true">hub</mat-icon>
+    Served by the <strong>shipmentsapi</strong> resource, orchestrated by Aspire.
   </p>
 </main>

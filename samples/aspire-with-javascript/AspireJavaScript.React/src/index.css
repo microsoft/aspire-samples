@@ -16,16 +16,10 @@
   --nb-pink: #ff5470;
   --nb-cyan: #46e0ff;
   --nb-zebra: #f2eedd;
+  --nb-paper: #fffdf6;
 
   /* Ink for bright accent blocks (lime/pink/cyan) — stays dark in both themes */
   --nb-on-bright: #0a0a0a;
-
-  /* Temperature ramp (cold -> hot) */
-  --nb-cold: #3a7bff;
-  --nb-cool: #46e0ff;
-  --nb-mild: #c6ff3d;
-  --nb-warm: #ffb340;
-  --nb-hot: #ff5470;
 
   --nb-border-w: 3px;
   font-family: "Space Grotesk Variable", "Space Grotesk", system-ui,
@@ -48,6 +42,47 @@
     --nb-pink: #ff7a93;
     --nb-cyan: #46e0ff;
     --nb-zebra: #2a251a;
+    --nb-paper: #1b1811;
+  }
+}
+
+/* Shipment status colors: bright blocks with dark ink in both themes; --status-ink is the stamp color. */
+[data-status="label-created"] {
+  --status-color: #e4ddc8;
+  --status-ink: #6b6450;
+}
+[data-status="in-transit"] {
+  --status-color: var(--nb-cyan);
+  --status-ink: #0b6f85;
+}
+[data-status="out-for-delivery"] {
+  --status-color: #ffb340;
+  --status-ink: #a35a00;
+}
+[data-status="delivered"] {
+  --status-color: var(--nb-lime);
+  --status-ink: #3f7d00;
+}
+[data-status="exception"] {
+  --status-color: var(--nb-pink);
+  --status-ink: #d1002d;
+}
+
+@media (prefers-color-scheme: dark) {
+  [data-status="label-created"] {
+    --status-ink: #d6cfb8;
+  }
+  [data-status="in-transit"] {
+    --status-ink: var(--nb-cyan);
+  }
+  [data-status="out-for-delivery"] {
+    --status-ink: #ffb340;
+  }
+  [data-status="delivered"] {
+    --status-ink: var(--nb-lime);
+  }
+  [data-status="exception"] {
+    --status-ink: #ff7a93;
   }
 }
 

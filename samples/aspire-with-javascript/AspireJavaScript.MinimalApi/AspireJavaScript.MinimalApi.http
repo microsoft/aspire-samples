@@ -1,6 +1,27 @@
 @AspireJavaScript.MinimalApi_HostAddress = http://localhost:5084
 
-GET {{AspireJavaScript.MinimalApi_HostAddress}}/weatherforecast/
+### The whole tracking board
+GET {{AspireJavaScript.MinimalApi_HostAddress}}/api/shipments
 Accept: application/json
 
-###
+### Shipments with an exception
+GET {{AspireJavaScript.MinimalApi_HostAddress}}/api/shipments?status=exception
+Accept: application/json
+
+### Track a shipment
+GET {{AspireJavaScript.MinimalApi_HostAddress}}/api/shipments/CTS-48214101
+Accept: application/json
+
+### 404 problem details (unknown tracking number)
+GET {{AspireJavaScript.MinimalApi_HostAddress}}/api/shipments/CTS-00000000
+Accept: application/problem+json
+
+### 400 validation problem details (unknown status)
+GET {{AspireJavaScript.MinimalApi_HostAddress}}/api/shipments?status=lost
+Accept: application/problem+json
+
+### Simulate tracking lookups (Development only)
+POST {{AspireJavaScript.MinimalApi_HostAddress}}/dev/simulate-lookups
+
+### OpenAPI document
+GET {{AspireJavaScript.MinimalApi_HostAddress}}/openapi/v1.json

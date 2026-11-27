@@ -1,0 +1,221 @@
+/* A printed shipping label: paper stock, heavy rules, and a rubber-stamped status. */
+.label {
+  position: relative;
+  background: var(--nb-paper);
+  color: var(--nb-ink);
+  border: var(--nb-border-w) solid var(--nb-border);
+  box-shadow: 10px 10px 0 0 var(--nb-shadow);
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  padding: 0.75rem 1rem;
+  background: var(--nb-ink);
+  color: var(--nb-paper);
+}
+.brand,
+.carrier {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.carrier {
+  font-size: 0.8rem;
+}
+
+.addresses {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr;
+  border-bottom: var(--nb-border-w) solid var(--nb-border);
+}
+.from,
+.to {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.85rem 1rem;
+}
+.from {
+  border-right: var(--nb-border-w) solid var(--nb-border);
+}
+.from strong {
+  font-size: 1rem;
+}
+.to strong {
+  font-size: 1.45rem;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+.caption {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--nb-muted);
+}
+
+.barcode {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.9rem 1rem 0.75rem;
+  border-bottom: var(--nb-border-w) solid var(--nb-border);
+}
+.bars {
+  display: flex;
+  height: 58px;
+  width: 100%;
+  justify-content: center;
+}
+.bars span {
+  display: block;
+  height: 100%;
+  background: var(--nb-ink);
+}
+.id {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: "JetBrains Mono Variable", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr 0.8fr;
+  margin: 0;
+  border-bottom: var(--nb-border-w) solid var(--nb-border);
+}
+.facts > div {
+  padding: 0.65rem 1rem;
+}
+.facts > div + div {
+  border-left: var(--nb-border-w) solid var(--nb-border);
+}
+.facts dt {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--nb-muted);
+}
+.facts dd {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin: 0.2rem 0 0;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Rubber stamp over the barcode panel. */
+.stamp {
+  position: absolute;
+  top: 7.9rem;
+  right: 0.9rem;
+  padding: 0.2rem 0.55rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--status-ink);
+  background: color-mix(in srgb, var(--nb-paper) 88%, transparent);
+  border: 3px solid var(--status-ink);
+  transform: rotate(-8deg);
+  pointer-events: none;
+}
+
+.log {
+  padding: 0.9rem 1rem 1.1rem;
+}
+.logTitle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin: 0 0 0.75rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.scans {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+.scans li {
+  display: grid;
+  grid-template-columns: 7.4rem 1fr;
+  grid-template-areas:
+    "when what"
+    "when where";
+  column-gap: 0.75rem;
+  padding: 0.5rem 0;
+  border-top: 2px dashed color-mix(in srgb, var(--nb-border) 45%, transparent);
+}
+.scans li:first-child {
+  border-top: 0;
+}
+.when {
+  grid-area: when;
+  font-size: 0.8rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--nb-muted);
+}
+.what {
+  grid-area: what;
+  font-weight: 700;
+}
+.where {
+  grid-area: where;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.85rem;
+  color: var(--nb-muted);
+}
+.latest .what {
+  background: var(--status-color, var(--nb-lime));
+  color: var(--nb-on-bright);
+  justify-self: start;
+  padding: 0 0.3rem;
+  box-decoration-break: clone;
+}
+
+@media (max-width: 520px) {
+  .addresses,
+  .facts {
+    grid-template-columns: 1fr;
+  }
+  .from,
+  .facts > div + div {
+    border-right: 0;
+    border-left: 0;
+    border-top: var(--nb-border-w) solid var(--nb-border);
+  }
+  .from {
+    border-top: 0;
+    border-bottom: var(--nb-border-w) solid var(--nb-border);
+  }
+  .scans li {
+    grid-template-columns: 1fr;
+    grid-template-areas: "what" "where" "when";
+  }
+  .stamp {
+    display: none;
+  }
+}

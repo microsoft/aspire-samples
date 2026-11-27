@@ -1,7 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/aspire-8.0.json",
   "resources": {
-    "weatherapi": {
+    "shipmentsapi": {
       "type": "project.v0",
       "path": "../AspireJavaScript.MinimalApi/AspireJavaScript.MinimalApi.csproj",
       "env": {
@@ -9,7 +9,7 @@
         "OTEL_DOTNET_EXPERIMENTAL_OTLP_EMIT_EVENT_LOG_ATTRIBUTES": "true",
         "OTEL_DOTNET_EXPERIMENTAL_OTLP_RETRY": "in_memory",
         "ASPNETCORE_FORWARDEDHEADERS_ENABLED": "true",
-        "HTTP_PORTS": "{weatherapi.bindings.http.targetPort}"
+        "HTTP_PORTS": "{shipmentsapi.bindings.http.targetPort}"
       },
       "bindings": {
         "http": {
@@ -32,8 +32,8 @@
       "context": "../AspireJavaScript.Angular",
       "env": {
         "NODE_ENV": "development",
-        "services__weatherapi__http__0": "{weatherapi.bindings.http.url}",
-        "services__weatherapi__https__0": "{weatherapi.bindings.https.url}",
+        "services__shipmentsapi__http__0": "{shipmentsapi.bindings.http.url}",
+        "services__shipmentsapi__https__0": "{shipmentsapi.bindings.https.url}",
         "PORT": "{angular.bindings.http.targetPort}"
       },
       "bindings": {
@@ -52,8 +52,8 @@
       "context": "../AspireJavaScript.React",
       "env": {
         "NODE_ENV": "development",
-        "services__weatherapi__http__0": "{weatherapi.bindings.http.url}",
-        "services__weatherapi__https__0": "{weatherapi.bindings.https.url}",
+        "services__shipmentsapi__http__0": "{shipmentsapi.bindings.http.url}",
+        "services__shipmentsapi__https__0": "{shipmentsapi.bindings.https.url}",
         "BROWSER": "none",
         "PORT": "{react.bindings.http.targetPort}"
       },
@@ -73,8 +73,8 @@
       "context": "../AspireJavaScript.Vue",
       "env": {
         "NODE_ENV": "development",
-        "services__weatherapi__http__0": "{weatherapi.bindings.http.url}",
-        "services__weatherapi__https__0": "{weatherapi.bindings.https.url}",
+        "services__shipmentsapi__http__0": "{shipmentsapi.bindings.http.url}",
+        "services__shipmentsapi__https__0": "{shipmentsapi.bindings.https.url}",
         "PORT": "{vue.bindings.http.targetPort}"
       },
       "bindings": {

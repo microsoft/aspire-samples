@@ -80,3 +80,26 @@ body {
     scroll-behavior: auto !important;
   }
 }
+
+// Shipment status tones (status chips, filter counts, timeline). `light-dark()` follows the
+// same color-scheme as the Material theme above.
+[data-status='label-created'] {
+  --tone-bg: light-dark(#e6e0f3, #3b3450);
+  --tone-fg: light-dark(#463a63, #e6dcff);
+}
+[data-status='in-transit'] {
+  --tone-bg: light-dark(#d9e5ff, #1d3661);
+  --tone-fg: light-dark(#173a7a, #d6e3ff);
+}
+[data-status='out-for-delivery'] {
+  --tone-bg: light-dark(#ffe2ef, #5f1239);
+  --tone-fg: light-dark(#8a0f4e, #ffd9e8);
+}
+[data-status='delivered'] {
+  --tone-bg: light-dark(#d4f0e0, #10432b);
+  --tone-fg: light-dark(#0d5232, #c3f0d6);
+}
+[data-status='exception'] {
+  --tone-bg: light-dark(#ffdad6, #6b1410);
+  --tone-fg: light-dark(#93000a, #ffdad6);
+}

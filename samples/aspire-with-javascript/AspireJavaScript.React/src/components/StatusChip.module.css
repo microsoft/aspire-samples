@@ -1,0 +1,15 @@
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--nb-on-bright);
+  background: var(--status-color);
+  border: 2px solid var(--nb-border);
+  box-shadow: 3px 3px 0 0 var(--nb-shadow);
+}
