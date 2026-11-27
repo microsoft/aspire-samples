@@ -1,4 +1,4 @@
-"""Bespoke Scalar API reference theming for the User API.
+"""Bespoke Scalar API reference theming for the Contoso Customers API.
 
 Gives the developer-facing docs a distinct Python/FastAPI identity: a deep,
 teal-tinted canvas, FastAPI teal (#009688) as the primary accent, and a hint
@@ -9,7 +9,7 @@ contrast (AAA on body text) in both light and dark modes.
 import urllib.parse
 
 # Title shown in the browser tab and used for branding.
-SCALAR_TITLE = "User API \u00b7 Aspire \u2014 API Reference"
+SCALAR_TITLE = "Contoso Customers API \u00b7 Aspire \u2014 API Reference"
 
 # Self-contained, on-brand favicon: a "< >" code glyph (white) with a Python
 # yellow dot on a FastAPI-teal -> Python-blue gradient tile. Inlined as a data
@@ -122,9 +122,9 @@ SCALAR_CUSTOM_CSS = """
   --scalar-sidebar-search--color: var(--scalar-color-3);
 }
 
-/* Branded header at the top of the sidebar: "User API · Aspire". */
+/* Branded header at the top of the sidebar: "Contoso Customers · Aspire". */
 .t-doc__sidebar::before {
-  content: "User API \u00b7 Aspire";
+  content: "Contoso Customers \u00b7 Aspire";
   display: flex;
   align-items: center;
   gap: 0.5rem;

@@ -1,1 +1,1 @@
-# API package for the User Management service
+# Contoso Customers API (FastAPI + PostgreSQL)
