@@ -10,7 +10,8 @@
     "https": {
       "applicationUrl": "https://localhost:20132;http://localhost:32631",
       "environmentVariables": {
-        "ASPIRE_DASHBOARD_OTLP_ENDPOINT_URL": "https://localhost:49857",
+        "ASPIRE_DASHBOARD_OTLP_ENDPOINT_URL": "https://localhost:21284",
+        "ASPIRE_DASHBOARD_OTLP_HTTP_ENDPOINT_URL": "https://localhost:21285",
         "ASPIRE_RESOURCE_SERVICE_ENDPOINT_URL": "https://localhost:44142"
       }
     }
