@@ -15,6 +15,10 @@ public static class Extensions
     private const string HealthEndpointPath = "/health";
     private const string AlivenessEndpointPath = "/alive";
 
+    // Each service publishes its domain telemetry as "Contoso.<Service>" (e.g. "Contoso.Payments", "Contoso.StatusPage"),
+    // so a wildcard registers every Meter and ActivitySource.
+    private const string DomainTelemetryNames = "Contoso.*";
+
     public static IHostApplicationBuilder AddServiceDefaults(this IHostApplicationBuilder builder)
     {
         builder.ConfigureOpenTelemetry();
@@ -48,23 +52,27 @@ public static class Extensions
             {
                 metrics.AddAspNetCoreInstrumentation()
                        .AddHttpClientInstrumentation()
-                       .AddRuntimeInstrumentation();
+                       .AddRuntimeInstrumentation()
+                       .AddMeter(DomainTelemetryNames);
             })
             .WithTracing(tracing =>
             {
-                if (builder.Environment.IsDevelopment())
-                {
-                    // We want to view all traces in development
-                    tracing.SetSampler(new AlwaysOnSampler());
-                }
+                // Record every trace, but honor unsampled parents, which Aspire's OTEL_TRACES_SAMPLER=always_on doesn't. The
+                // health check requests filtered out below are unsampled, so the dependency probes they run (such as Redis PING
+                // commands) stay out of the traces too.
+                tracing.SetSampler(new ParentBasedSampler(new AlwaysOnSampler()));
+
+                var healthChecksUIPaths = GetPathToHostsMap(builder.Configuration["HEALTHCHECKSUI_URLS"]).Keys;
 
                 tracing
                     .AddSource(builder.Environment.ApplicationName)
+                    .AddSource(DomainTelemetryNames)
                     .AddAspNetCoreInstrumentation(tracing =>
-                        // Don't trace requests to the health endpoint to avoid filling the dashboard with noise
+                        // Don't trace requests to the health endpoints to avoid filling the dashboard with noise
                         tracing.Filter = httpContext =>
                             !(httpContext.Request.Path.StartsWithSegments(HealthEndpointPath)
-                              || httpContext.Request.Path.StartsWithSegments(AlivenessEndpointPath))
+                              || httpContext.Request.Path.StartsWithSegments(AlivenessEndpointPath)
+                              || healthChecksUIPaths.Any(path => httpContext.Request.Path.StartsWithSegments(path)))
                     )
                     .AddHttpClientInstrumentation();
             });
@@ -145,12 +153,12 @@ public static class Extensions
         return app;
     }
 
-    private static Dictionary<string, string[]> GetPathToHostsMap(string healthChecksUrls)
+    private static Dictionary<string, string[]> GetPathToHostsMap(string? healthChecksUrls)
     {
         // Given a value like "localhost:12345/healthz;hub.docker.internal:12345/healthz" return a dictionary like:
         // { { "healthz", [ "localhost:12345", "hub.docker.internal:12345" ] } }
 
-        var uris = healthChecksUrls.Split(';', StringSplitOptions.RemoveEmptyEntries)
+        var uris = (healthChecksUrls ?? "").Split(';', StringSplitOptions.RemoveEmptyEntries)
             .Select(url => new Uri(url, UriKind.Absolute))
             .GroupBy(uri => uri.AbsolutePath, uri => uri.Authority)
             .ToDictionary(g => g.Key, g => g.ToArray());

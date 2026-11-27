@@ -55,12 +55,14 @@ public static class HealthChecksUIExtensions
     /// The endpoint will be added if it is not already defined on the <see cref="DotnetProjectResource"/>.
     /// </param>
     /// <param name="probePath">The request path the project serves health check details from.</param>
+    /// <param name="displayName">The name HealthChecksUI shows for the project. Defaults to the resource name.</param>
     /// <returns>The resource builder.</returns>
     public static IResourceBuilder<HealthChecksUIResource> WithReference(
         this IResourceBuilder<HealthChecksUIResource> builder,
         IResourceBuilder<DotnetProjectResource> project,
         string endpointName = HealthChecksUIDefaults.EndpointName,
-        string probePath = HealthChecksUIDefaults.ProbePath)
+        string probePath = HealthChecksUIDefaults.ProbePath,
+        string? displayName = null)
     {
         var index = builder.Resource.ProjectConfigIndex++;
         probePath = probePath.TrimStart('/');
@@ -71,7 +73,7 @@ public static class HealthChecksUIExtensions
 
             // Set health check name
             var nameEnvVarName = HealthChecksUIResource.KnownEnvVars.GetHealthCheckNameKey(index);
-            c.EnvironmentVariables[nameEnvVarName] = project.Resource.Name;
+            c.EnvironmentVariables[nameEnvVarName] = displayName ?? project.Resource.Name;
 
             // Set health check URL
             var urlEnvVarName = HealthChecksUIResource.KnownEnvVars.GetHealthCheckUriKey(index);

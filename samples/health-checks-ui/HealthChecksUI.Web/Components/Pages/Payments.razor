@@ -1,0 +1,134 @@
+@page "/payments"
+@attribute [StreamRendering(true)]
+@attribute [OutputCache(Duration = 5)]
+@inject PaymentsApiClient PaymentsApi
+@inject ILogger<Payments> Logger
+
+<PageTitle>Contoso Pay · Payments</PageTitle>
+
+<section class="payments">
+    <header class="page-head">
+        <p class="eyebrow">Payments</p>
+        <h1>Recent payments</h1>
+        <p class="lede">
+            The latest payments the gateway recorded in Redis, newest first. This page is output-cached in Redis for
+            five seconds.
+        </p>
+    </header>
+
+    @if (unavailable)
+    {
+        <div class="notice" data-state="down" role="status">
+            <span aria-hidden="true">@Icons.CircleX</span>
+            The payments gateway isn't responding, so recent payments can't be shown. Check the status page for details.
+        </div>
+    }
+    else if (payments is null)
+    {
+        <div class="notice" role="status" aria-live="polite">
+            <span class="spinner" aria-hidden="true"></span>
+            Loading recent payments…
+        </div>
+    }
+    else if (payments.Length == 0)
+    {
+        <div class="notice" role="status">
+            <span aria-hidden="true">@Icons.CreditCard</span>
+            <span>
+                No payments yet. Run <strong>Simulate payments traffic</strong> on the <code>apiservice</code> resource in the
+                Aspire dashboard.
+            </span>
+        </div>
+    }
+    else
+    {
+        var approved = payments.Where(p => p.IsApproved).ToArray();
+        var latencies = payments.Select(p => p.ProcessingMs).Order().ToArray();
+
+        <ul class="kpi-grid" role="list">
+            <li class="kpi">
+                <span class="kpi-icon" aria-hidden="true">@Icons.TrendingUp</span>
+                <p class="kpi-label">Approval rate</p>
+                <p class="kpi-value">@((100.0 * approved.Length / payments.Length).ToString("0.0", CultureInfo.InvariantCulture))%</p>
+                <p class="kpi-meta">@approved.Length of @payments.Length payments</p>
+            </li>
+            <li class="kpi">
+                <span class="kpi-icon" aria-hidden="true">@Icons.Banknote</span>
+                <p class="kpi-label">Settled volume</p>
+                <p class="kpi-value">@StatusDisplay.Usd(approved.Sum(p => p.SettlementAmountUsd))</p>
+                <p class="kpi-meta">Approved payments, in USD</p>
+            </li>
+            <li class="kpi">
+                <span class="kpi-icon" aria-hidden="true">@Icons.Clock</span>
+                <p class="kpi-label">Median processing</p>
+                <p class="kpi-value">@latencies[latencies.Length / 2].ToString("0", CultureInfo.InvariantCulture) ms</p>
+                <p class="kpi-meta">p95 @latencies[(int)(latencies.Length * 0.95)].ToString("0", CultureInfo.InvariantCulture) ms</p>
+            </li>
+            <li class="kpi">
+                <span class="kpi-icon" aria-hidden="true">@Icons.ShieldCheck</span>
+                <p class="kpi-label">Fallbacks used</p>
+                <p class="kpi-value">@payments.Count(p => p.Fallbacks.Count > 0)</p>
+                <p class="kpi-meta">Cached FX rates or fraud rules</p>
+            </li>
+        </ul>
+
+        <div class="table-panel">
+            <table class="data-table">
+                <caption class="visually-hidden">Recent payments, newest first</caption>
+                <thead>
+                    <tr>
+                        <th scope="col">Time</th>
+                        <th scope="col">Payment</th>
+                        <th scope="col">Merchant</th>
+                        <th scope="col" class="num">Amount</th>
+                        <th scope="col">Card</th>
+                        <th scope="col">Result</th>
+                        <th scope="col" class="num">Processing</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var payment in payments)
+                    {
+                        <tr>
+                            <td class="mono muted">@payment.CreatedAt.UtcDateTime.ToString("HH:mm:ss", CultureInfo.InvariantCulture)</td>
+                            <td class="mono">@payment.Id</td>
+                            <td>@payment.MerchantName</td>
+                            <td class="num mono">@StatusDisplay.Money(payment.Amount, payment.Currency)</td>
+                            <td>@payment.CardBrand</td>
+                            <td class="result">
+                                <span class="result-chip" data-state="@(payment.IsApproved ? "ok" : "down")">
+                                    @(payment.IsApproved ? "Approved" : $"Declined · {StatusDisplay.Humanize(payment.DeclineReason ?? "unknown")}")
+                                </span>
+                                @foreach (var fallback in payment.Fallbacks)
+                                {
+                                    <span class="result-chip" data-state="warn">@StatusDisplay.FallbackLabel(fallback)</span>
+                                }
+                            </td>
+                            <td class="num mono">@payment.ProcessingMs.ToString("0", CultureInfo.InvariantCulture) ms</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</section>
+
+@code {
+    private const int PaymentLimit = 50;
+
+    private Payment[]? payments;
+    private bool unavailable;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            payments = await PaymentsApi.GetRecentPaymentsAsync(PaymentLimit);
+        }
+        catch (Exception ex) when (ex is HttpRequestException or Polly.ExecutionRejectedException)
+        {
+            unavailable = true;
+            Logger.PaymentsUnavailable(ex);
+        }
+    }
+}

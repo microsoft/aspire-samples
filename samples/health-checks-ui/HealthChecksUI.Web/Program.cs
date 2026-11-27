@@ -1,4 +1,4 @@
-﻿using HealthChecksUI.Web;
+using HealthChecksUI.Web;
 using HealthChecksUI.Web.Components;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,11 +12,13 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 var apiServiceUri = new Uri("https+http://apiservice");
-builder.Services.AddHttpClient<WeatherApiClient>(client => client.BaseAddress = apiServiceUri);
+builder.Services.AddHttpClient<PaymentsApiClient>(client => client.BaseAddress = apiServiceUri);
+builder.Services.AddSingleton<StatusPageTelemetry>();
 
-// Add a health-check for the weather API backend
+// The status page must stay up during a payments incident, so its check of the gateway only calls the gateway's
+// liveness endpoint, not its health endpoint
 builder.Services.AddHealthChecks()
-    .AddUrlGroup(new Uri(apiServiceUri, "/health"), name: "apiservice");
+    .AddUrlGroup(new Uri(apiServiceUri, "/alive"), name: "payments-api");
 
 var app = builder.Build();
 

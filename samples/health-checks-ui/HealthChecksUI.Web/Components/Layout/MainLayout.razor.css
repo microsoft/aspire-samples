@@ -69,23 +69,6 @@
     color: var(--ink-faint);
 }
 
-.appbar-state {
-    margin-left: auto;
-}
-
-.state-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.4rem 0.85rem;
-    border-radius: 999px;
-    font-size: 0.84rem;
-    font-weight: 600;
-    background: var(--ok-soft);
-    color: var(--ink);
-    border: 1px solid color-mix(in srgb, var(--ok) 40%, transparent);
-}
-
 /* ---- Content ----------------------------------------------------------- */
 .content {
     flex: 1;
@@ -136,16 +119,5 @@
 @media (max-width: 640px) {
     .appbar-inner {
         gap: 0.75rem;
-    }
-
-    .appbar-state {
-        order: 3;
-        margin-left: 0;
-        width: 100%;
-    }
-
-    .state-pill {
-        width: 100%;
-        justify-content: center;
     }
 }

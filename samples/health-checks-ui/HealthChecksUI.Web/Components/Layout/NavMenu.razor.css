@@ -1,10 +1,11 @@
 .topnav {
+    margin-left: auto;
     display: flex;
     align-items: center;
     gap: 0.25rem;
 }
 
-.topnav-link {
+.topnav ::deep .topnav-link {
     display: inline-flex;
     align-items: center;
     gap: 0.45rem;
@@ -17,12 +18,12 @@
     transition: background-color 0.15s ease, color 0.15s ease;
 }
 
-.topnav-link:hover {
+.topnav ::deep .topnav-link:hover {
     background: var(--surface-2);
     color: var(--ink);
 }
 
-.topnav-link.active {
+.topnav ::deep .topnav-link.active {
     background: color-mix(in srgb, var(--brand) 16%, transparent);
     color: var(--ink);
 }
@@ -44,7 +45,7 @@
         justify-content: space-between;
     }
 
-    .topnav-link {
+    .topnav ::deep .topnav-link {
         flex: 1;
         justify-content: center;
     }

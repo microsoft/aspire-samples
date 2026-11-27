@@ -1,0 +1,52 @@
+@ApiService_HostAddress = http://localhost:5301
+
+### Authorize a payment
+POST {{ApiService_HostAddress}}/api/payments
+Content-Type: application/json
+
+{
+  "merchantId": "alpine-ski-house",
+  "amount": 184.20,
+  "currency": "EUR",
+  "cardBrand": "Visa"
+}
+
+### Recent payments, newest first
+GET {{ApiService_HostAddress}}/api/payments?limit=10
+Accept: application/json
+
+### A single payment (use an ID from the previous response)
+GET {{ApiService_HostAddress}}/api/payments/pay_3f9a1c7e5b2d4f60
+Accept: application/json
+
+### Merchants
+GET {{ApiService_HostAddress}}/api/merchants
+Accept: application/json
+
+### Gateway status for the status page
+GET {{ApiService_HostAddress}}/api/status
+Accept: application/json
+
+### 400 validation problem details
+POST {{ApiService_HostAddress}}/api/payments
+Content-Type: application/json
+Accept: application/problem+json
+
+{
+  "merchantId": "unknown-merchant",
+  "amount": 0.10,
+  "currency": "USD",
+  "cardBrand": "Amex"
+}
+
+### Simulate a card processor outage (development only), then authorize a payment to get a 503 problem
+POST {{ApiService_HostAddress}}/dev/dependencies/card-processor/outage
+
+### Restore every dependency (development only)
+POST {{ApiService_HostAddress}}/dev/dependencies/restore
+
+### Overall health: Healthy, Degraded, or Unhealthy
+GET {{ApiService_HostAddress}}/health
+
+### OpenAPI document
+GET {{ApiService_HostAddress}}/openapi/v1.json

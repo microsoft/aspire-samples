@@ -1,44 +1,32 @@
-.overview-head {
-    margin-bottom: 1.75rem;
-}
-
-.overview-head h1 {
-    font-size: clamp(1.9rem, 4vw, 2.6rem);
-}
-
-.overview-head .lede {
-    margin-top: 0.65rem;
-}
-
 /* ---- Status banner ----------------------------------------------------- */
 .status-banner {
     display: flex;
     align-items: center;
     gap: 1rem;
-    padding: 1.15rem 1.35rem;
+    padding: 1.05rem 1.35rem;
     border-radius: var(--radius);
-    border: 1px solid var(--line);
-    background: var(--surface);
+    border: 1px solid color-mix(in srgb, var(--state) 45%, transparent);
+    background:
+        linear-gradient(0deg, var(--state-soft), var(--state-soft)),
+        var(--surface);
     box-shadow: var(--shadow-sm);
-    margin-bottom: 2.5rem;
+    margin-bottom: 1.75rem;
 }
 
-.status-banner-ok {
-    border-color: color-mix(in srgb, var(--ok) 45%, transparent);
-    background:
-        linear-gradient(0deg, var(--ok-soft), var(--ok-soft)),
-        var(--surface);
+.status-banner[data-state="idle"] {
+    --state: var(--ink-faint);
+    --state-soft: transparent;
 }
 
 .banner-mark {
     display: grid;
     place-items: center;
-    color: var(--ok);
+    color: var(--state);
 }
 
 .banner-mark ::deep .icon {
-    width: 2rem;
-    height: 2rem;
+    width: 2.1rem;
+    height: 2.1rem;
 }
 
 .banner-body {
@@ -47,7 +35,7 @@
 
 .banner-title {
     font-family: var(--font-display);
-    font-size: 1.2rem;
+    font-size: 1.3rem;
     font-weight: 600;
     color: var(--ink);
 }
@@ -58,148 +46,337 @@
     font-size: 0.9rem;
 }
 
-.banner-pulse {
-    display: inline-grid;
-    place-items: center;
-    width: 1.4rem;
-    height: 1.4rem;
+.banner-live {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
 }
 
-/* ---- Section ----------------------------------------------------------- */
+/* ---- Layout: dependencies + recent changes ----------------------------- */
+.status-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 19rem;
+    gap: 1.75rem;
+    align-items: start;
+}
+
+.section-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.85rem;
+}
+
 .section-title {
-    font-size: 1.05rem;
+    font-size: 1.1rem;
     font-weight: 600;
     color: var(--ink);
-    margin-bottom: 1rem;
 }
 
-/* ---- Tile grid --------------------------------------------------------- */
-.tile-grid {
+.status-aside .section-title {
+    margin-bottom: 0.85rem;
+}
+
+.legend {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    gap: 1.1rem;
+    font-size: 0.8rem;
+    color: var(--ink-soft);
+}
+
+.legend li {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.legend li::before {
+    content: "";
+    width: 0.7rem;
+    height: 0.7rem;
+    border-radius: 3px;
+    background: var(--state);
+}
+
+/* ---- Component cards --------------------------------------------------- */
+.component-grid {
     list-style: none;
     margin: 0;
     padding: 0;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 1.1rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
 }
 
-.tile {
+.component {
+    display: flex;
+    flex-direction: column;
     background: var(--surface);
     border: 1px solid var(--line);
     border-radius: var(--radius);
-    padding: 1.25rem;
+    padding: 1.1rem 1.15rem 0.95rem;
     box-shadow: var(--shadow-sm);
-    transition: border-color 0.18s ease, transform 0.18s ease;
 }
 
-.tile:hover {
-    border-color: var(--line-strong);
-    transform: translateY(-2px);
+.component:not([data-state="ok"]) {
+    border-color: color-mix(in srgb, var(--state) 55%, transparent);
+    box-shadow: 0 0 0 3px var(--state-soft), var(--shadow-sm);
 }
 
-.tile-top {
+.component-top {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 0.85rem;
+    align-items: flex-start;
+    gap: 0.75rem;
 }
 
-.tile-icon {
+.component-icon {
     display: grid;
     place-items: center;
     width: 2.4rem;
     height: 2.4rem;
+    flex: none;
     border-radius: 10px;
     background: var(--surface-2);
     border: 1px solid var(--line);
     color: var(--brand);
 }
 
-.tile-icon ::deep .icon {
-    width: 1.3rem;
-    height: 1.3rem;
+.component-icon ::deep .icon {
+    width: 1.25rem;
+    height: 1.25rem;
 }
 
-.tile-status {
+.component-title {
+    flex: 1;
+    min-width: 0;
+}
+
+.component-title h3 {
+    font-size: 1.08rem;
+    font-weight: 600;
+}
+
+.component-title p {
+    margin-top: 0.1rem;
+    color: var(--ink-soft);
+    font-size: 0.84rem;
+}
+
+.state-pill {
     display: inline-flex;
     align-items: center;
-    gap: 0.45rem;
-    font-size: 0.82rem;
+    gap: 0.4rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    font-size: 0.78rem;
     font-weight: 600;
-    color: var(--ink-soft);
+    color: var(--ink);
+    background: var(--state-soft);
+    border: 1px solid color-mix(in srgb, var(--state) 40%, transparent);
+    white-space: nowrap;
 }
 
-.tile-status .dot {
-    width: 0.55rem;
-    height: 0.55rem;
+.state-pill .dot {
+    width: 0.5rem;
+    height: 0.5rem;
     border-radius: 50%;
-    background: var(--ok);
-    box-shadow: 0 0 0 3px var(--ok-soft);
+    background: var(--state);
 }
 
-.tile-name {
-    font-size: 1.12rem;
-    font-weight: 600;
-}
-
-.tile-role {
+.component-desc {
+    margin: 0.75rem 0 0;
+    min-height: 2.9em;
     color: var(--ink-soft);
     font-size: 0.88rem;
-    margin-top: 0.15rem;
+    line-height: 1.45;
 }
 
-.tile-stats {
+.component-stats {
     display: flex;
-    gap: 1.75rem;
-    margin: 1.1rem 0 0.9rem;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.5rem;
+    margin: 0.7rem 0 0.8rem;
 }
 
-.tile-stats div {
+.component-stats div {
     display: flex;
     flex-direction: column;
 }
 
-.tile-stats dt {
-    font-size: 0.7rem;
+.component-stats dt {
+    font-size: 0.66rem;
     letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--ink-faint);
+    white-space: nowrap;
 }
 
-.tile-stats dd {
+.component-stats dd {
     margin: 0.1rem 0 0;
     font-family: var(--font-mono);
-    font-size: 1.05rem;
+    font-size: 0.95rem;
     font-weight: 500;
     color: var(--ink);
 }
 
-/* ---- Uptime track ------------------------------------------------------ */
+/* ---- Check history track ----------------------------------------------- */
 .uptime-track {
     display: flex;
-    gap: 2px;
+    gap: 3px;
     height: 1.6rem;
     align-items: stretch;
+    margin-top: auto;
 }
 
 .uptime-track .bar {
     flex: 1;
+    min-width: 3px;
     border-radius: 2px;
-    min-width: 2px;
+    background: var(--state);
 }
 
-.uptime-track .bar-ok {
-    background: color-mix(in srgb, var(--ok) 55%, transparent);
+.uptime-track .bar[data-state="ok"] {
+    background: color-mix(in srgb, var(--ok) 60%, transparent);
 }
 
-.uptime-track .bar-warn {
-    background: var(--warn);
+.uptime-track .bar[data-state="none"] {
+    background: var(--surface-2);
+    border: 1px dashed var(--line-strong);
 }
 
-.tile-foot {
-    margin-top: 0.5rem;
-    font-size: 0.72rem;
+.track-foot {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 0.4rem;
+    font-size: 0.68rem;
     letter-spacing: 0.05em;
     text-transform: uppercase;
     color: var(--ink-faint);
+}
+
+.footnote {
+    margin-top: 0.9rem;
+    color: var(--ink-soft);
+    font-size: 0.84rem;
+}
+
+.footnote strong {
+    color: var(--ink);
+    font-weight: 600;
+}
+
+/* ---- Timeline of status changes ---------------------------------------- */
+.timeline {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+}
+
+.timeline li {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: start;
+    gap: 0.7rem;
+    padding: 0.8rem 1rem;
+    border-bottom: 1px solid var(--line);
+}
+
+.timeline li:last-child {
+    border-bottom: 0;
+}
+
+.timeline-dot {
+    display: grid;
+    place-items: center;
+    color: var(--state);
+    padding-top: 0.1rem;
+}
+
+.timeline-dot ::deep .icon {
+    width: 1.1rem;
+    height: 1.1rem;
+}
+
+.timeline-title {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.6rem;
+    align-items: baseline;
+    color: var(--ink);
+    font-size: 0.92rem;
+}
+
+.timeline-title strong {
+    font-weight: 600;
+}
+
+.timeline time {
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+    color: var(--ink-faint);
+    white-space: nowrap;
+}
+
+.transition {
+    margin-top: 0.05rem;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--ink-soft);
+}
+
+.timeline-desc {
+    margin-top: 0.2rem;
+    color: var(--ink-soft);
+    font-size: 0.82rem;
+    line-height: 1.45;
+}
+
+.empty-note {
+    padding: 1rem 1.1rem;
+    border-radius: var(--radius);
+    border: 1px dashed var(--line-strong);
+    color: var(--ink-soft);
+    font-size: 0.88rem;
+}
+
+.empty-note code {
+    color: var(--ink);
+}
+
+/* ---- Responsive -------------------------------------------------------- */
+@media (max-width: 1100px) {
+    .status-layout {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+@media (max-width: 900px) {
+    .component-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+@media (max-width: 680px) {
+    .status-banner {
+        flex-wrap: wrap;
+    }
+
+    .banner-live {
+        display: none;
+    }
 }

@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Components;
 namespace HealthChecksUI.Web.Components;
 
 /// <summary>
-/// Inline Lucide icons (rendered as SVG) so the status console has no external
+/// Inline Lucide icons (rendered as SVG) so the status page has no external
 /// icon-font dependency and renders deterministically for screenshots/tests.
 /// </summary>
 public static class Icons
@@ -62,6 +62,30 @@ public static class Icons
     public static MarkupString Signal => Lucide(
         "<path d=\"M2 20h.01\"/><path d=\"M7 20v-4\"/><path d=\"M12 20v-8\"/>" +
         "<path d=\"M17 20V8\"/><path d=\"M22 4v16\"/>");
+
+    public static MarkupString CreditCard => Lucide(
+        "<rect width=\"20\" height=\"14\" x=\"2\" y=\"5\" rx=\"2\"/><line x1=\"2\" x2=\"22\" y1=\"10\" y2=\"10\"/>");
+
+    public static MarkupString ArrowLeftRight => Lucide(
+        "<path d=\"M8 3 4 7l4 4\"/><path d=\"M4 7h16\"/><path d=\"m16 21 4-4-4-4\"/><path d=\"M20 17H4\"/>");
+
+    public static MarkupString CircleX => Lucide(
+        "<circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"m15 9-6 6\"/><path d=\"m9 9 6 6\"/>");
+
+    public static MarkupString CircleAlert => Lucide(
+        "<circle cx=\"12\" cy=\"12\" r=\"10\"/><line x1=\"12\" x2=\"12\" y1=\"8\" y2=\"12\"/><line x1=\"12\" x2=\"12.01\" y1=\"16\" y2=\"16\"/>");
+
+    public static MarkupString Clock => Lucide(
+        "<circle cx=\"12\" cy=\"12\" r=\"10\"/><polyline points=\"12 6 12 12 16 14\"/>");
+
+    public static MarkupString Banknote => Lucide(
+        "<rect width=\"20\" height=\"12\" x=\"2\" y=\"6\" rx=\"2\"/><circle cx=\"12\" cy=\"12\" r=\"2\"/><path d=\"M6 12h.01M18 12h.01\"/>");
+
+    public static MarkupString History => Lucide(
+        "<path d=\"M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8\"/><path d=\"M3 3v5h5\"/><path d=\"M12 7v5l4 2\"/>");
+
+    public static MarkupString TrendingUp => Lucide(
+        "<polyline points=\"22 7 13.5 15.5 8.5 10.5 2 17\"/><polyline points=\"16 7 22 7 22 13\"/>");
 
     public static MarkupString GitHub => new(
         "<svg class=\"icon\" viewBox=\"0 0 16 16\" fill=\"currentColor\" aria-hidden=\"true\">" +

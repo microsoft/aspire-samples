@@ -1,0 +1,151 @@
+/* ---- Notices ----------------------------------------------------------- */
+.notice {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1.25rem 1.4rem;
+    border-radius: var(--radius);
+    border: 1px dashed var(--line-strong);
+    background: var(--surface);
+    color: var(--ink-soft);
+}
+
+.notice > span:first-child {
+    color: var(--state, var(--brand));
+}
+
+.notice code {
+    color: var(--ink);
+}
+
+.spinner {
+    width: 1.1rem;
+    height: 1.1rem;
+    border-radius: 50%;
+    border: 2px solid var(--line-strong);
+    border-top-color: var(--brand);
+    animation: payments-spin 0.8s linear infinite;
+}
+
+@keyframes payments-spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ---- KPI tiles --------------------------------------------------------- */
+.kpi-grid {
+    list-style: none;
+    margin: 0 0 1.5rem;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+}
+
+.kpi {
+    position: relative;
+    padding: 1.1rem 1.2rem;
+    border-radius: var(--radius);
+    border: 1px solid var(--line);
+    background: var(--surface);
+    box-shadow: var(--shadow-sm);
+}
+
+.kpi-icon {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    color: var(--brand);
+}
+
+.kpi-label {
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+}
+
+.kpi-value {
+    margin-top: 0.3rem;
+    font-family: var(--font-display);
+    font-size: 1.9rem;
+    font-weight: 600;
+    line-height: 1.1;
+    color: var(--ink);
+}
+
+.kpi-meta {
+    margin-top: 0.25rem;
+    font-size: 0.82rem;
+    color: var(--ink-soft);
+}
+
+/* ---- Payments table ---------------------------------------------------- */
+.table-panel {
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow-x: auto;
+    background: var(--surface);
+    box-shadow: var(--shadow-sm);
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.data-table th,
+.data-table td {
+    padding: 0.65rem 0.85rem;
+    text-align: left;
+    border-bottom: 1px solid var(--line);
+    white-space: nowrap;
+}
+
+.data-table thead th {
+    font-size: 0.7rem;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    font-weight: 600;
+    background: var(--surface-2);
+}
+
+.data-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.data-table tbody tr:hover td {
+    background: var(--surface-2);
+}
+
+.data-table .num {
+    text-align: right;
+}
+
+.data-table .mono {
+    font-family: var(--font-mono);
+    font-size: 0.84rem;
+    color: var(--ink);
+}
+
+.data-table .result {
+    white-space: normal;
+}
+
+.data-table .muted {
+    color: var(--ink-faint);
+}
+
+.result-chip {
+    display: inline-block;
+    margin: 0.1rem 0.3rem 0.1rem 0;
+    white-space: nowrap;
+    padding: 0.15rem 0.55rem;
+    border-radius: 999px;
+    background: var(--state-soft);
+    border: 1px solid color-mix(in srgb, var(--state) 40%, transparent);
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--ink);
+}

@@ -1,26 +1,19 @@
-﻿@inherits LayoutComponentBase
+@inherits LayoutComponentBase
 
 <a class="skip-link" href="#main-content">Skip to main content</a>
 
 <div class="layout">
     <header class="appbar">
         <div class="appbar-inner">
-            <a class="brand" href="" aria-label="Aspire Status, overview">
-                <span class="brand-mark" aria-hidden="true">@Icons.Activity</span>
+            <a class="brand" href="" aria-label="Contoso Pay status, overview">
+                <span class="brand-mark" aria-hidden="true">@Icons.CreditCard</span>
                 <span class="brand-text">
-                    <span class="brand-name">Aspire Status</span>
-                    <span class="brand-sub">Systems observability</span>
+                    <span class="brand-name">Contoso Pay</span>
+                    <span class="brand-sub">Gateway status</span>
                 </span>
             </a>
 
             <NavMenu />
-
-            <div class="appbar-state">
-                <span class="state-pill state-ok">
-                    <span class="pulse-dot" aria-hidden="true"></span>
-                    All systems operational
-                </span>
-            </div>
         </div>
     </header>
 
@@ -29,8 +22,8 @@
     </main>
 
     <footer class="appfoot">
-        <p class="appfoot-copy">Aspire Status · health &amp; uptime observability sample</p>
-        <a class="appfoot-link" href="https://github.com/dotnet/aspire-samples/tree/main/samples/health-checks-ui"
+        <p class="appfoot-copy">Contoso Pay · a payments gateway status page built with ASP.NET Core health checks and Aspire</p>
+        <a class="appfoot-link" href="https://github.com/microsoft/aspire-samples/tree/main/samples/health-checks-ui"
            target="_blank" rel="noopener">
             <span aria-hidden="true">@Icons.GitHub</span> View source
             <span aria-hidden="true">@Icons.ArrowUpRight</span>

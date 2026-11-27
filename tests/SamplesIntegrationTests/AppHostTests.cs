@@ -208,8 +208,8 @@ public class AppHostTests(ITestOutputHelper testOutput)
                 WaitForResources = [new("migration", KnownResourceStates.Finished)]
             },
             new TestEndpoints("HealthChecksUI.AppHost", new() {
-                { "apiservice", ["/alive", "/health", "/weatherforecast"] },
-                { "webfrontend", ["/alive", "/health", "/", "/weather"] },
+                { "apiservice", ["/alive", "/health", "/api/status", "/api/payments", "/scalar", "/openapi/v1.json"] },
+                { "webfrontend", ["/alive", "/health", "/", "/payments"] },
                 { "healthchecksui", ["/"] }
             }),
             new TestEndpoints("MetricsApp.AppHost", new() {

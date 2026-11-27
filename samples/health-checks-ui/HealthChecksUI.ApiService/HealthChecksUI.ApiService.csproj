@@ -11,4 +11,10 @@
     <ProjectReference Include="..\HealthChecksUI.ServiceDefaults\HealthChecksUI.ServiceDefaults.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Aspire.StackExchange.Redis" Version="17.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.15" />
+    <PackageReference Include="Scalar.AspNetCore" Version="3.0.2" />
+  </ItemGroup>
+
 </Project>

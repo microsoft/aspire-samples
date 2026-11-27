@@ -1,5 +1,5 @@
 /* =====================================================================
-   Aspire Status — systems-status observability console
+   Contoso Pay — payments gateway status page
    Dark-primary design token system with a fully realised light theme.
    ===================================================================== */
 
@@ -28,6 +28,7 @@
     --warn: #fbbf24;
     --warn-soft: rgba(251, 191, 36, 0.16);
     --down: #fb7185;
+    --down-soft: rgba(251, 113, 133, 0.15);
 
     /* Primary action flips fill/ink per theme so text stays >= 7:1 (AAA) */
     --btn-bg: #2dd4bf;
@@ -78,6 +79,7 @@
         --warn: #b45309;
         --warn-soft: rgba(180, 83, 9, 0.12);
         --down: #be123c;
+        --down-soft: rgba(190, 18, 60, 0.09);
 
         --btn-bg: #0f3b37;
         --btn-ink: #ffffff;
@@ -178,6 +180,34 @@ code {
     border: 0;
 }
 
+/* ---- Page header (shared by the status and payments pages) ------------ */
+.page-head {
+    margin-bottom: 1.75rem;
+}
+
+.page-head h1 {
+    font-size: clamp(1.9rem, 4vw, 2.6rem);
+}
+
+.page-head .lede {
+    margin-top: 0.65rem;
+}
+
+/* ---- Status colors: anything with data-state="ok|warn|down" exposes --state/--state-soft */
+[data-state="ok"] {
+    --state: var(--ok);
+    --state-soft: var(--ok-soft);
+}
+
+[data-state="warn"] {
+    --state: var(--warn);
+    --state-soft: var(--warn-soft);
+}
+
+[data-state="down"] {
+    --state: var(--down);
+    --state-soft: var(--down-soft);
+}
 /* ---- Skip link --------------------------------------------------------- */
 .skip-link {
     position: fixed;

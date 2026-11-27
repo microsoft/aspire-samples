@@ -1,72 +1,218 @@
-﻿@page "/"
+@page "/"
+@rendermode InteractiveServer
+@implements IDisposable
+@inject PaymentsApiClient PaymentsApi
+@inject StatusPageTelemetry Telemetry
+@inject ILogger<Home> Logger
 
-<PageTitle>Aspire Status · Overview</PageTitle>
+<PageTitle>Contoso Pay · Status</PageTitle>
 
-<section class="overview">
-    <header class="overview-head">
-        <p class="eyebrow">Status overview</p>
-        <h1>Service health at a glance</h1>
-        <p class="lede">
-            An illustrative status overview for the services in this sample — showing how state,
-            uptime, and latency can be surfaced at a glance. Figures below are sample data.
-        </p>
+<section class="status">
+    <header class="page-head">
+        <p class="eyebrow">Gateway status</p>
+        <h1>Contoso Pay system status</h1>
+        <p class="lede">Live health of the payments gateway's dependencies, from the gateway's own ASP.NET Core health checks.</p>
     </header>
 
-    <div class="status-banner status-banner-ok">
-        <span class="banner-mark" aria-hidden="true">@Icons.CircleCheck</span>
-        <div class="banner-body">
-            <p class="banner-title">All systems operational</p>
-            <p class="banner-meta">Illustrative overview · 3 of 3 services reporting healthy</p>
+    @if (status is null)
+    {
+        <div class="status-banner" data-state="@(unavailable ? "down" : "idle")" role="status" aria-live="polite">
+            <span class="banner-mark" aria-hidden="true">@(unavailable ? Icons.CircleX : Icons.Activity)</span>
+            <div class="banner-body">
+                <p class="banner-title">@(unavailable ? "Status unavailable" : "Checking the gateway…")</p>
+                <p class="banner-meta">
+                    @(unavailable ? "The payments gateway isn't responding. This page retries every few seconds." : "Waiting for the first status report.")
+                </p>
+            </div>
         </div>
-        <span class="banner-pulse" aria-hidden="true"><span class="pulse-dot"></span></span>
-    </div>
+    }
+    else
+    {
+        var operational = status.Components.Count(c => c.Status == ComponentStatus.Operational);
 
-    <h2 class="section-title">Monitored services</h2>
-    <ul class="tile-grid" role="list">
-        @foreach (var svc in Services)
-        {
-            <li class="tile" data-state="@svc.State">
-                <div class="tile-top">
-                    <span class="tile-icon" aria-hidden="true">@svc.Icon</span>
-                    <span class="tile-status">
-                        <span class="dot" aria-hidden="true"></span>
-                        @svc.StateLabel
-                    </span>
-                </div>
-                <h3 class="tile-name">@svc.Name</h3>
-                <p class="tile-role">@svc.Role</p>
-                <dl class="tile-stats">
-                    <div>
-                        <dt>Uptime</dt>
-                        <dd>@svc.Uptime</dd>
-                    </div>
-                    <div>
-                        <dt>Latency</dt>
-                        <dd>@svc.Latency</dd>
-                    </div>
-                </dl>
-                <div class="uptime-track" aria-hidden="true">
-                    @for (var i = 0; i < 30; i++)
+        <div class="status-banner" data-state="@StatusDisplay.State(status.Status)" role="status" aria-live="polite">
+            <span class="banner-mark" aria-hidden="true">@StatusDisplay.Icon(status.Status)</span>
+            <div class="banner-body">
+                <p class="banner-title">@status.Summary</p>
+                <p class="banner-meta">
+                    @operational of @status.Components.Count dependencies operational · checked every @status.CheckIntervalSeconds s
+                    @if (status.CheckedAt is { } checkedAt)
                     {
-                        <span class="bar @(svc.Dip == i ? "bar-warn" : "bar-ok")"></span>
+                        <span> · updated @StatusDisplay.Utc(checkedAt)</span>
                     }
+                </p>
+            </div>
+            <span class="banner-live" aria-hidden="true"><span class="pulse-dot"></span>Live</span>
+        </div>
+
+        <div class="status-layout">
+            <div class="status-main">
+                <div class="section-head">
+                    <h2 class="section-title">Dependencies</h2>
+                    <ul class="legend" aria-label="Legend">
+                        <li data-state="ok">Operational</li>
+                        <li data-state="warn">Degraded</li>
+                        <li data-state="down">Outage</li>
+                    </ul>
                 </div>
-                <p class="tile-foot">@(svc.Dip >= 0 ? "Last 30 checks · 1 warning" : "Last 30 checks · all healthy")</p>
-            </li>
-        }
-    </ul>
+
+                <ul class="component-grid" role="list">
+                    @foreach (var component in status.Components)
+                    {
+                        var state = StatusDisplay.State(component.Status);
+
+                        <li class="component" data-state="@state">
+                            <div class="component-top">
+                                <span class="component-icon" aria-hidden="true">@StatusDisplay.ComponentIcon(component.Name)</span>
+                                <div class="component-title">
+                                    <h3>@component.DisplayName</h3>
+                                    <p>@component.Provider</p>
+                                </div>
+                                <span class="state-pill" data-state="@state">
+                                    <span class="dot" aria-hidden="true"></span>
+                                    @StatusDisplay.Label(component.Status)
+                                </span>
+                            </div>
+
+                            <p class="component-desc">@component.Description</p>
+
+                            <dl class="component-stats">
+                                <div>
+                                    <dt>Check latency</dt>
+                                    <dd>@(component.LatencyMs is int ms ? $"{ms} ms" : "—")</dd>
+                                </div>
+                                <div>
+                                    <dt>Availability</dt>
+                                    <dd>@component.AvailabilityPercent.ToString("0.#", CultureInfo.InvariantCulture)%</dd>
+                                </div>
+                                <div>
+                                    <dt>Failure status</dt>
+                                    <dd>@(component.IsCritical ? "Unhealthy" : "Degraded")</dd>
+                                </div>
+                            </dl>
+
+                            <div class="uptime-track" role="img" aria-label="@($"Last {component.History.Count} health checks for {component.DisplayName}")">
+                                @for (var i = component.History.Count; i < HistoryLength; i++)
+                                {
+                                    <span class="bar" data-state="none"></span>
+                                }
+                                @foreach (var check in component.History)
+                                {
+                                    <span class="bar" data-state="@StatusDisplay.State(check)"></span>
+                                }
+                            </div>
+                            <div class="track-foot">
+                                <span>@(HistoryLength * status.CheckIntervalSeconds / 60.0) min ago</span>
+                                <span>Now</span>
+                            </div>
+                        </li>
+                    }
+                </ul>
+
+                <p class="footnote">
+                    Critical dependencies report <strong>Unhealthy</strong> when they fail, because payments can't complete
+                    without them. Dependencies with a fallback report <strong>Degraded</strong>, and so do slow responses.
+                </p>
+            </div>
+
+            <aside class="status-aside" aria-labelledby="changes-title">
+                <h2 class="section-title" id="changes-title">Recent status changes</h2>
+                @if (status.RecentChanges.Count == 0)
+                {
+                    <p class="empty-note">
+                        No status changes since the gateway started. Run <strong>Simulate dependency incident</strong> on the
+                        <code>apiservice</code> resource in the Aspire dashboard to see one.
+                    </p>
+                }
+                else
+                {
+                    <ol class="timeline">
+                        @foreach (var change in status.RecentChanges)
+                        {
+                            <li data-state="@StatusDisplay.State(change.To)">
+                                <span class="timeline-dot" aria-hidden="true">@StatusDisplay.Icon(change.To)</span>
+                                <div class="timeline-body">
+                                    <p class="timeline-title">
+                                        <strong>@change.DisplayName</strong>
+                                        <time datetime="@change.ChangedAt.ToString("O")">@StatusDisplay.Utc(change.ChangedAt)</time>
+                                    </p>
+                                    <p class="transition">@StatusDisplay.Label(change.From) → @StatusDisplay.Label(change.To)</p>
+                                    <p class="timeline-desc">@change.Description</p>
+                                </div>
+                            </li>
+                        }
+                    </ol>
+                }
+            </aside>
+        </div>
+    }
 </section>
-
 @code {
-    private record ServiceTile(string Name, string Role, MarkupString Icon, string State,
-        string StateLabel, string Uptime, string Latency, int Dip);
+    private const int HistoryLength = 30;
+    private static readonly TimeSpan s_refreshInterval = TimeSpan.FromSeconds(5);
 
-    // Representative tiles for the services that make up this sample. Values are
-    // illustrative and deterministic so the overview renders consistently.
-    private static readonly ServiceTile[] Services =
-    [
-        new("Web frontend", "Serves the web UI", Icons.Server, "ok", "Operational", "99.98%", "12 ms", -1),
-        new("API service", "Forecast & status backend", Icons.Globe, "ok", "Operational", "99.95%", "28 ms", 18),
-        new("Redis cache", "Output cache", Icons.Database, "ok", "Operational", "100.0%", "3 ms", -1),
-    ];
+    private readonly CancellationTokenSource _disposed = new();
+    private GatewayStatus? status;
+    private bool unavailable;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAsync();
+
+        // Count the HTTP request that rendered the page, not the interactive re-render that follows it
+        if (!RendererInfo.IsInteractive && status is not null)
+        {
+            Telemetry.Viewed(status.Status);
+        }
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender && RendererInfo.IsInteractive)
+        {
+            _ = RefreshAsync();
+        }
+    }
+
+    private async Task RefreshAsync()
+    {
+        using var timer = new PeriodicTimer(s_refreshInterval);
+        try
+        {
+            while (await timer.WaitForNextTickAsync(_disposed.Token))
+            {
+                await InvokeAsync(async () =>
+                {
+                    await LoadAsync();
+                    StateHasChanged();
+                });
+            }
+        }
+        catch (OperationCanceledException)
+        {
+        }
+    }
+
+    private async Task LoadAsync()
+    {
+        try
+        {
+            status = await PaymentsApi.GetStatusAsync(_disposed.Token);
+            unavailable = false;
+        }
+        // The resilience handler reports timeouts and an open circuit breaker as Polly's ExecutionRejectedException
+        catch (Exception ex) when (ex is HttpRequestException or Polly.ExecutionRejectedException or TaskCanceledException && !_disposed.IsCancellationRequested)
+        {
+            status = null;
+            unavailable = true;
+            Telemetry.StatusUnavailable();
+            Logger.StatusUnavailable(ex);
+        }
+    }
+
+    public void Dispose()
+    {
+        _disposed.Cancel();
+        _disposed.Dispose();
+    }
 }
