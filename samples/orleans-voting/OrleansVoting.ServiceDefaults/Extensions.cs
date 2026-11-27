@@ -14,6 +14,10 @@ public static class Extensions
     private const string HealthEndpointPath = "/health";
     private const string AlivenessEndpointPath = "/alive";
 
+    // The box office publishes its domain telemetry as "OrleansTicketing.<Area>" (e.g. "OrleansTicketing.BoxOffice"),
+    // so a wildcard registers every Meter and ActivitySource.
+    private const string DomainTelemetryNames = "OrleansTicketing.*";
+
     public static IHostApplicationBuilder AddServiceDefaults(this IHostApplicationBuilder builder)
     {
         builder.ConfigureOpenTelemetry();
@@ -48,12 +52,14 @@ public static class Extensions
                 metrics.AddAspNetCoreInstrumentation()
                        .AddHttpClientInstrumentation()
                        .AddRuntimeInstrumentation()
-                       .AddMeter("Microsoft.Orleans");
+                       .AddMeter("Microsoft.Orleans")
+                       .AddMeter(DomainTelemetryNames);
             })
             .WithTracing(tracing =>
             {
                 tracing
                     .AddSource(builder.Environment.ApplicationName)
+                    .AddSource(DomainTelemetryNames)
                     .AddAspNetCoreInstrumentation(tracing =>
                         // Don't trace requests to the health endpoint to avoid filling the dashboard with noise
                         tracing.Filter = httpContext =>
@@ -62,7 +68,8 @@ public static class Extensions
                     )
                     .AddHttpClientInstrumentation()
                     .AddSource("Microsoft.Orleans.Application")
-                    .AddSource("Microsoft.Orleans.Runtime");
+                    .AddSource("Microsoft.Orleans.Runtime")
+                    .AddSource("Microsoft.Orleans.Storage");
             });
 
         builder.AddOpenTelemetryExporters();

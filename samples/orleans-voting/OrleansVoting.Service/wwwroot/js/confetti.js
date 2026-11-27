@@ -1,5 +1,5 @@
-// Grain Poll — self-contained celebration confetti.
-// Progressive enhancement: invoked from the voting flow via JS interop.
+// Grain Tickets — self-contained celebration confetti.
+// Progressive enhancement: invoked after a successful reservation via JS interop.
 // No-ops when the user prefers reduced motion. No external dependencies.
 (function () {
     "use strict";
@@ -115,6 +115,6 @@
         }
     }
 
-    window.grainPoll = window.grainPoll || {};
-    window.grainPoll.celebrate = celebrate;
+    window.grainTickets = window.grainTickets || {};
+    window.grainTickets.celebrate = celebrate;
 })();

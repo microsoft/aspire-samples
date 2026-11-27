@@ -1,7 +1,4 @@
-@using OrleansVoting.Data
 @using OrleansVoting.Service.Shared
-
-@inject PollService PollService
 
 <Router AppAssembly="@typeof(App).Assembly">
     <Found Context="routeData">
@@ -15,13 +12,3 @@
         </LayoutView>
     </NotFound>
 </Router>
-@code
-{
-	[Parameter] public string? ClientIP { get; set; }
-
-	protected override Task OnInitializedAsync()
-	{
-		PollService.Initialize(ClientIP!);
-		return base.OnInitializedAsync();
-    }
-}

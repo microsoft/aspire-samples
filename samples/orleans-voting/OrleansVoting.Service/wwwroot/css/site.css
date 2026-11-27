@@ -1,5 +1,5 @@
 /* =====================================================================
-   Grain Poll — "live poll game-show" design system
+   Grain Tickets — "live box office" design system
    Bespoke token system layered over Bootstrap. Dark theme by default,
    light theme via prefers-color-scheme. Neon accents are reserved for
    large shapes, bars, badges and borders; text always rides on opaque
@@ -41,6 +41,12 @@
     /* LIVE chip — tuned to clear 7:1 (small bold text) per theme */
     --live-bg: #ff7ab8;
     --live-ink: #1a0a2e;
+
+    /* Seat tiers: bars and swatches use the base colour; labels sit on surfaces in --ink */
+    --tier-vip: var(--gold);
+    --tier-floor: var(--magenta);
+    --tier-lower: var(--violet);
+    --tier-upper: var(--cyan);
 
     --ok: #34e0a1;
     --ok-text: #58e9b4;
@@ -206,7 +212,7 @@ h1:focus-visible {
 }
 
 /* ---------- Buttons ---------- */
-.gp-btn {
+.gt-btn {
     -webkit-appearance: none;
     appearance: none;
     display: inline-flex;
@@ -225,29 +231,29 @@ h1:focus-visible {
     text-decoration: none;
 }
 
-.gp-btn-primary {
+.gt-btn-primary {
     color: var(--btn-ink);
     background: linear-gradient(110deg, var(--btn-bg), var(--btn-bg-2));
     box-shadow: 0 12px 30px -12px rgba(255, 73, 163, 0.6);
 }
 
-.gp-btn-primary:hover {
+.gt-btn-primary:hover {
     color: var(--btn-ink);
     transform: translateY(-2px);
     box-shadow: 0 18px 38px -12px rgba(255, 73, 163, 0.75);
 }
 
-.gp-btn-primary:active {
+.gt-btn-primary:active {
     transform: translateY(0) scale(0.98);
 }
 
-.gp-btn-ghost {
+.gt-btn-ghost {
     color: var(--ink);
     background: var(--surface-2);
     border-color: var(--line-strong);
 }
 
-.gp-btn-ghost:hover {
+.gt-btn-ghost:hover {
     color: var(--ink);
     background: var(--surface-3);
     border-color: var(--magenta);
@@ -255,7 +261,7 @@ h1:focus-visible {
 }
 
 /* "Demo" utility buttons — clearly secondary, tagged */
-.gp-btn-demo {
+.gt-btn-demo {
     color: var(--ink);
     background: transparent;
     border: 1px dashed var(--line-strong);
@@ -265,13 +271,13 @@ h1:focus-visible {
     padding: 0.6rem 1.05rem;
 }
 
-.gp-btn-demo:hover {
+.gt-btn-demo:hover {
     color: var(--ink);
     border-color: var(--violet);
     background: var(--surface-2);
 }
 
-.gp-btn:disabled {
+.gt-btn:disabled {
     opacity: 0.55;
     cursor: not-allowed;
     transform: none;
@@ -279,7 +285,7 @@ h1:focus-visible {
 }
 
 /* ---------- Form controls (re-skinned, Bootstrap-compatible) ---------- */
-.gp-field {
+.gt-field {
     width: 100%;
     font-family: var(--font-body);
     font-size: 1rem;
@@ -291,18 +297,18 @@ h1:focus-visible {
     transition: border-color 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
 }
 
-.gp-field::placeholder {
+.gt-field::placeholder {
     color: var(--ink-faint);
 }
 
-.gp-field:focus {
+.gt-field:focus {
     outline: none;
     border-color: var(--magenta);
     box-shadow: var(--ring);
     background: var(--surface);
 }
 
-.gp-label {
+.gt-label {
     display: block;
     font-family: var(--font-display);
     font-weight: 700;
@@ -311,7 +317,7 @@ h1:focus-visible {
     color: var(--ink);
 }
 
-.gp-help {
+.gt-help {
     color: var(--ink-faint);
     font-size: 0.86rem;
     margin-top: 0.4rem;
@@ -332,8 +338,8 @@ h1:focus-visible {
     font-size: 0.86rem;
 }
 
-input.gp-field:-webkit-autofill,
-input.gp-field:-webkit-autofill:focus {
+input.gt-field:-webkit-autofill,
+input.gt-field:-webkit-autofill:focus {
     -webkit-text-fill-color: var(--ink);
     -webkit-box-shadow: 0 0 0 1000px var(--surface-2) inset;
     caret-color: var(--ink);
@@ -397,11 +403,10 @@ input.gp-field:-webkit-autofill:focus {
     content: "An error has occurred.";
 }
 
-/* ---------- Themed alert (Poll error) ---------- */
-.gp-alert {
+/* ---------- Themed alert ---------- */
+.gt-alert {
     background: var(--danger-soft);
     border: 1px solid var(--danger);
-    border-left: 5px solid var(--danger);
     color: var(--ink);
     border-radius: var(--radius-sm);
     padding: 1rem 1.25rem;

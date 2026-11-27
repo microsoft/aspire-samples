@@ -1,0 +1,720 @@
+/* ---------- Header ---------- */
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-bottom: 0.6rem;
+    font-weight: 600;
+    font-size: 0.92rem;
+    color: var(--ink-soft);
+    text-decoration: none;
+}
+
+.back-link:hover {
+    color: var(--ink);
+}
+
+.back-ico ::deep .icon {
+    width: 1rem;
+    height: 1rem;
+}
+
+.page-alert {
+    margin-bottom: 1rem;
+}
+
+.bo-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 1.25rem 2rem;
+    align-items: end;
+    margin-bottom: 1.25rem;
+}
+
+.eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.76rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--brand-text);
+    margin: 0 0 0.55rem;
+}
+
+.eyebrow-dot {
+    width: 0.55rem;
+    height: 0.55rem;
+    border-radius: 50%;
+    background: var(--magenta);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--magenta) 22%, transparent);
+}
+
+h1 {
+    font-size: clamp(2.1rem, 5.5vw, 3.2rem);
+    margin: 0;
+}
+
+.bo-title {
+    margin: 0.3rem 0 0;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.3rem;
+    color: var(--ink-soft);
+}
+
+.bo-venue {
+    margin: 0.6rem 0 0;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--ink-soft);
+}
+
+.venue-ico {
+    display: inline-flex;
+    color: var(--cyan-text);
+}
+
+.venue-ico ::deep .icon {
+    width: 1.05rem;
+    height: 1.05rem;
+}
+
+.kpis {
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+}
+
+.kpi {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    padding: 0.65rem 1rem;
+    box-shadow: var(--shadow);
+}
+
+.kpi dt {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+}
+
+.kpi dd {
+    margin: 0.2rem 0 0;
+    font-family: var(--font-display);
+    font-size: 1.55rem;
+    font-weight: 800;
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+}
+
+.kpi-of {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--ink-faint);
+}
+
+.kpi-seats dd {
+    color: var(--brand-text);
+}
+
+.kpi-away dd {
+    color: var(--danger-text);
+}
+
+.kpi-revenue dd {
+    color: var(--ok-text);
+}
+
+/* ---------- Layout ---------- */
+.bo-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.7fr) minmax(300px, 1fr);
+    gap: 1.25rem;
+    align-items: start;
+}
+
+.bo-main,
+.bo-side {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    min-width: 0;
+}
+
+.panel {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 1.1rem 1.25rem 1.25rem;
+    box-shadow: var(--shadow);
+}
+
+.panel-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.5rem 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.85rem;
+}
+
+.panel-head h2 {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin: 0;
+    font-size: 1.2rem;
+}
+
+.panel-note {
+    font-size: 0.86rem;
+    color: var(--ink-soft);
+}
+
+.panel-note code {
+    font-family: var(--font-mono);
+    color: var(--ink);
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    padding: 0.05rem 0.4rem;
+}
+
+/* Tier colours for swatches and bars */
+.tier-vip { --tier: var(--tier-vip); }
+.tier-floor { --tier: var(--tier-floor); }
+.tier-lower { --tier: var(--tier-lower); }
+.tier-upper { --tier: var(--tier-upper); }
+
+.section-swatch {
+    flex: none;
+    width: 0.8rem;
+    height: 0.8rem;
+    border-radius: 4px;
+    background: var(--tier);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--tier) 25%, transparent);
+}
+
+/* ---------- Sections ---------- */
+.sections {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.section-row {
+    width: 100%;
+    display: grid;
+    grid-template-columns: auto minmax(9rem, 11rem) minmax(0, 1fr) 7.5rem;
+    align-items: center;
+    gap: 0.9rem;
+    text-align: left;
+    padding: 0.55rem 1rem;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    color: var(--ink);
+    cursor: pointer;
+    transition: border-color 0.16s ease, background 0.16s ease;
+}
+
+.section-row:hover {
+    border-color: var(--line-strong);
+}
+
+.section-row.is-selected {
+    border-color: var(--tier);
+    background: color-mix(in srgb, var(--tier) 10%, var(--surface-2));
+    box-shadow: inset 0 0 0 1px var(--tier);
+}
+
+.section-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.section-name {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.05rem;
+}
+
+.section-meta {
+    font-size: 0.82rem;
+    color: var(--ink-soft);
+}
+
+.section-bar {
+    height: 12px;
+    border-radius: var(--radius-pill);
+    background: var(--surface-3);
+    overflow: hidden;
+}
+
+/* The fill spans the track and scales, so live updates animate on the compositor */
+.section-fill {
+    display: block;
+    width: 100%;
+    height: 100%;
+    transform-origin: left center;
+    background: linear-gradient(90deg, color-mix(in srgb, var(--tier) 65%, var(--surface-3)), var(--tier));
+    transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.section-left {
+    justify-self: end;
+    font-size: 0.82rem;
+    color: var(--ink-soft);
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+
+.section-left strong {
+    font-family: var(--font-mono);
+    font-size: 1.05rem;
+    color: var(--ink);
+}
+
+.sold-out-stamp {
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--danger-text);
+    border: 2px solid var(--danger);
+    border-radius: 8px;
+    padding: 0.15rem 0.5rem;
+    transform: rotate(-4deg);
+}
+
+.section-row.is-sold-out .section-name,
+.section-row.is-sold-out .section-meta {
+    color: var(--ink-faint);
+}
+
+/* ---------- Reserve ---------- */
+.reserve-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.9rem;
+}
+
+.reserve-choice {
+    flex: 1 1 12rem;
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+}
+
+.reserve-choice > span:last-child {
+    display: flex;
+    flex-direction: column;
+}
+
+.reserve-section {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.reserve-price {
+    font-size: 0.85rem;
+    color: var(--ink-soft);
+}
+
+.stepper {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-pill);
+    background: var(--surface-2);
+    padding: 0.2rem;
+}
+
+.stepper-btn {
+    width: 2.3rem;
+    height: 2.3rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--ink);
+    cursor: pointer;
+}
+
+.stepper-btn:hover:not(:disabled) {
+    background: var(--surface-3);
+}
+
+.stepper-btn:disabled {
+    color: var(--ink-faint);
+    cursor: not-allowed;
+}
+
+.stepper-btn ::deep .icon {
+    width: 1.1rem;
+    height: 1.1rem;
+}
+
+.stepper-value {
+    min-width: 2rem;
+    text-align: center;
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 1.15rem;
+}
+
+.reserve-btn ::deep .icon {
+    width: 1.2rem;
+    height: 1.2rem;
+}
+
+.reserve-alert {
+    margin-top: 0.9rem;
+}
+
+/* Reservation ticket */
+.ticket {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    margin-bottom: 0.9rem;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-sm);
+    background:
+        linear-gradient(120deg, color-mix(in srgb, var(--magenta) 16%, transparent), color-mix(in srgb, var(--violet) 12%, transparent)),
+        var(--surface-2);
+    overflow: hidden;
+}
+
+.ticket-main {
+    padding: 0.75rem 1.1rem;
+    min-width: 0;
+}
+
+.ticket-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ok-text);
+}
+
+.ticket-ico ::deep .icon {
+    width: 0.95rem;
+    height: 0.95rem;
+}
+
+.ticket-title {
+    margin: 0.2rem 0 0.1rem;
+    font-family: var(--font-display);
+    font-size: 1.35rem;
+    font-weight: 800;
+}
+
+.ticket-meta {
+    margin: 0;
+    font-size: 0.86rem;
+    color: var(--ink-soft);
+}
+
+.ticket-stub {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 0.05rem;
+    padding: 0.75rem 1.1rem;
+    border-left: 2px dashed var(--line-strong);
+}
+
+.ticket-label {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+}
+
+.ticket-code {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 1.15rem;
+}
+
+.ticket-total {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 1.2rem;
+    color: var(--ok-text);
+}
+
+.ticket-cancel {
+    margin-top: 0.3rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    border: 0;
+    background: transparent;
+    padding: 0;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--ink-soft);
+    cursor: pointer;
+}
+
+.ticket-cancel:hover {
+    color: var(--danger-text);
+}
+
+.ticket-cancel-ico ::deep .icon {
+    width: 0.9rem;
+    height: 0.9rem;
+}
+
+/* ---------- Live sales feed ---------- */
+.live-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--live-ink);
+    background: var(--live-bg);
+    padding: 0.16rem 0.55rem;
+    border-radius: var(--radius-pill);
+}
+
+.live-chip-dot {
+    width: 0.45rem;
+    height: 0.45rem;
+    border-radius: 50%;
+    background: var(--live-ink);
+    animation: live-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes live-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.35; }
+}
+
+.feed-empty {
+    margin: 0;
+    color: var(--ink-soft);
+    font-size: 0.92rem;
+}
+
+.feed {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.feed-item {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas:
+        "ico text"
+        "ico meta";
+    align-items: center;
+    column-gap: 0.7rem;
+    row-gap: 0;
+    padding: 0.38rem 0;
+    border-top: 1px solid var(--line);
+}
+
+.feed-item:first-child {
+    border-top: 0;
+}
+
+.feed-ico {
+    grid-area: ico;
+    width: 1.75rem;
+    height: 1.75rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    color: var(--ok-text);
+    background: color-mix(in srgb, var(--ok) 16%, transparent);
+}
+
+.kind-rejected .feed-ico {
+    color: var(--danger-text);
+    background: var(--danger-soft);
+}
+
+.kind-cancelled .feed-ico {
+    color: var(--violet-text);
+    background: color-mix(in srgb, var(--violet) 16%, transparent);
+}
+
+.feed-ico ::deep .icon {
+    width: 0.95rem;
+    height: 0.95rem;
+}
+
+.feed-text {
+    grid-area: text;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--ink);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.kind-rejected .feed-text {
+    color: var(--ink-soft);
+}
+
+.feed-meta {
+    grid-area: meta;
+    display: flex;
+    gap: 0.6rem;
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+    color: var(--ink-faint);
+    white-space: nowrap;
+}
+
+.is-you .feed-fan {
+    color: var(--brand-text);
+    font-weight: 700;
+}
+
+/* ---------- Inventory grain ---------- */
+.grain-note {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.grain-ico {
+    display: inline-flex;
+    color: var(--cyan-text);
+}
+
+.grain-ico ::deep .icon {
+    width: 1rem;
+    height: 1rem;
+}
+
+.sections-note {
+    margin: 0.75rem 0 0;
+    font-size: 0.84rem;
+    line-height: 1.5;
+    color: var(--ink-soft);
+}
+
+.sections-note code {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--ink);
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    padding: 0.05rem 0.35rem;
+}
+/* ---------- Demo bar ---------- */
+.demo-bar {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.7rem;
+    margin-top: 1.75rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--line);
+}
+
+.demo-bar-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--violet-text);
+    margin-right: 0.3rem;
+}
+
+.demo-ico ::deep .icon {
+    width: 1rem;
+    height: 1rem;
+}
+
+.demo-bar .gt-btn ::deep .icon {
+    width: 1.05rem;
+    height: 1.05rem;
+}
+
+.demo-result {
+    font-size: 0.88rem;
+    color: var(--ink-soft);
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 960px) {
+    .bo-hero,
+    .bo-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+@media (max-width: 640px) {
+    .section-row {
+        grid-template-columns: auto minmax(0, 1fr) auto;
+        grid-template-areas:
+            "swatch info left"
+            "bar bar bar";
+        row-gap: 0.6rem;
+    }
+
+    .section-swatch { grid-area: swatch; }
+    .section-info { grid-area: info; }
+    .section-bar { grid-area: bar; }
+    .section-left { grid-area: left; }
+
+    .ticket {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .ticket-stub {
+        align-items: flex-start;
+        border-left: 0;
+        border-top: 2px dashed var(--line-strong);
+    }
+
+    .reserve-btn {
+        width: 100%;
+    }
+}

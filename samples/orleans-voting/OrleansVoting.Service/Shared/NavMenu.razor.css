@@ -8,7 +8,7 @@
 }
 
 .topbar-inner {
-    max-width: 1080px;
+    max-width: 1180px;
     margin: 0 auto;
     padding: 0.75rem clamp(1.1rem, 4vw, 2rem);
     display: flex;

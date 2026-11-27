@@ -1,0 +1,243 @@
+.hero {
+    margin-bottom: 2rem;
+}
+
+.eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--brand-text);
+    margin: 0 0 0.6rem;
+}
+
+.eyebrow-ico ::deep .icon {
+    width: 1rem;
+    height: 1rem;
+}
+
+h1 {
+    font-size: clamp(2.1rem, 6vw, 3.1rem);
+    margin: 0;
+}
+
+.hero-sub {
+    margin: 0.75rem 0 0;
+    max-width: 62ch;
+    color: var(--ink-soft);
+    font-size: 1.05rem;
+    line-height: 1.5;
+}
+
+.gt-alert {
+    margin-bottom: 1.5rem;
+}
+
+.event-grid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 440px), 1fr));
+    gap: 1.25rem;
+}
+
+.event-card {
+    display: flex;
+}
+
+.event-link {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+    padding: 1.35rem 1.5rem 1.25rem;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    color: var(--ink);
+    text-decoration: none;
+    transition: transform 0.14s ease, border-color 0.18s ease;
+}
+
+.event-link:hover {
+    color: var(--ink);
+    transform: translateY(-2px);
+    border-color: var(--magenta);
+}
+
+.event-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.event-category {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+}
+
+.status-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border-radius: var(--radius-pill);
+    padding: 0.2rem 0.65rem;
+    border: 1px solid var(--line-strong);
+    color: var(--ok-text);
+}
+
+.status-selling-fast {
+    color: var(--gold-text);
+    border-color: color-mix(in srgb, var(--gold) 60%, transparent);
+}
+
+.status-sold-out {
+    color: var(--danger-text);
+    border-color: color-mix(in srgb, var(--danger) 60%, transparent);
+}
+
+.status-ico ::deep .icon {
+    width: 0.9rem;
+    height: 0.9rem;
+}
+
+.event-main {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.date-block {
+    flex: none;
+    width: 3.6rem;
+    height: 3.9rem;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 14px;
+    background: var(--surface-2);
+    border: 1px solid var(--line-strong);
+}
+
+.date-month {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--brand-text);
+}
+
+.date-day {
+    font-family: var(--font-display);
+    font-size: 1.6rem;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.event-performer {
+    margin: 0;
+    font-size: 1.45rem;
+}
+
+.event-title {
+    margin: 0.2rem 0 0;
+    color: var(--ink-soft);
+    font-weight: 600;
+}
+
+.event-venue {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--ink-soft);
+    font-size: 0.9rem;
+}
+
+.venue-ico {
+    display: inline-flex;
+    color: var(--cyan-text);
+}
+
+.venue-ico ::deep .icon {
+    width: 1rem;
+    height: 1rem;
+}
+
+.event-meter {
+    height: 10px;
+    border-radius: var(--radius-pill);
+    background: var(--surface-3);
+    overflow: hidden;
+}
+
+/* The fill spans the track and scales, so live updates animate on the compositor */
+.event-meter-fill {
+    display: block;
+    width: 100%;
+    height: 100%;
+    transform-origin: left center;
+    background: linear-gradient(90deg, var(--violet), var(--magenta));
+    transition: transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.is-selling-fast .event-meter-fill {
+    background: linear-gradient(90deg, var(--magenta), var(--gold));
+}
+
+.is-sold-out .event-meter-fill {
+    background: var(--danger);
+}
+
+.event-foot {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    font-size: 0.92rem;
+    color: var(--ink-soft);
+}
+
+.event-foot strong {
+    color: var(--ink);
+    font-family: var(--font-mono);
+}
+
+.event-cta {
+    margin-top: 0.2rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-family: var(--font-display);
+    font-weight: 700;
+    color: var(--brand-text);
+}
+
+.cta-ico ::deep .icon {
+    width: 1.1rem;
+    height: 1.1rem;
+    transition: transform 0.16s ease;
+}
+
+.event-link:hover .cta-ico ::deep .icon {
+    transform: translateX(3px);
+}

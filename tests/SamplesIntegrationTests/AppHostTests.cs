@@ -217,7 +217,7 @@ public class AppHostTests(ITestOutputHelper testOutput)
                 { "grafana", ["/"] }
             }),
             new TestEndpoints("OrleansVoting.AppHost", new() {
-                { "voting-fe", ["/alive", "/health", "/", "/api/votes"] }
+                { "boxoffice", ["/alive", "/health", "/", "/events/midnight-arcade-seattle", "/api/events", "/api/events/midnight-arcade-seattle", "/scalar", "/openapi/v1.json"] }
             }),
             new TestEndpoints("VolumeMount.AppHost", new() {
                 { "blazorweb", ["/alive", "/health", "/"] }

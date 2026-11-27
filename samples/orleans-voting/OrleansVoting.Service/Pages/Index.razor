@@ -1,10 +1,141 @@
 @page "/"
 
-@inject NavigationManager NavigationManager
+@implements IAsyncDisposable
+
+@inject BoxOfficeService BoxOffice
+
+<PageTitle>On sale now · Grain Tickets</PageTitle>
+
+<section class="hero">
+    <p class="eyebrow"><span class="eyebrow-ico">@Icons.Bolt</span> On sale now</p>
+    <h1>Find your seats</h1>
+    <p class="hero-sub">Every event's seat inventory lives in its own Orleans grain, so availability updates live as fans reserve seats on any silo in the cluster.</p>
+</section>
+
+@if (_errorMessage is not null)
+{
+    <div class="gt-alert" role="alert">@_errorMessage</div>
+}
+
+<ul class="event-grid" aria-label="Events on sale">
+    @foreach (var ev in EventCatalog.Events)
+    {
+        var inventory = _inventories.GetValueOrDefault(ev.Id);
+        var capacity = ev.Capacity;
+        var available = inventory?.Available ?? capacity;
+        var soldPercent = capacity == 0 ? 0 : (capacity - available) * 100 / capacity;
+        var status = available == 0 ? "sold-out" : available < capacity * 0.2 ? "selling-fast" : "on-sale";
+
+        <li class="event-card @($"is-{status}")">
+            <a class="event-link" href="@($"events/{ev.Id}")" aria-label="@($"Open the box office for {ev.Name}")">
+                <div class="event-top">
+                    <span class="event-category">@(ev.Category)</span>
+                    <span class="status-chip @($"status-{status}")">
+                        @if (status == "selling-fast")
+                        {
+                            <span class="status-ico">@Icons.Flame</span>
+                        }
+                        @StatusText(status)
+                    </span>
+                </div>
+
+                <div class="event-main">
+                    <div class="date-block" aria-hidden="true">
+                        <span class="date-month">@(ev.StartsAt.ToString("MMM", CultureInfo.InvariantCulture))</span>
+                        <span class="date-day">@(ev.StartsAt.Day)</span>
+                    </div>
+                    <div>
+                        <h2 class="event-performer">@(ev.Performer)</h2>
+                        <p class="event-title">@(ev.Title)</p>
+                    </div>
+                </div>
+
+                <p class="event-venue">
+                    <span class="venue-ico">@Icons.MapPin</span>
+                    @(ev.Venue) · @(ev.City) · @(ev.StartsAt.ToString("ddd, MMM d · h:mm tt", CultureInfo.InvariantCulture))
+                </p>
+
+                <div class="event-meter" role="progressbar" aria-label="@($"{soldPercent} percent sold")"
+                     aria-valuenow="@soldPercent" aria-valuemin="0" aria-valuemax="100">
+                    <span class="event-meter-fill" style="transform: scaleX(@((soldPercent / 100.0).ToString("0.###", CultureInfo.InvariantCulture)));"></span>
+                </div>
+
+                <div class="event-foot">
+                    <span class="event-left">
+                        <strong>@available.ToString("N0", CultureInfo.InvariantCulture)</strong> of @capacity.ToString("N0", CultureInfo.InvariantCulture) seats left
+                    </span>
+                    <span class="event-price">From <strong>@(ev.PriceFrom.ToString("C0", UsCulture))</strong></span>
+                </div>
+
+                <span class="event-cta">Open box office <span class="cta-ico">@Icons.ArrowRight</span></span>
+            </a>
+        </li>
+    }
+</ul>
 
 @code {
+    private static readonly CultureInfo UsCulture = CultureInfo.GetCultureInfo("en-US");
+
+    private readonly Dictionary<string, EventInventorySnapshot> _inventories = [];
+    private readonly List<IAsyncDisposable> _subscriptions = [];
+    private InventoryWatcher? _watcher;
+    private string? _errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var snapshots = await Task.WhenAll(EventCatalog.Events.Select(e => BoxOffice.GetInventoryAsync(e.Id)));
+            foreach (var snapshot in snapshots)
+            {
+                _inventories[snapshot.EventId] = snapshot;
+            }
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"Couldn't load live availability: {ex.Message}";
+        }
+    }
+
     protected override void OnAfterRender(bool firstRender)
     {
-        NavigationManager.NavigateTo("/new");
+        // Subscribe once the circuit is interactive; prerendering has no connection to push updates to
+        if (firstRender)
+        {
+            _watcher = new InventoryWatcher(this);
+            _subscriptions.AddRange(EventCatalog.Events.Select(e => BoxOffice.WatchEvent(e.Id, _watcher)));
+        }
+    }
+
+    private static string StatusText(string status) => status switch
+    {
+        "sold-out" => "Sold out",
+        "selling-fast" => "Selling fast",
+        _ => "On sale"
+    };
+
+    private void OnInventoryChanged(EventInventorySnapshot snapshot) => InvokeAsync(() =>
+    {
+        // Notifications and subscription renewals can arrive out of order, so keep the newest snapshot
+        if (_inventories.GetValueOrDefault(snapshot.EventId) is { } current && current.UpdatedAt > snapshot.UpdatedAt)
+        {
+            return;
+        }
+
+        _inventories[snapshot.EventId] = snapshot;
+        StateHasChanged();
+    });
+
+    public async ValueTask DisposeAsync()
+    {
+        foreach (var subscription in _subscriptions)
+        {
+            await subscription.DisposeAsync();
+        }
+    }
+
+    private sealed class InventoryWatcher(Index page) : IEventWatcher
+    {
+        public void OnInventoryChanged(EventInventorySnapshot snapshot) => page.OnInventoryChanged(snapshot);
     }
 }

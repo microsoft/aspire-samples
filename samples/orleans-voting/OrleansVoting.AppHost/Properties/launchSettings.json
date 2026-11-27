@@ -5,7 +5,7 @@
       "commandName": "Project",
       "dotnetRunMessages": true,
       "launchBrowser": true,
-      "applicationUrl": "https://orleansvoting.dev.localhost:17291;https://orleansvoting.dev.localhost:15289",
+      "applicationUrl": "https://orleansvoting.dev.localhost:17291;http://orleansvoting.dev.localhost:15289",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
         "DOTNET_ENVIRONMENT": "Development",

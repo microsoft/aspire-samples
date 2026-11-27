@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="color-scheme" content="dark light" />
-    <title>Something went wrong · Grain Poll</title>
+    <title>Something went wrong · Grain Tickets</title>
     <link rel="icon" href="~/favicon.svg" type="image/svg+xml" />
     <link href="~/css/bootstrap/bootstrap.min.css" rel="stylesheet" />
     <link href="~/css/site.css" rel="stylesheet" asp-append-version="true" />
@@ -19,7 +19,7 @@
         <div class="error-card">
             <p class="error-eyebrow">Stage interrupted</p>
             <h1>Something went wrong</h1>
-            <p class="error-lead">An error occurred while processing your request. Try heading back and starting a new poll.</p>
+            <p class="error-lead">An error occurred while processing your request. Head back to the events on sale and try again.</p>
 
             @if (Model.ShowRequestId)
             {
@@ -28,7 +28,7 @@
                 </p>
             }
 
-            <a class="error-home" href="~/new">Back to Grain Poll</a>
+            <a class="error-home" href="~/">Back to Grain Tickets</a>
 
             <p class="error-note">
                 Swapping to the <strong>Development</strong> environment displays detailed information about the error.

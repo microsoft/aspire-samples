@@ -1,0 +1,437 @@
+@page "/events/{EventId}"
+
+@implements IAsyncDisposable
+
+@inject BoxOfficeService BoxOffice
+@inject OnSaleRushSimulator RushSimulator
+@inject FanSession Fan
+@inject IJSRuntime JS
+
+@if (_event is null)
+{
+    <PageTitle>Event not found · Grain Tickets</PageTitle>
+    <div class="gt-alert" role="alert">There's no event with ID <code>@EventId</code>. <a href="">See the events on sale.</a></div>
+}
+else
+{
+    var capacity = _event.Capacity;
+    var available = _inventory?.Available ?? capacity;
+    var selected = _event.FindSection(_selectedSectionId) ?? _event.Sections[0];
+    var selectedLeft = SeatsLeft(selected);
+
+    <PageTitle>@_event.Performer · Grain Tickets</PageTitle>
+
+    <a class="back-link" href=""><span class="back-ico">@Icons.ArrowLeft</span> All events</a>
+
+    @if (_errorMessage is not null)
+    {
+        <div class="gt-alert page-alert" role="alert">@_errorMessage</div>
+    }
+
+    <section class="bo-hero">
+        <div class="bo-hero-text">
+            <p class="eyebrow">
+                <span class="eyebrow-dot" aria-hidden="true"></span>
+                @_event.Category · @_event.StartsAt.ToString("ddd, MMM d, yyyy · h:mm tt", CultureInfo.InvariantCulture)
+            </p>
+            <h1>@_event.Performer</h1>
+            <p class="bo-title">@_event.Title</p>
+            <p class="bo-venue"><span class="venue-ico">@Icons.MapPin</span> @_event.Venue · @_event.City</p>
+        </div>
+
+        <dl class="kpis">
+            <div class="kpi kpi-seats">
+                <dt>Seats left</dt>
+                <dd>@available.ToString("N0", CultureInfo.InvariantCulture) <span class="kpi-of">/ @capacity.ToString("N0", CultureInfo.InvariantCulture)</span></dd>
+            </div>
+            <div class="kpi">
+                <dt>Reservations</dt>
+                <dd>@((_inventory?.ReservationCount ?? 0).ToString("N0", CultureInfo.InvariantCulture))</dd>
+            </div>
+            <div class="kpi kpi-away">
+                <dt>Turned away</dt>
+                <dd>@((_inventory?.TurnedAway ?? 0).ToString("N0", CultureInfo.InvariantCulture))</dd>
+            </div>
+            <div class="kpi kpi-revenue">
+                <dt>Revenue</dt>
+                <dd>@((_inventory?.Revenue ?? 0).ToString("C0", UsCulture))</dd>
+            </div>
+        </dl>
+    </section>
+
+    <div class="bo-grid">
+        <div class="bo-main">
+            <section class="panel" aria-labelledby="sections-heading">
+                <header class="panel-head">
+                    <h2 id="sections-heading">Sections</h2>
+                    <span class="panel-note grain-note" title="@($"EventInventoryGrain/{_event.Id}")">
+                        <span class="grain-ico">@Icons.Server</span>
+                        Inventory grain on silo <code>@ShortSilo(_inventory?.SiloAddress)</code>
+                    </span>
+                </header>
+
+                <ul class="sections">
+                    @foreach (var sec in _event.Sections)
+                    {
+                        var left = SeatsLeft(sec);
+                        var soldPercent = (sec.Capacity - left) * 100 / sec.Capacity;
+                        var isSelected = sec.Id == selected.Id;
+                        var tier = BoxOfficeTelemetry.TierName(sec.Tier);
+
+                        <li>
+                            <button type="button" class="section-row @($"tier-{tier}") @(isSelected ? "is-selected" : null) @(left == 0 ? "is-sold-out" : null)"
+                                    aria-pressed="@(isSelected ? "true" : "false")" @onclick="() => SelectSection(sec.Id)">
+                                <span class="section-swatch" aria-hidden="true"></span>
+                                <span class="section-info">
+                                    <span class="section-name">@sec.Name</span>
+                                    <span class="section-meta">@TierLabel(sec.Tier) · @sec.Price.ToString("C0", UsCulture)</span>
+                                </span>
+                                <span class="section-bar" role="progressbar" aria-label="@($"{sec.Name}: {soldPercent} percent sold")"
+                                      aria-valuenow="@soldPercent" aria-valuemin="0" aria-valuemax="100">
+                                    <span class="section-fill" style="transform: scaleX(@((soldPercent / 100.0).ToString("0.###", CultureInfo.InvariantCulture)));"></span>
+                                </span>
+                                @if (left == 0)
+                                {
+                                    <span class="section-left sold-out-stamp">Sold out</span>
+                                }
+                                else
+                                {
+                                    <span class="section-left"><strong>@left</strong> <span>of @sec.Capacity left</span></span>
+                                }
+                            </button>
+                        </li>
+                    }
+                </ul>
+
+                <p class="sections-note">One grain owns all @capacity.ToString("N0", CultureInfo.InvariantCulture) seats and takes reservations one at a time, so no seat is ever sold twice.</p>
+            </section>
+
+            <section class="panel reserve-panel" aria-labelledby="reserve-heading">
+                @if (_confirmation is { } confirmation)
+                {
+                    var confirmedSection = _event.FindSection(confirmation.SectionId)!;
+                    <div class="ticket" role="status">
+                        <div class="ticket-main">
+                            <p class="ticket-eyebrow"><span class="ticket-ico">@Icons.Check</span> Seats reserved</p>
+                            <p class="ticket-title">@confirmation.Quantity × @confirmedSection.Name</p>
+                            <p class="ticket-meta">@_event.Performer · @_event.StartsAt.ToString("ddd, MMM d · h:mm tt", CultureInfo.InvariantCulture) · @_event.Venue</p>
+                        </div>
+                        <div class="ticket-stub">
+                            <span class="ticket-label">Reservation</span>
+                            <span class="ticket-code">@confirmation.Id</span>
+                            <span class="ticket-total">@confirmation.Total.ToString("C2", UsCulture)</span>
+                            <button type="button" class="ticket-cancel" @onclick="CancelReservationAsync">
+                                <span class="ticket-cancel-ico">@Icons.Undo</span> Cancel
+                            </button>
+                        </div>
+                    </div>
+                }
+
+                <header class="panel-head">
+                    <h2 id="reserve-heading">Reserve seats</h2>
+                    <span class="panel-note">Reserving as <code>@Fan.FanId</code> · up to @EventInventoryGrain.MaxSeatsPerFan seats per fan</span>
+                </header>
+
+                <div class="reserve-row">
+                    <div class="reserve-choice @($"tier-{BoxOfficeTelemetry.TierName(selected.Tier)}")">
+                        <span class="section-swatch" aria-hidden="true"></span>
+                        <span>
+                            <span class="reserve-section">@selected.Name</span>
+                            <span class="reserve-price">@selected.Price.ToString("C0", UsCulture) each · @(selectedLeft == 0 ? "sold out" : $"{selectedLeft} left")</span>
+                        </span>
+                    </div>
+
+                    <div class="stepper" role="group" aria-label="Number of seats">
+                        <button type="button" class="stepper-btn" aria-label="Fewer seats" disabled="@(_quantity <= 1)" @onclick="() => ChangeQuantity(-1)">@Icons.Minus</button>
+                        <output class="stepper-value" aria-live="polite">@_quantity</output>
+                        <button type="button" class="stepper-btn" aria-label="More seats" disabled="@(_quantity >= EventInventoryGrain.MaxSeatsPerFan)" @onclick="() => ChangeQuantity(1)">@Icons.Plus</button>
+                    </div>
+
+                    <button type="button" class="gt-btn gt-btn-primary reserve-btn" disabled="@(_isReserving || selectedLeft == 0)" @onclick="ReserveAsync">
+                        @Icons.Ticket
+                        <span>Reserve @_quantity @(_quantity == 1 ? "seat" : "seats") · @((selected.Price * _quantity).ToString("C0", UsCulture))</span>
+                    </button>
+                </div>
+
+                @if (_rejection is not null)
+                {
+                    <div class="gt-alert reserve-alert" role="alert">@_rejection</div>
+                }
+            </section>
+        </div>
+
+        <aside class="bo-side">
+            <section class="panel feed-panel" aria-labelledby="feed-heading">
+                <header class="panel-head">
+                    <h2 id="feed-heading">Live sales</h2>
+                    <span class="live-chip"><span class="live-chip-dot" aria-hidden="true"></span>Live</span>
+                </header>
+
+                @if (_inventory is not { RecentActivity.Length: > 0 })
+                {
+                    <p class="feed-empty">Waiting for the first fan… Reserve seats or simulate an on-sale rush.</p>
+                }
+                else
+                {
+                    <ol class="feed" aria-label="Recent reservations">
+                        @foreach (var item in _inventory.RecentActivity)
+                        {
+                            var itemSection = _event.FindSection(item.SectionId);
+                            var kind = item.Kind switch
+                            {
+                                SaleActivityKind.Reserved => "reserved",
+                                SaleActivityKind.Cancelled => "cancelled",
+                                _ => "rejected"
+                            };
+
+                            <li class="feed-item @($"kind-{kind}") @(item.FanId == Fan.FanId ? "is-you" : null)">
+                                <span class="feed-ico" aria-hidden="true">@(kind switch { "reserved" => Icons.Check, "cancelled" => Icons.Undo, _ => Icons.Cross })</span>
+                                <span class="feed-text">@Describe(item, itemSection)</span>
+                                <span class="feed-meta">
+                                    <span class="feed-fan">@(item.FanId == Fan.FanId ? $"You ({item.FanId})" : item.FanId)</span>
+                                    <time datetime="@item.At.ToString("O")">@item.At.ToLocalTime().ToString("h:mm:ss tt", CultureInfo.InvariantCulture)</time>
+                                </span>
+                            </li>
+                        }
+                    </ol>
+                }
+            </section>
+        </aside>
+    </div>
+
+    <div class="demo-bar">
+        <span class="demo-bar-label"><span class="demo-ico">@Icons.Sparkles</span> Try the demo</span>
+        <button class="gt-btn gt-btn-demo" type="button" disabled="@_rushRunning" @onclick="SimulateRushAsync">
+            @Icons.Users <span>@(_rushRunning ? "On-sale rush in progress…" : $"Simulate on-sale rush ({OnSaleRushSimulator.DefaultFans} fans)")</span>
+        </button>
+        <button class="gt-btn gt-btn-demo" type="button" disabled="@_rushRunning" @onclick="ResetEventAsync">
+            @Icons.Refresh <span>Reset event</span>
+        </button>
+        @if (_rushSummary is { } summary)
+        {
+            <span class="demo-result" role="status">
+                Rush finished in @summary.ElapsedSeconds.ToString("0.0", CultureInfo.InvariantCulture) s: @summary.Reservations reservations, @summary.FansTurnedAway fans turned away.
+            </span>
+        }
+    </div>
+}
+
+@code {
+    private static readonly CultureInfo UsCulture = CultureInfo.GetCultureInfo("en-US");
+
+    [Parameter] public string EventId { get; set; } = "";
+
+    private EventDefinition? _event;
+    private EventInventorySnapshot? _inventory;
+    private InventoryWatcher? _watcher;
+    private IAsyncDisposable? _subscription;
+    private string _selectedSectionId = "";
+    private int _quantity = 2;
+    private bool _isReserving;
+    private bool _rushRunning;
+    private Reservation? _confirmation;
+    private OnSaleRushSummary? _rushSummary;
+    private string? _rejection;
+    private string? _errorMessage;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _event = EventCatalog.Find(EventId);
+        if (_event is null)
+        {
+            return;
+        }
+
+        try
+        {
+            _inventory = await BoxOffice.GetInventoryAsync(_event.Id);
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"Couldn't load live availability: {ex.Message}";
+        }
+
+        _selectedSectionId = _event.Sections.FirstOrDefault(s => SeatsLeft(s) > 0)?.Id ?? _event.Sections[0].Id;
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        // Subscribe once the circuit is interactive; prerendering has no connection to push updates to
+        if (firstRender && _event is not null)
+        {
+            _watcher = new InventoryWatcher(this);
+            _subscription = BoxOffice.WatchEvent(_event.Id, _watcher);
+        }
+    }
+
+    private int SeatsLeft(SectionDefinition section) =>
+        _inventory?.FindSection(section.Id)?.Available ?? section.Capacity;
+
+    private void SelectSection(string sectionId)
+    {
+        _selectedSectionId = sectionId;
+        _rejection = null;
+    }
+
+    private void ChangeQuantity(int delta) =>
+        _quantity = Math.Clamp(_quantity + delta, 1, EventInventoryGrain.MaxSeatsPerFan);
+
+    private async Task ReserveAsync()
+    {
+        if (_event?.FindSection(_selectedSectionId) is not { } section || _isReserving)
+        {
+            return;
+        }
+
+        _isReserving = true;
+        _rejection = null;
+
+        try
+        {
+            var result = await BoxOffice.ReserveAsync(_event, section, Fan.FanId, _quantity);
+
+            if (result.Reservation is null)
+            {
+                _rejection = result.Outcome switch
+                {
+                    ReservationOutcome.SoldOut => $"{section.Name} just sold out. Try another section.",
+                    ReservationOutcome.InsufficientSeats => $"Only {result.SeatsRemaining} {section.Name} seats are left. Try {result.SeatsRemaining} or fewer, or another section.",
+                    ReservationOutcome.FanLimitReached => $"You already hold {result.SeatsHeldByFan} seats for this event, and fans can hold at most {EventInventoryGrain.MaxSeatsPerFan}.",
+                    _ => $"Slow down! Try again in {result.RetryAfterSeconds} s."
+                };
+                return;
+            }
+
+            _confirmation = result.Reservation;
+        }
+        catch (Exception ex)
+        {
+            _rejection = $"The reservation didn't go through: {ex.Message}";
+            return;
+        }
+        finally
+        {
+            _isReserving = false;
+        }
+
+        // Celebrate independently, so a confetti or JS hiccup never turns a reservation into an error
+        try
+        {
+            await JS.InvokeVoidAsync("grainTickets.celebrate");
+        }
+        catch (JSException) { }
+        catch (JSDisconnectedException) { }
+    }
+
+    private async Task CancelReservationAsync()
+    {
+        if (_confirmation is not { } reservation)
+        {
+            return;
+        }
+
+        try
+        {
+            await BoxOffice.CancelReservationAsync(reservation.EventId, reservation.Id);
+            _confirmation = null;
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"The cancellation didn't go through: {ex.Message}";
+        }
+    }
+
+    private async Task SimulateRushAsync()
+    {
+        _rushRunning = true;
+        _rushSummary = null;
+
+        try
+        {
+            _rushSummary = await RushSimulator.RunAsync(_event!, OnSaleRushSimulator.DefaultFans, CancellationToken.None);
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"The on-sale rush stopped: {ex.Message}";
+        }
+        finally
+        {
+            _rushRunning = false;
+        }
+    }
+
+    private async Task ResetEventAsync()
+    {
+        try
+        {
+            await BoxOffice.ResetAsync(_event!.Id);
+            _confirmation = null;
+            _rejection = null;
+            _rushSummary = null;
+            _errorMessage = null;
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"The event couldn't be reset: {ex.Message}";
+        }
+    }
+
+    private static string TierLabel(SeatTier tier) => tier switch
+    {
+        SeatTier.Vip => "VIP",
+        SeatTier.Floor => "Floor",
+        SeatTier.Lower => "Lower level",
+        _ => "Upper level"
+    };
+
+    private static string Describe(SaleActivity item, SectionDefinition? section)
+    {
+        var name = section?.Name ?? item.SectionId;
+        return item.Kind switch
+        {
+            SaleActivityKind.Reserved => $"Reserved {item.Quantity} × {name}",
+            SaleActivityKind.Cancelled => $"Released {item.Quantity} × {name}",
+            SaleActivityKind.SoldOut => $"Turned away: {name} sold out",
+            SaleActivityKind.InsufficientSeats => $"Turned away: too few {name} seats",
+            _ => $"Turned away: {EventInventoryGrain.MaxSeatsPerFan}-seat limit"
+        };
+    }
+
+    // "S127.0.0.1:11111:123456789" -> "127.0.0.1:11111"
+    private static string ShortSilo(string? siloAddress)
+    {
+        if (siloAddress is null)
+        {
+            return "…";
+        }
+
+        var address = siloAddress.TrimStart('S');
+        var end = address.LastIndexOf(':');
+        return end > 0 ? address[..end] : address;
+    }
+
+    private void OnInventoryChanged(EventInventorySnapshot snapshot) => InvokeAsync(() =>
+    {
+        // Notifications and subscription renewals can arrive out of order, so keep the newest snapshot
+        if (_inventory is not null && _inventory.UpdatedAt > snapshot.UpdatedAt)
+        {
+            return;
+        }
+
+        _inventory = snapshot;
+        StateHasChanged();
+    });
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_subscription is not null)
+        {
+            await _subscription.DisposeAsync();
+        }
+    }
+
+    private sealed class InventoryWatcher(EventBoxOffice page) : IEventWatcher
+    {
+        public void OnInventoryChanged(EventInventorySnapshot snapshot) => page.OnInventoryChanged(snapshot);
+    }
+}

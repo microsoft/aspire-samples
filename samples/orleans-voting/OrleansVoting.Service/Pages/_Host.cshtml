@@ -4,7 +4,6 @@
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 @{
 	Layout = "_Layout";
-	var clientIp = HttpContext.Connection.RemoteIpAddress?.ToString();
 }
 
-<component type="typeof(App)" param-ClientIp="clientIp" render-mode="ServerPrerendered" />
+<component type="typeof(App)" render-mode="ServerPrerendered" />

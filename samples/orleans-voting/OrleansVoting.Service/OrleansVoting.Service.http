@@ -1,0 +1,53 @@
+@BoxOffice_HostAddress = https://localhost:7178
+
+### Events on sale, with live availability
+GET {{BoxOffice_HostAddress}}/api/events
+Accept: application/json
+
+### One event, with availability per section
+GET {{BoxOffice_HostAddress}}/api/events/midnight-arcade-seattle
+Accept: application/json
+
+### Reserve seats (201 Created)
+POST {{BoxOffice_HostAddress}}/api/events/midnight-arcade-seattle/reservations
+Content-Type: application/json
+
+{
+  "fanId": "fan-7f3a91",
+  "sectionId": "floor",
+  "quantity": 2
+}
+
+### Look up a reservation (use the id from the previous response)
+GET {{BoxOffice_HostAddress}}/api/events/midnight-arcade-seattle/reservations/GT-4C1E8B
+Accept: application/json
+
+### Cancel a reservation and release its seats
+DELETE {{BoxOffice_HostAddress}}/api/events/midnight-arcade-seattle/reservations/GT-4C1E8B
+
+### 400 validation problem details (unknown section, too many seats)
+POST {{BoxOffice_HostAddress}}/api/events/midnight-arcade-seattle/reservations
+Content-Type: application/json
+
+{
+  "fanId": "fan-7f3a91",
+  "sectionId": "backstage",
+  "quantity": 12
+}
+
+### 409 problem details once the fan holds 8 seats for the event
+POST {{BoxOffice_HostAddress}}/api/events/midnight-arcade-seattle/reservations
+Content-Type: application/json
+
+{
+  "fanId": "fan-7f3a91",
+  "sectionId": "upper-bowl",
+  "quantity": 8
+}
+
+### 404 problem details
+GET {{BoxOffice_HostAddress}}/api/events/summer-fest-2027
+Accept: application/problem+json
+
+### OpenAPI document
+GET {{BoxOffice_HostAddress}}/openapi/v1.json
