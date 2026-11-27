@@ -22,6 +22,7 @@ from opentelemetry import trace
 from opentelemetry.trace import Status, StatusCode
 from pydantic import BaseModel, ConfigDict, Field
 from scalar_fastapi import get_scalar_api_reference
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 import support
 from telemetry import (
@@ -57,6 +58,8 @@ class Session:
     def __init__(self) -> None:
         self.history: list[dict[str, Any]] = []
         self.turns = 0
+        # Serializes turns within one conversation; other sessions aren't blocked during model calls.
+        self.lock = asyncio.Lock()
 
 
 _openai_client: openai.AsyncOpenAI | None = None
@@ -295,8 +298,10 @@ app.openapi = _openapi
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 
-@app.exception_handler(HTTPException)
-async def _http_problem(request: Request, exc: HTTPException) -> JSONResponse:
+# Starlette's base class also covers framework-raised errors (unknown routes, 405s, missing static files),
+# not only the HTTPException subclass that FastAPI handlers raise.
+@app.exception_handler(StarletteHTTPException)
+async def _http_problem(request: Request, exc: StarletteHTTPException) -> JSONResponse:
     problem = ProblemDetails(
         title=HTTPStatus(exc.status_code).phrase, status=exc.status_code,
         detail=str(exc.detail) if exc.detail else None, instance=request.url.path,
@@ -393,10 +398,17 @@ async def chat(request: ChatRequest) -> ChatResponse:
                             "OpenAI is not configured. Check the AppHost `openai-api-key` parameter.")
 
     session, is_new = await _get_or_create_session(request.session_id)
-    session.turns += 1
     if is_new:
         logger.info("Conversation started", extra={"gen_ai.conversation.id": request.session_id})
 
+    # Concurrent requests for the same session_id run one complete turn at a time (history update,
+    # model and tool calls, then commit or rollback), so they can't interleave or roll back each other.
+    async with session.lock:
+        return await _run_turn(session, request)
+
+
+async def _run_turn(session: Session, request: ChatRequest) -> ChatResponse:
+    session.turns += 1
     history = session.history
     history.append({"role": "user", "content": request.message})
     if len(history) > MAX_HISTORY_PER_SESSION:

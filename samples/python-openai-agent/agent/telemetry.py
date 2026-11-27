@@ -73,6 +73,7 @@ def instrument_app(app: FastAPI) -> None:
 
 
 def capture_message_content() -> bool:
-    """Mirror the GenAI content-capture switch so tool spans follow the same policy."""
+    """Mirror the GenAI content-capture switch so the custom agent and tool spans follow the same policy.
+    Only the modes that put content on spans enable it; anything else (including unknown values) fails closed."""
     mode = os.getenv("OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT", "").strip().lower()
-    return mode not in ("", "no_content", "false")
+    return mode in ("span_only", "span_and_event")
