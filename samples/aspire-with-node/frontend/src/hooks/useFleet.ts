@@ -35,9 +35,22 @@ export function useFleet() {
   const [planning, setPlanning] = useState(false);
   const [stops, setStops] = useState<Waypoint[]>([]);
 
+  // The newest request per route id. A response only updates state while it is still the newest request
+  // for its route, so a slow response for an older window, a superseded refresh, or a cancelled custom
+  // route can't overwrite newer results or clear a newer request's pending state.
+  const requestSeq = useRef(0);
+  const latestRequest = useRef(new Map<string, number>());
+  const beginRequest = useCallback((ids: string[]) => {
+    const token = ++requestSeq.current;
+    for (const id of ids) latestRequest.current.set(id, token);
+    return (id: string) => latestRequest.current.get(id) === token;
+  }, []);
+
   const assessAll = useCallback(
     (list: FleetRoute[], hours: number) => {
       const ids = list.map((route) => route.id);
+      const isCurrent = beginRequest(ids);
+      const currentIds = () => ids.filter(isCurrent);
       setPending(withIds(ids, true));
       setError(null);
       return traced(
@@ -47,12 +60,13 @@ export function useFleet() {
           // One fetch per route, all started inside the span: a single fan-out trace.
           const results = await Promise.allSettled(ids.map((id) => fetchAssessment(id, hours)));
           const next: Record<string, RouteAssessment> = {};
+          const rejected: string[] = [];
           const totals: Record<Recommendation, number> = { go: 0, delay: 0, reroute: 0 };
           results.forEach((result, i) => {
-            if (result.status === 'fulfilled') {
-              next[ids[i]] = result.value;
-              totals[result.value.recommendation]++;
-            }
+            if (result.status === 'fulfilled') totals[result.value.recommendation]++;
+            if (!isCurrent(ids[i])) return;
+            if (result.status === 'fulfilled') next[ids[i]] = result.value;
+            else rejected.push(ids[i]);
           });
           span.setAttributes({
             'fleetweather.routes.go': totals.go,
@@ -60,16 +74,20 @@ export function useFleet() {
             'fleetweather.routes.reroute': totals.reroute,
           });
           setAssessments((current) => ({ ...current, ...next }));
-          setFailed(withIds(ids, false));
-          setFailed(withIds(ids.filter((_, i) => results[i].status === 'rejected'), true));
-          const failure = results.find((result) => result.status === 'rejected');
+          setFailed(withIds(currentIds(), false));
+          setFailed(withIds(rejected, true));
+          const failure = results.find(
+            (result, i): result is PromiseRejectedResult => result.status === 'rejected' && isCurrent(ids[i]),
+          );
           if (failure) throw failure.reason;
         },
       )
-        .catch((err) => setError(message(err)))
-        .finally(() => setPending(withIds(ids, false)));
+        .catch((err) => {
+          if (currentIds().length > 0) setError(message(err));
+        })
+        .finally(() => setPending(withIds(currentIds(), false)));
     },
-    [],
+    [beginRequest],
   );
 
   // Load the fleet and assess it once on startup (the ref guards StrictMode's double effect).
@@ -95,6 +113,7 @@ export function useFleet() {
       }
       setSelectedId(id);
       if (id === CUSTOM_ROUTE_ID) return;
+      const isCurrent = beginRequest([id]);
       setPending(withIds([id], true));
       setError(null);
       traced('select route', { 'fleetweather.route.id': id, 'fleetweather.window_hours': windowHours }, async (span) => {
@@ -103,20 +122,26 @@ export function useFleet() {
           'fleetweather.recommendation': assessment.recommendation,
           'fleetweather.route.risk_score': assessment.overallRiskScore,
         });
+        if (!isCurrent(id)) return;
         setAssessments((current) => ({ ...current, [id]: assessment }));
         setFailed(withIds([id], false));
       })
         .catch((err) => {
+          if (!isCurrent(id)) return;
           setFailed(withIds([id], true));
           setError(message(err));
         })
-        .finally(() => setPending(withIds([id], false)));
+        .finally(() => {
+          if (isCurrent(id)) setPending(withIds([id], false));
+        });
     },
-    [selectedId, windowHours],
+    [beginRequest, selectedId, windowHours],
   );
 
   const assessCustom = useCallback(
     (waypoints: Waypoint[], hours: number) => {
+      const isCurrentRequest = beginRequest([CUSTOM_ROUTE_ID]);
+      const isCurrent = () => isCurrentRequest(CUSTOM_ROUTE_ID);
       setPending(withIds([CUSTOM_ROUTE_ID], true));
       setError(null);
       return traced(
@@ -128,15 +153,20 @@ export function useFleet() {
             'fleetweather.recommendation': assessment.recommendation,
             'fleetweather.route.risk_score': assessment.overallRiskScore,
           });
+          if (!isCurrent()) return;
           setAssessments((current) => ({ ...current, [CUSTOM_ROUTE_ID]: assessment }));
           setSelectedId(CUSTOM_ROUTE_ID);
           setPlanning(false);
         },
       )
-        .catch((err) => setError(message(err)))
-        .finally(() => setPending(withIds([CUSTOM_ROUTE_ID], false)));
+        .catch((err) => {
+          if (isCurrent()) setError(message(err));
+        })
+        .finally(() => {
+          if (isCurrent()) setPending(withIds([CUSTOM_ROUTE_ID], false));
+        });
     },
-    [],
+    [beginRequest],
   );
 
   const changeWindow = useCallback(
@@ -160,6 +190,9 @@ export function useFleet() {
   }, []);
 
   const clearCustomRoute = useCallback(() => {
+    // Invalidate any custom assessment still in flight so its response can't restore the cancelled route.
+    beginRequest([CUSTOM_ROUTE_ID]);
+    setPending(withIds([CUSTOM_ROUTE_ID], false));
     setStops([]);
     setPlanning(false);
     setSelectedId((current) => (current === CUSTOM_ROUTE_ID ? null : current));
@@ -168,7 +201,7 @@ export function useFleet() {
       delete next[CUSTOM_ROUTE_ID];
       return next;
     });
-  }, []);
+  }, [beginRequest]);
 
   const totals = useMemo(() => {
     const counts: Record<Recommendation, number> = { go: 0, delay: 0, reroute: 0 };

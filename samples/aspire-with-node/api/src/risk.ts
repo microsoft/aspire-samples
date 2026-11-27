@@ -113,8 +113,8 @@ function scoreSample(s: HourlySample): Partial<Record<HazardType, [number, numbe
   if (code === 66 || code === 67) ice = Math.max(ice, 85);
   if (ice > 0) scores.ice = [ice, liquid];
 
-  // WMO 95: thunderstorm, 96/99: thunderstorm with hail.
-  if (code >= 95) scores.thunderstorm = [code === 95 ? 60 : code === 96 ? 75 : 85, code];
+  // WMO 95: thunderstorm (high), 96/99: thunderstorm with slight/heavy hail (severe).
+  if (code >= 95) scores.thunderstorm = [code === 95 ? 60 : code === 96 ? 80 : 90, code];
 
   return scores;
 }
@@ -186,13 +186,18 @@ export function scoreLeg(points: HourlySample[][]): LegRisk {
   };
 }
 
+/** A severe wind, snow or icing hazard: the kind that closes a corridor, so the route is rerouted. */
+export function isRoadClosing(hazard: Pick<Hazard, 'type' | 'severity'>): boolean {
+  return hazard.severity === 'severe' && ROAD_CLOSING.has(hazard.type);
+}
+
 /**
  * Dispatch decision for a route: reroute when any leg has a severe wind, snow or icing hazard
  * (closure risk), delay when the worst leg is high or severe for other reasons (it should pass),
  * otherwise go.
  */
 export function recommend(legs: Pick<LegRisk, 'riskScore' | 'hazards'>[]): Recommendation {
-  if (legs.some((leg) => leg.hazards.some((h) => h.severity === 'severe' && ROAD_CLOSING.has(h.type)))) {
+  if (legs.some((leg) => leg.hazards.some(isRoadClosing))) {
     return 'reroute';
   }
   return Math.max(0, ...legs.map((leg) => leg.riskScore)) >= 60 ? 'delay' : 'go';

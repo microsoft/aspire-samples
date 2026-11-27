@@ -10,7 +10,7 @@ import { SpanStatusCode, type Span } from '@opentelemetry/api';
 import { distanceKm, legSamplePoints, routeDistanceKm, type Waypoint } from './fleet.ts';
 import { logger } from './logger.ts';
 import { fetchHourlyForecasts } from './openMeteo.ts';
-import { recommend, riskLevel, scoreLeg, type Hazard, type LegRisk, type Recommendation, type RiskLevel } from './risk.ts';
+import { isRoadClosing, recommend, riskLevel, scoreLeg, type Hazard, type LegRisk, type Recommendation, type RiskLevel } from './risk.ts';
 import { activeAssessments, hazardsDetected, legRiskScore, routeAssessments, tracer } from './telemetry.ts';
 
 export type RouteSource = 'predefined' | 'custom';
@@ -130,10 +130,24 @@ function describeHazard(hazard: Hazard): string {
   return `${hazard.label.toLowerCase()} (${value} ${hazard.unit})`;
 }
 
-function summarize(recommendation: Recommendation, legs: LegAssessment[]): string {
+/** The leg and hazard behind the recommendation: for a reroute, the strongest road-closing hazard; otherwise the worst leg's top hazard. */
+function explain(recommendation: Recommendation, legs: LegAssessment[]): { leg: LegAssessment; hazard: Hazard | undefined } {
+  if (recommendation === 'reroute') {
+    let cause: { leg: LegAssessment; hazard: Hazard } | undefined;
+    for (const leg of legs) {
+      for (const hazard of leg.hazards) {
+        if (isRoadClosing(hazard) && (!cause || hazard.score > cause.hazard.score)) cause = { leg, hazard };
+      }
+    }
+    if (cause) return cause;
+  }
   const worst = legs.reduce((a, b) => (b.riskScore > a.riskScore ? b : a));
-  const where = `${worst.from} → ${worst.to}`;
-  const hazard = worst.hazards[0];
+  return { leg: worst, hazard: worst.hazards[0] };
+}
+
+function summarize(recommendation: Recommendation, legs: LegAssessment[]): string {
+  const { leg, hazard } = explain(recommendation, legs);
+  const where = `${leg.from} → ${leg.to}`;
   const detail = hazard ? describeHazard(hazard) : 'no significant hazards';
   switch (recommendation) {
     case 'reroute':
