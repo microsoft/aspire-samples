@@ -51,6 +51,12 @@
 			<artifactId>springdoc-openapi-starter-webmvc-scalar</artifactId>
 			<version>3.1.1</version>
 		</dependency>
+		<!-- Domain spans and metrics. The OpenTelemetry Java agent bridges this API to its SDK at runtime;
+		     without the agent (for example in tests) every call is a no-op. -->
+		<dependency>
+			<groupId>io.opentelemetry</groupId>
+			<artifactId>opentelemetry-api</artifactId>
+		</dependency>
 
 		<dependency>
 			<groupId>org.postgresql</groupId>

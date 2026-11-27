@@ -1,0 +1,140 @@
+@use '@angular/material' as mat;
+
+// Material 3 theme in Spring green with a teal accent. `theme-type: color-scheme` emits light-dark() tokens, so
+// the whole app follows the system's light or dark preference.
+html {
+  color-scheme: light dark;
+
+  @include mat.theme(
+    (
+      color: (
+        primary: mat.$green-palette,
+        tertiary: mat.$cyan-palette,
+        theme-type: color-scheme,
+      ),
+      typography: (
+        plain-family: (
+          'Inter',
+          'Segoe UI',
+          Roboto,
+          'Helvetica Neue',
+          Arial,
+          sans-serif,
+        ),
+        brand-family: (
+          'Inter',
+          'Segoe UI',
+          Roboto,
+          'Helvetica Neue',
+          Arial,
+          sans-serif,
+        ),
+      ),
+      density: 0,
+    )
+  );
+
+  --mat-sys-corner-large: 20px;
+  --mat-sys-corner-medium: 14px;
+
+  // The generated green palette is very saturated; pull the primary roles toward the Petclinic emerald brand.
+  --mat-sys-primary: light-dark(#1b6b4c, #8fd5b2);
+  --mat-sys-on-primary: light-dark(#ffffff, #00382a);
+  --mat-sys-primary-container: light-dark(#cfeedd, #1f4d3a);
+  --mat-sys-on-primary-container: light-dark(#0b3a28, #c8f1dc);
+  --mat-sys-secondary-container: light-dark(#d7e8de, #2c4237);
+  --mat-sys-on-secondary-container: light-dark(#13372a, #d2e8db);
+
+  // Brand surfaces shared by the header and accents.
+  --pc-hero: light-dark(
+    linear-gradient(120deg, #0f3d2e 0%, #17573f 55%, #1f6f50 100%),
+    linear-gradient(120deg, #07160f 0%, #0d2a1e 55%, #123826 100%)
+  );
+  --pc-card-border: light-dark(#dbe5dd, #2b3a31);
+  --pc-muted: light-dark(#5b6b61, #a3b3a8);
+
+  // Specialty tones for reason chips and vet badges.
+  --pc-general-bg: light-dark(#dcefe2, #173825);
+  --pc-general-fg: light-dark(#14532d, #b7ebc8);
+  --pc-dentistry-bg: light-dark(#e3e8ff, #222b55);
+  --pc-dentistry-fg: light-dark(#2e3f99, #c9d3ff);
+  --pc-radiology-bg: light-dark(#fff0d6, #4a3510);
+  --pc-radiology-fg: light-dark(#7a4b00, #ffdca1);
+  --pc-surgery-bg: light-dark(#ffe1e3, #5a1a22);
+  --pc-surgery-fg: light-dark(#8f1d2c, #ffc9cf);
+
+  accent-color: var(--mat-sys-primary);
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  background: var(--mat-sys-surface-container-lowest);
+  color: var(--mat-sys-on-surface);
+  font: var(--mat-sys-body-large);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.material-symbols-outlined {
+  font-variation-settings:
+    'FILL' 0,
+    'wght' 400,
+    'GRAD' 0,
+    'opsz' 24;
+}
+
+[data-specialty='General practice'] {
+  --tone-bg: var(--pc-general-bg);
+  --tone-fg: var(--pc-general-fg);
+}
+[data-specialty='Dentistry'] {
+  --tone-bg: var(--pc-dentistry-bg);
+  --tone-fg: var(--pc-dentistry-fg);
+}
+[data-specialty='Radiology'] {
+  --tone-bg: var(--pc-radiology-bg);
+  --tone-fg: var(--pc-radiology-fg);
+}
+[data-specialty='Surgery'] {
+  --tone-bg: var(--pc-surgery-bg);
+  --tone-fg: var(--pc-surgery-fg);
+}
+
+.tone {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  color: var(--tone-fg, var(--mat-sys-on-secondary-container));
+  background: var(--tone-bg, var(--mat-sys-secondary-container));
+  font: var(--mat-sys-label-medium);
+  white-space: nowrap;
+}
+
+.card {
+  border: 1px solid var(--pc-card-border);
+  border-radius: var(--mat-sys-corner-large);
+  background: var(--mat-sys-surface-container-low);
+}
+
+:focus-visible {
+  outline: 3px solid var(--mat-sys-primary);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

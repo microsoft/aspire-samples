@@ -1,0 +1,140 @@
+<section class="card" aria-labelledby="book-heading">
+  <h2 id="book-heading">Book a visit</h2>
+  <p class="lede">
+    Leave the vet open and the clinic assigns the first free vet with the right specialty.
+  </p>
+
+  <form #form="ngForm" (ngSubmit)="submit(form)">
+    <div class="row">
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Owner</mat-label>
+        <mat-select
+          name="ownerId"
+          [(ngModel)]="booking.ownerId"
+          (ngModelChange)="ownerChanged($event)"
+          required
+        >
+          @for (owner of owners(); track owner.id) {
+            <mat-option [value]="owner.id">{{ owner.lastName }}, {{ owner.firstName }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Pet</mat-label>
+        <mat-select name="petId" [(ngModel)]="booking.petId" [disabled]="!pets().length" required>
+          @for (pet of pets(); track pet.id) {
+            <mat-option [value]="pet.id">{{ glyph(pet.type) }} {{ pet.name }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+      <mat-label>Reason</mat-label>
+      <mat-select
+        name="reason"
+        [(ngModel)]="booking.reason"
+        (ngModelChange)="reasonChanged($event)"
+        required
+      >
+        @for (reason of reasons(); track reason.reason) {
+          <mat-option [value]="reason.reason">{{ reason.label }}</mat-option>
+        }
+      </mat-select>
+      @if (specialty(); as specialty) {
+        <mat-hint>Seen by {{ specialty | lowercase }}</mat-hint>
+      }
+    </mat-form-field>
+
+    <div class="row">
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Date</mat-label>
+        <input matInput type="date" name="date" [(ngModel)]="booking.date" [min]="today" required />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Time</mat-label>
+        <mat-select name="time" [(ngModel)]="booking.time" required>
+          @for (slot of slots; track slot) {
+            <mat-option [value]="slot">{{ slot }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+      <mat-label>Vet</mat-label>
+      <mat-select name="vetId" [(ngModel)]="booking.vetId">
+        <mat-option [value]="null">First free vet</mat-option>
+        @for (vet of vets(); track vet.id) {
+          <mat-option [value]="vet.id"
+            >Dr. {{ vet.firstName }} {{ vet.lastName }} · {{ vet.specialty }}</mat-option
+          >
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+      <mat-label>Notes for the vet</mat-label>
+      <textarea
+        matInput
+        name="notes"
+        [(ngModel)]="booking.notes"
+        rows="2"
+        maxlength="280"
+      ></textarea>
+    </mat-form-field>
+
+    <button mat-flat-button type="submit" [disabled]="form.invalid || saving()">
+      {{ saving() ? 'Booking…' : 'Book visit' }}
+    </button>
+  </form>
+
+  @if (confirmation(); as visit) {
+    <div class="outcome success" role="status">
+      <mat-icon>event_available</mat-icon>
+      <div>
+        <strong>{{ visit.pet.name }} is booked</strong>
+        <p>
+          {{ visit.reasonLabel }} with Dr. {{ visit.vet.firstName }} {{ visit.vet.lastName }},
+          {{ when(visit.startsAt) }}.
+        </p>
+      </div>
+    </div>
+  }
+
+  @if (problem(); as problem) {
+    <div class="outcome problem" role="alert">
+      <mat-icon>event_busy</mat-icon>
+      <div>
+        <strong>{{ problem.title }}</strong>
+        <p>{{ problem.detail }}</p>
+        @if (problem.errors) {
+          <ul>
+            @for (error of problem.errors | keyvalue; track error.key) {
+              <li>
+                <code>{{ error.key }}</code> {{ error.value }}
+              </li>
+            }
+          </ul>
+        }
+        @if (problem.nextAvailableSlot; as slot) {
+          <button
+            mat-stroked-button
+            type="button"
+            (click)="takeSuggestedSlot(form, slot)"
+            [disabled]="saving()"
+          >
+            Book {{ when(slot) }} instead
+          </button>
+        }
+        @if (problem.traceId) {
+          <p class="trace">
+            Trace <code>{{ problem.traceId }}</code>
+          </p>
+        }
+      </div>
+    </div>
+  }
+</section>

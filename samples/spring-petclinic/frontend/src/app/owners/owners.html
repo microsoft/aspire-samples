@@ -1,0 +1,159 @@
+<section class="card" aria-labelledby="owners-heading">
+  <header class="head">
+    <div>
+      <h2 id="owners-heading">Owners and pets</h2>
+      <p>{{ owners().length }} owners on file</p>
+    </div>
+    <mat-form-field class="search" appearance="outline" subscriptSizing="dynamic">
+      <mat-icon matPrefix>search</mat-icon>
+      <mat-label>Find an owner or pet</mat-label>
+      <input
+        matInput
+        [ngModel]="query()"
+        (ngModelChange)="query.set($event)"
+        name="query"
+        autocomplete="off"
+      />
+    </mat-form-field>
+    <button
+      mat-stroked-button
+      (click)="toggleForm()"
+      [attr.aria-expanded]="formOpen()"
+      aria-controls="register-owner"
+    >
+      <mat-icon>{{ formOpen() ? 'close' : 'person_add' }}</mat-icon>
+      {{ formOpen() ? 'Close' : 'Register owner' }}
+    </button>
+  </header>
+
+  @if (formOpen()) {
+    <form id="register-owner" class="register" #form="ngForm" (ngSubmit)="register(form)">
+      <fieldset>
+        <legend>Owner</legend>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>First name</mat-label>
+          <input
+            matInput
+            name="firstName"
+            [(ngModel)]="registration.firstName"
+            required
+            maxlength="40"
+          />
+        </mat-form-field>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Last name</mat-label>
+          <input
+            matInput
+            name="lastName"
+            [(ngModel)]="registration.lastName"
+            required
+            maxlength="40"
+          />
+        </mat-form-field>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="span-2">
+          <mat-label>Address</mat-label>
+          <input
+            matInput
+            name="address"
+            [(ngModel)]="registration.address"
+            required
+            maxlength="80"
+          />
+        </mat-form-field>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>City</mat-label>
+          <input matInput name="city" [(ngModel)]="registration.city" required maxlength="40" />
+        </mat-form-field>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Telephone</mat-label>
+          <input
+            matInput
+            name="telephone"
+            [(ngModel)]="registration.telephone"
+            required
+            pattern="\d{10}"
+            inputmode="numeric"
+          />
+          <mat-hint>10 digits</mat-hint>
+        </mat-form-field>
+      </fieldset>
+      <fieldset>
+        <legend>First pet (optional)</legend>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Name</mat-label>
+          <input matInput name="petName" [(ngModel)]="registration.petName" maxlength="30" />
+        </mat-form-field>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Species</mat-label>
+          <mat-select name="petType" [(ngModel)]="registration.petType">
+            @for (type of species; track type) {
+              <mat-option [value]="type">{{ glyph(type) }} {{ type }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Birth date</mat-label>
+          <input
+            matInput
+            type="date"
+            name="petBirthDate"
+            [(ngModel)]="registration.petBirthDate"
+            [required]="!!registration.petName.trim()"
+          />
+        </mat-form-field>
+      </fieldset>
+      <div class="actions">
+        @if (problem(); as problem) {
+          <p class="problem" role="alert">
+            <mat-icon>error</mat-icon>
+            <span
+              ><strong>{{ problem.title }}.</strong> {{ problem.detail }}</span
+            >
+          </p>
+        }
+        <button mat-flat-button type="submit" [disabled]="form.invalid || saving()">
+          {{ saving() ? 'Registering…' : 'Register owner' }}
+        </button>
+      </div>
+    </form>
+  }
+
+  <table class="directory">
+    <thead>
+      <tr>
+        <th scope="col">Owner</th>
+        <th scope="col">Address</th>
+        <th scope="col">Pets</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (owner of filtered(); track owner.id) {
+        <tr [class.fresh]="owner.id === lastRegisteredId()">
+          <td>
+            <strong>{{ owner.firstName }} {{ owner.lastName }}</strong>
+            <span>{{ owner.telephone }}</span>
+          </td>
+          <td>
+            {{ owner.address }}
+            <span>{{ owner.city }}</span>
+          </td>
+          <td>
+            <ul class="pets">
+              @for (pet of owner.pets; track pet.id) {
+                <li>
+                  <span aria-hidden="true">{{ glyph(pet.type) }}</span> {{ pet.name }}
+                </li>
+              } @empty {
+                <li class="none">No pets yet</li>
+              }
+            </ul>
+          </td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="3" class="empty">No owner or pet matches “{{ query() }}”.</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</section>

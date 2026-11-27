@@ -1,0 +1,102 @@
+:host {
+  display: block;
+}
+
+.card {
+  padding: 1.25rem 1.25rem 1.35rem;
+}
+
+h2 {
+  margin: 0;
+  font: var(--mat-sys-title-large);
+  font-weight: 650;
+}
+
+.lede {
+  margin: 0.25rem 0 1.15rem;
+  color: var(--pc-muted);
+  font: var(--mat-sys-body-medium);
+}
+
+form {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+mat-form-field {
+  width: 100%;
+}
+
+button[type='submit'] {
+  height: 2.75rem;
+  margin-top: 0.2rem;
+}
+
+.outcome {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  padding: 0.9rem 1rem;
+  border-radius: var(--mat-sys-corner-medium);
+}
+
+.outcome mat-icon {
+  flex: none;
+}
+
+.outcome div {
+  display: grid;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.outcome p,
+.outcome ul {
+  margin: 0;
+  font: var(--mat-sys-body-medium);
+}
+
+.outcome ul {
+  padding-left: 1.1rem;
+}
+
+.outcome button {
+  justify-self: start;
+  margin-top: 0.3rem;
+}
+
+.success {
+  color: var(--mat-sys-on-primary-container);
+  background: var(--mat-sys-primary-container);
+}
+
+.problem {
+  color: var(--mat-sys-on-error-container);
+  background: var(--mat-sys-error-container);
+}
+
+.problem button {
+  --mat-button-outlined-label-text-color: var(--mat-sys-on-error-container);
+  --mat-button-outlined-outline-color: currentColor;
+}
+
+.outcome .trace {
+  opacity: 0.85;
+  font: var(--mat-sys-body-small);
+}
+
+.trace code {
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 420px) {
+  .row {
+    grid-template-columns: 1fr;
+  }
+}

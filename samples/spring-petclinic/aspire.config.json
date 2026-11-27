@@ -6,6 +6,25 @@
   "sdk": {
     "version": "17.0.0"
   },
+  "profiles": {
+    "https": {
+      "applicationUrl": "https://localhost:17394;http://localhost:15217",
+      "environmentVariables": {
+        "ASPIRE_DASHBOARD_OTLP_ENDPOINT_URL": "https://localhost:21418",
+        "ASPIRE_DASHBOARD_OTLP_HTTP_ENDPOINT_URL": "https://localhost:21419",
+        "ASPIRE_RESOURCE_SERVICE_ENDPOINT_URL": "https://localhost:22316"
+      }
+    },
+    "http": {
+      "applicationUrl": "http://localhost:15217",
+      "environmentVariables": {
+        "ASPIRE_DASHBOARD_OTLP_ENDPOINT_URL": "http://localhost:19163",
+        "ASPIRE_DASHBOARD_OTLP_HTTP_ENDPOINT_URL": "http://localhost:19164",
+        "ASPIRE_RESOURCE_SERVICE_ENDPOINT_URL": "http://localhost:20164",
+        "ASPIRE_ALLOW_UNSECURED_TRANSPORT": "true"
+      }
+    }
+  },
   "packages": {
     "Aspire.Hosting.Java": "17.0.0-preview.1.26567.5",
     "Aspire.Hosting.JavaScript": "17.0.0",

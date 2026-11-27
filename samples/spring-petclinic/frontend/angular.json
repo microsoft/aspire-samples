@@ -50,7 +50,8 @@
               }
             ],
             "styles": [
-              "src/styles.css"
+              "material-symbols/outlined.css",
+              "src/styles.scss"
             ]
           },
           "configurations": {
@@ -58,7 +59,7 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "500kB",
+                  "maximumWarning": "700kB",
                   "maximumError": "1MB"
                 },
                 {

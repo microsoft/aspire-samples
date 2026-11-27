@@ -1,0 +1,99 @@
+<section class="card" aria-labelledby="schedule-heading">
+  <header class="head">
+    <div>
+      <h2 id="schedule-heading">Schedule</h2>
+      <p>{{ dayTitle() }}</p>
+    </div>
+    <mat-button-toggle-group
+      class="days"
+      [value]="selectedDay()"
+      (change)="selectedDay.set($event.value)"
+      hideSingleSelectionIndicator
+      aria-label="Day"
+    >
+      @for (day of dayTabs(); track day.key) {
+        <mat-button-toggle [value]="day.key">
+          {{ day.label }} <span class="count">{{ day.count }}</span>
+        </mat-button-toggle>
+      }
+    </mat-button-toggle-group>
+  </header>
+
+  @if (problem(); as problem) {
+    <p class="problem" role="alert">
+      <mat-icon>error</mat-icon>{{ problem.detail ?? problem.title }}
+    </p>
+  }
+
+  @if (dayVisits().length) {
+    <ol class="visits">
+      @for (visit of dayVisits(); track visit.id) {
+        <li
+          class="visit"
+          [class.cancelled]="visit.status === 'CANCELLED'"
+          [class.done]="visit.status === 'COMPLETED'"
+          [class.fresh]="visit.id === highlightId()"
+        >
+          <time class="time" [attr.datetime]="visit.startsAt">{{ time(visit) }}</time>
+          <span class="glyph" aria-hidden="true">{{ glyph(visit.pet.type) }}</span>
+          <div class="patient">
+            <strong>{{ visit.pet.name }}</strong>
+            <span
+              >{{ visit.pet.type }} · {{ visit.owner.firstName }} {{ visit.owner.lastName }}</span
+            >
+          </div>
+          <div class="reason">
+            <span class="tone" [attr.data-specialty]="visit.vet.specialty">{{
+              visit.reasonLabel
+            }}</span>
+            @if (visit.notes) {
+              <span class="notes">{{ visit.notes }}</span>
+            }
+          </div>
+          <div class="vet">
+            <strong>Dr. {{ visit.vet.firstName }} {{ visit.vet.lastName }}</strong>
+            <span>{{ visit.vet.specialty }}</span>
+          </div>
+          <div class="state">
+            @switch (visit.status) {
+              @case ('SCHEDULED') {
+                <button
+                  mat-icon-button
+                  (click)="complete(visit)"
+                  [disabled]="busyId() === visit.id"
+                  matTooltip="Check out"
+                  [attr.aria-label]="'Check out ' + visit.pet.name"
+                >
+                  <mat-icon>task_alt</mat-icon>
+                </button>
+                <button
+                  mat-icon-button
+                  (click)="cancel(visit)"
+                  [disabled]="busyId() === visit.id"
+                  matTooltip="Cancel visit"
+                  [attr.aria-label]="'Cancel the visit for ' + visit.pet.name"
+                >
+                  <mat-icon>event_busy</mat-icon>
+                </button>
+              }
+              @case ('COMPLETED') {
+                <span class="label"><mat-icon>task_alt</mat-icon>Checked out</span>
+              }
+              @case ('CANCELLED') {
+                <span class="label">Cancelled</span>
+              }
+            }
+          </div>
+        </li>
+      }
+    </ol>
+  } @else {
+    <div class="empty">
+      <mat-icon>event_available</mat-icon>
+      <p>
+        No visits on {{ dayTitle() }}. Book one with the form, or run <b>Seed sample visits</b> on
+        the <code>api</code> resource in the Aspire dashboard.
+      </p>
+    </div>
+  }
+</section>

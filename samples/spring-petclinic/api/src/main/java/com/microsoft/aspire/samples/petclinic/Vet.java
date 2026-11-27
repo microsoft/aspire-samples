@@ -9,6 +9,11 @@ import jakarta.persistence.Table;
 @Entity
 @Table(name = "vets")
 public class Vet {
+    public static final String GENERAL_PRACTICE = "General practice";
+    public static final String DENTISTRY = "Dentistry";
+    public static final String RADIOLOGY = "Radiology";
+    public static final String SURGERY = "Surgery";
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -40,5 +45,9 @@ public class Vet {
 
     public String getSpecialty() {
         return specialty;
+    }
+
+    public String displayName() {
+        return "Dr. " + firstName + " " + lastName;
     }
 }

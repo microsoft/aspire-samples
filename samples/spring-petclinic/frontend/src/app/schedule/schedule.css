@@ -1,0 +1,225 @@
+:host {
+  display: block;
+}
+
+.card {
+  padding: 1.25rem 1.25rem 0.5rem;
+}
+
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1.5rem;
+  padding: 0 0.25rem 1rem;
+}
+
+h2 {
+  margin: 0;
+  font: var(--mat-sys-title-large);
+  font-weight: 650;
+}
+
+.head p {
+  margin: 0.15rem 0 0;
+  color: var(--pc-muted);
+  font: var(--mat-sys-body-medium);
+}
+
+.days {
+  --mat-button-toggle-height: 36px;
+  --mat-button-toggle-shape: 999px;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.count {
+  margin-left: 0.3rem;
+  color: var(--pc-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.mat-button-toggle-checked .count {
+  color: inherit;
+  font-weight: 650;
+}
+
+.problem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 0.75rem;
+  padding: 0.65rem 0.85rem;
+  border-radius: var(--mat-sys-corner-medium);
+  color: var(--mat-sys-on-error-container);
+  background: var(--mat-sys-error-container);
+}
+
+.visits {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.visit {
+  display: grid;
+  grid-template-columns: 3.25rem 2.5rem minmax(0, 0.9fr) minmax(0, 1.5fr) minmax(0, 0.9fr) auto;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.8rem 0.5rem;
+  border-top: 1px solid var(--pc-card-border);
+  border-radius: 0.6rem;
+}
+
+.visit.fresh {
+  animation: arrive 2.4s cubic-bezier(0.16, 1, 0.3, 1);
+  background: color-mix(in srgb, var(--mat-sys-primary-container) 70%, transparent);
+}
+
+@keyframes arrive {
+  from {
+    background: var(--mat-sys-primary-container);
+    box-shadow: 0 0.35rem 1.2rem color-mix(in srgb, var(--mat-sys-primary) 25%, transparent);
+  }
+}
+
+.time {
+  font: 650 1.05rem/1 var(--mat-sys-title-medium-font);
+  font-variant-numeric: tabular-nums;
+}
+
+.glyph {
+  display: grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--mat-sys-surface-container-high);
+  font-size: 1.45rem;
+}
+
+.patient,
+.vet,
+.reason {
+  display: grid;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.patient strong,
+.vet strong {
+  font: var(--mat-sys-title-small);
+}
+
+.patient span,
+.vet span,
+.notes {
+  overflow: hidden;
+  color: var(--pc-muted);
+  font: var(--mat-sys-body-small);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.reason .tone {
+  justify-self: start;
+}
+
+.state {
+  display: flex;
+  justify-content: flex-end;
+  color: var(--pc-muted);
+}
+
+.label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font: var(--mat-sys-label-large);
+}
+
+.label mat-icon {
+  font-size: 1.15rem;
+  width: 1.15rem;
+  height: 1.15rem;
+}
+
+.done .label {
+  color: var(--mat-sys-primary);
+}
+
+.cancelled .time,
+.cancelled .patient strong {
+  color: var(--pc-muted);
+  text-decoration: line-through;
+}
+
+.cancelled .glyph,
+.cancelled .tone {
+  opacity: 0.55;
+}
+
+.empty {
+  display: grid;
+  justify-items: center;
+  gap: 0.5rem;
+  padding: 2.5rem 1rem 3rem;
+  border-top: 1px solid var(--pc-card-border);
+  color: var(--pc-muted);
+  text-align: center;
+}
+
+.empty mat-icon {
+  font-size: 2rem;
+  width: 2rem;
+  height: 2rem;
+}
+
+.empty p {
+  max-width: 34rem;
+  margin: 0;
+}
+
+@media (max-width: 760px) {
+  .visit {
+    grid-template-columns: 3rem 2.5rem minmax(0, 1fr) auto;
+    grid-template-areas:
+      'time glyph patient state'
+      '. . reason reason'
+      '. . vet vet';
+    row-gap: 0.45rem;
+  }
+
+  .time {
+    grid-area: time;
+  }
+
+  .glyph {
+    grid-area: glyph;
+  }
+
+  .patient {
+    grid-area: patient;
+  }
+
+  .reason {
+    grid-area: reason;
+  }
+
+  .vet {
+    grid-area: vet;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 0.4rem;
+    align-items: baseline;
+  }
+
+  .vet span {
+    white-space: normal;
+  }
+
+  .state {
+    grid-area: state;
+  }
+}

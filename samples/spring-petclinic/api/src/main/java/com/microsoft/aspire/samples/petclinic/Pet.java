@@ -54,4 +54,8 @@ public class Pet {
     public LocalDate getBirthDate() {
         return birthDate;
     }
+
+    public Owner getOwner() {
+        return owner;
+    }
 }
