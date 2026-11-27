@@ -1,13 +1,17 @@
 [project]
-name = "FastAPI-starter"
-version = "0.1.0"
-description = "FastAPI starter"
+name = "contoso-inventory-api"
+version = "2.0.0"
+description = "Contoso Outdoors inventory availability API: FastAPI with Redis cache-aside and OpenTelemetry"
 requires-python = ">=3.13"
 dependencies = [
-    "fastapi[standard]>=0.136.1",
-    "opentelemetry-distro>=0.62b1",
-    "opentelemetry-exporter-otlp-proto-grpc>=1.41.1",
-    "opentelemetry-instrumentation-fastapi>=0.62b1",
-    "opentelemetry-instrumentation-redis>=0.62b1",
+    "fastapi>=0.165.0",
+    "uvicorn[standard]>=0.54.0",
+    "pydantic>=2.14,<3.0",
     "redis>=7.4.0",
+    "scalar-fastapi>=1.10.1",
+    "opentelemetry-sdk>=1.45.2",
+    "opentelemetry-exporter-otlp-proto-grpc>=1.45.2",
+    "opentelemetry-instrumentation-fastapi>=0.66b2",
+    "opentelemetry-instrumentation-logging>=0.66b2",
+    "opentelemetry-instrumentation-redis>=0.66b2",
 ]
