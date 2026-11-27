@@ -128,6 +128,8 @@ See the following links for more information on best practices and security cons
 
 We welcome contributions to this repository of samples related to official Aspire features and integrations (i.e. those pieces whose code lives in the [Aspire repo](https://github.com/dotnet/aspire) and that ship from the [**Aspire** NuGet account](https://www.nuget.org/profiles/aspire)). It's generally a good idea to [log an issue](https://github.com/dotnet/aspire-samples/issues/new/choose) first to discuss any idea for a sample with the team before sending a pull request.
 
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for the sample quality bar (OpenAPI and Scalar, traces, metrics, structured logs, dashboard commands, and dual-theme screenshots) and the commands CI uses to validate changes.
+
 ## Code of conduct
 
 This project has adopted the code of conduct defined by the [Contributor Covenant](https://contributor-covenant.org) to clarify expected behavior in our community. For more information, see the [.NET Foundation Code of Conduct](https://www.dotnetfoundation.org/code-of-conduct).
