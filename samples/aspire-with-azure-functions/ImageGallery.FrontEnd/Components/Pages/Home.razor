@@ -1,81 +1,144 @@
-﻿@page "/"
+@page "/"
 @rendermode InteractiveServer
+@implements IDisposable
 
-<PageTitle>Darkroom Studio · Image Gallery</PageTitle>
+<PageTitle>Claim photo intake · Contoso Insurance</PageTitle>
 
-<section class="intro">
-    <p class="eyebrow">Contact sheet</p>
-    <h1 class="intro__title">Develop your gallery</h1>
-    <p class="intro__lede">
-        Drop in a few photos. Each upload is stored in Azure Blob storage, and an
-        Aspire-orchestrated Azure Function develops a thumbnail in the background —
-        the wall below refreshes itself as prints come back.
-    </p>
-</section>
-
-<label class="dropzone" for="photo-input">
-    <span class="dropzone__icon" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 16V4" /><path d="m7 9 5-5 5 5" />
-            <path d="M4 14v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4" />
-        </svg>
-    </span>
-    <span class="dropzone__text">
-        <span class="dropzone__title">Choose photos to develop</span>
-        <span class="dropzone__hint">JPG, PNG or GIF · up to 512&nbsp;KB each · select multiple</span>
-    </span>
-    <InputFile id="photo-input" OnChange="OnFilesChangedAsync" @key="@_fileUploadKey"
-               class="dropzone__input" accept=".jpg,.jpeg,.png,.gif" multiple />
-</label>
-
-@if (_images.Count == 0)
-{
-    <div class="empty" role="status">
-        <span class="empty__icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="4" width="18" height="16" rx="2" /><circle cx="8.5" cy="9.5" r="1.5" />
-                <path d="m4 17 5-5 4 4 3-3 4 4" />
-            </svg>
-        </span>
-        <p class="empty__title">The wall is empty</p>
-        <p class="empty__text">Developed thumbnails will appear here as soon as you upload your first frame.</p>
+<section class="hero">
+    <div class="hero__copy">
+        <p class="eyebrow">Claims photo intake</p>
+        <h1 class="hero__title">Damage photos, ready for review</h1>
+        <p class="hero__lede">
+            Attach photos to an open claim. Each upload lands in Azure Blob Storage, where a blob-triggered Azure Function
+            checks that it's sharp enough to assess, renders a thumbnail and queues the result back to this page.
+        </p>
+        <ol class="pipeline" aria-label="How a photo is processed">
+            <li><span class="pipeline__step">1</span>Blob Storage <code>claim-photos</code></li>
+            <li><span class="pipeline__step">2</span>Function <code>ProcessClaimPhoto</code></li>
+            <li><span class="pipeline__step">3</span>Queue <code>thumbnail-queue</code></li>
+            <li><span class="pipeline__step">4</span>Live update</li>
+        </ol>
     </div>
-}
-else
-{
-    <div class="contact-sheet" aria-live="polite" aria-label="Developed photos">
-        @foreach (var image in _images.OrderBy(i => i.ImageUrl))
-        {
-            <a class="frame" target="_blank" rel="noopener" href="@image.ImageUrl">
-                <img class="frame__img" src="@image.ThumbnailUrl"
-                     alt="@(image.ImageUrl is { Length: > 0 } u ? System.IO.Path.GetFileNameWithoutExtension(u) : "Uploaded photo")" />
-                <span class="frame__overlay" aria-hidden="true">
-                    <svg class="frame__expand" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M15 3h6v6" /><path d="M9 21H3v-6" /><path d="M21 3l-7 7" /><path d="M3 21l7-7" />
-                    </svg>
-                    <span class="frame__label">View full size</span>
-                </span>
-            </a>
-        }
-    </div>
-}
 
-@if (_isDialogOpen)
-{
-    <div class="dialog-overlay" @onclick="CloseDialog"></div>
-    <div class="dialog" role="alertdialog" aria-modal="true" aria-labelledby="dialog-title" aria-describedby="dialog-body">
-        <div class="dialog__header">
-            <span class="dialog__icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 9v4" /><path d="M12 17h.01" />
-                    <path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z" />
+    <div class="upload">
+        <h2 class="upload__title">Add photos to a claim</h2>
+        <label class="upload__label" for="claim-select">Claim</label>
+        <select id="claim-select" class="upload__select" @bind="_selectedClaim" disabled="@_isUploading">
+            @foreach (var claim in ClaimDirectory.OpenClaims)
+            {
+                <option value="@claim.Number">@claim.Number · @claim.LossType</option>
+            }
+        </select>
+
+        <label class="dropzone @(_isUploading ? "dropzone--busy" : null)" for="photo-input">
+            <span class="dropzone__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14.5 4h-5L7.5 6.5H5A2 2 0 0 0 3 8.5v9A2 2 0 0 0 5 19.5h14a2 2 0 0 0 2-2v-9a2 2 0 0 0-2-2h-2.5z" />
+                    <circle cx="12" cy="13" r="3.5" />
                 </svg>
             </span>
-            <h2 id="dialog-title" class="dialog__title">Couldn't develop that</h2>
-        </div>
-        <p id="dialog-body" class="dialog__body">@_dialogMessage</p>
-        <div class="dialog__footer">
-            <button class="btn btn-amber" @onclick="CloseDialog" autofocus>Got it</button>
-        </div>
+            <span class="dropzone__text">
+                <span class="dropzone__title">@(_isUploading ? $"Uploading {_uploadedCount + 1} of {_uploadTotal}…" : "Choose damage photos")</span>
+                <span class="dropzone__hint">JPEG, PNG or WebP · up to 10 MB each</span>
+            </span>
+            <InputFile id="photo-input" class="dropzone__input" OnChange="OnFilesSelectedAsync" @key="_inputKey"
+                       accept="@ClaimPhotoIntake.AcceptedFileTypes" multiple disabled="@_isUploading" />
+        </label>
+
+        @if (_problems.Count > 0)
+        {
+            <div class="notice" role="alert">
+                <ul class="notice__list">
+                    @foreach (var problem in _problems)
+                    {
+                        <li>@problem</li>
+                    }
+                </ul>
+                <button type="button" class="notice__dismiss" aria-label="Dismiss" @onclick="_problems.Clear">×</button>
+            </div>
+        }
     </div>
-}
+</section>
+
+<section class="stats" aria-label="Intake summary">
+    <div class="stat">
+        <span class="stat__value">@_photos.Count</span>
+        <span class="stat__label">Photos received</span>
+    </div>
+    <div class="stat stat--ready">
+        <span class="stat__value">@Count(PhotoStatus.Ready)</span>
+        <span class="stat__label">Ready for review</span>
+    </div>
+    <div class="stat stat--processing">
+        <span class="stat__value">@Count(PhotoStatus.Processing)</span>
+        <span class="stat__label">In the function</span>
+    </div>
+    <div class="stat stat--retake">
+        <span class="stat__value">@(Count(PhotoStatus.RetakeRequested) + Count(PhotoStatus.Unreadable))</span>
+        <span class="stat__label">Need a retake</span>
+    </div>
+</section>
+
+<div class="claims">
+    @foreach (var claim in ClaimDirectory.OpenClaims)
+    {
+        var photos = _photos.Where(p => p.ClaimNumber == claim.Number).ToList();
+
+        <section class="claim" aria-labelledby="claim-@claim.Number">
+            <header class="claim__header">
+                <span class="claim__icon claim__icon--@claim.Line.ToString().ToLowerInvariant()" aria-hidden="true">
+                    @if (claim.Line is ClaimLine.Auto)
+                    {
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M5 16.5H3.5v-4l2-5h13l2 5v4H19" /><path d="M3.5 12.5h17" /><circle cx="7.5" cy="16.5" r="2" /><circle cx="16.5" cy="16.5" r="2" /><path d="M9.5 16.5h5" />
+                        </svg>
+                    }
+                    else
+                    {
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3.5 11 12 4l8.5 7" /><path d="M5.5 9.5V20h13V9.5" /><path d="M10 20v-5.5h4V20" />
+                        </svg>
+                    }
+                </span>
+                <div class="claim__heading">
+                    <p class="claim__number">@claim.Number</p>
+                    <h2 id="claim-@claim.Number" class="claim__title">@claim.LossType</h2>
+                    <p class="claim__meta">
+                        <span>@claim.Subject · @claim.Policyholder</span>
+                        <span>@claim.Location · Loss on @claim.LossDate.ToString("MMM d", CultureInfo.InvariantCulture)</span>
+                    </p>
+                </div>
+                <span class="claim__count">@photos.Count @(photos.Count == 1 ? "photo" : "photos")</span>
+            </header>
+
+            @if (photos.Count == 0)
+            {
+                <p class="claim__empty">No photos yet. Pick this claim above and add some, or run <strong>Upload sample photos</strong> from the Aspire dashboard.</p>
+            }
+            else
+            {
+                <ul class="photos">
+                    @foreach (var photo in photos)
+                    {
+                        <li class="photo" @key="photo.BlobName">
+                            <a class="photo__media" href="@ClaimPhotoApi.PhotoUrl(photo)" target="_blank" rel="noopener" title="Open the original photo">
+                                @if (ClaimPhotoApi.ThumbnailUrl(photo) is { } thumbnailUrl)
+                                {
+                                    <img src="@thumbnailUrl" alt="@photo.DisplayName" loading="lazy" />
+                                }
+                                else
+                                {
+                                    <span class="photo__placeholder">@(photo.Status is PhotoStatus.Processing ? "Checking in Azure Functions…" : "Couldn't read this file")</span>
+                                }
+                                <span class="badge badge--@StatusClass(photo.Status)">@StatusLabel(photo.Status)</span>
+                            </a>
+                            <p class="photo__name" title="@photo.OriginalFileName">@photo.DisplayName</p>
+                            <p class="photo__meta">@Describe(photo)</p>
+                            <p class="photo__note photo__note--@StatusClass(photo.Status)">@Note(photo)</p>
+                        </li>
+                    }
+                </ul>
+            }
+        </section>
+    }
+</div>

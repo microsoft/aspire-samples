@@ -1,38 +1,48 @@
-﻿@inherits LayoutComponentBase
+@inherits LayoutComponentBase
+@inject IHostEnvironment Environment
 
-<a class="skip-link" href="#main">Skip to gallery</a>
+<a class="skip-link" href="#main">Skip to content</a>
 
-<div class="studio">
-    <header class="studio__bar">
+<header class="topbar">
+    <div class="topbar__inner">
         <a class="brand" href="">
-            <span class="brand__mark" aria-hidden="true">
-                <svg viewBox="0 0 32 32" fill="none">
-                    <circle cx="16" cy="16" r="11" stroke="currentColor" stroke-width="2" />
-                    <path d="M16 5l5 9H11z M27 16l-9 5 0-10z M5 16l9-5 0 10z M16 27l-5-9h10z" fill="currentColor" opacity="0.85" />
-                    <circle cx="16" cy="16" r="3" fill="var(--bg)" />
-                </svg>
-            </span>
-            <span class="brand__text">
-                <span class="brand__name">Darkroom Studio</span>
-                <span class="brand__sub">Aspire · Image Gallery</span>
-            </span>
-        </a>
-
-        <a class="studio__link" href="https://aspire.dev/" target="_blank" rel="noopener">
-            Built with Aspire
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M7 17 17 7" /><path d="M8 7h9v9" />
+            <svg class="brand__mark" viewBox="0 0 32 32" aria-hidden="true">
+                <rect width="32" height="32" rx="8" />
+                <path class="brand__shield" d="M16 5.5 8 8.6v6.1c0 5.2 3.4 9.4 8 11 4.6-1.6 8-5.8 8-11V8.6z" />
+                <path d="M12.4 13.6h1.5l.9-1.4h2.4l.9 1.4h1.5a.9.9 0 0 1 .9.9v4.3a.9.9 0 0 1-.9.9h-7.2a.9.9 0 0 1-.9-.9v-4.3a.9.9 0 0 1 .9-.9z" />
+                <circle class="brand__shield" cx="16" cy="16.6" r="1.6" />
             </svg>
+            <span class="brand__text">
+                <span class="brand__name">Contoso Insurance</span>
+                <span class="brand__sub">Claims photo intake</span>
+            </span>
         </a>
-    </header>
 
-    <main id="main" class="studio__content" tabindex="-1">
-        @Body
-    </main>
-</div>
+        <nav class="topnav" aria-label="Resources">
+            @if (Environment.IsDevelopment())
+            {
+                <a href="scalar" target="_blank" rel="noopener">API reference</a>
+            }
+            <a href="https://aspire.dev/" target="_blank" rel="noopener">
+                Built with Aspire
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M7 17 17 7" /><path d="M8 7h9v9" />
+                </svg>
+            </a>
+        </nav>
+    </div>
+</header>
+
+<main id="main" class="page" tabindex="-1">
+    @Body
+</main>
+
+<footer class="footer">
+    Photos in Azure Blob Storage · checks and thumbnails by a blob-triggered Azure Function · results over Azure Queue Storage · orchestrated by Aspire
+</footer>
 
 <div id="blazor-error-ui" data-nosnippet>
-    A frame failed to develop.
+    Something went wrong.
     <a href="." class="reload">Reload</a>
     <span class="dismiss">🗙</span>
 </div>

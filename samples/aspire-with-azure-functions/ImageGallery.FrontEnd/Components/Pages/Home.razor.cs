@@ -1,105 +1,115 @@
-﻿using System.Net;
+using System.Globalization;
+using ImageGallery.FrontEnd.Claims;
 using Microsoft.AspNetCore.Components.Forms;
-using Azure.Storage.Blobs;
-using ImageGallery.Shared;
 
 namespace ImageGallery.FrontEnd.Components.Pages;
 
-public sealed partial class Home(
-    [FromKeyedServices("images")] BlobContainerClient imagesContainerClient,
-    [FromKeyedServices("thumbnails")] BlobContainerClient thumbsContainerClient,
-    QueueMessageHandler queueMessageHandler,
-    ILogger<Home> logger)
+public sealed partial class Home(ClaimPhotoCatalog catalog, ClaimPhotoIntake intake) : IDisposable
 {
-    private const long UploadFileSizeLimitBytes = 524_288; // 512 KB (512 x 1024 bytes)
+    private const int MaxFilesPerUpload = 20;
 
-    private readonly HashSet<ImageViewModel> _images = [];
+    private readonly List<string> _problems = [];
+    private IReadOnlyList<ClaimPhoto> _photos = [];
+    private string _selectedClaim = ClaimDirectory.OpenClaims[0].Number;
+    private bool _isUploading;
+    private int _uploadTotal;
+    private int _uploadedCount;
+    private Guid _inputKey = Guid.CreateVersion7();
 
-    private bool _isDialogOpen;
-    private string _dialogMessage = "";
-    private Guid _fileUploadKey = Guid.CreateVersion7();
-
-    private Task OnMessageReceivedAsync(UploadResult uploadResult) => InvokeAsync(LoadBlobsAsync);
-
-    private void OpenDialog() => _isDialogOpen = true;
-
-    private void CloseDialog() => _isDialogOpen = false;
-
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
-        logger.LogDebug("Subscribing to message handler.");
-
-        await LoadBlobsAsync();
-
-        queueMessageHandler.MessageReceived += OnMessageReceivedAsync;
+        _photos = catalog.GetPhotos();
+        catalog.Changed += OnCatalogChanged;
     }
 
-    private async Task LoadBlobsAsync()
+    public void Dispose() => catalog.Changed -= OnCatalogChanged;
+
+    // Raised by uploads and by the function's results arriving on the queue, from any circuit or the worker.
+    private void OnCatalogChanged() => _ = InvokeAsync(() =>
     {
+        _photos = catalog.GetPhotos();
+        StateHasChanged();
+    });
+
+    private async Task OnFilesSelectedAsync(InputFileChangeEventArgs e)
+    {
+        _problems.Clear();
+
+        if (e.FileCount > MaxFilesPerUpload)
+        {
+            _problems.Add($"Choose up to {MaxFilesPerUpload} photos at a time.");
+            return;
+        }
+
+        var files = e.GetMultipleFiles(MaxFilesPerUpload);
+        (_isUploading, _uploadTotal, _uploadedCount) = (true, files.Count, 0);
+
         try
         {
-            logger.LogDebug("Loading blobs...");
-
-            await foreach (var blobItem in thumbsContainerClient.GetBlobsAsync())
+            foreach (var file in files)
             {
-                _images.Add(new(ImageUrl.GetImageUrl(blobItem.Name), ImageUrl.GetThumbnailUrl(blobItem.Name)));
+                try
+                {
+                    var result = await intake.UploadAsync(
+                        _selectedClaim, file.Name, file.Size, () => file.OpenReadStream(ClaimPhotoIntake.MaxPhotoBytes), "browser", CancellationToken.None);
+
+                    if (result.Problem is { } problem)
+                    {
+                        _problems.Add($"{file.Name}: {problem.Detail}");
+                    }
+                }
+                catch (Exception)
+                {
+                    // ClaimPhotoIntake has already logged the failure and marked its span as failed.
+                    _problems.Add($"{file.Name}: the upload didn't finish. Try again.");
+                }
+
+                _uploadedCount++;
+                StateHasChanged();
             }
         }
         finally
         {
-            await InvokeAsync(StateHasChanged);
+            _isUploading = false;
+            _inputKey = Guid.CreateVersion7();
         }
     }
 
-    private async Task OnFilesChangedAsync(InputFileChangeEventArgs e)
+    private int Count(PhotoStatus status) => _photos.Count(p => p.Status == status);
+
+    private static string StatusClass(PhotoStatus status) => status switch
     {
-        try
-        {
-            foreach (var file in e.GetMultipleFiles())
-            {
-                if (!file.ContentType.StartsWith("image/"))
-                {
-                    _dialogMessage = $"File {file.Name} is not a valid image.";
-                    OpenDialog();
+        PhotoStatus.Ready => "ready",
+        PhotoStatus.RetakeRequested => "retake",
+        PhotoStatus.Unreadable => "unreadable",
+        _ => "processing"
+    };
 
-                    continue;
-                }
+    private static string StatusLabel(PhotoStatus status) => status switch
+    {
+        PhotoStatus.Ready => "Ready for review",
+        PhotoStatus.RetakeRequested => "Retake requested",
+        PhotoStatus.Unreadable => "Unreadable",
+        _ => "Processing"
+    };
 
-                if (file is { Size: > UploadFileSizeLimitBytes })
-                {
-                    _dialogMessage = $"File {file.Name} exceeds the size limit of {UploadFileSizeLimitBytes} bytes.";
-                    OpenDialog();
+    private static string Describe(ClaimPhoto photo) => photo is { Width: { } width, Height: { } height }
+        ? $"{width} × {height} · {FormatSize(photo.SizeBytes)}"
+        : FormatSize(photo.SizeBytes);
 
-                    continue;
-                }
+    private static string Note(ClaimPhoto photo) => photo switch
+    {
+        { Status: PhotoStatus.RetakeRequested } => "Below the 720p minimum",
+        { Status: PhotoStatus.Unreadable } => "Not a valid image",
+        { Status: PhotoStatus.Processing } => "Waiting for the function",
+        { Turnaround: { } turnaround } when turnaround > TimeSpan.Zero => $"Checked in {turnaround.TotalSeconds.ToString("0.0", CultureInfo.InvariantCulture)} s",
+        _ => "Checked"
+    };
 
-                logger.LogDebug("Uploading {Name}", file.Name);
-
-                var slug = ImageUrl.CreateNameSlug(file.Name);
-                var blobClient = imagesContainerClient.GetBlobClient(slug);
-
-                using var stream = file.OpenReadStream();
-
-                await blobClient.UploadAsync(stream, overwrite: true);
-
-                var metadata = new Dictionary<string, string>
-                {
-                    ["OriginalFileName"] = WebUtility.UrlEncode(file.Name)
-                };
-                await blobClient.SetMetadataAsync(metadata);
-
-                logger.LogInformation("Uploaded {Name} with slug {Slug}", file.Name, slug);
-            }
-        }
-        finally
-        {
-            _fileUploadKey = Guid.CreateVersion7();
-
-            await InvokeAsync(StateHasChanged);
-        }
-    }
-
-    internal sealed record class ImageViewModel(
-        string? ImageUrl,
-        string? ThumbnailUrl);
+    private static string FormatSize(long bytes) => bytes switch
+    {
+        >= 1024 * 1024 => $"{(bytes / (1024d * 1024)).ToString("0.0", CultureInfo.InvariantCulture)} MB",
+        >= 1024 => $"{bytes / 1024} KB",
+        _ => $"{bytes} B"
+    };
 }

@@ -1,33 +1,31 @@
-﻿@page "/Error"
+@page "/Error"
 @using System.Diagnostics
 
-<PageTitle>Error · Darkroom Studio</PageTitle>
+<PageTitle>Error · Contoso Insurance</PageTitle>
 
-<section class="intro">
-    <p class="eyebrow">Overexposed</p>
-    <h1 class="intro__title">Something didn't develop</h1>
-    <p class="intro__lede">An error occurred while processing your request.</p>
+<section class="hero hero--single">
+    <div class="hero__copy">
+        <p class="eyebrow">Error</p>
+        <h1 class="hero__title">Something went wrong</h1>
+        <p class="hero__lede">An error occurred while processing your request.</p>
+
+        @if (ShowRequestId)
+        {
+            <p class="hero__lede">Request ID: <code>@RequestId</code></p>
+        }
+
+        <p class="hero__lede">
+            Swapping to the <strong>Development</strong> environment displays more detailed information about what went wrong.
+            <strong>The Development environment shouldn't be enabled for deployed applications</strong>, because it can leak
+            sensitive information from exceptions to end users. For local debugging, set the <code>ASPNETCORE_ENVIRONMENT</code>
+            environment variable to <strong>Development</strong> and restart the app.
+        </p>
+
+        <p><a href="">Back to claim photo intake</a></p>
+    </div>
 </section>
 
-@if (ShowRequestId)
-{
-    <p class="mono" style="color: var(--ink-muted);">
-        Request ID: <code>@RequestId</code>
-    </p>
-}
-
-<p style="color: var(--ink-soft); max-width: 60ch;">
-    Swapping to the <strong>Development</strong> environment displays more detailed
-    information about what went wrong. <strong>The Development environment shouldn't
-    be enabled for deployed applications</strong>, because it can leak sensitive
-    information from exceptions to end users. For local debugging, set the
-    <code>ASPNETCORE_ENVIRONMENT</code> environment variable to <strong>Development</strong>
-    and restart the app.
-</p>
-
-<p><a class="btn btn-ghost" href="">Back to the gallery</a></p>
-
-@code{
+@code {
     [CascadingParameter]
     private HttpContext? HttpContext { get; set; }
 
