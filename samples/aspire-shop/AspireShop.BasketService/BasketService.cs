@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Grpc.Core;
 using AspireShop.GrpcBasket;
 using AspireShop.BasketService.Models;
@@ -5,7 +6,7 @@ using AspireShop.BasketService.Repositories;
 
 namespace AspireShop.BasketService;
 
-public class BasketService(IBasketRepository repository, ILogger<BasketService> logger)
+public class BasketService(IBasketRepository repository, BasketTelemetry telemetry, ILogger<BasketService> logger)
     : Basket.BasketBase
 {
     public override async Task<CustomerBasketResponse> GetBasketById(BasketRequest request, ServerCallContext context)
@@ -25,49 +26,106 @@ public class BasketService(IBasketRepository repository, ILogger<BasketService> 
 
     public override async Task<CustomerBasketResponse> UpdateBasket(CustomerBasketRequest request, ServerCallContext context)
     {
-        var customerBasket = MapToCustomerBasket(request);
-        var response = await repository.UpdateBasketAsync(customerBasket);
+        using var activity = BasketTelemetry.ActivitySource.StartActivity("update basket");
+        activity?.SetTag("aspireshop.buyer.id", request.BuyerId);
 
-        if (response is null)
+        var previous = await repository.GetBasketAsync(request.BuyerId);
+        var customerBasket = MapToCustomerBasket(request);
+
+        if (!await repository.UpdateBasketAsync(customerBasket))
         {
             throw new RpcException(new Status(StatusCode.NotFound, $"Basket with buyer id {request.BuyerId} does not exist"));
         }
 
-        return MapToCustomerBasketResponse(response);
+        var (itemsAdded, itemsRemoved) = CompareQuantities(previous, customerBasket);
+        telemetry.BasketChanged(created: previous is null, itemsAdded, itemsRemoved);
+
+        activity?.SetTag("aspireshop.basket.item_count", customerBasket.TotalItemCount);
+        activity?.AddEvent(new ActivityEvent("basket.changed", tags: new()
+        {
+            ["aspireshop.basket.items_added"] = itemsAdded,
+            ["aspireshop.basket.items_removed"] = itemsRemoved
+        }));
+        logger.BasketUpdated(request.BuyerId, customerBasket.TotalItemCount, itemsAdded, itemsRemoved);
+
+        return MapToCustomerBasketResponse(customerBasket);
     }
 
     public override async Task<CheckoutCustomerBasketResponse> CheckoutBasket(CheckoutCustomerBasketRequest request, ServerCallContext context)
     {
         var buyerId = request.BuyerId;
+
+        using var activity = BasketTelemetry.ActivitySource.StartActivity("checkout basket");
+        activity?.SetTag("aspireshop.buyer.id", buyerId);
+
         var basket = await repository.GetBasketAsync(buyerId);
 
-        if (basket is null)
+        if (basket is not { Items.Count: > 0 })
         {
-            throw new RpcException(new Status(StatusCode.NotFound, $"Basket with buyer id {request.BuyerId} does not exist"));
+            var outcome = basket is null ? "not_found" : "empty";
+            activity?.SetTag("aspireshop.checkout.outcome", outcome);
+            telemetry.CheckoutRejected(outcome);
+            logger.CheckoutRejected(buyerId, outcome);
+
+            throw basket is null
+                ? new RpcException(new Status(StatusCode.NotFound, $"Basket with buyer id {buyerId} does not exist"))
+                : new RpcException(new Status(StatusCode.FailedPrecondition, $"Basket with buyer id {buyerId} is empty"));
         }
+
+        activity?.AddEvent(new ActivityEvent("basket.loaded"));
 
         var order = new Order
         {
-            Id = Guid.NewGuid().ToString(),
+            Id = $"ORD-{Guid.NewGuid().ToString("N")[..8].ToUpperInvariant()}",
             BuyerId = buyerId,
             Items = basket.Items,
         };
 
-        logger.LogInformation("Checking out {Count} item(s) for BuyerId: {BuyerId}.", order.Items.Count, buyerId);
+        activity?.SetTag("aspireshop.order.id", order.Id);
+        activity?.SetTag("aspireshop.order.item_count", order.ItemCount);
+        activity?.SetTag("aspireshop.order.total", (double)order.Total);
+        activity?.AddEvent(new ActivityEvent("order.created"));
 
-        // Checkout logic would be implemented here
+        // Payment and fulfillment would be implemented here
 
         await repository.DeleteBasketAsync(buyerId);
+        activity?.AddEvent(new ActivityEvent("basket.cleared"));
 
-        logger.LogInformation("Order Id {Id} submitted.", order.Id);
+        activity?.SetTag("aspireshop.checkout.outcome", "completed");
+        telemetry.CheckoutCompleted(order.Total);
+        logger.OrderCreated(order.Id, buyerId, order.ItemCount, order.Total);
 
-        return new();
+        return new CheckoutCustomerBasketResponse
+        {
+            OrderId = order.Id,
+            ItemCount = order.ItemCount,
+            Total = order.Total
+        };
     }
 
     public override async Task<DeleteCustomerBasketResponse> DeleteBasket(DeleteCustomerBasketRequest request, ServerCallContext context)
     {
-        await repository.DeleteBasketAsync(request.BuyerId);
+        if (await repository.DeleteBasketAsync(request.BuyerId))
+        {
+            telemetry.BasketDeleted();
+            logger.BasketDeleted(request.BuyerId);
+        }
+
         return new();
+    }
+
+    private static (int Added, int Removed) CompareQuantities(CustomerBasket? previous, CustomerBasket current)
+    {
+        var before = Quantities(previous);
+        var after = Quantities(current);
+
+        var added = after.Sum(a => Math.Max(0, a.Value - before.GetValueOrDefault(a.Key)));
+        var removed = before.Sum(b => Math.Max(0, b.Value - after.GetValueOrDefault(b.Key)));
+
+        return (added, removed);
+
+        static Dictionary<int, int> Quantities(CustomerBasket? basket) =>
+            basket?.Items.GroupBy(i => i.ProductId).ToDictionary(g => g.Key, g => g.Sum(i => i.Quantity)) ?? [];
     }
 
     private static CustomerBasketResponse MapToCustomerBasketResponse(CustomerBasket customerBasket)

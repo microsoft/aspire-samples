@@ -38,6 +38,9 @@ message CheckoutCustomerBasketRequest {
 }
 
 message CheckoutCustomerBasketResponse {
+	string orderId = 1;
+	int32 itemCount = 2;
+	DecimalValue total = 3;
 }
 
 message DeleteCustomerBasketRequest {

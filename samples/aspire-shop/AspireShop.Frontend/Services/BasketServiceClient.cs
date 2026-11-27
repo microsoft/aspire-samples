@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Grpc.Core;
 using Polly.Timeout;
 using AspireShop.GrpcBasket;
@@ -5,7 +6,7 @@ using AspireShop.BasketService.Models;
 
 namespace AspireShop.Frontend.Services;
 
-public class BasketServiceClient(Basket.BasketClient client)
+public class BasketServiceClient(Basket.BasketClient client, FrontendTelemetry telemetry, ILogger<BasketServiceClient> logger)
 {
     public async Task<(CustomerBasket? CustomerBasket, bool IsAvailable)> GetBasketAsync(string buyerId)
     {
@@ -25,39 +26,67 @@ public class BasketServiceClient(Basket.BasketClient client)
         }
     }
 
-    public async Task<CustomerBasket> AddToCartAsync(string buyerId, int productId)
+    public async Task<CustomerBasket> AddToCartAsync(string buyerId, CatalogItem catalogItem)
     {
+        using var activity = FrontendTelemetry.ActivitySource.StartActivity("add to cart");
+        activity?.SetTag("aspireshop.buyer.id", buyerId);
+        activity?.SetTag("aspireshop.catalog.item.id", catalogItem.Id);
+
         var (basket, _) = await GetBasketAsync(buyerId);
         basket ??= new CustomerBasket(buyerId);
-        var found = false;
-        foreach (var item in basket.Items)
-        {
-            if (item.ProductId == productId)
-            {
-                ++item.Quantity;
-                found = true;
-                break;
-            }
-        }
 
-        if (!found)
+        // Capture the current catalog price so the Basket service can total the order at checkout
+        if (basket.Items.FirstOrDefault(i => i.ProductId == catalogItem.Id) is { } item)
+        {
+            item.Quantity = Math.Min(item.Quantity + 1, MaxQuantityPerItem);
+            item.UnitPrice = catalogItem.Price;
+        }
+        else
         {
             basket.Items.Add(new BasketItem
             {
                 Id = Guid.NewGuid().ToString("N"),
                 Quantity = 1,
-                ProductId = productId
+                ProductId = catalogItem.Id,
+                UnitPrice = catalogItem.Price
             });
         }
 
         var response = await client.UpdateBasketAsync(MapToCustomerBasketRequest(basket));
         var result = MapToCustomerBasket(response);
+        activity?.SetTag("aspireshop.basket.item_count", result.TotalItemCount);
         return result;
     }
 
-    public async Task CheckoutBasketAsync(string buyerId)
+    public async Task<OrderConfirmation?> CheckoutBasketAsync(string buyerId)
     {
-        _ = await client.CheckoutBasketAsync(new CheckoutCustomerBasketRequest { BuyerId = buyerId });
+        using var activity = FrontendTelemetry.ActivitySource.StartActivity("checkout");
+        activity?.SetTag("aspireshop.buyer.id", buyerId);
+        var start = Stopwatch.GetTimestamp();
+
+        try
+        {
+            var response = await client.CheckoutBasketAsync(new CheckoutCustomerBasketRequest { BuyerId = buyerId });
+            var order = new OrderConfirmation(response.OrderId, response.ItemCount, response.Total);
+            var elapsed = Stopwatch.GetElapsedTime(start);
+
+            activity?.SetTag("aspireshop.order.id", order.OrderId);
+            activity?.SetTag("aspireshop.order.item_count", order.ItemCount);
+            activity?.SetTag("aspireshop.order.total", (double)order.Total);
+            telemetry.CheckoutFinished("completed", elapsed);
+            logger.OrderPlaced(order.OrderId, buyerId, order.ItemCount, order.Total, elapsed.TotalMilliseconds);
+
+            return order;
+        }
+        catch (RpcException ex) when (ex.StatusCode is StatusCode.NotFound or StatusCode.FailedPrecondition)
+        {
+            // The basket was already checked out or emptied, e.g. from another tab
+            activity?.SetTag("aspireshop.checkout.outcome", "rejected");
+            telemetry.CheckoutFinished("rejected", Stopwatch.GetElapsedTime(start));
+            logger.CheckoutRejected(buyerId, ex.Status.Detail);
+
+            return null;
+        }
     }
 
     public async Task DeleteBasketAsync(string buyerId)
@@ -152,3 +181,5 @@ public class BasketServiceClient(Basket.BasketClient client)
         return response;
     }
 }
+
+public record OrderConfirmation(string OrderId, int ItemCount, decimal Total);

@@ -2,7 +2,6 @@
 @inject NavigationManager Navigation
 
 <EditForm Model="this" FormName="@FormName" OnSubmit="HandleAddToCart" data-enhance data-preserve-scroll>
-    <input type="hidden" name="itemid" value="@Item.Id" />
     <button type="submit" class="@ButtonClass" aria-label="@($"Add {Item.Name} to cart")" title="@($"Add {Item.Name} to cart")">
         <span class="add-icon" aria-hidden="true">@Icons.Plus</span>
         <span class="add-text">Add to cart</span>
@@ -22,16 +21,14 @@
     [Parameter]
     public string ButtonClass { get; set; } = "add-button";
 
-    [SupplyParameterFromForm]
-    public int ItemId { get; set; }
-
     private string FormName => string.IsNullOrEmpty(Context)
         ? $"addtocart-{Item.Id}"
         : $"addtocart-{Context}-{Item.Id}";
 
     private async Task HandleAddToCart()
     {
-        await BasketClient.AddToCartAsync("user", ItemId);
+        // The form name identifies the item, so the component handling the post already has its catalog entry (and price)
+        await BasketClient.AddToCartAsync("user", Item);
 
         // Re-request the current page (preserving the pagination query) so a freshly initialized
         // component tree reflects the updated basket — e.g. the cart count in the top bar. The

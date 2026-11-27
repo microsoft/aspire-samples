@@ -7,34 +7,36 @@ namespace AspireShop.CatalogDbManager;
 internal class CatalogDbInitializer(IServiceProvider serviceProvider, ILogger<CatalogDbInitializer> logger)
     : BackgroundService
 {
-    public const string ActivitySourceName = "Migrations";
+    // Matches the "AspireShop.*" activity sources that ServiceDefaults registers
+    public const string ActivitySourceName = "AspireShop.CatalogDbManager";
 
-    private readonly ActivitySource _activitySource = new(ActivitySourceName);
+    private static readonly ActivitySource s_activitySource = new(ActivitySourceName);
 
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
         using var scope = serviceProvider.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<CatalogDbContext>();
 
-        using var activity = _activitySource.StartActivity("Initializing catalog database", ActivityKind.Client);
         await InitializeDatabaseAsync(dbContext, cancellationToken);
     }
 
-    public async Task InitializeDatabaseAsync(CatalogDbContext dbContext, CancellationToken cancellationToken = default)
+    private async Task InitializeDatabaseAsync(CatalogDbContext dbContext, CancellationToken cancellationToken)
     {
+        using var activity = s_activitySource.StartActivity("initialize catalog database");
         var sw = Stopwatch.StartNew();
 
         var strategy = dbContext.Database.CreateExecutionStrategy();
         await strategy.ExecuteAsync(dbContext.Database.MigrateAsync, cancellationToken);
+        activity?.AddEvent(new ActivityEvent("migrations.applied"));
 
         await SeedAsync(dbContext, cancellationToken);
 
-        logger.LogInformation("Database initialization completed after {ElapsedMilliseconds}ms", sw.ElapsedMilliseconds);
+        logger.DatabaseInitialized(sw.ElapsedMilliseconds);
     }
 
     private async Task SeedAsync(CatalogDbContext dbContext, CancellationToken cancellationToken)
     {
-        logger.LogInformation("Seeding database");
+        using var activity = s_activitySource.StartActivity("seed catalog");
 
         static List<CatalogBrand> GetPreconfiguredCatalogBrands()
         {
@@ -92,7 +94,8 @@ internal class CatalogDbInitializer(IServiceProvider serviceProvider, ILogger<Ca
             var brands = GetPreconfiguredCatalogBrands();
             await dbContext.CatalogBrands.AddRangeAsync(brands, cancellationToken);
 
-            logger.LogInformation("Seeding {CatalogBrandCount} catalog brands", brands.Count);
+            logger.CatalogDataSeeded(brands.Count, "brands");
+            activity?.SetTag("aspireshop.catalog.seeded.brands", brands.Count);
 
             await dbContext.SaveChangesAsync(cancellationToken);
         }
@@ -102,7 +105,8 @@ internal class CatalogDbInitializer(IServiceProvider serviceProvider, ILogger<Ca
             var types = GetPreconfiguredCatalogTypes();
             await dbContext.CatalogTypes.AddRangeAsync(types, cancellationToken);
 
-            logger.LogInformation("Seeding {CatalogTypeCount} catalog item types", types.Count);
+            logger.CatalogDataSeeded(types.Count, "types");
+            activity?.SetTag("aspireshop.catalog.seeded.types", types.Count);
 
             await dbContext.SaveChangesAsync(cancellationToken);
         }
@@ -112,7 +116,8 @@ internal class CatalogDbInitializer(IServiceProvider serviceProvider, ILogger<Ca
             var items = GetPreconfiguredItems(dbContext.CatalogBrands, dbContext.CatalogTypes);
             await dbContext.CatalogItems.AddRangeAsync(items, cancellationToken);
 
-            logger.LogInformation("Seeding {CatalogItemCount} catalog items", items.Count);
+            logger.CatalogDataSeeded(items.Count, "items");
+            activity?.SetTag("aspireshop.catalog.seeded.items", items.Count);
 
             await dbContext.SaveChangesAsync(cancellationToken);
         }

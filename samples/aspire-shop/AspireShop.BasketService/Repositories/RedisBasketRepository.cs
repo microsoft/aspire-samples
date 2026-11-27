@@ -4,64 +4,25 @@ using AspireShop.BasketService.Models;
 
 namespace AspireShop.BasketService.Repositories;
 
-public class RedisBasketRepository(ILogger<RedisBasketRepository> logger, IConnectionMultiplexer redis) : IBasketRepository
+public class RedisBasketRepository(IConnectionMultiplexer redis) : IBasketRepository
 {
-    private readonly ILogger<RedisBasketRepository> _logger = logger;
-    private readonly IConnectionMultiplexer _redis = redis;
-    private readonly IDatabase _database = redis.GetDatabase();
-    private static readonly JsonSerializerOptions _jsonSerializerOptions = new()
+    private static readonly JsonSerializerOptions s_jsonSerializerOptions = new()
     {
         PropertyNameCaseInsensitive = true,
     };
 
-    public async Task<bool> DeleteBasketAsync(string id)
+    private readonly IDatabase _database = redis.GetDatabase();
+
+    public async Task<CustomerBasket?> GetBasketAsync(string buyerId)
     {
-        return await _database.KeyDeleteAsync(id);
+        var data = await _database.StringGetAsync(buyerId);
+
+        return data.IsNullOrEmpty ? null : JsonSerializer.Deserialize<CustomerBasket>((string)data!, s_jsonSerializerOptions);
     }
 
-    public IEnumerable<string> GetUsers()
-    {
-        var server = GetServer();
-        var data = server.Keys();
+    public async Task<bool> UpdateBasketAsync(CustomerBasket basket) =>
+        basket.BuyerId is { Length: > 0 } buyerId
+        && await _database.StringSetAsync(buyerId, JsonSerializer.Serialize(basket, s_jsonSerializerOptions));
 
-        return data?.Select(k => k.ToString()) ?? Enumerable.Empty<string>();
-    }
-
-    public async Task<CustomerBasket?> GetBasketAsync(string customerId)
-    {
-        var data = await _database.StringGetAsync(customerId);
-
-        if (data.IsNullOrEmpty)
-        {
-            return null;
-        }
-
-        return JsonSerializer.Deserialize<CustomerBasket>((string)data!, _jsonSerializerOptions);
-    }
-
-    public async Task<CustomerBasket?> UpdateBasketAsync(CustomerBasket basket)
-    {
-        if (basket.BuyerId == null)
-        {
-            return null;
-        }
-
-        var created = await _database.StringSetAsync(basket.BuyerId, JsonSerializer.Serialize(basket, _jsonSerializerOptions));
-
-        if (!created)
-        {
-            _logger.LogInformation("Problem occur persisting the item.");
-            return null;
-        }
-
-        _logger.LogInformation("Basket item persisted successfully.");
-
-        return await GetBasketAsync(basket.BuyerId);
-    }
-
-    private IServer GetServer()
-    {
-        var endpoint = _redis.GetEndPoints();
-        return _redis.GetServer(endpoint.First());
-    }
+    public Task<bool> DeleteBasketAsync(string buyerId) => _database.KeyDeleteAsync(buyerId);
 }

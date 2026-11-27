@@ -28,9 +28,18 @@
 
 <main id="main-content" class="shell">
     <section class="collection-head collection-head--left">
-        <p class="eyebrow">Your cart</p>
-        <h1 class="collection-title cart-title">Your cart</h1>
-        <p class="collection-sub">Items are held by the Basket service over gRPC. Prices come from the Catalog service.</p>
+        @if (order is null)
+        {
+            <p class="eyebrow">Your cart</p>
+            <h1 class="collection-title cart-title">Your cart</h1>
+            <p class="collection-sub">Items are held by the Basket service over gRPC. Prices come from the Catalog service.</p>
+        }
+        else
+        {
+            <p class="eyebrow">Checkout complete</p>
+            <h1 class="collection-title cart-title">Thanks for your order</h1>
+            <p class="collection-sub">The Basket service created order @order.OrderId over gRPC and cleared your cart.</p>
+        }
     </section>
 
     @if (loaded)
@@ -45,13 +54,51 @@
                 </div>
             </div>
         }
-        else if (checkoutComplete)
+        else if (order is not null)
         {
-            <div class="cart-empty">
-                <span class="cart-empty-icon cart-empty-icon--ok" aria-hidden="true">@Icons.Check</span>
-                <h2 class="cart-empty-title">Order placed</h2>
-                <p class="cart-empty-text">Thanks! The Basket service checked out your cart and cleared it.</p>
-                <a class="btn btn-primary" href="/">Browse the catalog</a>
+            <div class="cart-layout">
+                <ul class="cart-lines" aria-label="Items in this order">
+                    @foreach (var line in lines.Where(l => l.Item is not null))
+                    {
+                        var item = line.Item!;
+
+                        <li class="cart-line">
+                            <div class="cart-line-media">
+                                <img src="catalog/images/@line.ProductId" alt="@item.Name" loading="lazy" />
+                            </div>
+                            <div class="cart-line-info">
+                                @if (item.CatalogBrand is { Brand: var brand })
+                                {
+                                    <p class="cart-line-brand">@brand</p>
+                                }
+                                <h2 class="cart-line-name">@item.Name</h2>
+                                <p class="cart-line-unit">@line.Quantity × @item.Price.ToString("C")</p>
+                            </div>
+                            <p class="cart-line-total">@((item.Price * line.Quantity).ToString("C"))</p>
+                        </li>
+                    }
+                </ul>
+
+                <aside class="cart-summary" aria-label="Order confirmation">
+                    <span class="cart-empty-icon cart-empty-icon--ok" aria-hidden="true">@Icons.Check</span>
+                    <h2 class="summary-title">Order placed</h2>
+                    <dl class="summary-rows">
+                        <div class="summary-row">
+                            <dt>Order number</dt>
+                            <dd>@order.OrderId</dd>
+                        </div>
+                        <div class="summary-row">
+                            <dt>Items</dt>
+                            <dd>@order.ItemCount</dd>
+                        </div>
+                        <div class="summary-row summary-row--total">
+                            <dt>Total</dt>
+                            <dd>@order.Total.ToString("C")</dd>
+                        </div>
+                    </dl>
+                    <p class="summary-note">The Basket service totaled the order from the prices captured when each item was added.</p>
+                    <a class="btn btn-primary btn-block" href="/">Browse the catalog</a>
+                </aside>
             </div>
         }
         else if (lines.Count == 0)
@@ -182,17 +229,14 @@
 @code {
     bool loaded;
     bool basketIsAvailable;
-    bool checkoutComplete;
     List<CartLine> lines = new();
+    OrderConfirmation? order;
 
     [SupplyParameterFromForm]
     public int ProductId { get; set; }
 
     [SupplyParameterFromForm]
     public string? Op { get; set; }
-
-    [SupplyParameterFromQuery]
-    public string? Checkout { get; set; }
 
     int TotalItemCount => lines.Where(l => l.Item is not null).Sum(l => l.Quantity);
 
@@ -203,12 +247,9 @@
         var (basket, available) = await BasketClient.GetBasketAsync("user");
         basketIsAvailable = available;
 
-        var hasItems = basket is { Items.Count: > 0 };
-        checkoutComplete = string.Equals(Checkout, "success", StringComparison.Ordinal) && !hasItems;
-
-        if (available && hasItems)
+        if (available && basket is { Items.Count: > 0 })
         {
-            var resolved = await Task.WhenAll(basket!.Items.Select(async item =>
+            var resolved = await Task.WhenAll(basket.Items.Select(async item =>
                 new CartLine(item.ProductId, item.Quantity, await CatalogService.GetItemAsync(item.ProductId))));
             lines = resolved.ToList();
         }
@@ -239,10 +280,14 @@
 
     private async Task HandleCheckout()
     {
-        await BasketClient.CheckoutBasketAsync("user");
+        // Render the confirmation in place: the lines loaded for this request are the items that were ordered.
+        order = await BasketClient.CheckoutBasketAsync("user");
 
-        // Navigate so the success state is reflected in the URL (and survives a refresh).
-        Navigation.NavigateTo("/cart?checkout=success");
+        if (order is null)
+        {
+            // The basket was already checked out or emptied elsewhere, so reload its current state.
+            Navigation.Refresh();
+        }
     }
 
     private async Task HandleClear()
