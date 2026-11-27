@@ -1,0 +1,194 @@
+@page "/shop"
+@inject ShopSession Session
+
+<PageTitle>Contoso Outfitters · Shop</PageTitle>
+
+<div class="shop">
+    <section class="catalog" aria-labelledby="catalog-title">
+        <header class="catalog__head">
+            <p class="eyebrow">Catalog</p>
+            <h1 id="catalog-title">Gear up for the trail</h1>
+            <p class="catalog__lede">
+                Fill a cart, pick shipping and payment, and place the order. Every step is an API call
+                you can follow in the Aspire dashboard's traces.
+            </p>
+        </header>
+
+        @if (Session.Products is null)
+        {
+            <p class="catalog__loading" role="status"><span class="spinner" aria-hidden="true"></span> Loading the catalog…</p>
+        }
+        else
+        {
+            <div class="products">
+                @foreach (var product in Session.Products)
+                {
+                    var quantity = Session.QuantityOf(product.Sku);
+                    <article class="product panel">
+                        <div class="product__top">
+                            <span class="product__glyph" data-category="@product.Category" aria-hidden="true">@Glyph(product.Category)</span>
+                            <span class="product__category">@product.Category</span>
+                        </div>
+                        <h2 class="product__name">@product.Name</h2>
+                        <p class="product__desc">@product.Description</p>
+                        <footer class="product__foot">
+                            <span class="product__price">@Labels.Money(product.Price)</span>
+                            <button class="btn @(quantity > 0 ? "btn-ghost" : "btn-primary") btn-sm"
+                                    @onclick="() => Session.AddAsync(product)"
+                                    disabled="@(quantity >= ShopSession.MaxQuantity || Session.IsPlacingOrder)"
+                                    aria-label="@($"Add {product.Name} to cart")">
+                                @if (quantity > 0)
+                                {
+                                    <span class="in-cart">@quantity in cart</span>
+                                    <span aria-hidden="true">+</span>
+                                }
+                                else
+                                {
+                                    <span>Add to cart</span>
+                                }
+                            </button>
+                        </footer>
+                    </article>
+                }
+            </div>
+        }
+    </section>
+
+    <aside class="cart panel" aria-labelledby="cart-title">
+        @if (Session.LastOrder is { } order)
+        {
+            <div class="confirmation">
+                <span class="confirmation__icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+                </span>
+                <p class="eyebrow">Order confirmed</p>
+                <h2 id="cart-title" class="confirmation__id">@order.OrderId</h2>
+                <p class="confirmation__lede">
+                    Thanks! @order.ItemCount items ship with @Labels.Shipping(order.ShippingMethod).ToLowerInvariant() shipping,
+                    paid with @Labels.Payment(order.PaymentMethod).
+                </p>
+
+                <ul class="lines lines--compact">
+                    @foreach (var line in order.Items)
+                    {
+                        <li class="line">
+                            <span class="line__name">@line.Name <span class="line__qty">× @line.Quantity</span></span>
+                            <span class="line__total">@Labels.Money(line.LineTotal)</span>
+                        </li>
+                    }
+                </ul>
+
+                <dl class="totals">
+                    <div><dt>Subtotal</dt><dd>@Labels.Money(order.Subtotal)</dd></div>
+                    <div><dt>Shipping</dt><dd>@(order.Shipping == 0 ? "Free" : Labels.Money(order.Shipping))</dd></div>
+                    <div><dt>Sales tax</dt><dd>@Labels.Money(order.Tax)</dd></div>
+                    <div class="totals__grand"><dt>Total charged</dt><dd>@Labels.Money(order.Total)</dd></div>
+                </dl>
+
+                <button class="btn btn-ghost btn-lg" @onclick="Session.StartNewOrder">Start a new order</button>
+            </div>
+        }
+        else
+        {
+            <header class="cart__head">
+                <h2 id="cart-title">Your cart</h2>
+                <span class="chip">@Session.ItemCount @(Session.ItemCount == 1 ? "item" : "items")</span>
+            </header>
+
+            @if (Session.Cart is not { ItemCount: > 0 } cart)
+            {
+                <p class="cart__empty">Your cart is empty. Add some gear to get started.</p>
+                <StatusMessage Message="@ErrorMessage" />
+            }
+            else
+            {
+                <ul class="lines">
+                    @foreach (var line in cart.Items)
+                    {
+                        <li class="line">
+                            <span class="line__info">
+                                <span class="line__name">@line.Name</span>
+                                <span class="line__unit">@Labels.Money(line.UnitPrice) each</span>
+                            </span>
+                            <span class="stepper" role="group" aria-label="@($"Quantity of {line.Name}")">
+                                <button class="stepper__btn" @onclick="() => Session.SetQuantityAsync(line.Sku, line.Quantity - 1)"
+                                        disabled="@Session.IsPlacingOrder" aria-label="@($"Remove one {line.Name}")">−</button>
+                                <span class="stepper__value">@line.Quantity</span>
+                                <button class="stepper__btn" @onclick="() => Session.SetQuantityAsync(line.Sku, line.Quantity + 1)"
+                                        disabled="@(line.Quantity >= ShopSession.MaxQuantity || Session.IsPlacingOrder)" aria-label="@($"Add one {line.Name}")">+</button>
+                            </span>
+                            <span class="line__total">@Labels.Money(line.LineTotal)</span>
+                        </li>
+                    }
+                </ul>
+
+                <fieldset class="options">
+                    <legend>Shipping</legend>
+                    <label class="option">
+                        <input type="radio" name="shipping" checked="@(Session.ShippingMethod == "standard")" @onchange="@(() => SetShipping("standard"))" />
+                        <span class="option__body"><span class="option__title">Standard</span><span class="option__hint">3–5 days · free from $100</span></span>
+                        <span class="option__price">@(cart.Subtotal >= 100 ? "Free" : "$7.95")</span>
+                    </label>
+                    <label class="option">
+                        <input type="radio" name="shipping" checked="@(Session.ShippingMethod == "express")" @onchange="@(() => SetShipping("express"))" />
+                        <span class="option__body"><span class="option__title">Express</span><span class="option__hint">1–2 days</span></span>
+                        <span class="option__price">$19.95</span>
+                    </label>
+                </fieldset>
+
+                <fieldset class="options options--pills">
+                    <legend>Payment</legend>
+                    @foreach (var method in s_paymentMethods)
+                    {
+                        <label class="pill">
+                            <input type="radio" name="payment" checked="@(Session.PaymentMethod == method)" @onchange="@(() => SetPayment(method))" />
+                            <span>@Labels.Payment(method)</span>
+                        </label>
+                    }
+                </fieldset>
+
+                <dl class="totals">
+                    <div><dt>Subtotal</dt><dd>@Labels.Money(cart.Subtotal)</dd></div>
+                    <div class="totals__note"><dt>Sales tax</dt><dd>Calculated at checkout</dd></div>
+                </dl>
+
+                <StatusMessage Message="@ErrorMessage" />
+
+                <AuthorizeView>
+                    <Authorized>
+                        <button class="btn btn-primary btn-lg" @onclick="Session.PlaceOrderAsync" disabled="@Session.IsPlacingOrder">
+                            @(Session.IsPlacingOrder ? "Placing order…" : "Place order")
+                        </button>
+                        <p class="cart__note">Signed in as <strong>@context.User.Identity?.Name</strong></p>
+                    </Authorized>
+                    <NotAuthorized>
+                        <a class="btn btn-primary btn-lg" href="auth?returnUrl=shop">Sign in to check out</a>
+                        <p class="cart__note">Carts are anonymous; checkout needs a signed-in customer.</p>
+                    </NotAuthorized>
+                </AuthorizeView>
+            }
+        }
+    </aside>
+</div>
+
+@code {
+    private static readonly string[] s_paymentMethods = ["card", "paypal", "apple_pay"];
+
+    private string? ErrorMessage => Session.Error is null ? null : $"Error: {Session.Error}";
+
+    protected override Task OnInitializedAsync() => Session.LoadProductsAsync();
+
+    private void SetShipping(string method) => Session.ShippingMethod = method;
+
+    private void SetPayment(string method) => Session.PaymentMethod = method;
+
+    private static RenderFragment Glyph(string category) => category switch
+    {
+        "Apparel" => @<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z" /></svg>,
+        "Packs" => @<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z" /><path d="M8 10h8" /><path d="M8 18h8" /><path d="M8 22v-6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v6" /><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2" /></svg>,
+        "Footwear" => @<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16v-2.38C4 11.5 2.97 10.5 3 8c.03-2.72 1.49-6 4.5-6C9.37 2 10 3.8 10 5.5c0 3.11-2 5.66-2 8.68V16a2 2 0 1 1-4 0Z" /><path d="M20 20v-2.38c0-2.12 1.03-3.12 1-5.62-.03-2.72-1.49-6-4.5-6C14.63 6 14 7.8 14 9.5c0 3.11 2 5.66 2 8.68V20a2 2 0 1 0 4 0Z" /><path d="M16 17h4" /><path d="M4 13h4" /></svg>,
+        "Sleep" => @<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 21 14 3" /><path d="M20.5 21 10 3" /><path d="M15.5 21 12 15l-3.5 6" /><path d="M2 21h20" /></svg>,
+        "Cooking" => @<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.07-2.14-.22-4.05 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.15.43-2.29 1-3a2.5 2.5 0 0 0 2.5 2.5z" /></svg>,
+        _ => @<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" /><path d="m16.24 7.76-2.12 6.36-6.36 2.12 2.12-6.36 6.36-2.12z" /></svg>
+    };
+}

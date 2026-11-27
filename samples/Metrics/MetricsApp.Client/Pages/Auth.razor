@@ -3,18 +3,19 @@
 @using System.ComponentModel.DataAnnotations
 @inject HttpClient Http
 @inject IdentityAuthenticationStateProvider AuthStateProvider
+@inject NavigationManager Navigation
 
-<PageTitle>Telemetry Console · Log in</PageTitle>
+<PageTitle>Contoso Outfitters · Sign in</PageTitle>
 
 <section class="panel auth">
-    <p class="eyebrow">Protected endpoint</p>
-    <h1>Log in</h1>
+    <p class="eyebrow">Customer account</p>
+    <h1>Sign in</h1>
 
     <AuthorizeView>
         <Authorized>
             <p class="auth__hello">
-                Signed in as <strong>@context.User.Identity?.Name</strong>. The
-                <a href="weather">Weather feed</a> now returns authorized data.
+                Signed in as <strong>@context.User.Identity?.Name</strong>. You can now
+                <a href="shop">check out your cart</a>.
             </p>
             <button class="btn btn-ghost" @onclick="Logout">
                 <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -25,8 +26,8 @@
         </Authorized>
         <NotAuthorized>
             <p class="auth__lede">
-                Sign in to call the protected <code>api/weather</code> endpoint and
-                generate authenticated-request metrics.
+                Carts are anonymous, but placing an order calls the protected
+                <code>POST api/carts/{id}/checkout</code> endpoint, which needs a signed-in customer.
             </p>
 
             <StatusMessage Message="@errorMessage" />
@@ -47,7 +48,7 @@
                     <ValidationMessage For="() => Input.Password" class="validation-message" />
                 </div>
 
-                <button type="submit" class="btn btn-primary btn-lg">Log in</button>
+                <button type="submit" class="btn btn-primary btn-lg">Sign in</button>
             </EditForm>
 
             <aside class="demo-creds">
@@ -66,6 +67,9 @@
     private const string TestPassword = "Password1!";
 
     private string? errorMessage;
+
+    [SupplyParameterFromQuery]
+    private string? ReturnUrl { get; set; }
 
     [SupplyParameterFromForm]
     private InputModel Input { get; set; } = default!;
@@ -89,10 +93,16 @@
             var result = await response.Content.ReadFromJsonAsync<JsonNode>();
 
             AuthStateProvider.SetUserInfo(new UserInfo { AccessToken = result!["accessToken"]!.ToString(), UserId = Input.Email });
+
+            // Only follow app-relative return URLs, such as the shop's "Sign in to check out" link
+            if (ReturnUrl is not null && Uri.IsWellFormedUriString(ReturnUrl, UriKind.Relative) && !ReturnUrl.StartsWith("//"))
+            {
+                Navigation.NavigateTo(ReturnUrl);
+            }
         }
         else
         {
-            errorMessage = "Error: Invalid login attempt.";
+            errorMessage = "Error: Invalid sign-in attempt.";
         }
     }
 

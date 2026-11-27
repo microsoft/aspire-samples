@@ -213,7 +213,7 @@ public class AppHostTests(ITestOutputHelper testOutput)
                 { "healthchecksui", ["/"] }
             }),
             new TestEndpoints("MetricsApp.AppHost", new() {
-                { "app", ["/alive", "/health", "/swagger"] },
+                { "app", ["/alive", "/health", "/scalar", "/openapi/v1.json", "/api/catalog", "/api/orders/overview"] },
                 { "grafana", ["/"] }
             }),
             new TestEndpoints("OrleansVoting.AppHost", new() {

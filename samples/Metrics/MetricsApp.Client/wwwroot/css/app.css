@@ -29,6 +29,7 @@
     --live: #15803d;          /* green-700 */
     --live-ring: rgba(21, 128, 61, 0.25);
     --warn: #b45309;
+    --warn-surface: #fdf3e2;
     --danger: #991b1b;
     --danger-surface: #fdecec;
     --ok-surface: #e9f7ef;
@@ -38,6 +39,20 @@
     --shadow: 0 1px 2px rgba(24, 27, 52, 0.06), 0 12px 30px -18px rgba(24, 27, 52, 0.35);
     --shadow-lift: 0 18px 44px -22px rgba(31, 27, 130, 0.5);
     --ring: 0 0 0 3px rgba(79, 70, 229, 0.45);
+
+    /* Product category tints */
+    --tint-rose: #fde7ee;
+    --tint-rose-ink: #9f1239;
+    --tint-amber: #fdf1d6;
+    --tint-amber-ink: #92400e;
+    --tint-teal: #d9f4f1;
+    --tint-teal-ink: #115e59;
+    --tint-indigo: #e5e7fd;
+    --tint-indigo-ink: #3730a3;
+    --tint-orange: #ffe8d9;
+    --tint-orange-ink: #9a3412;
+    --tint-sky: #dcf0fb;
+    --tint-sky-ink: #075985;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -60,6 +75,7 @@
         --live: #4ade80;
         --live-ring: rgba(74, 222, 128, 0.22);
         --warn: #fbbf24;
+        --warn-surface: #2c2110;
         --danger: #fca5a5;
         --danger-surface: #2a1620;
         --ok-surface: #11261f;
@@ -67,6 +83,19 @@
         --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 18px 40px -22px rgba(0, 0, 0, 0.8);
         --shadow-lift: 0 22px 50px -24px rgba(0, 0, 0, 0.9);
         --ring: 0 0 0 3px rgba(165, 180, 252, 0.5);
+
+        --tint-rose: #3a1726;
+        --tint-rose-ink: #fda4bf;
+        --tint-amber: #3a2a10;
+        --tint-amber-ink: #fcd34d;
+        --tint-teal: #0f3431;
+        --tint-teal-ink: #5eead4;
+        --tint-indigo: #212659;
+        --tint-indigo-ink: #c7d2fe;
+        --tint-orange: #3d1f0f;
+        --tint-orange-ink: #fdba74;
+        --tint-sky: #0c2c3d;
+        --tint-sky-ink: #7dd3fc;
     }
 }
 
@@ -169,6 +198,8 @@ code { color: var(--accent-strong); }
 
 .btn-lg { padding: 0.8rem 1.2rem; font-size: 1.02rem; width: 100%; justify-content: center; }
 
+.btn-sm { padding: 0.48rem 0.8rem; font-size: 0.86rem; gap: 0.4rem; }
+
 .btn .icon { width: 1.05rem; height: 1.05rem; }
 
 /* ---- Cards / panels ------------------------------------------------------- */
@@ -225,6 +256,33 @@ code { color: var(--accent-strong); }
 }
 .alert-danger { border-color: var(--danger); background: var(--danger-surface); color: var(--danger); }
 .alert-success { border-color: var(--live); background: var(--ok-surface); color: var(--live); }
+.alert-warn { border-color: var(--warn); background: var(--warn-surface); color: var(--ink); }
+.alert-warn .icon { color: var(--warn); }
+
+/* ---- Badges --------------------------------------------------------------- */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.18rem 0.55rem;
+    border-radius: 999px;
+    font-size: 0.76rem;
+    font-weight: 700;
+    white-space: nowrap;
+    border: 1px solid transparent;
+}
+.badge-ok { background: var(--ok-surface); color: var(--live); border-color: color-mix(in srgb, var(--live) 35%, transparent); }
+.badge-danger { background: var(--danger-surface); color: var(--danger); border-color: color-mix(in srgb, var(--danger) 35%, transparent); }
+
+/* ---- Spinner -------------------------------------------------------------- */
+.spinner {
+    width: 1.05rem;
+    height: 1.05rem;
+    border-radius: 50%;
+    border: 2px solid var(--surface-inset);
+    border-top-color: var(--accent);
+    animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
 
 /* ---- Data table ----------------------------------------------------------- */
 .data-table {
@@ -252,6 +310,11 @@ code { color: var(--accent-strong); }
 }
 .data-table tbody tr:hover { background: var(--surface-2); }
 .data-table td.num { font-family: var(--font-mono); }
+.data-table .num { text-align: right; }
+.data-table td.mono { font-size: 0.9rem; }
+
+.table-scroll { overflow-x: auto; }
+.table-scroll .data-table { min-width: 44rem; }
 
 /* ---- Form fields ---------------------------------------------------------- */
 .field { margin-bottom: 1rem; }

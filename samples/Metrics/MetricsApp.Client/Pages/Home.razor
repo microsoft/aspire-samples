@@ -1,85 +1,210 @@
 @page "/"
-@inject HttpClient Http
+@implements IDisposable
+@inject CheckoutClient Checkout
 
-<PageTitle>Telemetry Console · Home</PageTitle>
+<PageTitle>Contoso Outfitters · Live orders</PageTitle>
 
-<section class="hero panel">
-    <p class="eyebrow">Instrumented workload</p>
-    <h1 class="hero__title">Generate live metrics</h1>
-    <p class="hero__lede">
-        This app is wired up with <strong>OpenTelemetry</strong>. As you move around it,
-        it records instruments such as <code>http.server.request.duration</code> and streams
-        them through Aspire to <strong>Prometheus</strong> and <strong>Grafana</strong> for live dashboards.
-    </p>
-
-    <div class="hero__cta">
+<section class="overview-head">
+    <div class="overview-head__text">
+        <p class="eyebrow">Checkout service</p>
+        <h1>Live checkout metrics</h1>
+        <p class="overview-head__lede">
+            Every checkout records OpenTelemetry metrics such as <code>checkout.orders</code>,
+            <code>checkout.order.value</code>, and <code>checkout.duration</code>. Aspire shows them in its
+            dashboard, and the OpenTelemetry Collector exports them to <strong>Prometheus</strong> and <strong>Grafana</strong>.
+        </p>
+    </div>
+    <div class="overview-head__actions">
         @if (_grafanaUrl is not null)
         {
-            <a class="btn btn-primary" href="@_grafanaUrl" target="_blank" rel="noopener">
+            <a class="btn btn-primary" href="@($"{_grafanaUrl}/d/checkout/checkout?orgId=1&from=now-15m&to=now&refresh=5s")" target="_blank" rel="noopener">
                 <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <path d="M12 13a5 5 0 0 0 5-5" /><path d="M12 21a9 9 0 1 1 9-9" /><path d="m17 7 4-4" /><path d="M21 8V3h-5" />
+                    <path d="M3 3v18h18" /><path d="m7 15 4-4 3 3 5-6" />
                 </svg>
                 Open Grafana dashboard
             </a>
-            <span class="hero__hint mono">@_grafanaUrl</span>
         }
-        else
-        {
-            <span class="btn btn-ghost" aria-disabled="true">
-                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <circle cx="12" cy="12" r="9" /><path d="M12 12 16 9" /><path d="M12 7v1" />
-                </svg>
-                Grafana dashboard
-            </span>
-            <span class="hero__hint">The dashboard link appears here when the app runs under Aspire.</span>
-        }
+        <a class="btn btn-ghost" href="shop">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" /><path d="M3 6h18" /><path d="M16 10a4 4 0 0 1-8 0" />
+            </svg>
+            Shop the catalog
+        </a>
     </div>
 </section>
 
-<section class="cards" aria-label="Generate some metrics">
-    <article class="card panel">
-        <span class="card__icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M3 13h3l2-4 3 8 2.5-6 1.5 2h6" />
-            </svg>
-        </span>
-        <h2 class="card__title">Weather feed</h2>
-        <p class="card__text">
-            Fetch forecasts — complete with a little random latency and the occasional fault —
-            to populate request-duration histograms and error counters.
-        </p>
-        <a class="card__link" href="weather">Open Weather <span aria-hidden="true">→</span></a>
-    </article>
+@if (_overview?.CardOutageEndsAt is { } outageEndsAt)
+{
+    <div class="alert alert-warn incident" role="status">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3" /><path d="M12 9v4" /><path d="M12 17h.01" />
+        </svg>
+        <span><strong>Card issuer outage</strong> until @outageEndsAt.ToLocalTime().ToString("HH:mm:ss"). Card payments are slow and often declined.</span>
+    </div>
+}
 
-    <article class="card panel">
-        <span class="card__icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="5" y="11" width="14" height="9" rx="2" /><path d="M8 11V8a4 4 0 0 1 8 0v3" />
-            </svg>
-        </span>
-        <h2 class="card__title">Auth required</h2>
-        <p class="card__text">
-            Sign in and call a protected endpoint to generate authentication and
-            authorized-request metrics alongside the public traffic.
-        </p>
-        <a class="card__link" href="auth">Open Auth <span aria-hidden="true">→</span></a>
+<section class="kpis" aria-label="Checkout totals since the service started">
+    <article class="kpi panel">
+        <span class="kpi__label">Orders placed</span>
+        <span class="kpi__value">@Labels.Number(_overview?.OrdersPlaced ?? 0)</span>
+        <code class="kpi__metric">checkout.orders</code>
+    </article>
+    <article class="kpi panel">
+        <span class="kpi__label">Revenue</span>
+        <span class="kpi__value">@Labels.Money(_overview?.Revenue ?? 0)</span>
+        <code class="kpi__metric">checkout.order.value</code>
+    </article>
+    <article class="kpi panel">
+        <span class="kpi__label">Average order</span>
+        <span class="kpi__value">@Labels.Money(_overview?.AverageOrderValue ?? 0)</span>
+        <span class="kpi__metric">revenue ÷ orders</span>
+    </article>
+    <article class="kpi panel">
+        <span class="kpi__label">Declined payments</span>
+        <span class="kpi__value">@Labels.Number(_overview?.PaymentsDeclined ?? 0)</span>
+        <span class="kpi__metric">@DeclineRate of attempts</span>
+    </article>
+    <article class="kpi panel">
+        <span class="kpi__label">Open carts</span>
+        <span class="kpi__value">@Labels.Number(_overview?.OpenCarts ?? 0)</span>
+        <code class="kpi__metric">checkout.carts.active</code>
     </article>
 </section>
 
-@code {
-    private static string? _grafanaUrl;
+<section class="panel feed" aria-labelledby="feed-title">
+    <header class="feed__head">
+        <h2 id="feed-title">Recent checkouts</h2>
+        <span class="chip"><span class="dot" aria-hidden="true"></span> refreshes every 2 s</span>
+    </header>
 
-    protected override async Task OnInitializedAsync()
+    @if (_error is not null)
     {
-        if (_grafanaUrl == null)
+        <StatusMessage Message="@_error" />
+    }
+
+    @if (_overview is null)
+    {
+        <p class="feed__empty" role="status"><span class="spinner" aria-hidden="true"></span> Loading checkouts…</p>
+    }
+    else if (_overview.RecentCheckouts.Count == 0)
+    {
+        <p class="feed__empty">
+            No checkouts yet. Place an order in the <a href="shop">shop</a>, or run <strong>Simulate checkout traffic</strong>
+            on the <code>app</code> resource in the Aspire dashboard.
+        </p>
+    }
+    else
+    {
+        <div class="table-scroll">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th scope="col">Order</th>
+                        <th scope="col">Time</th>
+                        <th scope="col" class="num">Items</th>
+                        <th scope="col">Payment</th>
+                        <th scope="col">Shipping</th>
+                        <th scope="col" class="num">Total</th>
+                        <th scope="col" class="num">Checkout time</th>
+                        <th scope="col">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var checkout in _overview.RecentCheckouts)
+                    {
+                        <tr>
+                            <td class="mono">@(checkout.OrderId ?? "—")</td>
+                            <td class="mono">@checkout.At.ToLocalTime().ToString("HH:mm:ss")</td>
+                            <td class="num">@checkout.ItemCount</td>
+                            <td>@Labels.Payment(checkout.PaymentMethod)</td>
+                            <td>@Labels.Shipping(checkout.ShippingMethod)</td>
+                            <td class="num">@Labels.Money(checkout.Total)</td>
+                            <td class="num @(checkout.DurationMs >= 1000 ? "is-slow" : null)">@Labels.Duration(checkout.DurationMs)</td>
+                            <td>
+                                @if (checkout.OrderId is not null)
+                                {
+                                    <span class="badge badge-ok">Placed</span>
+                                }
+                                else
+                                {
+                                    <span class="badge badge-danger">@Labels.DeclineReason(checkout.DeclineReason)</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</section>
+
+@code {
+    private static readonly TimeSpan s_refreshInterval = TimeSpan.FromSeconds(2);
+
+    private readonly CancellationTokenSource _cts = new();
+    private CheckoutOverview? _overview;
+    private string? _grafanaUrl;
+    private string? _error;
+
+    private string DeclineRate
+    {
+        get
         {
-            var config = await Http.GetFromJsonAsync<Config>("api/startup");
-            _grafanaUrl = config!.GrafanaUrl;
+            var attempts = (_overview?.OrdersPlaced ?? 0) + (_overview?.PaymentsDeclined ?? 0);
+            return attempts == 0 ? "0%" : $"{100.0 * _overview!.PaymentsDeclined / attempts:0.0}%";
         }
     }
 
-    private sealed class Config
+    protected override async Task OnInitializedAsync()
     {
-        public string? GrafanaUrl { get; set; }
+        // Capture the token first: the page can be disposed while the first requests are still running
+        var cancellationToken = _cts.Token;
+
+        try
+        {
+            _grafanaUrl = await Checkout.GetGrafanaUrlAsync();
+        }
+        catch (HttpRequestException)
+        {
+            // The Grafana link is optional
+        }
+
+        await RefreshAsync();
+
+        if (!cancellationToken.IsCancellationRequested)
+        {
+            _ = PollAsync(cancellationToken);
+        }
     }
+
+    private async Task PollAsync(CancellationToken cancellationToken)
+    {
+        using var timer = new PeriodicTimer(s_refreshInterval);
+        try
+        {
+            while (await timer.WaitForNextTickAsync(cancellationToken))
+            {
+                await RefreshAsync();
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+        }
+    }
+
+    private async Task RefreshAsync()
+    {
+        try
+        {
+            _overview = await Checkout.GetOverviewAsync();
+            _error = null;
+        }
+        catch (HttpRequestException ex)
+        {
+            _error = $"Error: couldn't reach the checkout service ({ex.Message}).";
+        }
+    }
+
+    public void Dispose() => _cts.Cancel();
 }

@@ -5,7 +5,8 @@
     align-items: center;
 }
 
-.topnav__link {
+/* NavLink renders the anchors, so they need ::deep to pick up this component's scoped styles */
+.topnav ::deep .topnav__link {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
@@ -19,15 +20,29 @@
     transition: background-color 0.12s ease, color 0.12s ease, border-color 0.12s ease;
 }
 
-.topnav__link:hover {
+.topnav ::deep .topnav__link:hover {
     background: var(--surface-2);
     color: var(--ink);
     text-decoration: none;
 }
 
-.topnav__link.active {
+.topnav ::deep .topnav__link.active {
     background: var(--accent);
     color: var(--accent-ink);
 }
 
-.topnav__link .icon { width: 1.05rem; height: 1.05rem; }
+.topnav ::deep .topnav__link .icon { width: 1.05rem; height: 1.05rem; }
+
+.topnav__badge {
+    min-width: 1.35rem;
+    height: 1.35rem;
+    padding: 0 0.35rem;
+    display: inline-grid;
+    place-items: center;
+    border-radius: 999px;
+    background: var(--signal);
+    color: var(--surface);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 700;
+}

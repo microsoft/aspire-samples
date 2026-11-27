@@ -7,3 +7,9 @@ datasources:
     # Access mode - proxy (server in the UI) or direct (browser in the UI).
     url: $PROMETHEUS_ENDPOINT
     uid: PBFA97CFB590B2093
+    jsonData:
+      # Histogram exemplars carry the trace ID; link them to the trace in the Aspire dashboard ($$ escapes Grafana's variable)
+      exemplarTraceIdDestinations:
+        - name: trace_id
+          url: $ASPIRE_DASHBOARD_URL/traces/detail/$${__value.raw}
+          urlDisplayLabel: View trace in the Aspire dashboard

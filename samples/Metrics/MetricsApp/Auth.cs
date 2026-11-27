@@ -6,6 +6,10 @@ namespace MetricsApp;
 
 public static class Auth
 {
+    // SAMPLE ONLY: a demo customer for the sign-in page and the traffic simulator. Only created in Development.
+    public const string TestUserEmail = "test@contoso.com";
+    public const string TestUserPassword = "Password1!";
+
     public static async Task InitializeTestUserAsync(IServiceProvider serviceProvider)
     {
         using var scope = serviceProvider.CreateScope();
@@ -13,9 +17,9 @@ public static class Auth
         var userStore = scope.ServiceProvider.GetRequiredService<IUserStore<MyUser>>();
 
         var user = new MyUser();
-        await userStore.SetUserNameAsync(user, "test@contoso.com", CancellationToken.None);
+        await userStore.SetUserNameAsync(user, TestUserEmail, CancellationToken.None);
 
-        var result = await userManager.CreateAsync(user, "Password1!");
+        var result = await userManager.CreateAsync(user, TestUserPassword);
         if (!result.Succeeded)
         {
             throw new InvalidOperationException("Error creating test user: " + string.Join(", ", result.Errors.Select(e => e.Description)));
