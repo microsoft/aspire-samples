@@ -1,204 +1,379 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { ComponentType } from 'react';
 import {
-  IconHome2,
+  IconAlertTriangle,
+  IconCircleCheck,
+  IconFilter,
+  IconFlame,
+  IconHourglassHigh,
   IconInfoCircle,
-  IconMail,
-  IconShoppingBag,
-  IconTool,
-  IconArticle,
-  IconChartBar,
-  IconRefresh,
+  IconLeaf,
+  IconMinus,
+  IconMoon,
+  IconPlus,
+  IconReceipt,
+  IconSettings,
+  IconShoppingCart,
+  IconSnowflake,
+  IconTrash,
+  IconX,
 } from '@tabler/icons-react';
+import { useStorefront, type Notice } from './hooks/useStorefront';
+import type { Cart, CartLine, Order, Product } from './lib/api';
+import { formatAgo, formatCountdown, formatUsd, plural } from './lib/format';
 import styles from './App.module.css';
-
-interface PageStats {
-  [page: string]: number;
-}
-
-interface StatsResponse {
-  totalPages: number;
-  stats: PageStats;
-}
-
-interface VisitResponse {
-  page: string;
-  visits: number;
-  message: string;
-}
 
 type IconType = ComponentType<{ size?: number; stroke?: number }>;
 
-interface PageMeta {
-  label: string;
-  Icon: IconType;
-  colorVar: string;
-}
-
-const PAGE_META: Record<string, PageMeta> = {
-  home: { label: 'Home', Icon: IconHome2, colorVar: '--c-coral' },
-  about: { label: 'About', Icon: IconInfoCircle, colorVar: '--c-sky' },
-  contact: { label: 'Contact', Icon: IconMail, colorVar: '--c-green' },
-  products: { label: 'Products', Icon: IconShoppingBag, colorVar: '--c-pink' },
-  services: { label: 'Services', Icon: IconTool, colorVar: '--c-orange' },
-  blog: { label: 'Blog', Icon: IconArticle, colorVar: '--c-violet' },
+const PRODUCT_LOOK: Record<string, { Icon: IconType; color: string; note: string }> = {
+  'founders-espresso': { Icon: IconFlame, color: '--c-orange', note: 'Dark roast' },
+  yirgacheffe: { Icon: IconLeaf, color: '--c-yellow', note: 'Light roast' },
+  'huila-decaf': { Icon: IconMoon, color: '--c-violet', note: 'Decaf' },
+  'pour-over-dripper': { Icon: IconFilter, color: '--c-sky', note: 'Brewing' },
+  'cold-brew-kit': { Icon: IconSnowflake, color: '--c-green', note: 'Brewing' },
+  'burr-grinder': { Icon: IconSettings, color: '--c-pink', note: 'Equipment' },
 };
 
-const DEFAULT_PAGES = Object.keys(PAGE_META);
+const MAX_LINE_QUANTITY = 10;
+
+const look = (sku: string) => PRODUCT_LOOK[sku] ?? { Icon: IconShoppingCart, color: '--c-sky', note: '' };
+
+function useNow(intervalMs: number) {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), intervalMs);
+    return () => clearInterval(timer);
+  }, [intervalMs]);
+  return now;
+}
 
 function App() {
-  const [stats, setStats] = useState<PageStats>({});
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
-  const busyRef = useRef(false);
-
-  const fetchStats = async () => {
-    try {
-      const response = await fetch('/api/stats');
-      const data: StatsResponse = await response.json();
-      setStats(data.stats);
-    } catch (error) {
-      console.error('Failed to fetch stats:', error);
-    }
-  };
-
-  useEffect(() => {
-    fetchStats();
-    const interval = setInterval(fetchStats, 5000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const handleCardClick = async (page: string) => {
-    if (busyRef.current) return;
-    busyRef.current = true;
-    setLoading(true);
-    const label = PAGE_META[page]?.label ?? page;
-    try {
-      const response = await fetch(`/api/visit/${encodeURIComponent(page)}`, {
-        method: 'POST',
-      });
-      const data: VisitResponse = await response.json();
-      setStats((prev) => ({ ...prev, [page]: data.visits }));
-      setMessage(`Recorded a visit to ${label}. Now ${data.visits.toLocaleString()} visits.`);
-    } catch (error) {
-      console.error('Failed to record visit:', error);
-      setMessage(`Could not record a visit to ${label}. Please try again.`);
-    } finally {
-      busyRef.current = false;
-      setLoading(false);
-    }
-  };
-
-  const resetStats = async () => {
-    if (busyRef.current) return;
-    if (!confirm('Are you sure you want to reset all statistics?')) return;
-    busyRef.current = true;
-    setLoading(true);
-    try {
-      await fetch('/api/stats', { method: 'DELETE' });
-      await fetchStats();
-      setMessage('All visit counts were reset to zero.');
-    } catch (error) {
-      console.error('Failed to reset stats:', error);
-      setMessage('Could not reset the statistics. Please try again.');
-    } finally {
-      busyRef.current = false;
-      setLoading(false);
-    }
-  };
-
-  const total = DEFAULT_PAGES.reduce((sum, page) => sum + (stats[page] || 0), 0);
+  const store = useStorefront();
+  const now = useNow(1000);
+  const quantities = new Map(store.cart?.lines.map((line) => [line.sku, line.quantity]));
 
   return (
     <>
-      <a className="skip-link" href="#main">
-        Skip to dashboard
+      <a className="skip-link" href="#products">
+        Skip to products
       </a>
 
       <div className={styles.page}>
         <header className={styles.header}>
-          <div className={styles.shapes} aria-hidden="true">
-            <svg className={`${styles.shape} ${styles.shapeTri}`} width="46" height="46" viewBox="0 0 46 46">
-              <polygon points="23,2 44,44 2,44" fill="var(--c-green)" stroke="var(--ink)" strokeWidth="3" strokeLinejoin="round" />
-            </svg>
-            <svg className={`${styles.shape} ${styles.shapeZig}`} width="64" height="22" viewBox="0 0 64 22">
-              <polyline points="2,18 12,4 22,18 32,4 42,18 52,4 62,18" fill="none" stroke="var(--c-blue)" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-            <svg className={`${styles.shape} ${styles.shapeDots}`} width="58" height="22" viewBox="0 0 58 22">
-              <g fill="var(--c-pink)" stroke="var(--ink)" strokeWidth="2">
-                <circle cx="9" cy="11" r="7" />
-                <circle cx="29" cy="11" r="7" />
-                <circle cx="49" cy="11" r="7" />
-              </g>
-            </svg>
+          <div>
+            <p className={styles.kicker}>Aspire · Redis-backed cart</p>
+            <h1 className={styles.title}>
+              Contoso <span className={styles.titleAccent}>Coffee</span>
+            </h1>
           </div>
-
-          <p className={styles.kicker}>Aspire · Redis dashboard</p>
-          <h1 className={styles.title}>
-            Visit <span className={styles.titleAccent}>Counter</span>
-          </h1>
           <p className={styles.subtitle}>
-            A page-visit counter backed by Redis on Aspire. Tap a page to record a visit and watch the
-            totals update live.
+            Small-batch beans and brewing gear. Your cart lives in Redis and is held for 30 minutes after your last
+            change.
           </p>
         </header>
 
-        <section className={styles.hero} aria-label="Total visits recorded">
-          <div className={styles.heroMain}>
-            <span className={styles.heroLabel}>Total visits recorded</span>
-            <span className={styles.heroNumber}>{total.toLocaleString()}</span>
-          </div>
-          <div className={styles.heroAside}>
-            <span className={styles.livePill}>
-              <span className={styles.liveDot} aria-hidden="true" />
-              Live
-            </span>
-            <span className={styles.heroIcon} aria-hidden="true">
-              <IconChartBar size={36} stroke={2.4} />
-            </span>
-          </div>
-        </section>
+        <div className={styles.layout}>
+          <main id="products" className={styles.main}>
+            <h2 className={styles.sectionTitle}>Shop</h2>
+            <ul className={styles.grid} aria-busy={!store.loaded}>
+              {store.products.map((product) => (
+                <ProductCard
+                  key={product.sku}
+                  product={product}
+                  inCart={quantities.get(product.sku) ?? 0}
+                  busy={store.busy === `add:${product.sku}`}
+                  disabled={store.busy !== null}
+                  onAdd={() => store.addToCart(product)}
+                />
+              ))}
+            </ul>
+          </main>
 
-        <main id="main" className={styles.section}>
-          <div className={styles.sectionHead}>
-            <h2 className={styles.sectionTitle}>Pages</h2>
-            <button className={styles.reset} onClick={resetStats} disabled={loading} type="button">
-              <IconRefresh size={20} stroke={2.2} aria-hidden="true" />
-              Reset all
-            </button>
-          </div>
+          <aside className={styles.cartColumn} aria-label="Your cart">
+            <CartPanel
+              cart={store.cart}
+              lastOrder={store.lastOrder}
+              notice={store.notice}
+              busy={store.busy}
+              now={now}
+              onQuantity={store.setQuantity}
+              onRemove={store.removeLine}
+              onCheckout={store.checkout}
+              onExpired={store.markExpired}
+              onDismissNotice={store.dismissNotice}
+              onDismissOrder={store.dismissOrder}
+            />
+          </aside>
 
-          <div className={styles.grid}>
-            {DEFAULT_PAGES.map((page) => {
-              const { label, Icon, colorVar } = PAGE_META[page];
-              const count = stats[page] || 0;
-              return (
-                <button
-                  key={page}
-                  type="button"
-                  className={styles.card}
-                  style={{ ['--card' as string]: `var(${colorVar})` }}
-                  onClick={() => handleCardClick(page)}
-                  disabled={loading}
-                  aria-label={`Record a visit to ${label}. Currently ${count.toLocaleString()} visits.`}
-                >
-                  <span className={styles.cardIcon} aria-hidden="true">
-                    <Icon size={24} stroke={2.2} />
-                  </span>
-                  <span className={styles.cardName}>{label}</span>
-                  <span className={styles.cardCount}>{count.toLocaleString()}</span>
-                  <span className={styles.cardHint}>visits · tap to add</span>
-                </button>
-              );
-            })}
-          </div>
-        </main>
-
-        <p role="status" aria-live="polite" className="visually-hidden">
-          {message}
-        </p>
+          <RecentOrders orders={store.recentOrders} now={now} />
+        </div>
       </div>
     </>
+  );
+}
+
+function ProductCard({
+  product,
+  inCart,
+  busy,
+  disabled,
+  onAdd,
+}: {
+  product: Product;
+  inCart: number;
+  busy: boolean;
+  disabled: boolean;
+  onAdd: () => void;
+}) {
+  const { Icon, color, note } = look(product.sku);
+  const full = inCart >= MAX_LINE_QUANTITY;
+  return (
+    <li className={styles.card} style={{ ['--card' as string]: `var(${color})` }}>
+      <div className={styles.cardTop}>
+        <span className={styles.cardIcon} aria-hidden="true">
+          <Icon size={26} stroke={2.2} />
+        </span>
+        <span className={styles.cardNote}>{note}</span>
+        {inCart > 0 && <span className={styles.inCart}>{inCart} in cart</span>}
+      </div>
+      <h3 className={styles.cardName}>{product.name}</h3>
+      <p className={styles.cardSize}>{product.size}</p>
+      <p className={styles.cardDescription}>{product.description}</p>
+      <div className={styles.cardFoot}>
+        <span className={styles.price}>{formatUsd(product.price)}</span>
+        <button
+          type="button"
+          className={styles.addButton}
+          onClick={onAdd}
+          disabled={disabled || full}
+          aria-label={`Add ${product.name} to cart`}
+        >
+          <IconPlus size={18} stroke={2.6} aria-hidden="true" />
+          {busy ? 'Adding…' : full ? 'Max 10' : 'Add'}
+        </button>
+      </div>
+    </li>
+  );
+}
+
+function CartPanel({
+  cart,
+  lastOrder,
+  notice,
+  busy,
+  now,
+  onQuantity,
+  onRemove,
+  onCheckout,
+  onExpired,
+  onDismissNotice,
+  onDismissOrder,
+}: {
+  cart: Cart | null;
+  lastOrder: Order | null;
+  notice: Notice | null;
+  busy: string | null;
+  now: number;
+  onQuantity: (sku: string, quantity: number) => void;
+  onRemove: (sku: string) => void;
+  onCheckout: () => void;
+  onExpired: () => void;
+  onDismissNotice: () => void;
+  onDismissOrder: () => void;
+}) {
+  const remaining = cart ? Date.parse(cart.expiresAt) - now : 0;
+  const expired = cart !== null && remaining <= 0;
+  useEffect(() => {
+    if (expired) onExpired();
+  }, [expired, onExpired]);
+
+  const lines = cart?.lines ?? [];
+  return (
+    <section className={styles.cart}>
+      <div className={styles.cartHead}>
+        <h2 className={styles.cartTitle}>
+          <IconShoppingCart size={24} stroke={2.4} aria-hidden="true" />
+          Your cart
+        </h2>
+        {cart && <span className={styles.countPill}>{plural(cart.itemCount, 'item')}</span>}
+      </div>
+
+      {notice && <NoticeBanner notice={notice} onDismiss={onDismissNotice} />}
+
+      {lastOrder && !cart && <OrderConfirmation order={lastOrder} onDismiss={onDismissOrder} />}
+
+      {lines.length === 0 && !lastOrder && (
+        <p className={styles.empty}>
+          Your cart is empty. Add a bag of beans to start one. It's kept in Redis for 30 minutes after your last change.
+        </p>
+      )}
+
+      {cart && lines.length > 0 && (
+        <>
+          <ul className={styles.lines}>
+            {lines.map((line) => (
+              <LineRow
+                key={line.sku}
+                line={line}
+                disabled={busy !== null}
+                onQuantity={(quantity) => onQuantity(line.sku, quantity)}
+                onRemove={() => onRemove(line.sku)}
+              />
+            ))}
+          </ul>
+
+          <div className={styles.summary}>
+            <div className={styles.subtotalRow}>
+              <span>Subtotal</span>
+              <strong>{formatUsd(cart.subtotal)}</strong>
+            </div>
+            <LimitMeter subtotal={cart.subtotal} limit={cart.orderLimit} />
+          </div>
+
+          <p className={styles.expiry} role="timer" aria-live="off">
+            <IconHourglassHigh size={20} stroke={2.2} aria-hidden="true" />
+            <span>
+              Held in Redis for <strong className={styles.countdown}>{formatCountdown(remaining)}</strong>
+              <span className={styles.expiryHint}>Every change resets the 30-minute expiry.</span>
+            </span>
+          </p>
+
+          <button type="button" className={styles.checkout} onClick={onCheckout} disabled={busy !== null}>
+            {busy === 'checkout' ? 'Placing order…' : `Check out · ${formatUsd(cart.subtotal)}`}
+          </button>
+        </>
+      )}
+    </section>
+  );
+}
+
+function LineRow({
+  line,
+  disabled,
+  onQuantity,
+  onRemove,
+}: {
+  line: CartLine;
+  disabled: boolean;
+  onQuantity: (quantity: number) => void;
+  onRemove: () => void;
+}) {
+  const { Icon, color } = look(line.sku);
+  return (
+    <li className={styles.line}>
+      <span className={styles.lineIcon} style={{ ['--card' as string]: `var(${color})` }} aria-hidden="true">
+        <Icon size={22} stroke={2.2} />
+      </span>
+      <span className={styles.lineName}>{line.name}</span>
+      <span className={styles.lineTotal}>{formatUsd(line.lineTotal)}</span>
+      <span className={styles.linePrice}>{formatUsd(line.unitPrice)} each</span>
+      <div className={styles.lineControls}>
+        <div className={styles.stepper} role="group" aria-label={`Quantity of ${line.name}`}>
+          <button
+            type="button"
+            onClick={() => onQuantity(line.quantity - 1)}
+            disabled={disabled}
+            aria-label={`Remove one ${line.name}`}
+          >
+            <IconMinus size={16} stroke={2.6} aria-hidden="true" />
+          </button>
+          <span className={styles.quantity} aria-live="polite">
+            {line.quantity}
+          </span>
+          <button
+            type="button"
+            onClick={() => onQuantity(line.quantity + 1)}
+            disabled={disabled || line.quantity >= MAX_LINE_QUANTITY}
+            aria-label={`Add one ${line.name}`}
+          >
+            <IconPlus size={16} stroke={2.6} aria-hidden="true" />
+          </button>
+        </div>
+        <button type="button" className={styles.remove} onClick={onRemove} disabled={disabled} aria-label={`Remove ${line.name}`}>
+          <IconTrash size={18} stroke={2.2} aria-hidden="true" />
+        </button>
+      </div>
+    </li>
+  );
+}
+
+function LimitMeter({ subtotal, limit }: { subtotal: number; limit: number }) {
+  const ratio = subtotal / limit;
+  const over = subtotal > limit;
+  return (
+    <div className={styles.limit}>
+      <div
+        className={styles.meter}
+        role="meter"
+        aria-valuemin={0}
+        aria-valuemax={limit}
+        aria-valuenow={subtotal}
+        aria-label="Order limit used"
+        data-level={over ? 'over' : ratio >= 0.8 ? 'near' : 'ok'}
+      >
+        <span style={{ width: `${Math.min(100, ratio * 100)}%` }} />
+      </div>
+      <span className={styles.limitText}>
+        {over
+          ? `${formatUsd(subtotal - limit)} over the ${formatUsd(limit)} order limit`
+          : `${formatUsd(limit - subtotal)} left of the ${formatUsd(limit)} order limit`}
+      </span>
+    </div>
+  );
+}
+
+function NoticeBanner({ notice, onDismiss }: { notice: Notice; onDismiss: () => void }) {
+  const Icon = notice.tone === 'info' ? IconInfoCircle : IconAlertTriangle;
+  return (
+    <div className={styles.notice} data-tone={notice.tone} role={notice.tone === 'info' ? 'status' : 'alert'}>
+      <Icon size={22} stroke={2.2} aria-hidden="true" />
+      <div>
+        <strong>{notice.title}</strong>
+        <p>{notice.detail}</p>
+      </div>
+      <button type="button" onClick={onDismiss} aria-label="Dismiss">
+        <IconX size={16} stroke={2.6} aria-hidden="true" />
+      </button>
+    </div>
+  );
+}
+
+function OrderConfirmation({ order, onDismiss }: { order: Order; onDismiss: () => void }) {
+  return (
+    <div className={styles.confirmation} role="status">
+      <IconCircleCheck size={34} stroke={2.2} aria-hidden="true" />
+      <div>
+        <strong>Order {order.orderId} placed</strong>
+        <p>
+          {plural(order.itemCount, 'item')} · {formatUsd(order.subtotal)}. The cart was removed from Redis.
+        </p>
+      </div>
+      <button type="button" onClick={onDismiss}>
+        Keep shopping
+      </button>
+    </div>
+  );
+}
+
+function RecentOrders({ orders, now }: { orders: Order[]; now: number }) {
+  if (orders.length === 0) return null;
+  return (
+    <section className={styles.orders} aria-label="Recent orders">
+      <h2 className={styles.sectionTitle}>Recent orders</h2>
+      <ul>
+        {orders.map((order) => (
+          <li key={order.orderId} className={styles.order}>
+            <IconReceipt size={20} stroke={2.2} aria-hidden="true" />
+            <span className={styles.orderId}>{order.orderId}</span>
+            <span className={styles.orderItems}>{order.lines.map((line) => `${line.quantity}× ${line.name}`).join(', ')}</span>
+            <span className={styles.orderTotal}>{formatUsd(order.subtotal)}</span>
+            <time className={styles.orderTime} dateTime={order.placedAt}>
+              {formatAgo(order.placedAt, now)}
+            </time>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
 
