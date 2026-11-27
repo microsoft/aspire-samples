@@ -1,6 +1,7 @@
 import { createClient } from 'redis';
 import { createApp } from './app.ts';
 import { shutdownTelemetry } from './instrumentation.ts';
+import { logger } from './logger.ts';
 
 const url = process.env.REDIS_URI;
 const port = Number(process.env.PORT);
@@ -13,10 +14,12 @@ const redis = createClient({
     disableOfflineQueue: true,
     socket: { connectTimeout: 5000 },
 });
-redis.on('error', error => console.error('Redis connection error:', error));
+redis.on('error', error => logger.error({ err: error }, 'Redis connection error'));
 await redis.connect();
-const server = createApp(redis).listen(port, '0.0.0.0', () => {
-    console.log(`Notes API listening on port ${port}`);
+// The AppHost enables the seed endpoint (and its dashboard command) in run mode only.
+const demoEndpoints = process.env.ENABLE_DEMO_ENDPOINTS === 'true';
+const server = createApp(redis, { demoEndpoints }).listen(port, '0.0.0.0', () => {
+    logger.info({ port, demoEndpoints }, `Notes API listening on port ${port}`);
 });
 
 let stopping = false;
@@ -33,7 +36,7 @@ async function stop() {
             await shutdownTelemetry();
         }
     } catch (error) {
-        console.error('Shutdown failed:', error);
+        logger.error({ err: error }, 'Shutdown failed');
         process.exitCode = 1;
     }
 }

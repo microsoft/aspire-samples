@@ -2,7 +2,8 @@
 
 Drive a real REST TUI from AppHost code. **Run terminal walkthrough** presses keys in Slumber, waits for its responses, and independently checks the API after creating, reading, updating, and deleting a note.
 
-![Completion popup after the verified Slumber walkthrough](./images/automation-result.png)
+![Aspire dashboard Terminal view of Slumber after the walkthrough, with 04 - Delete automation note selected, its 204 No Content response, and the Terminal walkthrough complete popup confirming that create, read, update and delete all passed (light theme)](./images/automation-csharp-walkthrough-light.png#gh-light-mode-only)
+![Aspire dashboard Terminal view of Slumber after the walkthrough, with 04 - Delete automation note selected, its 204 No Content response, and the Terminal walkthrough complete popup confirming that create, read, update and delete all passed (dark theme)](./images/automation-csharp-walkthrough-dark.png#gh-dark-mode-only)
 
 ## Prerequisites and startup
 
@@ -20,9 +21,9 @@ aspire start --apphost apphost.cs --isolated
 aspire wait --apphost apphost.cs
 ```
 
-Open Slumber's **Console logs** in the dashboard. Click the highlighted **Play** button beside **Resource actions** to run the walkthrough. An interaction-service confirmation explains that Slumber must restart to put its terminal in a known state and that the reserved `automation` note will be reset. Choose **Restart and run** to continue, or **Cancel** to leave the terminal and data unchanged. Do not type into Slumber or resize its terminal during the walkthrough.
+Open the dashboard and select the highlighted **Run terminal walkthrough** (**Play**) button on the `slumber` resource, or choose **Run terminal walkthrough** from its actions menu. An interaction-service confirmation explains that Slumber must restart to put its terminal in a known state and that the reserved `automation` note will be reset. Choose **Restart and run** to continue, or **Cancel** to leave the terminal and data unchanged. Do not type into Slumber or resize its terminal during the walkthrough. Open Slumber's **Terminal** view to watch the keys arrive.
 
-Use the highlighted button for repeat runs. If the console page's overflow menu retains a stale disabled command after completion, use the highlighted toolbar button or reload the page to refresh the command state.
+Use the highlighted button for repeat runs. If an overflow menu retains a stale disabled command after completion, use the highlighted button or reload the page to refresh the command state.
 
 Alternatively, run the same command without a browser:
 
@@ -53,6 +54,24 @@ The [four recipes](./requests.yml) use `persist: false`, so saved responses cann
 The command honors cancellation and has a two-minute automation deadline, starting after confirmation, in addition to the terminal API's per-wait timeout. Time spent deciding at the confirmation prompt or dismissing the completion popup does not consume that deadline. Failures are logged and returned as failed resource commands. A failed run may leave the `automation` note behind; the next run resets it. No other notes are deleted.
 
 This is deliberately a version-specific TUI automation example: changing the collection order, Slumber version, or screen layout can require updating its assertions. Human input and other clients editing the reserved note during a run are not supported. Normal manual use is available again once the command finishes.
+
+## What to explore in the Aspire dashboard
+
+### Resources and commands
+
+![Aspire dashboard resources table with redis, slumber and api running, the highlighted Play button on the slumber row, and its actions menu open on Run terminal walkthrough with the command's description (light theme)](./images/automation-csharp-dashboard-resources-light.png#gh-light-mode-only)
+![Aspire dashboard resources table with redis, slumber and api running, the highlighted Play button on the slumber row, and its actions menu open on Run terminal walkthrough with the command's description (dark theme)](./images/automation-csharp-dashboard-resources-dark.png#gh-dark-mode-only)
+
+- **slumber** has the highlighted **Run terminal walkthrough** command, and its **Terminal** view shows the keys the AppHost sends. The command stays disabled unless Slumber is running.
+- **redis** has the **REPL** action, so you can watch the `automation` field appear in and disappear from the `notes` hash (`HGETALL notes`) between runs.
+- **api** is the reused [`basics-csharp`](../basics-csharp/) notes API. The AppHost labels its endpoint **Notes API** and links its **API reference (Scalar)** and **OpenAPI JSON**.
+
+### Structured logs and traces
+
+![Aspire dashboard structured logs for the api filtered to automation, listing two walkthroughs as Note automation was not found, Created, Read, Replaced, Deleted and not found again, with the NoteCreated entry open to show NoteId, TextLength, RequestPath and its trace and span IDs (light theme)](./images/automation-csharp-logs-light.png#gh-light-mode-only)
+![Aspire dashboard structured logs for the api filtered to automation, listing two walkthroughs as Note automation was not found, Created, Read, Replaced, Deleted and not found again, with the NoteCreated entry open to show NoteId, TextLength, RequestPath and its trace and span IDs (dark theme)](./images/automation-csharp-logs-dark.png#gh-dark-mode-only)
+
+Filter the **api** structured logs to `automation` to see one walkthrough as API events: the reset's `Note automation was not found`, then `Created note automation (30 characters)`, the reads that Slumber and the AppHost's checks make after each step, `Replaced note automation`, `Deleted note automation`, and the final check's `not found`. Each entry links to its trace. Requests that Slumber sends appear as `PUT`, `GET` and `DELETE /notes/{id}` traces (with `user_agent.original` `slumber/5.3.0`) containing the `notes.write`, `notes.read` or `notes.delete` span and the Redis command. The reused API's `Contoso.Notes` meter counts the operations; see the [basics sample](../basics-csharp/README.md#what-to-explore-in-the-aspire-dashboard) for its spans, metrics and API reference.
 
 ## Repeatability and cleanup
 

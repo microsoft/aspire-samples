@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Text;
+using System.Text.Json;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
@@ -87,6 +88,34 @@ public class NotesTests
         var response = await client.GetAsync("/notes");
         Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
         Assert.Equal("application/problem+json", response.Content.Headers.ContentType!.MediaType);
+    }
+
+    [Fact]
+    public async Task SeedWritesSampleNotesAndLeavesWalkthroughNotesAlone()
+    {
+        await using var factory = new NotesFactory();
+        using var client = factory.CreateClient();
+        await factory.Store.SetAsync(new Note("welcome", "Edited from Redis"));
+        await factory.Store.SetAsync(new Note("standup", "Stale standup notes"));
+
+        var response = await client.PostAsync("/dev/notes/seed", content: null);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var result = (await response.Content.ReadFromJsonAsync<SeedResult>())!;
+        Assert.Equal((4, 1, 6), (result.Created, result.Replaced, result.Notes.Length));
+        Assert.Contains(new Note("welcome", "Edited from Redis"), result.Notes);
+        Assert.NotEqual("Stale standup notes", (await client.GetFromJsonAsync<Note>("/notes/standup"))!.Text);
+    }
+
+    [Fact]
+    public async Task OpenApiDocumentDescribesTheNotesRoutes()
+    {
+        await using var factory = new NotesFactory();
+        using var client = factory.CreateClient();
+        using var document = JsonDocument.Parse(await client.GetStringAsync("/openapi/v1.json"));
+        var paths = document.RootElement.GetProperty("paths");
+        Assert.Equal(["get"], paths.GetProperty("/notes").EnumerateObject().Select(operation => operation.Name));
+        Assert.Equal(["get", "put", "delete"], paths.GetProperty("/notes/{id}").EnumerateObject().Select(operation => operation.Name));
+        Assert.True(paths.TryGetProperty("/dev/notes/seed", out _));
     }
 
     private sealed class NotesFactory : WebApplicationFactory<Program>

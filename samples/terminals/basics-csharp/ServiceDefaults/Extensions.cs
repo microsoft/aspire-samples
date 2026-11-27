@@ -11,6 +11,9 @@ namespace Microsoft.Extensions.Hosting;
 
 public static class Extensions
 {
+    // The API publishes its domain telemetry as "Contoso.Notes"; the wildcard registers every Contoso meter and source.
+    private const string DomainTelemetryNames = "Contoso.*";
+
     public static IHostApplicationBuilder AddServiceDefaults(this IHostApplicationBuilder builder)
     {
         builder.Logging.AddOpenTelemetry(logging =>
@@ -20,10 +23,12 @@ public static class Extensions
         });
         builder.Services.AddOpenTelemetry()
             .WithMetrics(metrics => metrics.AddAspNetCoreInstrumentation()
-                .AddHttpClientInstrumentation().AddRuntimeInstrumentation())
-            .WithTracing(tracing => tracing.AddAspNetCoreInstrumentation(options =>
-                options.Filter = context => !context.Request.Path.StartsWithSegments("/health")
-                    && !context.Request.Path.StartsWithSegments("/alive"))
+                .AddHttpClientInstrumentation().AddRuntimeInstrumentation()
+                .AddMeter(DomainTelemetryNames))
+            .WithTracing(tracing => tracing.AddSource(DomainTelemetryNames)
+                .AddAspNetCoreInstrumentation(options =>
+                    options.Filter = context => !context.Request.Path.StartsWithSegments("/health")
+                        && !context.Request.Path.StartsWithSegments("/alive"))
                 .AddHttpClientInstrumentation());
         if (!string.IsNullOrWhiteSpace(builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]))
         {

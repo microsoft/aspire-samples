@@ -1,8 +1,11 @@
+using System.ComponentModel;
 using StackExchange.Redis;
 
 namespace Notes.Api;
 
-public record Note(string Id, string Text);
+public record Note(
+    [property: Description("The note ID, which is also its field name in the Redis hash `notes`.")] string Id,
+    [property: Description("The note text, stored as the hash field's value.")] string Text);
 
 public interface INotesStore
 {

@@ -1,66 +1,59 @@
-using System.Text.Json;
-using System.Text.RegularExpressions;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Diagnostics;
 using Notes.Api;
+using OpenTelemetry.Trace;
+using Scalar.AspNetCore;
 using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.AddServiceDefaults();
+builder.Services.AddOpenTelemetry().WithTracing(tracing => tracing.SetSampler(new SkipHealthCheckPingSampler()));
 builder.AddRedisClient("redis");
 builder.Services.AddSingleton<INotesStore, RedisNotesStore>();
+builder.Services.AddSingleton<NotesTelemetry>();
 builder.Services.AddProblemDetails();
+// The web defaults accept numbers as strings, which documents every integer as "integer | string" in OpenAPI.
+builder.Services.ConfigureHttpJsonOptions(options => options.SerializerOptions.NumberHandling = JsonNumberHandling.Strict);
+builder.Services.AddNotesOpenApi();
 builder.WebHost.ConfigureKestrel(options => options.Limits.MaxRequestBodySize = 10 * 1024);
 
 var app = builder.Build();
-app.UseExceptionHandler(errorApp => errorApp.Run(async context =>
+app.UseExceptionHandler(new ExceptionHandlerOptions
 {
-    var error = context.Features.Get<IExceptionHandlerFeature>()!.Error;
-    var (status, title) = error switch
+    // Malformed or oversized request bodies are client errors, so don't log them as unhandled exceptions.
+    SuppressDiagnosticsCallback = context => context.Exception is BadHttpRequestException,
+    ExceptionHandler = async context =>
     {
-        RedisException => (503, "Redis is unavailable"),
-        BadHttpRequestException badRequest => (badRequest.StatusCode, "Invalid request"),
-        _ => (500, "An unexpected error occurred")
-    };
-    await Results.Problem(statusCode: status, title: title).ExecuteAsync(context);
-}));
+        var error = context.Features.Get<IExceptionHandlerFeature>()!.Error;
+        var (status, title, detail) = error switch
+        {
+            RedisException => (503, "Redis is unavailable", "The notes store couldn't be reached. Check the redis resource in the Aspire dashboard."),
+            BadHttpRequestException badRequest => (badRequest.StatusCode, "Invalid request", badRequest.StatusCode switch
+            {
+                StatusCodes.Status413PayloadTooLarge => "Send at most 10 KiB of JSON.",
+                StatusCodes.Status415UnsupportedMediaType => "Send the note as application/json.",
+                _ => """Send a JSON object with a string "text" property, such as {"text": "Hello from Slumber!"}."""
+            }),
+            _ => (500, "An unexpected error occurred", null)
+        };
+        await Results.Problem(statusCode: status, title: title, detail: detail).ExecuteAsync(context);
+    }
+});
+// Body-less error responses, such as 415 for a non-JSON request body, also become problem details.
+app.UseStatusCodePages();
 app.MapDefaultEndpoints();
 
-// Demo-only, unauthenticated CRUD routes: every caller can read, replace, and delete notes.
-// Use non-sensitive, disposable data and keep this HTTP API private.
-var notes = app.MapGroup("/notes");
-notes.AddEndpointFilter(async (context, next) =>
+// The API reference and the endpoint behind the "Seed sample notes" dashboard command are local-development features.
+if (app.Environment.IsDevelopment())
 {
-    if (context.HttpContext.Request.RouteValues["id"] is string id &&
-        !Regex.IsMatch(id, @"\A[a-z0-9-]{1,40}\z", RegexOptions.CultureInvariant))
-    {
-        return Results.Problem(statusCode: 400, title: "Use 1-40 lowercase letters, digits or hyphens for the note ID");
-    }
-    return await next(context);
-});
+    app.MapOpenApi();
+    app.MapScalarApiReference(options => options
+        .WithTitle("Terminal Notes API")
+        .WithDefaultHttpClient(ScalarTarget.Shell, ScalarClient.Curl));
+    app.MapDemoEndpoints();
+}
 
-notes.MapGet("/", async (INotesStore store) => Results.Ok(await store.ListAsync()));
-notes.MapGet("/{id}", async (string id, INotesStore store) =>
-    await store.GetAsync(id) is { } note
-        ? Results.Ok(note)
-        : Results.Problem(statusCode: 404, title: "Note not found"));
-notes.MapPut("/{id}", async (string id, JsonElement body, INotesStore store) =>
-{
-    if (body.ValueKind != JsonValueKind.Object ||
-        !body.TryGetProperty("text", out var value) || value.ValueKind != JsonValueKind.String ||
-        value.GetString() is not { } text || string.IsNullOrWhiteSpace(text) || text.Length > 1000)
-    {
-        return Results.Problem(statusCode: 400, title: "Supply text containing 1-1000 characters, not just whitespace");
-    }
-
-    var note = new Note(id, text);
-    return await store.SetAsync(note)
-        ? Results.Created($"/notes/{id}", note)
-        : Results.Ok(note);
-});
-notes.MapDelete("/{id}", async (string id, INotesStore store) =>
-    await store.DeleteAsync(id)
-        ? Results.NoContent()
-        : Results.Problem(statusCode: 404, title: "Note not found"));
+app.MapNotesApi();
 
 app.Run();
 

@@ -4,12 +4,12 @@ Use interactive tools alongside your application without installing them on the 
 
 | Sample | AppHost | API | Terminal features |
 | --- | --- | --- | --- |
-| [C# basics](./basics-csharp/) | File-based C# | ASP.NET Core | `WithTerminal()` and Redis `WithRepl()` |
-| [TypeScript basics](./basics-typescript/) | TypeScript | Express/TypeScript | `withTerminal()` and Redis `withRepl()` |
+| [C# basics](./basics-csharp/) | File-based C# | ASP.NET Core | `WithTerminal()` and Redis `WithRepl()`, plus Scalar, `Contoso.Notes` traces/metrics/logs, and a **Seed sample notes** command |
+| [TypeScript basics](./basics-typescript/) | TypeScript | Express/TypeScript | `withTerminal()` and Redis `withRepl()`, plus Scalar, `Contoso.Notes` traces/metrics/logs over OTLP/HTTP, and a **Seed sample notes** command |
 | [Terminal automation](./automation-csharp/) | File-based C# | ASP.NET Core | Drive Slumber with `SendKeyAsync` / `WaitForTextAsync`, verify CRUD, handle repeat runs |
 | [Custom docked SQL REPL](./docked-repl-csharp/) | File-based C# | rqlite HTTP API | Custom container resource and `TerminalService` / `TerminalPlacement.Dock` |
 
-Each basic sample is standalone: its own API, Redis database, Dockerfile, and saved request collection. Both demonstrate the same round trip: create a note in a REST terminal UI, edit its underlying Redis value in a REPL, then read the changed value through the API.
+Each basic sample is standalone: its own API, Redis database, Dockerfile, and saved request collection. Both demonstrate the same round trip: create a note in a REST terminal UI, edit its underlying Redis value in a REPL, then read the changed value through the API. Both notes APIs also publish an OpenAPI document with a Scalar API reference, and emit the same `Contoso.Notes` spans, metrics, and structured logs, so every request sent from the terminal shows up in the dashboard's traces.
 
 The automation sample reuses the C# basic sample's API and Slumber image source, but launches its own resources and supplies a separate request collection. The custom REPL sample is independent and uses rqlite's official image and SQL shell. Each sample has its own AppHost and can run separately.
 

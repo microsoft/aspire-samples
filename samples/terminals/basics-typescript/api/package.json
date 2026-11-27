@@ -11,10 +11,22 @@
     "test": "node --import tsx --test tests/*.test.ts"
   },
   "dependencies": {
-    "@opentelemetry/auto-instrumentations-node": "^0.81.0",
-    "@opentelemetry/exporter-trace-otlp-grpc": "^0.220.0",
-    "@opentelemetry/sdk-node": "^0.220.0",
+    "@opentelemetry/api": "~1.9.1",
+    "@opentelemetry/exporter-logs-otlp-proto": "^0.223.2",
+    "@opentelemetry/exporter-metrics-otlp-proto": "^0.223.2",
+    "@opentelemetry/exporter-trace-otlp-proto": "^0.223.2",
+    "@opentelemetry/instrumentation": "^0.223.2",
+    "@opentelemetry/instrumentation-express": "^0.71.1",
+    "@opentelemetry/instrumentation-http": "^0.223.2",
+    "@opentelemetry/instrumentation-pino": "^0.69.0",
+    "@opentelemetry/instrumentation-redis": "^0.71.0",
+    "@opentelemetry/instrumentation-runtime-node": "^0.36.1",
+    "@opentelemetry/sdk-logs": "^0.223.2",
+    "@opentelemetry/sdk-metrics": "^2.12.1",
+    "@opentelemetry/sdk-node": "^0.223.2",
+    "@scalar/express-api-reference": "^0.10.40",
     "express": "^5.1.0",
+    "pino": "^10.4.0",
     "redis": "^5.11.0"
   },
   "devDependencies": {

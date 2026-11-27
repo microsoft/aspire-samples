@@ -1,9 +1,10 @@
 import assert from 'node:assert/strict';
 import { once } from 'node:events';
 import { test } from 'node:test';
-import { createApp, type NotesDatabase } from '../src/app.ts';
+import { pino } from 'pino';
+import { createApp, type AppOptions, type NotesDatabase } from '../src/app.ts';
 
-async function fixture() {
+async function fixture(options?: AppOptions) {
     const notes = new Map<string, string>();
     let unavailable = false;
     const check = () => {
@@ -21,7 +22,7 @@ async function fixture() {
         async hDel(_key, id) { check(); return Number(notes.delete(id)); },
         async ping() { check(); return 'PONG'; },
     };
-    const server = createApp(redis).listen(0, '127.0.0.1');
+    const server = createApp(redis, { logger: pino({ level: 'silent' }), ...options }).listen(0, '127.0.0.1');
     await once(server, 'listening');
     const address = server.address();
     assert(address && typeof address !== 'string');
@@ -106,5 +107,35 @@ test('dependency failures return 503, not an empty collection or healthy status'
         assert.equal((await app.request('/notes/welcome', { method: 'DELETE' })).status, 503);
     } finally {
         await app.close();
+    }
+});
+
+test('seed writes sample notes and leaves the welcome note alone', async () => {
+    const app = await fixture({ demoEndpoints: true });
+    try {
+        app.notes.set('welcome', 'Edited from Redis');
+        app.notes.set('standup', 'Stale standup notes');
+        const response = await app.request('/dev/notes/seed', { method: 'POST' });
+        assert.equal(response.status, 200);
+        const result = await response.json();
+        assert.deepEqual([result.created, result.replaced, result.notes.length], [4, 1, 6]);
+        assert.equal(app.notes.get('welcome'), 'Edited from Redis');
+        assert.notEqual(app.notes.get('standup'), 'Stale standup notes');
+    } finally {
+        await app.close();
+    }
+});
+
+test('the seed endpoint and its OpenAPI operation exist only when enabled', async () => {
+    for (const demoEndpoints of [false, true]) {
+        const app = await fixture({ demoEndpoints });
+        try {
+            const document = await (await app.request('/openapi.json')).json();
+            assert.deepEqual(Object.keys(document.paths['/notes/{id}']), ['parameters', 'get', 'put', 'delete']);
+            assert.equal('/dev/notes/seed' in document.paths, demoEndpoints);
+            assert.equal((await app.request('/dev/notes/seed', { method: 'POST' })).status, demoEndpoints ? 200 : 404);
+        } finally {
+            await app.close();
+        }
     }
 });

@@ -16,7 +16,22 @@ var redis = builder.AddRedis("redis").WithRepl();
 var api = builder.AddDotnetProject("api", "./api/Notes.Api.csproj")
     .WithReference(redis)
     .WithHttpHealthCheck("/health")
-    .WaitFor(redis);
+    .WaitFor(redis)
+    .WithUrlForEndpoint("http", url => url.DisplayText = "Notes API")
+    .WithUrls(context =>
+    {
+        // Scalar, the OpenAPI document and the seed endpoint are mapped in Development (run mode) only.
+        var http = context.GetEndpoint("http");
+        context.Urls.Add(new() { Url = "/scalar", DisplayText = "API reference (Scalar)", Endpoint = http });
+        context.Urls.Add(new() { Url = "/openapi/v1.json", DisplayText = "OpenAPI JSON", Endpoint = http });
+    })
+    .WithHttpCommand("/dev/notes/seed", "Seed sample notes", commandName: "seed-notes", commandOptions: new()
+    {
+        Description = "POST /dev/notes/seed: writes five team notes for Slumber's List notes request. The welcome note is left alone.",
+        IconName = "NoteAdd",
+        IsHighlighted = true,
+        ResultMode = HttpCommandResultMode.Json
+    });
 
 builder.AddDockerfile("slumber", "./slumber")
     .WithEnvironment("BASE_URL", api.GetEndpoint("http"))

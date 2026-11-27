@@ -18,7 +18,15 @@ var redis = builder.AddRedis("redis").WithRepl();
 var api = builder.AddDotnetProject("api", "../basics-csharp/api/Notes.Api.csproj")
     .WithReference(redis)
     .WithHttpHealthCheck("/health")
-    .WaitFor(redis);
+    .WaitFor(redis)
+    .WithUrlForEndpoint("http", url => url.DisplayText = "Notes API")
+    .WithUrls(context =>
+    {
+        // The reused API maps Scalar and its OpenAPI document in Development (run mode).
+        var http = context.GetEndpoint("http");
+        context.Urls.Add(new() { Url = "/scalar", DisplayText = "API reference (Scalar)", Endpoint = http });
+        context.Urls.Add(new() { Url = "/openapi/v1.json", DisplayText = "OpenAPI JSON", Endpoint = http });
+    });
 var slumber = builder.AddDockerfile("slumber", "../basics-csharp/slumber")
     .WithBindMount("./requests.yml", "/home/slumber/slumber.yml", isReadOnly: true)
     .WithEnvironment("BASE_URL", api.GetEndpoint("http"))
