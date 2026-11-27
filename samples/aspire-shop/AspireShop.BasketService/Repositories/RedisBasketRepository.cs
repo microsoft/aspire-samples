@@ -4,64 +4,32 @@ using AspireShop.BasketService.Models;
 
 namespace AspireShop.BasketService.Repositories;
 
-public class RedisBasketRepository(ILogger<RedisBasketRepository> logger, IConnectionMultiplexer redis) : IBasketRepository
+public class RedisBasketRepository(IConnectionMultiplexer redis) : IBasketRepository
 {
-    private readonly ILogger<RedisBasketRepository> _logger = logger;
-    private readonly IConnectionMultiplexer _redis = redis;
-    private readonly IDatabase _database = redis.GetDatabase();
-    private static readonly JsonSerializerOptions _jsonSerializerOptions = new()
+    private static readonly JsonSerializerOptions s_jsonSerializerOptions = new()
     {
         PropertyNameCaseInsensitive = true,
     };
 
-    public async Task<bool> DeleteBasketAsync(string id)
-    {
-        return await _database.KeyDeleteAsync(id);
-    }
+    private readonly IDatabase _database = redis.GetDatabase();
 
-    public IEnumerable<string> GetUsers()
-    {
-        var server = GetServer();
-        var data = server.Keys();
+    public async Task<CustomerBasket?> GetBasketAsync(string buyerId) =>
+        Deserialize(await _database.StringGetAsync(buyerId));
 
-        return data?.Select(k => k.ToString()) ?? Enumerable.Empty<string>();
-    }
-
-    public async Task<CustomerBasket?> GetBasketAsync(string customerId)
-    {
-        var data = await _database.StringGetAsync(customerId);
-
-        if (data.IsNullOrEmpty)
-        {
-            return null;
-        }
-
-        return JsonSerializer.Deserialize<CustomerBasket>((string)data!, _jsonSerializerOptions);
-    }
-
+    // SET ... GET writes the basket and returns the value it replaced in one atomic command
     public async Task<CustomerBasket?> UpdateBasketAsync(CustomerBasket basket)
     {
-        if (basket.BuyerId == null)
-        {
-            return null;
-        }
+        ArgumentException.ThrowIfNullOrEmpty(basket.BuyerId);
 
-        var created = await _database.StringSetAsync(basket.BuyerId, JsonSerializer.Serialize(basket, _jsonSerializerOptions));
-
-        if (!created)
-        {
-            _logger.LogInformation("Problem occur persisting the item.");
-            return null;
-        }
-
-        _logger.LogInformation("Basket item persisted successfully.");
-
-        return await GetBasketAsync(basket.BuyerId);
+        return Deserialize(await _database.StringSetAndGetAsync(basket.BuyerId, JsonSerializer.Serialize(basket, s_jsonSerializerOptions)));
     }
 
-    private IServer GetServer()
-    {
-        var endpoint = _redis.GetEndPoints();
-        return _redis.GetServer(endpoint.First());
-    }
+    // GETDEL reads and removes the basket in one atomic command, so only one caller can take it
+    public async Task<CustomerBasket?> TakeBasketAsync(string buyerId) =>
+        Deserialize(await _database.StringGetDeleteAsync(buyerId));
+
+    public Task<bool> DeleteBasketAsync(string buyerId) => _database.KeyDeleteAsync(buyerId);
+
+    private static CustomerBasket? Deserialize(RedisValue data) =>
+        data.IsNullOrEmpty ? null : JsonSerializer.Deserialize<CustomerBasket>((string)data!, s_jsonSerializerOptions);
 }

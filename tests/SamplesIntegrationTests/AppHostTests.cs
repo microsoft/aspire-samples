@@ -176,7 +176,7 @@ public class AppHostTests(ITestOutputHelper testOutput)
         new([
             new TestEndpoints("AspireShop.AppHost", new() {
                 { "catalogdbmanager", ["/alive", "/health"] },
-                { "catalogservice", ["/alive", "/health"] },
+                { "catalogservice", ["/alive", "/health", "/scalar", "/openapi/v1.json", "/api/v1/catalog/items/type/all"] },
                 // Can't send non-gRPC requests over non-TLS connection to the BasketService unless client is manually configured to use HTTP/2
                 //{ "basketservice", ["/alive", "/health"] },
                 { "frontend", ["/alive", "/health", "/"] }

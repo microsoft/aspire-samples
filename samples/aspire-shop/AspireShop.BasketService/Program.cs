@@ -8,6 +8,7 @@ builder.AddRedisClient("basketcache");
 
 builder.Services.AddGrpc();
 builder.Services.AddGrpcHealthChecks();
+builder.Services.AddSingleton<BasketTelemetry>();
 builder.Services.AddTransient<IBasketRepository, RedisBasketRepository>();
 
 var app = builder.Build();

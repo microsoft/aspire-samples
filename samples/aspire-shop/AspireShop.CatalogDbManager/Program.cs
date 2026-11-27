@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Migrations;
 using AspireShop.CatalogDb;
 using AspireShop.CatalogDbManager;
 
@@ -9,9 +10,6 @@ builder.AddNpgsqlDbContext<CatalogDbContext>("catalogdb", null,
     optionsBuilder => optionsBuilder.UseNpgsql(npgsqlBuilder =>
         npgsqlBuilder.MigrationsAssembly(typeof(Program).Assembly.GetName().Name)));
 
-builder.Services.AddOpenTelemetry()
-    .WithTracing(tracing => tracing.AddSource(CatalogDbInitializer.ActivitySourceName));
-
 builder.Services.AddSingleton<CatalogDbInitializer>();
 builder.Services.AddHostedService(sp => sp.GetRequiredService<CatalogDbInitializer>());
 builder.Services.AddHealthChecks()
@@ -21,11 +19,13 @@ var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
-    app.MapPost("/reset-db", async (CatalogDbContext dbContext, CatalogDbInitializer dbInitializer, CancellationToken cancellationToken) =>
+    // Backs the AppHost's "Reset database" command: revert every migration (dropping the catalog tables and HiLo
+    // sequences), then the command restarts this service, which re-applies the migrations and re-seeds the catalog.
+    app.MapPost("/reset-db", async (CatalogDbContext dbContext, ILogger<Program> logger, CancellationToken cancellationToken) =>
     {
-        // Delete and recreate the database. This is useful for development scenarios to reset the database to its initial state.
-        await dbContext.Database.EnsureDeletedAsync(cancellationToken);
-        await dbInitializer.InitializeDatabaseAsync(dbContext, cancellationToken);
+        var strategy = dbContext.Database.CreateExecutionStrategy();
+        await strategy.ExecuteAsync(() => dbContext.Database.MigrateAsync(Migration.InitialDatabase, cancellationToken));
+        logger.MigrationsReverted();
     });
 }
 

@@ -1,7 +1,28 @@
-@MyBackend_HostAddress = http://localhost:5241
+@CatalogService_HostAddress = http://localhost:5241
 
-GET {{MyBackend_HostAddress}}/api/v1/catalog/items/type/all/brand
+### First page of the catalog
+GET {{CatalogService_HostAddress}}/api/v1/catalog/items/type/all
 Accept: application/json
 
-###
+### Next page (use the nextId from the previous response)
+GET {{CatalogService_HostAddress}}/api/v1/catalog/items/type/all?after=9&pageSize=4
+Accept: application/json
 
+### Items for a brand
+GET {{CatalogService_HostAddress}}/api/v1/catalog/items/type/all/brand/1
+Accept: application/json
+
+### A single item
+GET {{CatalogService_HostAddress}}/api/v1/catalog/items/6
+Accept: application/json
+
+### 404 problem details
+GET {{CatalogService_HostAddress}}/api/v1/catalog/items/9999
+Accept: application/problem+json
+
+### 400 validation problem details
+GET {{CatalogService_HostAddress}}/api/v1/catalog/items/type/all?before=1&after=9
+Accept: application/problem+json
+
+### OpenAPI document
+GET {{CatalogService_HostAddress}}/openapi/v1.json
