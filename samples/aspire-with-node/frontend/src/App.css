@@ -1,7 +1,11 @@
 :root {
-  --panel-bg: rgba(17, 22, 38, 0.82);
+  --panel-bg: rgba(17, 22, 38, 0.84);
   --panel-solid: rgba(17, 22, 38, 0.97);
   --panel-border: rgba(255, 255, 255, 0.12);
+  --card-bg: rgba(255, 255, 255, 0.035);
+  --card-bg-hover: rgba(255, 255, 255, 0.07);
+  --card-bg-selected: rgba(139, 92, 240, 0.12);
+  --inset-bg: rgba(8, 11, 22, 0.55);
   --text-primary: #f8fafc;
   --text-secondary: #cbd5e1;
   --text-tertiary: #94a3b8;
@@ -9,8 +13,6 @@
   --accent-start: #7a54e8;
   --accent-end: #8e46d6;
   --focus-color: #b79cf8;
-  --precip: #7dd3fc;
-  --sun: #f5b545;
   --track: rgba(255, 255, 255, 0.1);
   --control-bg: rgba(255, 255, 255, 0.06);
   --control-bg-hover: rgba(255, 255, 255, 0.13);
@@ -20,6 +22,25 @@
   --error-text: #fca5a5;
   --panel-shadow: 0 16px 48px -14px rgba(11, 9, 30, 0.62), inset 0 1px 0 rgba(255, 255, 255, 0.09);
   --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+
+  /* Risk levels: text/fill tones for the pane, line tones for the map. */
+  --risk-low: #4ade80;
+  --risk-moderate: #facc15;
+  --risk-high: #fb923c;
+  --risk-severe: #f87171;
+  --risk-pending: #94a3b8;
+  --line-low: #22c55e;
+  --line-moderate: #eab308;
+  --line-high: #f97316;
+  --line-severe: #ef4444;
+  --line-pending: #64748b;
+  --line-casing: rgba(9, 11, 24, 0.85);
+
+  /* Dispatch recommendations. */
+  --rec-go: #4ade80;
+  --rec-delay: #fbbf24;
+  --rec-reroute: #f87171;
+  --rec-reroute-solid: #dc2626;
 }
 
 html,
@@ -45,18 +66,6 @@ body,
   color: var(--text-primary);
 }
 
-/* Weather-driven ambiance: a soft tint at the top of the map that shifts with the
-   current conditions and day / night. Sits above the map tiles, below the panels. */
-.app::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
-  background: radial-gradient(140% 72% at 50% -22%, var(--sky-tint, transparent), transparent 62%);
-  transition: opacity 0.6s ease;
-}
-
 /* Map fills the whole viewport and sits behind the overlays. */
 .map {
   position: absolute;
@@ -67,17 +76,10 @@ body,
   z-index: 0;
 }
 
-/* Default cursor invites a click to drop a pin; Space switches to a pan grab. */
-.leaflet-container {
+/* While planning a custom route, every map click drops a stop. */
+.app.is-planning .leaflet-container,
+.app.is-planning .leaflet-interactive {
   cursor: crosshair;
-}
-
-.app.pan-mode .leaflet-container {
-  cursor: grab;
-}
-
-.app.pan-mode .leaflet-container:active {
-  cursor: grabbing;
 }
 
 /* Subtle grain on the glass panels to break up flat surfaces. */
@@ -89,40 +91,25 @@ body,
 }
 
 /* Sleek, theme-matched scrollbars. The browser defaults clash with the glass panels. */
-.pane-body,
-.search-results {
+.pane-body {
   scrollbar-width: thin;
   scrollbar-color: rgba(148, 163, 184, 0.45) transparent;
 }
 
-.pane-body::-webkit-scrollbar,
-.search-results::-webkit-scrollbar {
+.pane-body::-webkit-scrollbar {
   width: 12px;
-  height: 12px;
 }
 
-.pane-body::-webkit-scrollbar-track,
-.search-results::-webkit-scrollbar-track {
+.pane-body::-webkit-scrollbar-track {
   background: transparent;
   margin: 0.6rem 0;
 }
 
-.pane-body::-webkit-scrollbar-thumb,
-.search-results::-webkit-scrollbar-thumb {
+.pane-body::-webkit-scrollbar-thumb {
   background-color: rgba(148, 163, 184, 0.35);
   border-radius: 999px;
   border: 3px solid transparent;
   background-clip: padding-box;
-}
-
-.pane-body:hover::-webkit-scrollbar-thumb,
-.search-results:hover::-webkit-scrollbar-thumb {
-  background-color: rgba(148, 163, 184, 0.55);
-}
-
-.pane-body::-webkit-scrollbar-thumb:hover,
-.search-results::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(148, 163, 184, 0.8);
 }
 
 .visually-hidden {
@@ -137,55 +124,7 @@ body,
   border: 0;
 }
 
-/* Reticle marker dropped at the selected point. */
-.map-reticle {
-  color: var(--accent-end);
-  pointer-events: none;
-  filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.7));
-}
-
-.map-reticle .reticle-inner {
-  display: block;
-  transform-origin: center;
-  animation: reticle-drop 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-@keyframes reticle-drop {
-  from {
-    opacity: 0;
-    transform: scale(0.6);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-.map-reticle .reticle-ping {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 46px;
-  height: 46px;
-  margin: -23px 0 0 -23px;
-  border: 2px solid var(--accent-end);
-  border-radius: 50%;
-  pointer-events: none;
-  animation: reticle-ping 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-@keyframes reticle-ping {
-  from {
-    opacity: 0.55;
-    transform: scale(0.4);
-  }
-  to {
-    opacity: 0;
-    transform: scale(2.4);
-  }
-}
-
-/* Single control pane (docked left). */
+/* Single control pane (docked left). Keep its width in sync with PANE_INSET in App.tsx. */
 .control-pane {
   position: absolute;
   top: 1rem;
@@ -193,7 +132,7 @@ body,
   z-index: 1000;
   display: flex;
   flex-direction: column;
-  width: 360px;
+  width: 400px;
   max-width: calc(100vw - 2rem);
   max-height: calc(100dvh - 2rem);
   font-variant-numeric: tabular-nums;
@@ -235,7 +174,7 @@ body,
 }
 
 .pane-title {
-  font-size: 1rem;
+  font-size: 1.05rem;
   font-weight: 700;
   margin: 0;
   line-height: 1.15;
@@ -243,7 +182,7 @@ body,
 }
 
 .pane-subtitle {
-  font-size: 0.72rem;
+  font-size: 0.74rem;
   color: var(--text-tertiary);
   margin: 0.1rem 0 0;
 }
@@ -251,9 +190,12 @@ body,
 .pane-body {
   display: flex;
   flex-direction: column;
-  gap: 0.9rem;
-  padding: 0.85rem;
+  gap: 0.7rem;
+  padding: 0.85rem 0.85rem 2.25rem;
   overflow-y: auto;
+  /* Fade the bottom edge so content cut off by the pane reads as scrollable. The extra bottom
+     padding keeps the fade clear of the footer once the list is scrolled to the end. */
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 2.25rem), transparent);
 }
 
 /* One button system for every control. */
@@ -275,6 +217,7 @@ body,
   white-space: nowrap;
   transition: background 0.2s ease, color 0.2s ease, transform 0.1s ease;
 }
+
 
 .control-btn:hover {
   background: var(--control-bg-hover);
@@ -423,58 +366,11 @@ body,
     transform: rotate(360deg);
   }
 }
-
-.search {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-}
-
-.search-input {
-  flex: 1;
-  min-width: 0;
-  height: 2.4rem;
-  padding: 0 0.7rem;
-  font-size: 0.85rem;
-  color: var(--text-primary);
-  background: var(--control-bg);
-  border: 1px solid var(--panel-border);
-  border-radius: var(--control-radius);
-  outline: none;
-}
-
-.search-input::placeholder {
-  color: var(--text-tertiary);
-}
-
-.search-input:focus-visible {
-  outline: 2px solid var(--focus-color);
-  outline-offset: 1px;
-}
-
-.search-results {
-  position: absolute;
-  top: calc(100% + 0.35rem);
-  left: 0;
-  right: 0;
-  z-index: 1200;
-  margin: 0;
-  padding: 0.25rem;
-  list-style: none;
-  background: rgba(17, 22, 38, 0.98);
-  border: 1px solid var(--panel-border);
-  border-radius: 0.6rem;
-  box-shadow: var(--panel-shadow);
-  max-height: 240px;
-  overflow-y: auto;
-  animation: sr-in 0.14s ease-out;
-}
-
-@keyframes sr-in {
+ 
+@keyframes wx-rise {
   from {
     opacity: 0;
-    transform: translateY(-4px);
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
@@ -482,72 +378,521 @@ body,
   }
 }
 
-.search-result {
+.primary-btn {
+  color: #fff;
+  background: linear-gradient(135deg, var(--accent-start) 0%, var(--accent-end) 100%);
+  border-color: transparent;
+  box-shadow: 0 6px 16px -8px rgba(122, 84, 232, 0.8);
+}
+
+.primary-btn:hover {
+  color: #fff;
+  background: linear-gradient(135deg, var(--accent-start) 0%, var(--accent-end) 100%);
+  filter: brightness(1.1);
+}
+
+/* Toolbar: forecast window + the fleet-wide action. */
+.toolbar {
   display: flex;
-  flex-direction: column;
-  gap: 0.1rem;
-  width: 100%;
-  text-align: left;
-  padding: 0.4rem 0.5rem;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.window-picker {
+  display: flex;
+  flex: 1 1 auto;
+  gap: 0.15rem;
+  padding: 0.2rem;
+  background: var(--inset-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--control-radius);
+}
+
+.window-option {
+  flex: 1 1 0;
+  height: 1.9rem;
+  padding: 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-secondary);
   background: transparent;
   border: none;
-  border-radius: 0.4rem;
-  cursor: pointer;
+  border-radius: calc(var(--control-radius) - 0.25rem);
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.window-option:hover {
   color: var(--text-primary);
-  transition: background 0.12s ease;
+  background: var(--control-bg-hover);
 }
 
-.search-result:hover,
-.search-result:focus-visible,
-.search-result.active {
-  background: rgba(255, 255, 255, 0.08);
-  outline: none;
+.window-option[aria-checked='true'] {
+  color: #fff;
+  background: linear-gradient(135deg, var(--accent-start) 0%, var(--accent-end) 100%);
 }
 
-.sr-name {
-  font-size: 0.85rem;
-  font-weight: 600;
+.window-option:focus-visible {
+  outline: 2px solid var(--focus-color);
+  outline-offset: 1px;
 }
 
-.sr-meta {
-  font-size: 0.7rem;
-  color: var(--text-tertiary);
-}
-
-.search-status {
-  padding: 0.5rem 0.55rem;
+/* Fleet totals, which double as the recommendation legend. */
+.fleet-totals {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
   font-size: 0.78rem;
+}
+
+.total {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.3rem;
+  padding: 0.22rem 0.65rem;
+  font-weight: 600;
+  color: var(--rec);
+  background: color-mix(in srgb, var(--rec) 14%, transparent);
+  border-radius: 999px;
+}
+
+.total b {
+  font-size: 0.95rem;
+}
+
+.total-window {
+  margin-left: auto;
   color: var(--text-tertiary);
 }
 
-.sr-match {
-  background: transparent;
-  color: var(--accent);
+.rec-go {
+  --rec: var(--rec-go);
+}
+
+.rec-delay {
+  --rec: var(--rec-delay);
+}
+
+.rec-reroute {
+  --rec: var(--rec-reroute);
+}
+
+.rec-pending {
+  --rec: var(--risk-pending);
+}
+
+.risk-low {
+  --level: var(--risk-low);
+  --line: var(--line-low);
+}
+
+.risk-moderate,
+.sev-moderate {
+  --level: var(--risk-moderate);
+  --line: var(--line-moderate);
+}
+
+.risk-high,
+.sev-high {
+  --level: var(--risk-high);
+  --line: var(--line-high);
+}
+
+.risk-severe,
+.sev-severe {
+  --level: var(--risk-severe);
+  --line: var(--line-severe);
+}
+
+.risk-pending {
+  --level: var(--risk-pending);
+  --line: var(--line-pending);
+}
+
+/* Route list. */
+.route-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.route-card {
+  background: var(--card-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: 0.8rem;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.route-card:hover {
+  background: var(--card-bg-hover);
+}
+
+.route-card.is-selected {
+  background: var(--card-bg-selected);
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--panel-border));
+}
+
+.route-head {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  width: 100%;
+  padding: 0.55rem 0.65rem 0.45rem;
+  font: inherit;
+  text-align: left;
+  color: inherit;
+  background: none;
+  border: none;
+  border-radius: 0.8rem;
+}
+
+.route-head:focus-visible {
+  outline: 2px solid var(--focus-color);
+  outline-offset: -2px;
+}
+
+.rec-badge {
+  flex-shrink: 0;
+  min-width: 4.7rem;
+  padding: 0.3rem 0.45rem;
+  font-size: 0.66rem;
   font-weight: 700;
+  letter-spacing: 0.07em;
+  line-height: 1.2;
+  text-align: center;
+  text-transform: uppercase;
+  color: var(--rec);
+  background: color-mix(in srgb, var(--rec) 15%, transparent);
+  border-radius: 0.45rem;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--rec) 38%, transparent);
+}
+
+/* Reroute is the one call that changes the plan, so it gets the loudest treatment. */
+.rec-badge.rec-reroute {
+  color: #fff;
+  background: var(--rec-reroute-solid);
+  box-shadow: 0 4px 12px -6px var(--rec-reroute-solid);
+}
+
+.route-card.is-pending .rec-badge {
+  opacity: 0.75;
+}
+
+.route-title {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.route-name,
+.route-meta {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.route-name {
+  font-size: 0.9rem;
+  font-weight: 650;
+}
+
+.route-meta {
+  font-size: 0.72rem;
+  color: var(--text-tertiary);
+}
+
+.risk-score {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.3rem;
+  font-size: 1.02rem;
+  font-weight: 700;
+  color: var(--level);
+  background: color-mix(in srgb, var(--level) 14%, transparent);
+  border-radius: 0.6rem;
+}
+
+/* Each leg's risk, proportional to its length. */
+.leg-strip {
+  display: flex;
+  gap: 2px;
+  height: 5px;
+  margin: 0 0.65rem 0.65rem;
+}
+
+.leg-strip > span {
+  min-width: 6px;
+  background: var(--line);
+  border-radius: 2px;
+  transition: background 0.3s ease;
+}
+
+.route-detail {
+  padding: 0 0.65rem 0.35rem;
+  border-top: 1px solid var(--panel-border);
+  animation: wx-rise 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.route-summary {
+  margin: 0.6rem 0 0.15rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-wrap: pretty;
+}
+
+.leg-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.leg-row {
+  display: flex;
+  gap: 0.6rem;
+  padding: 0.45rem 0;
+}
+
+.leg-row + .leg-row {
+  border-top: 1px solid var(--panel-border);
+}
+
+.leg-score {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 2.1rem;
+  height: 1.6rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--level);
+  background: color-mix(in srgb, var(--level) 15%, transparent);
+  border-radius: 0.4rem;
+}
+
+.leg-body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.leg-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  line-height: 1.6rem;
+}
+
+.leg-distance {
+  flex-shrink: 0;
+  font-weight: 500;
+  color: var(--text-tertiary);
+}
+
+.hazard-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.hazard-chip {
+  padding: 0.12rem 0.45rem;
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--level);
+  background: color-mix(in srgb, var(--level) 13%, transparent);
+  border-radius: 999px;
+}
+
+.hazard-chip b {
+  font-weight: 700;
+}
+
+.leg-conditions {
+  margin: 0;
+  font-size: 0.72rem;
+  color: var(--text-tertiary);
+}
+
+.route-skeleton {
+  height: 4.35rem;
+  border-radius: 0.8rem;
+  background: linear-gradient(100deg, var(--card-bg) 30%, var(--card-bg-hover) 50%, var(--card-bg) 70%);
+  background-size: 200% 100%;
+  animation: sk-shimmer 1.3s ease-in-out infinite;
+}
+
+@keyframes sk-shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
+/* Custom route planner. */
+.custom-start {
+  width: 100%;
+  border-style: dashed;
+}
+
+.custom-planner {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  padding: 0.7rem;
+  border: 1px dashed color-mix(in srgb, var(--accent) 65%, transparent);
+  border-radius: 0.8rem;
+  background: var(--card-bg-selected);
+}
+
+.custom-hint {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.custom-hint b {
+  color: var(--text-primary);
+}
+
+.custom-actions {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.custom-result {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.link-btn {
+  align-self: flex-end;
+  padding: 0.2rem 0.3rem;
+  font-size: 0.72rem;
+  color: var(--text-tertiary);
+  background: none;
+  border: none;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.link-btn:hover {
+  color: var(--text-primary);
 }
 
 .control-error {
   margin: 0;
-  font-size: 0.72rem;
+  padding: 0.55rem 0.75rem;
+  font-size: 0.78rem;
   color: var(--error-text);
+  background: var(--error-bg);
+  border: 1px solid var(--error-border);
+  border-radius: 0.6rem;
 }
 
-.weather {
-  display: flex;
-  flex-direction: column;
-  gap: 0.9rem;
-}
-
-.loc-spinner {
-  display: inline-block;
-  width: 13px;
-  height: 13px;
-  margin-left: 0.5rem;
-  vertical-align: -1px;
-  border: 2px solid rgba(148, 163, 184, 0.35);
-  border-top-color: var(--accent);
+.spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid color-mix(in srgb, currentColor 30%, transparent);
+  border-top-color: currentColor;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
+}
+
+.panel-footer {
+  margin: 0;
+  font-size: 0.68rem;
+  color: var(--text-tertiary);
+  text-align: center;
+}
+
+.panel-footer a {
+  color: var(--text-secondary);
+}
+
+/* Routes on the map. Leaflet draws SVG paths; CSS sets their colors so they follow the theme. */
+.route-casing {
+  stroke: var(--line-casing);
+  stroke-linecap: round;
+}
+
+.route-leg {
+  stroke: var(--line);
+  stroke-linecap: round;
+}
+
+.route-leg:not(.is-selected),
+.route-casing:not(.is-selected) {
+  stroke-opacity: 0.85;
+}
+
+.waypoint {
+  fill: var(--panel-solid);
+  fill-opacity: 1;
+  stroke: var(--text-primary);
+}
+
+.waypoint.is-selected {
+  fill: var(--text-primary);
+  stroke: var(--line-casing);
+}
+
+.custom-draft {
+  stroke: var(--accent);
+}
+
+.stop-pin span {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  font: 700 0.75rem 'Geist Variable', system-ui, sans-serif;
+  color: #fff;
+  background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+  border: 2px solid #fff;
+  border-radius: 50%;
+  box-shadow: 0 3px 8px rgba(6, 8, 20, 0.45);
+}
+
+.leaflet-tooltip.map-tip {
+  padding: 0.25rem 0.5rem;
+  font-family: inherit;
+  font-size: 0.74rem;
+  color: var(--text-primary);
+  background: var(--panel-solid);
+  border: 1px solid var(--panel-border);
+  border-radius: 0.45rem;
+  box-shadow: 0 6px 16px -6px rgba(6, 8, 20, 0.55);
+}
+
+.leaflet-tooltip.map-tip::before {
+  display: none;
+}
+
+.leaflet-tooltip.waypoint-label {
+  padding: 0.1rem 0.4rem;
+  font-weight: 600;
+  white-space: nowrap;
 }
 
 /* Compact launcher shown when the pane is hidden. */
@@ -559,14 +904,13 @@ body,
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  padding: 0.45rem 0.85rem 0.45rem 0.6rem;
+  padding: 0.45rem 0.85rem 0.45rem 0.65rem;
   color: var(--text-primary);
   background: var(--panel-bg);
   backdrop-filter: blur(14px);
   border: 1px solid var(--panel-border);
   border-radius: 0.85rem;
   box-shadow: var(--panel-shadow);
-  cursor: pointer;
   animation: launcher-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
   transition: background 0.2s ease, transform 0.1s ease;
 }
@@ -587,7 +931,7 @@ body,
 .launcher-icon {
   display: flex;
   flex-shrink: 0;
-  color: var(--accent-end);
+  color: var(--accent);
 }
 
 .launcher-readout {
@@ -595,21 +939,17 @@ body,
   flex-direction: column;
   align-items: flex-start;
   min-width: 0;
-  line-height: 1.1;
+  line-height: 1.2;
 }
 
-.launcher-temp {
-  font-size: 1.1rem;
+.launcher-title {
+  font-size: 0.9rem;
   font-weight: 700;
-  font-variant-numeric: tabular-nums;
 }
 
-.launcher-place {
-  max-width: 44vw;
-  overflow: hidden;
-  font-size: 0.68rem;
+.launcher-counts {
+  font-size: 0.7rem;
   color: var(--text-tertiary);
-  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
@@ -622,7 +962,7 @@ body,
 }
 
 .pane-launcher:hover .launcher-expand {
-  color: var(--accent-end);
+  color: var(--accent);
   transform: translateX(3px);
 }
 
@@ -636,417 +976,7 @@ body,
     transform: translateX(0);
   }
 }
-
-.spinner {
-  width: 14px;
-  height: 14px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top-color: #fff;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-/* Location heading (top of the weather section). */
-.location {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-
-.location-name {
-  font-size: 1.15rem;
-  font-weight: 700;
-  margin: 0;
-  line-height: 1.2;
-  text-wrap: balance;
-}
-
-.location-detail {
-  font-size: 0.75rem;
-  color: var(--text-secondary);
-  margin-top: 0.1rem;
-}
-
-.location-tz {
-  font-size: 0.72rem;
-  color: var(--text-tertiary);
-}
-
-/* Temperature unit segmented toggle. */
-.unit-toggle {
-  display: flex;
-  gap: 0.15rem;
-  margin: 0;
-  padding: 0.2rem;
-  background: rgba(8, 11, 22, 0.55);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: var(--control-radius);
-  flex-shrink: 0;
-}
-
-.unit-option {
-  height: 1.9rem;
-  min-width: 2.2rem;
-  padding: 0 0.55rem;
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: var(--text-secondary);
-  background: transparent;
-  border: none;
-  border-radius: calc(var(--control-radius) - 0.25rem);
-  cursor: pointer;
-  transition: background 0.2s ease, color 0.2s ease;
-}
-
-.unit-option[aria-pressed='true'] {
-  background: linear-gradient(135deg, var(--accent-start) 0%, var(--accent-end) 100%);
-  color: #fff;
-}
-
-.unit-option:focus-visible {
-  outline: 2px solid var(--focus-color);
-  outline-offset: 1px;
-}
-
-/* Current conditions card: the elevated "now" moment above the hourly strip. */
-.now-card {
-  position: relative;
-  isolation: isolate;
-  display: flex;
-  flex-direction: column;
-  gap: 0.85rem;
-  padding: 0.95rem 1.05rem 0.9rem;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  border-radius: 1rem;
-  background:
-    radial-gradient(120% 88% at 92% 4%, var(--now-glow, transparent), transparent 60%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.035));
-  box-shadow: 0 10px 26px -14px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.16);
-  animation: wx-rise 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-.now-head {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 0.6rem;
-}
-
-.now-place {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-
-.now-main {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-}
-
-.now-readout {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-
-.hero-temp {
-  font-size: 3.7rem;
-  font-weight: 600;
-  line-height: 0.95;
-  letter-spacing: -0.035em;
-  color: var(--text-primary);
-}
-
-.hero-condition {
-  font-size: 0.95rem;
-  color: var(--text-secondary);
-  margin-top: 0.4rem;
-}
-
-.now-icon {
-  flex-shrink: 0;
-  filter: drop-shadow(0 8px 18px rgba(8, 10, 24, 0.45));
-  animation: wx-float 4.5s ease-in-out infinite;
-}
-
-@keyframes wx-rise {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes wx-float {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-3px);
-  }
-}
-
-.now-meta {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding-top: 0.75rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.09);
-  font-size: 0.82rem;
-  font-variant-numeric: tabular-nums;
-}
-
-.now-feels {
-  color: var(--text-secondary);
-}
-
-.now-feels b {
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.now-range {
-  display: flex;
-  gap: 0.7rem;
-  margin-left: auto;
-}
-
-.now-hl {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-}
-
-.now-hl-arrow {
-  display: inline-flex;
-}
-
-.now-hl-val {
-  color: var(--text-secondary);
-  font-weight: 600;
-}
-
-/* Hourly strip: the next 8 hours share the width evenly so nothing is clipped. */
-.hourly {
-  display: flex;
-  flex-shrink: 0;
-  gap: 0.15rem;
-  padding: 0.1rem 0;
-}
-
-.hour {
-  display: flex;
-  flex: 1 1 0;
-  min-width: 0;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.35rem;
-  padding: 0.45rem 0.15rem;
-  border-radius: 0.7rem;
-  animation: wx-rise 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-.hour:first-child {
-  background: rgba(255, 255, 255, 0.07);
-}
-
-.hour-label {
-  font-size: 0.66rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  white-space: nowrap;
-  color: var(--text-tertiary);
-}
-
-.hour-temp {
-  font-size: 0.85rem;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-}
-
-/* Current metrics. */
-.metrics {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 0.6rem;
-  margin: 0;
-  padding: 0.85rem 0;
-  border-top: 1px solid var(--panel-border);
-  border-bottom: 1px solid var(--panel-border);
-  animation: wx-rise 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
-}
-
-.metrics > div {
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-}
-
-.metrics dt {
-  font-size: 0.62rem;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--text-tertiary);
-}
-
-.metrics dd {
-  margin: 0;
-  font-size: 0.98rem;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-}
-
-.metrics dd small {
-  font-size: 0.68rem;
-  font-weight: 500;
-  color: var(--text-tertiary);
-}
-
-/* Sunrise / sunset. */
-.sun {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.5rem;
-  animation: wx-rise 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.16s both;
-}
-
-.sun-item {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-}
-
-.sun-item svg {
-  color: var(--sun);
-  flex-shrink: 0;
-}
-
-.sun-label {
-  flex: 1;
-  font-size: 0.72rem;
-  color: var(--text-tertiary);
-}
-
-.sun-time {
-  font-size: 0.85rem;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-}
-
-/* 5-day forecast rows with temperature range bars. */
-.forecast {
-  display: flex;
-  flex-direction: column;
-}
-
-.fc-row {
-  display: grid;
-  grid-template-columns: 3.2rem 1.5rem 2.1rem minmax(44px, 1fr) 2.1rem;
-  align-items: center;
-  gap: 0.55rem;
-  padding: 0.4rem 0;
-  animation: fc-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-.fc-row + .fc-row {
-  border-top: 1px solid var(--panel-border);
-}
-
-@keyframes fc-in {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.fc-daycol {
-  display: flex;
-  flex-direction: column;
-  gap: 0.05rem;
-}
-
-.fc-day {
-  font-size: 0.82rem;
-  font-weight: 600;
-}
-
-.fc-precip {
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-  font-size: 0.62rem;
-  color: var(--precip);
-  white-space: nowrap;
-}
-
-.fc-icon {
-  justify-self: center;
-}
-
-.fc-lo {
-  font-size: 0.82rem;
-  color: var(--text-tertiary);
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-}
-
-.fc-hi {
-  font-size: 0.82rem;
-  font-weight: 600;
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-}
-
-.fc-bar {
-  position: relative;
-  height: 5px;
-  border-radius: 999px;
-  background: var(--track);
-  overflow: hidden;
-}
-
-.fc-fill {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  border-radius: 999px;
-}
-
-.drop-icon {
-  flex-shrink: 0;
-}
-
-.error {
-  background: var(--error-bg);
-  border: 1px solid var(--error-border);
-  color: var(--error-text);
-  padding: 0.6rem 0.8rem;
-  border-radius: 0.6rem;
-  font-size: 0.82rem;
-}
-
-.panel-footer {
-  margin: 0;
-  font-size: 0.68rem;
-  color: var(--text-tertiary);
-  text-align: center;
-}
-
-.panel-footer a {
-  color: var(--text-secondary);
-}
-
+ 
 /* Leaflet controls, matched to the app's button system. */
 .leaflet-control-attribution {
   background: rgba(17, 22, 38, 0.7) !important;
@@ -1406,7 +1336,7 @@ body,
     transform: rotate(360deg);
   }
 }
-
+ 
 @media (max-width: 768px) {
   /* Pane becomes a full-width top drawer that slides up to hide. */
   .control-pane {
@@ -1416,42 +1346,6 @@ body,
     width: auto;
     max-width: none;
     max-height: calc(100dvh - 1.5rem);
-  }
-
-  /* Tighten the forecast's vertical rhythm on phones so the whole thing fits the
-     tall pane with little or no scrolling. */
-  .pane-body {
-    gap: 0.55rem;
-  }
-
-  .weather {
-    gap: 0.5rem;
-  }
-
-  .now-card {
-    gap: 0.6rem;
-    padding: 0.8rem 0.95rem 0.75rem;
-  }
-
-  .hero-temp {
-    font-size: 3.05rem;
-  }
-
-  .now-meta {
-    padding-top: 0.55rem;
-  }
-
-  .hour {
-    gap: 0.25rem;
-    padding: 0.3rem 0.15rem;
-  }
-
-  .metrics {
-    padding: 0.55rem 0;
-  }
-
-  .fc-row {
-    padding: 0.26rem 0;
   }
 
   .control-pane.collapsed {
@@ -1488,9 +1382,8 @@ body,
     left: 0.75rem;
   }
 
-  /* When the forecast pane is open it covers the map, so hide the map-only
-     controls that would otherwise collide with it. They return in map mode
-     (pane collapsed). Pinch-zoom still works while the buttons are hidden. */
+  /* When the pane is open it covers the map, so hide the map-only controls that would
+     otherwise collide with it. They return in map mode (pane collapsed). */
   .app:has(> .control-pane:not(.collapsed)) :is(
     .map-style-control,
     .map-radar,
@@ -1504,111 +1397,8 @@ body,
 
 @media (hover: none) and (pointer: coarse) {
   .control-btn,
-  .unit-option {
+  .window-option {
     min-height: 2.5rem;
-  }
-
-  .search-input {
-    height: 2.5rem;
-  }
-}
-
-.unit-option {
-  transition: background 0.2s ease, color 0.2s ease, transform 0.1s ease;
-}
-
-.unit-option:active {
-  transform: translateY(1px) scale(0.98);
-}
-
-/* Loading skeleton that mirrors the panel's shape. */
-.wx-skeleton {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.sk-hero {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.sk-stack {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.sk-hourly {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.sk-hour {
-  flex: 1;
-  height: 3.2rem;
-}
-
-.sk-meta {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 0.75rem;
-  padding: 0.8rem 0;
-  border-top: 1px solid var(--panel-border);
-  border-bottom: 1px solid var(--panel-border);
-}
-
-.sk-rows {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.sk-row {
-  height: 1.8rem;
-}
-
-.sk-block {
-  display: block;
-  border-radius: 0.5rem;
-  background: linear-gradient(
-    100deg,
-    rgba(255, 255, 255, 0.05) 30%,
-    rgba(255, 255, 255, 0.13) 50%,
-    rgba(255, 255, 255, 0.05) 70%
-  );
-  background-size: 200% 100%;
-  animation: sk-shimmer 1.3s ease-in-out infinite;
-}
-
-.sk-icon {
-  width: 64px;
-  height: 64px;
-  border-radius: 999px;
-  flex-shrink: 0;
-}
-
-.sk-temp {
-  width: 6rem;
-  height: 2.6rem;
-}
-
-.sk-label {
-  width: 8rem;
-  height: 0.9rem;
-}
-
-.sk-cell {
-  height: 2.4rem;
-}
-
-@keyframes sk-shimmer {
-  from {
-    background-position: 200% 0;
-  }
-  to {
-    background-position: -200% 0;
   }
 }
 
@@ -1620,35 +1410,21 @@ body,
   .pane-launcher,
   .map-radar,
   .map-style,
-  .map-style-menu,
-  .search-results {
+  .map-style-menu {
     background: var(--panel-solid);
     backdrop-filter: none;
-  }
-
-  .app::before {
-    display: none;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .spinner,
-  .loc-spinner,
-  .map-reticle .reticle-inner,
-  .map-reticle .reticle-ping,
-  .sk-block,
-  .fc-row,
-  .now-card,
-  .now-icon,
-  .hour,
-  .metrics,
-  .sun,
+  .route-skeleton,
+  .route-detail,
   .radar-bar,
   .radar-legend,
   .pane-launcher,
   .radar-sweep,
-  .map-style-menu,
-  .search-results {
+  .map-style-menu {
     animation: none;
   }
 
@@ -1661,71 +1437,44 @@ body,
   }
 }
 
-/* Light mode: frosted-white cards over the light map (system preference). */
+/* Light mode: frosted-white panels over the light basemap (system preference). */
 @media (prefers-color-scheme: light) {
   :root {
-    --panel-bg: rgba(255, 255, 255, 0.82);
+    --panel-bg: rgba(255, 255, 255, 0.86);
     --panel-solid: rgba(255, 255, 255, 0.97);
     --panel-border: rgba(15, 23, 42, 0.1);
+    --card-bg: rgba(15, 23, 42, 0.025);
+    --card-bg-hover: rgba(15, 23, 42, 0.05);
+    --card-bg-selected: rgba(124, 58, 237, 0.07);
+    --inset-bg: rgba(15, 23, 42, 0.06);
     --text-primary: #0f172a;
     --text-secondary: #334155;
-    --text-tertiary: #64748b;
+    --text-tertiary: #5b6577;
+    --accent: #7c3aed;
     --focus-color: #7c3aed;
-    --error-bg: rgba(220, 38, 38, 0.1);
+    --error-bg: rgba(220, 38, 38, 0.08);
     --error-border: #dc2626;
     --error-text: #b91c1c;
-    --precip: #0369a1;
-    --sun: #d97706;
     --track: rgba(15, 23, 42, 0.1);
     --control-bg: rgba(15, 23, 42, 0.05);
     --control-bg-hover: rgba(15, 23, 42, 0.1);
     --panel-shadow: 0 14px 40px -12px rgba(15, 23, 42, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.7);
-  }
 
-  .search-results {
-    background: rgba(255, 255, 255, 0.98);
-  }
+    --risk-low: #15803d;
+    --risk-moderate: #a16207;
+    --risk-high: #c2410c;
+    --risk-severe: #b91c1c;
+    --risk-pending: #64748b;
+    --line-low: #16a34a;
+    --line-moderate: #eab308;
+    --line-high: #f97316;
+    --line-severe: #dc2626;
+    --line-pending: #94a3b8;
+    --line-casing: rgba(255, 255, 255, 0.95);
 
-  .search-result:hover,
-  .search-result:focus-visible,
-  .search-result.active {
-    background: rgba(15, 23, 42, 0.06);
-  }
-
-  .hour:first-child {
-    background: rgba(15, 23, 42, 0.05);
-  }
-
-  .now-card {
-    border-color: rgba(15, 23, 42, 0.12);
-    background:
-      radial-gradient(120% 88% at 92% 4%, var(--now-glow, transparent), transparent 60%),
-      linear-gradient(180deg, rgba(15, 23, 42, 0.06), rgba(15, 23, 42, 0.025));
-    box-shadow: 0 10px 26px -16px rgba(15, 23, 42, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.7);
-  }
-
-  .unit-toggle {
-    background: rgba(15, 23, 42, 0.08);
-    border-color: rgba(15, 23, 42, 0.12);
-  }
-
-  .now-meta {
-    border-top-color: rgba(15, 23, 42, 0.12);
-  }
-
-  .spinner {
-    border-color: rgba(15, 23, 42, 0.2);
-    border-top-color: var(--accent);
-  }
-
-  .sk-block {
-    background: linear-gradient(
-      100deg,
-      rgba(15, 23, 42, 0.05) 30%,
-      rgba(15, 23, 42, 0.11) 50%,
-      rgba(15, 23, 42, 0.05) 70%
-    );
-    background-size: 200% 100%;
+    --rec-go: #15803d;
+    --rec-delay: #b45309;
+    --rec-reroute: #b91c1c;
   }
 
   .leaflet-control-attribution {
